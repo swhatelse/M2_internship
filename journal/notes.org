@@ -18,7 +18,7 @@
 *** Ruby
    #+begin_src sh :results output :exports both :tangle ../setup.sh
      echo "=========== Install ruby ============="
-     gksudo "apt-get install -y ruby"
+     gksudo "apt-get install -y ruby ruby-dev"
    #+end_src
 *** Install fortran
     #+begin_src sh :results output :exports both :tangle ../setup.sh
