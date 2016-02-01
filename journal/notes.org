@@ -2,6 +2,7 @@
 #+BABEL: :tangle yes
 
 * Installation
+  Here the installation that download and install al the necessary tools.
 ** Base
    #+begin_src sh :results output :exports both :tangle ../setup.sh
      #!/bin/bash
@@ -72,3 +73,29 @@
       git clone https://forge.imag.fr/anonscm/git/boast/boast.git boast-lig
     #+end_src
    
+* Topic
+** Overview
+   To optimize correctly an application, we have to find what are the
+   best combinations of optimization parameters and compilation 
+   flags. This can be modelized as a mathematical optimization problem 
+   where we want to minize or maximize y = f(x_0, x_1, ..., x_n) with x
+   being an optimization parameter or a compilation flag. The problem
+   is the search space being huge and we cannot use the brute
+   force approach and test every combinations. Thus we need to explore
+   only parts of the search space to try to find an optimal
+   solution. For this genetic algorithms works reasonnably well, they
+   test very different possibilities keep the best ones and make try 
+   combinations of them, keep the bests and continue until they find
+   an optimal one.
+** Problem   
+   - The first thing is that we do not really why genetic algorithm
+     perform well.
+   
+   - The second is genetic algorithms are a random approach and do not
+     use any knwoledge about the problem. Knowing that it might be
+     possible to do things smarter and it might exist methods that use
+     knwoledge about the problem and that are more efficient than
+     a random approach.
+
+* Goal
+  Make an other optimizer.
