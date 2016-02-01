@@ -18,28 +18,32 @@
 *** Ruby
    #+begin_src sh :results output :exports both :tangle ../setup.sh
      echo "=========== Install ruby ============="
-     apt-get install -y ruby
+     gksudo "apt-get install -y ruby"
    #+end_src
 *** Install fortran
     #+begin_src sh :results output :exports both :tangle ../setup.sh
       echo "=========== Install fortran ============="
-      apt-get install -y gfortran
+      gksudo "apt-get install -y gfortran"
     #+end_src
 *** Install Opencl
    #+begin_src sh :results output :exports both :tangle ../setup.sh
      echo "=========== Install OpenCL ============="
-     apt-get install -y ocl-icd-libopencl1 ocl-icd-opencl-dev
-     mkdir -p $TOOLS_DIR
-     cd $TOOLS_DIR
-     apt-get install -y rpm alien libnuma1
-     wget http://registrationcenter.intel.com/irc_nas/4181/opencl_runtime_14.2_x64_4.5.0.8.tgz
-     tar xvzf opencl_runtime_14.2_x64_4.5.0.8.tgz
-     cd pset_opencl_runtime_14.1_x64_4.5.0.8/rpm/
-     fakeroot alien --to-deb opencl-1.2-intel-cpu-4.5.0.8-1.x86_64.rpm
-     dpkg -i opencl-1.2-intel-cpu_4.5.0.8-2_amd64.deb
-     mkdir -p /etc/OpenCL
-     mkdir -p /etc/OpenCL/vendors
-     cp /opt/intel/opencl-1.2-4.5.0.8/etc/intel64.icd /etc/OpenCL/vendors/
+     gksudo "apt-get install -y ocl-icd-libopencl1 ocl-icd-opencl-dev"
+     if [ "$HOSTNAME" = "titan" ] ; then
+         mkdir -p $TOOLS_DIR
+         cd $TOOLS_DIR
+         gksudo "apt-get install -y rpm alien libnuma1"
+         wget http://registrationcenter.intel.com/irc_nas/4181/opencl_runtime_14.2_x64_4.5.0.8.tgz
+         tar xvzf opencl_runtime_14.2_x64_4.5.0.8.tgz
+         cd pset_opencl_runtime_14.1_x64_4.5.0.8/rpm/
+         fakeroot alien --to-deb opencl-1.2-intel-cpu-4.5.0.8-1.x86_64.rpm
+         gksudo "dpkg -i opencl-1.2-intel-cpu_4.5.0.8-2_amd64.deb"
+         gksudo "mkdir -p /etc/OpenCL"
+         gksudo "mkdir -p /etc/OpenCL/vendors"
+         gksudo "cp /opt/intel/opencl-1.2-4.5.0.8/etc/intel64.icd /etc/OpenCL/vendors/"
+     else
+         gksudo "apt-get install -y nvidia-opencl-icd-340"
+     fi
    #+end_src
 
 ** Boast
