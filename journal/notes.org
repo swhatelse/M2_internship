@@ -17,14 +17,17 @@
     #+end_src
 *** Ruby
    #+begin_src sh :results output :exports both :tangle ../setup.sh
+     echo "=========== Install ruby ============="
      gksudo apt-get install ruby
    #+end_src
 *** Install fortran
     #+begin_src sh :results output :exports both :tangle ../setup.sh
+      echo "=========== Install fortran ============="
       gksudo apt-get install gfortran
     #+end_src
 *** Install Opencl
    #+begin_src sh :results output :exports both :tangle ../setup.sh
+     echo "=========== Install OpenCL ============="
      gksudo apt-get install ocl-icd-libopencl1 ocl-icd-opencl-dev
      mkdir -p $TOOLS_DIR
      cd $TOOLS_DIR
@@ -41,6 +44,7 @@
 
 ** Boast
    #+begin_src sh :results output :exports both :tangle ../setup.sh
+     echo "========= Installing Boast ========="
      cd $ROOT_DIR
      git clone git@github.com:Nanosim-LIG/boast.git
      cd $BOAST_DIR
@@ -55,6 +59,7 @@
 
 ** Darwining
     #+begin_src sh :results output :exports both :tangle ../setup.sh
+      echo "========= Installing Darwining ========="
       cd $ROOT_DIR
       git clone git@github.com:Nanosim-LIG/darwinning.git
       cd $DARWIN_DIR
@@ -69,6 +74,7 @@
 
 ** Boast-lig
     #+begin_src sh :results output :exports both :tangle ../setup.sh
+      echo "========= Installing Boast-lig ========="
       cd $ROOT_DIR
       git clone https://forge.imag.fr/anonscm/git/boast/boast.git boast-lig
     #+end_src
