@@ -108,4 +108,16 @@
      a random approach.
 
 * Goal
-  Make an other optimizer.
+  - Understand why certain methods work?
+  - Try to characterize the problem of optimization.
+    If we know the problem's shape we can use this knowledge to be
+    more efficient.
+  - Find efficient solution and implement it as an optimizer.
+* Biblio
+** Seymour08
+*** Summary
+*** Link
+*** bibtex
+    #+BEGIN_SRC 
+    
+    #+END_SRC
