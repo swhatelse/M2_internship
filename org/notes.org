@@ -114,10 +114,65 @@
     more efficient.
   - Find efficient solution and implement it as an optimizer.
 * Biblio
-** Seymour08
+** A comparison of Search Heuristics for Empirical Code Optimization
 *** Summary
+    - Comparing:
+      - Random
+      - Simplex
+      - Particule Swarm
+      - Orthogonal
+      - Genetic Algorithm
+      - Simulated Annealing
+    - Combining code optimization and compilation flags
 *** Link
+    http://netlib.org/utk/people/JackDongarra/PAPERS/gco_search.pdf
 *** bibtex
     #+BEGIN_SRC 
-    
+    @conference {icl:418,
+	title = {A Comparison of Search Heuristics for Empirical Code Optimization},
+	booktitle = {The 3rd international Workshop on Automatic Performance Tuning},
+	year = {2008},
+	note = {5},
+	pages = {421-429},
+	publisher = {IEEE},
+	organization = {IEEE},
+	address = {Tsukuba, Japan},
+	author = {Keith Seymour and Haihang You and Jack Dongarra}
+    }
     #+END_SRC
+** Can Search algorithms save large-scale automatic performance tuning?
+*** Summary
+    - *Formulation* of the autotuning search problem *as mathematical*
+      *optimization problem*.
+    - *Algorithms* need to be *adapted to the autotuning problem* \to naïve
+      Nelder Mead simplex vs modified one gives better results. 
+      Due to the fact the normal version is made for continuous
+      variables and here they only tested discrete variables.
+    - Random search seems to be efficient for problems when the
+      problem has lots of parameters that give good results. It also
+      tends to have a bigger rate of failure (compilation or runtime
+      errors) because does not keep track of hidden incorrect
+      combination of parameters. 
+*** Questions
+    - What is the importance of the formalization in a mathematical
+      optimization problem? I didn't really get how they use this
+      particularity. 
+*** Link
+    http://ac.els-cdn.com/S1877050911002924/1-s2.0-S1877050911002924-main.pdf?_tid=4f7211d8-c9b7-11e5-ab07-00000aacb35d&acdnat=1454422665_1e1560e8379ea8cb8f740e08b18b05bf
+*** bibtex
+    #+BEGIN_SRC 
+    @article{Balaprakash20112136,
+        title = "Can search algorithms save large-scale automatic performance tuning?",
+        author = "Prasanna Balaprakash and Stefan M. Wild and Paul D. Hovland",
+        journal = "Procedia Computer Science",
+        volume = "4",
+        pages = "2136 - 2145",
+        year = "2011",
+        note = "Proceedings of the International Conference on Computational Science, ICCS 2011",
+        issn = "1877-0509",
+        doi = "10.1016/j.procs.2011.04.234"
+    }
+    #+END_SRC
+* Question
+  - Autotuning is an optimization problem but what are its specifities
+    if it had some?

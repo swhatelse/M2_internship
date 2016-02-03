@@ -13,3 +13,14 @@
 
 Have a look at
 https://en.wikipedia.org/wiki/Genetic_algorithm#Limitations
+** 2016-02-02
+*** Summary discussion with Arnaud
+    Optimization can be seen as:
+    - _Minimization problem_
+      E.g gradient approach if the function is convexe and second
+      derivative \to good conditions.
+    - _Fixed Point problem_
+      If k-Lipschitz property (f is contraction mapping) can converge very quickly.
+      
+    Those methods can be generic, we can apply f multiple time to have
+    good "conditions".
