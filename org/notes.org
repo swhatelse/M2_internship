@@ -215,6 +215,23 @@
     isbn        = "978-3-642-38717-3"
     }
     #+END_SRC
+** Deconstructing Iterative optimization
+*** Summary
+    - Compiler flags optimizations only
+    - It is possible to learn a combination of optimization from data
+      set that suit most of other data set \to analyzing the datasets.
+    - Interesting to see how they study :
+      - If the iterative optimization is efficient across datasets 
+        - They collected a big sample, 
+        - Found what are the best optimizations 
+        - Kept common optimizations 
+        - apply it to others samples
+      - Why it is efficient \to by analyzing the results.
+*** Link
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.308.5061&rep=rep1&type=pdf
+*** Remarks
+    - Interesting to see how I can get into the problem, what kind of
+      question I could ask to myself, and for the methodology.
 * Question
   - Autotuning is an optimization problem but what are its specifities
     if it had some?
