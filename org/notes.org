@@ -173,6 +173,48 @@
         doi = "10.1016/j.procs.2011.04.234"
     }
     #+END_SRC
+** An Experimental Study of Global and Local Search Algoritms in Empirical Perfomance Tuning
+*** Summary
+    - Study the comparison between global and local search
+      - Random
+      - Genetic Algorithm
+      - Simulated annealing
+      - Nelder Mead simplex
+      - Surrogate based search
+    - Strong time constraint \to getting the best variant in a short
+      time
+    - Local algo are generally better
+      - Nelder Mead
+      - Surrogates based search
+      - But initial parameters have to be chosen carefully \to sensitive
+    - Global are generally longer 
+      - due to their explorative nature
+      - reducing their degree of exploration improve their results
+*** Questions / remarks
+    - Maybe their experiments have some biais because at they end find
+      that reducing the degree of exploration improve the performances
+      of the global algorithms. So it is possible that they did not
+      adapted correctly the GA and SA to the autotuning search
+      problem. And maybe they compare them with optimized version of
+      NM and SBS.
+*** Link
+    http://www.mcs.anl.gov/papers/P1995-0112.pdf
+*** bibtex
+    #+BEGIN_SRC 
+    @incollection{PBSWPHLNCS13,
+    title       = "An Experimental Study of Global and Local Search Algorithms in Empirical Performance Tuning",
+    author      = "Prasanna Balaprakash and Stefan M. Wild and Paul D. Hovland",
+    booktitle   = "High Performance Computing for Computational Science - VECPAR 2012, 
+    10th International Conference, Kobe, Japan, July 17-20, 2012, Revised Selected Papers.",
+    series      = "Lecture Notes in Computer Science",  
+    editors     = "M.J. Dayd\'e, O. Marques, K. Nakajima",    
+    year        = "2013",
+    publisher   = "Springer",
+    pages       = "pp. 261--269",
+    doi         = "10.1007/978-3-642-38718-0_26",
+    isbn        = "978-3-642-38717-3"
+    }
+    #+END_SRC
 * Question
   - Autotuning is an optimization problem but what are its specifities
     if it had some?
