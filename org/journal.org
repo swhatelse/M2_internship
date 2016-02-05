@@ -24,3 +24,17 @@ https://en.wikipedia.org/wiki/Genetic_algorithm#Limitations
       
     Those methods can be generic, we can apply f multiple time to have
     good "conditions".
+
+    - A good starting point would be to characterize the autotuning
+      search problem.
+** 2016-02-05
+*** Discussion with Brice
+    - Local search only gives local optimal. It is quicker but the
+      result can far from the global optimal unless we know where to
+      search.
+    - It is important to be able to put a bound on the value we want
+      to minimize/maximize.
+    - Combining global and local
+    - It would be interesting to see how a problem looks like when
+      changing architecture, it is possible that the search space is
+      different.  
