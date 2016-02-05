@@ -163,9 +163,14 @@
       errors) because does not keep track of hidden incorrect
       combination of parameters. 
 *** Questions
-    - What is the importance of the formalization in a mathematical
-      optimization problem? I didn't really get how they use this
-      particularity. 
+**** What is the importance of the formalization in a mathematical optimization problem? 
+     # I didn't really get how they use this particularity. 
+     It helps to modelize the problem as a function and to correctly
+     find what to take into account. For example what is the most
+     suited metric for the objective function \to for optimization
+     problem it is more logical to take a metric we know the bound.
+     E.g. time to compute a pixel (bounded by zero) vs Flops (unknown
+     bound) 
 *** Link
     http://ac.els-cdn.com/S1877050911002924/1-s2.0-S1877050911002924-main.pdf?_tid=4f7211d8-c9b7-11e5-ab07-00000aacb35d&acdnat=1454422665_1e1560e8379ea8cb8f740e08b18b05bf
 *** Bibtex
@@ -192,20 +197,29 @@
       - Surrogate based search
     - Strong time constraint \to getting the best variant in a short
       time
-    - Local algo are generally better
+    - Local algo
       - Nelder Mead
       - Surrogates based search
-      - But initial parameters have to be chosen carefully \to sensitive
-    - Global are generally longer 
-      - due to their explorative nature
-      - reducing their degree of exploration improve their results
+      - Very efficient if we know where to search
+        Initial parameters have to be chosen carefully \to sensitive
+    - Global algo
+      - Generally longer due to their explorative nature
+      - Reducing their degree of exploration improve their results
+        But again here we need to know where to search
 *** Questions / remarks
-    - Maybe their experiments have some biais because at they end find
-      that reducing the degree of exploration improve the performances
-      of the global algorithms. So it is possible that they did not
-      adapted correctly the GA and SA to the autotuning search
-      problem. And maybe they compare them with optimized version of
-      NM and SBS.
+    - Average on only 10 run maybe not enough \to missing confidence interval
+    - We cannot really link the different experiment they did because
+      each time they benchmark a different application.
+    - We already know that they use a version of the simplex adapted
+      to the autotuning problem but how well adapted are the other
+      algorithms? Especially GA and SA. In the last experiment
+      reducing the exploration degree henances their
+      performances. Does that mean that for the previous experiences
+      GA and SA are not well adapted and there is some biais?
+      Generally we lack information about how are tuned GA and SA 
+      so we cannot really make some conclusion.
+    - If we restrict to much the factor of exploration of GA and Sa
+      are they equivalent to local search?
 *** Link
     http://www.mcs.anl.gov/papers/P1995-0112.pdf
 *** Bibtex
@@ -245,7 +259,11 @@
 *** Summary
     - They don't use a empirical or heuristic method but they use a
       mesh-adaptive direct search
-    - Tested 3 variant of NOMAD but no comparison with empirical approach
+    - Tested 3 variant of NOMAD but no comparison with empirical
+      approach
+*** Remarks
+    - No comparison with other state of the art approaches (empirical
+      methods)
 *** Link
     http://www.gerad.ca/~orban/_static/templating.pdf
 *** Bibtex
@@ -277,9 +295,9 @@
 ** Crowdtuning: Systematizing auto-tuning using predictive modeling and crowdsourcing
 *** Summary
     - Combine machine learning and statistical analysis
-      The idea is that some problems have similarities and require the
-      similar optimizations. Assuming that we can use previous
-      knowldege (model) to find what could be the best configuration
+      The idea is that some problems have similarities and require
+      similar optimizations. Assuming that we can use previous 
+      knowldege (model) to find what could be the best configurations
       to explore first.
     - Learn correlation between code optimization, compilation flags,
       hardware, and programs
@@ -301,6 +319,6 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
-* Question
+* Questions
   - Autotuning is an optimization problem but what are its specifities
     if it had some?
