@@ -122,6 +122,22 @@
 *** Local search
 **** Nelder Mead Simplex
 **** Surogates-based search
+     - Use approximation models about what could be the behavior of an
+       application in order to make an estimation of the correct
+       parameters. The effectiveness relies on the accuracy of the
+       model. The idea is to use knowledge about the problem to know
+       where to concentrate the search. 
+     - The difficult part here is the construction of the model
+       # How to build a model?
+     - Some methodology using this approach:
+       - _Response surface methodology_
+         - Relationship between response variables and explanatory
+           variables through a set of experiments
+         - Model = second degree polynomial
+       - _Kriging_ 
+       - _Support Vector Machine_
+         - Classification \to gives in which category belong the problem
+           and thus to which model suit the most.
 * Biblio
 ** A comparison of Search Heuristics for Empirical Code Optimization
 *** Summary
@@ -319,6 +335,45 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
+** Machine learning enabled self-tuning compiler
+*** Summary
+*** Questions/remarks
+*** Link
+    http://fursin.net/papers/fkmp2011.pdf
+*** Bibtex
+    #+BEGIN_SRC 
+    @article{fursin:hal-00685276,
+    TITLE = {{Milepost GCC: Machine Learning Enabled Self-tuning Compiler}},
+    AUTHOR = {Fursin, Grigori and Kashnikov, Yuriy and Memon, Abdul Wahid and Chamski, Zbigniew and Temam, Olivier and Namolaru, Mircea and Yom-Tov, Elad and Mendelson, Bilha and Zaks, Ayal and Courtois, Eric and Bodin, Fran{\c c}ois and Barnard, Phil and Ashton, Elton and Bonilla, Edwin and Thomson, John and Williams, Christopher K. I. and O'Boyle, Michael},
+    URL = {https://hal.inria.fr/hal-00685276},
+    JOURNAL = {{International Journal of Parallel Programming}},
+    PUBLISHER = {{Springer Verlag}},
+    VOLUME = {39},
+    PAGES = {296-327},
+    YEAR = {2011},
+    DOI = {10.1007/s10766-010-0161-2},
+    HAL_ID = {hal-00685276},
+    HAL_VERSION = {v1},
+    }
+    #+END_SRC
+** Exploiting Performance Portability in Search Algorithms for Autotuning
+*** Summary
+*** Questions / remarks
+*** Link
+    http://www.mcs.anl.gov/papers/P5397-0915.pdf
+*** Bibtex
+    #+BEGIN_SRC 
+    @techreport{RoyBalHovWil2015,
+    author = {A. Roy and P. Balaprakash and P. D. Hovland and S. M. Wild},
+    date-added = {2015-09-11 18:59:31 +0000},
+    date-modified = {2015-09-22 03:02:04 +0000},
+    institution = {Argonne National Laboratory},
+    number = {ANL/MCS-P5400-0915},
+    title = {Exploiting performance portability in search algorithms for autotuning},
+    year = {2015}
+    }
+    #+END_SRC
 * Questions
-  - Autotuning is an optimization problem but what are its specifities
-    if it had some?
+  - Autotuning is an optimization problem but what are its specificities
+    if it had some? Because if there are some specificities, we can
+    then modelize and approximite what are the best parameters.
