@@ -1,3 +1,89 @@
+#+TITLE:  LabBook
+#+AUTHOR: Steven QUINITO MASNADA
+#+BABEL: :tangle yes
+
+* Installation
+  Here the installation that download and install al the necessary tools.
+** Base
+   #+begin_src sh :results output :exports both :tangle ../setup.sh
+     #!/bin/bash
+   #+end_src
+*** Directory
+    #+begin_src sh :results output :exports both :tangle ../setup.sh
+      ROOT_DIR=$PWD
+      BOAST_DIR=$ROOT_DIR/boast
+      DARWIN_DIR=$ROOT_DIR/darwinning
+      BOAST_LIG_DIR=$ROOT_DIR/boast-lig
+      TOOLS_DIR=$ROOT_DIR/apps
+    #+end_src
+*** Ruby
+   #+begin_src sh :results output :exports both :tangle ../setup.sh
+     echo "=========== Install ruby ============="
+     gksudo "apt-get install -y ruby ruby-dev"
+   #+end_src
+*** Install fortran
+    #+begin_src sh :results output :exports both :tangle ../setup.sh
+      echo "=========== Install fortran ============="
+      gksudo "apt-get install -y gfortran"
+    #+end_src
+*** Install Opencl
+   #+begin_src sh :results output :exports both :tangle ../setup.sh
+     echo "=========== Install OpenCL ============="
+     gksudo "apt-get install -y ocl-icd-libopencl1 ocl-icd-opencl-dev"
+     if [ "$HOSTNAME" = "titan" ] ; then
+         mkdir -p $TOOLS_DIR
+         cd $TOOLS_DIR
+         gksudo "apt-get install -y rpm alien libnuma1"
+         wget http://registrationcenter.intel.com/irc_nas/4181/opencl_runtime_14.2_x64_4.5.0.8.tgz
+         tar xvzf opencl_runtime_14.2_x64_4.5.0.8.tgz
+         cd pset_opencl_runtime_14.1_x64_4.5.0.8/rpm/
+         fakeroot alien --to-deb opencl-1.2-intel-cpu-4.5.0.8-1.x86_64.rpm
+         gksudo "dpkg -i opencl-1.2-intel-cpu_4.5.0.8-2_amd64.deb"
+         gksudo "mkdir -p /etc/OpenCL"
+         gksudo "mkdir -p /etc/OpenCL/vendors"
+         gksudo "cp /opt/intel/opencl-1.2-4.5.0.8/etc/intel64.icd /etc/OpenCL/vendors/"
+     else
+         gksudo "apt-get install -y nvidia-opencl-icd-340"
+     fi
+   #+end_src
+
+** Boast
+   #+begin_src sh :results output :exports both :tangle ../setup.sh
+     echo "========= Installing Boast ========="
+     cd $ROOT_DIR
+     git clone git@github.com:Nanosim-LIG/boast.git
+     cd $BOAST_DIR
+     gem build *.gemspec
+     gem install --user-install *.gem
+   #+end_src
+   
+   To avoid retriving from internet:
+   #+begin_src sh :results output :exports both
+     gem install --user-install -l *.gem
+   #+end_src
+
+** Darwining
+    #+begin_src sh :results output :exports both :tangle ../setup.sh
+      echo "========= Installing Darwining ========="
+      cd $ROOT_DIR
+      git clone git@github.com:Nanosim-LIG/darwinning.git
+      cd $DARWIN_DIR
+      gem build *.gemspec
+      gem install --user-install *.gem
+    #+end_src
+
+   Install minitest:
+    #+begin_src sh :results output :exports both :tangle ../setup.sh
+      gem install --user-install minitest
+    #+end_src
+
+** Boast-lig
+    #+begin_src sh :results output :exports both :tangle ../setup.sh
+      echo "========= Installing Boast-lig ========="
+      cd $ROOT_DIR
+      git clone https://forge.imag.fr/anonscm/git/boast/boast.git boast-lig
+    #+end_src
+   
 * February
 
 ** 2016-02-02 Notes from Arnaud
