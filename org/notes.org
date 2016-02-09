@@ -194,10 +194,14 @@
     - They don't use a empirical or heuristic method but they use a
       mesh-adaptive direct search
     - Tested 3 variant of NOMAD but no comparison with empirical
-      approach
+      approach.       
 *** Questions/Remarks
     - No comparison with other state of the art approaches (empirical
       methods)
+    - This paper does not seems to to directly bring
+      interesting stuffs, it is more presentation of another code
+      generator. But there are interesting link of mesh-adaptive
+      direct search.
 *** Link
     http://www.gerad.ca/~orban/_static/templating.pdf
 *** Bibtex
@@ -213,6 +217,7 @@
     #+END_SRC
 ** Mesh Adaptive Direct Search Algorithms for Constrained Optimization
 *** Summary
+*** Questions/remarks
 *** Link
     http://epubs.siam.org/doi/pdf/10.1137/040603371
 *** Bibtex
