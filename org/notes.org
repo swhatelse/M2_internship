@@ -215,6 +215,30 @@
     publisher={Groupe d'{\'e}tudes et de recherche en analyse des d{\'e}cisions}
     }
     #+END_SRC
+** Generalized pttern searches with derivative information
+*** Summary
+*** Questions/remarks
+*** Links
+    http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=35C815204C5D2F2BD69ADA2BD527763A?doi=10.1.1.381.255&rep=rep1&type=pdf
+*** Bibtex
+    #+BEGIN_SRC 
+    @article{DBLP:journals/mp/AbramsonAD04,
+    author    = {Mark A. Abramson and
+                 Charles Audet and
+                 John E. Dennis Jr.},
+    title     = {Generalized pattern searches with derivative information},
+    journal   = {Math. Program.},
+    volume    = {100},
+    number    = {1},
+    pages     = {3--25},
+    year      = {2004},
+    url       = {http://dx.doi.org/10.1007/s10107-003-0484-5},
+    doi       = {10.1007/s10107-003-0484-5},
+    timestamp = {Wed, 06 May 2015 19:49:45 +0200},
+    biburl    = {http://dblp.uni-trier.de/rec/bib/journals/mp/AbramsonAD04},
+    bibsource = {dblp computer science bibliography, http://dblp.org}
+    }
+    #+END_SRC
 ** Mesh Adaptive Direct Search Algorithms for Constrained Optimization
 *** Summary
 *** Questions/remarks
