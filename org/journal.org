@@ -85,7 +85,6 @@
     #+end_src
    
 * February
-
 ** 2016-02-02 Notes from Arnaud
 - [[http://mescal.imag.fr/membres/arnaud.legrand/research/M2R_boast.pdf][internships]]
 - Stephan Wild's slides at JLPC
@@ -124,3 +123,464 @@ https://en.wikipedia.org/wiki/Genetic_algorithm#Limitations
     - It would be interesting to see how a problem looks like when
       changing architecture, it is possible that the search space is
       different.  
+** 2016-02-09
+*** Summary of the discussion with Arnaud
+    - It is possible to translate the constraint problem into a
+      non-constraint one \to moving the constraint into the Obj. Func.
+      Use of barrier methods.
+    - I have to try to generate data and analyze it with R.
+*** Analyse des données autotuning de Brice                         :ATTACH:
+    Retrieved from Arnaud.
+:PROPERTIES:
+:Attachments: res_arnaud.txt
+:ID:       f8f8e899-bef1-40b7-add3-788636a18c68
+:END:      
+    
+#+BEGIN_SRC ruby :results output :exports both :var output = "/tmp/file.csv" input="data/f8/f8e899-bef1-40b7-add3-788636a18c68/res_arnaud.txt"
+  require 'yaml'
+  require 'pp'
+
+  h = YAML::load(File::open(input).read)
+
+  t = []
+
+  h.each { |e|
+    e[:measurements].each { |m|
+       t.push e[:parameters].clone.update({:x => m[:dimension][0], :y => m[:dimension][1], :duration => m[:duration]})
+    }
+  }
+
+  # pp t
+
+  # puts YAML::dump(t)
+
+  File::open(output,"w") { |f|
+    head = t.first
+    f.puts head.each_key.collect { |k| k}.join(", ")
+    # head.each_key.to_a.join(", ")
+
+    t.each { |e|
+      f.puts e.each_value.collect { |k| k}.join(", ")
+    }
+  }
+#+END_SRC
+    
+#+RESULTS:
+
+#+begin_src R :results output :session :exports both :var input="/tmp/file.csv"
+df = read.csv(input,strip.white=T,header=T)
+head(df)
+dim(df)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+  x_component_number vector_length y_component_number temporary_size
+1                  1            16                  2              2
+2                  1            16                  2              2
+3                  1            16                  2              2
+4                  1            16                  2              2
+5                  1            16                  2              2
+6                  4            16                  1              2
+  vector_recompute load_overlap    x    y    duration
+1             true        false  768  432 0.020760143
+2             true        false 2560 1600 0.256392290
+3             true        false 2048 2048 0.263635845
+4             true        false 5760 3240 1.180488412
+5             true        false 7680 4320 2.076793683
+6            false         true  768  432 0.005698532
+[1] 4000    9
+#+end_example
+
+#+begin_src R :results output :session :exports both
+str(df);
+summary(df);
+#+end_src
+
+#+RESULTS:
+#+begin_example
+'data.frame':    4000 obs. of  9 variables:
+ $ x_component_number: int  1 1 1 1 1 4 4 4 4 4 ...
+ $ vector_length     : int  16 16 16 16 16 16 16 16 16 16 ...
+ $ y_component_number: int  2 2 2 2 2 1 1 1 1 1 ...
+ $ temporary_size    : int  2 2 2 2 2 2 2 2 2 2 ...
+ $ vector_recompute  : Factor w/ 2 levels "false","true": 2 2 2 2 2 1 1 1 1 1 ...
+ $ load_overlap      : Factor w/ 2 levels "false","true": 1 1 1 1 1 2 2 2 2 2 ...
+ $ x                 : int  768 2560 2048 5760 7680 768 2560 2048 5760 7680 ...
+ $ y                 : int  432 1600 2048 3240 4320 432 1600 2048 3240 4320 ...
+ $ duration          : num  0.0208 0.2564 0.2636 1.1805 2.0768 ...
+ x_component_number vector_length  y_component_number temporary_size
+ Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2
+ 1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2
+ Median : 4.0       Median : 4.0   Median :2.50       Median :3
+ Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3
+ 3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4
+ Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4
+ vector_recompute load_overlap       x              y duration
+ false:2000       false:2000   Min.   : 768   Min.   : 432   Min. :0.000204
+ true :2000       true :2000   1st Qu.:2048   1st Qu.:1600   1st Qu.:0.006667
+                               Median :2560   Median :2048   Median :0.023882
+                               Mean   :3763   Mean   :2328   Mean :0.072823
+                               3rd Qu.:5760   3rd Qu.:3240   3rd Qu.:0.088747
+                               Max.   :7680   Max.   :4320   Max. :3.472179
+#+end_example
+
+#+begin_src R :results output :session :exports both
+df$flops = with(df, 9*(x-2)*(y-2)/duration)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 700 :sessiona
+plot(df[!(names(df)%in%c("duration"))]);
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-195179TF/figure19517USQ.png]]
+
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+hist(df$flops)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-195179TF/figure19517I7o.png]]
+
+
+#+begin_src R :results output :session :exports both
+names(df)
+#+end_src
+
+#+RESULTS:
+:  [1] "x_component_number" "vector_length"      "y_component_number"
+:  [4] "temporary_size"     "vector_recompute"   "load_overlap"
+:  [7] "x"                  "y"                  "duration"
+: [10] "flops"
+
+
+#+begin_src R :results output :session :exports both
+summary(lm(data=df, flops ~ (x_component_number + y_component_number + vector_length +
+                            factor(temporary_size) + factor(vector_recompute) + factor(load_overlap) +
+                            x + y)))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = flops ~ (x_component_number + y_component_number +
+    vector_length + factor(temporary_size) + factor(vector_recompute) +
+    factor(load_overlap) + x + y), data = df)
+
+Residuals:
+       Min         1Q     Median         3Q        Max
+-4.532e+09 -1.340e+09 -4.478e+08  5.483e+08  1.239e+10
+
+Coefficients:
+                               Estimate Std. Error t value Pr(>|t|)
+(Intercept)                   827765774  145444921   5.691 1.35e-08 ***
+x_component_number            168354043    6796767  24.770  < 2e-16 ***
+y_component_number            324149508   33163768   9.774  < 2e-16 ***
+vector_length                  -7796884    6796767  -1.147 0.251390
+factor(temporary_size)4      -281970610   74156439  -3.802 0.000145 ***
+factor(vector_recompute)true -178649163   74156439  -2.409 0.016038 *
+factor(load_overlap)true      518930201   74156439   6.998 3.04e-12 ***
+x                               -104684      60695  -1.725 0.084649 .
+y                                291403     115655   2.520 0.011788 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.345e+09 on 3991 degrees of freedom
+Multiple R-squared:  0.1661,    Adjusted R-squared:  0.1645
+F-statistic: 99.39 on 8 and 3991 DF,  p-value: < 2.2e-16
+#+end_example
+
+Bon, on n'y comprends pas grand chose, il y a un R^2 tout petit et
+quand on regarde le plot d'interactions précédent, on peut aisément
+voir que =vector_length= ou =x_component_number= ne sont pas du tout
+linéaires et qu'un modèle quadratique serait plus approprié. D'autre
+part, il y a potentiellement des interactions entre ces différents
+facteurs. Voyons ce que cela donne
+
+#+begin_src R :results output :session :exports both
+summary(lm(data=df, flops ~ (x_component_number + I(x_component_number^2) +
+                            y_component_number + I(y_component_number^2) +
+                            vector_length      + I(vector_length^2) +
+                            factor(temporary_size) + factor(vector_recompute) + factor(load_overlap) +
+                            x + y)^2))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = flops ~ (x_component_number + I(x_component_number^2) +
+    y_component_number + I(y_component_number^2) + vector_length +
+    I(vector_length^2) + factor(temporary_size) + factor(vector_recompute) +
+    factor(load_overlap) + x + y)^2, data = df)
+
+Residuals:
+       Min         1Q     Median         3Q        Max
+-5.030e+09 -6.204e+08 -1.971e+07  5.541e+08  6.033e+09
+
+Coefficients:
+                                                        Estimate Std. Error
+(Intercept)                                            3.138e+09  5.423e+08
+x_component_number                                    -8.962e+08  1.090e+08
+I(x_component_number^2)                                1.128e+07  1.011e+07
+y_component_number                                    -6.111e+08  5.901e+08
+I(y_component_number^2)                               -9.967e+07  2.167e+08
+vector_length                                         -8.809e+08  1.090e+08
+I(vector_length^2)                                    -2.535e+07  1.011e+07
+factor(temporary_size)4                                2.232e+09  2.461e+08
+factor(vector_recompute)true                          -7.003e+08  2.461e+08
+factor(load_overlap)true                              -2.130e+09  2.461e+08
+x                                                      3.832e+05  1.991e+05
+y                                                     -6.403e+05  3.719e+05
+x_component_number:I(x_component_number^2)             1.452e+06  3.490e+05
+x_component_number:y_component_number                  2.094e+08  7.516e+07
+x_component_number:I(y_component_number^2)            -2.324e+07  1.480e+07
+x_component_number:vector_length                       4.965e+08  1.203e+07
+x_component_number:I(vector_length^2)                 -2.907e+07  6.795e+05
+x_component_number:factor(temporary_size)4            -8.615e+07  2.960e+07
+x_component_number:factor(vector_recompute)true        2.159e+08  2.960e+07
+x_component_number:factor(load_overlap)true            2.061e+08  2.960e+07
+x_component_number:x                                  -1.128e+04  2.422e+04
+x_component_number:y                                   5.191e+04  4.616e+04
+I(x_component_number^2):y_component_number            -8.905e+06  4.245e+06
+I(x_component_number^2):I(y_component_number^2)        6.882e+05  8.357e+05
+I(x_component_number^2):vector_length                 -2.094e+07  6.795e+05
+I(x_component_number^2):I(vector_length^2)             1.273e+06  3.837e+04
+I(x_component_number^2):factor(temporary_size)4        2.743e+06  1.671e+06
+I(x_component_number^2):factor(vector_recompute)true  -1.063e+07  1.671e+06
+I(x_component_number^2):factor(load_overlap)true      -7.750e+06  1.671e+06
+I(x_component_number^2):x                             -1.683e+02  1.368e+03
+I(x_component_number^2):y                             -9.343e+02  2.607e+03
+y_component_number:I(y_component_number^2)             3.670e+07  2.713e+07
+y_component_number:vector_length                       6.273e+08  7.516e+07
+y_component_number:I(vector_length^2)                 -3.551e+07  4.245e+06
+y_component_number:factor(temporary_size)4            -1.989e+08  1.849e+08
+y_component_number:factor(vector_recompute)true       -1.776e+07  1.849e+08
+y_component_number:factor(load_overlap)true            3.792e+08  1.849e+08
+y_component_number:x                                  -6.029e+04  1.513e+05
+y_component_number:y                                   1.512e+05  2.884e+05
+I(y_component_number^2):vector_length                 -8.728e+07  1.480e+07
+I(y_component_number^2):I(vector_length^2)             4.942e+06  8.357e+05
+I(y_component_number^2):factor(temporary_size)4        2.857e+07  3.640e+07
+I(y_component_number^2):factor(vector_recompute)true   4.712e+06  3.640e+07
+I(y_component_number^2):factor(load_overlap)true      -7.237e+07  3.640e+07
+I(y_component_number^2):x                              9.786e+03  2.979e+04
+I(y_component_number^2):y                             -2.360e+04  5.677e+04
+vector_length:I(vector_length^2)                       4.587e+06  3.490e+05
+vector_length:factor(temporary_size)4                 -7.301e+08  2.960e+07
+vector_length:factor(vector_recompute)true             6.302e+07  2.960e+07
+vector_length:factor(load_overlap)true                 5.385e+08  2.960e+07
+vector_length:x                                       -6.791e+04  2.422e+04
+vector_length:y                                        1.823e+05  4.616e+04
+I(vector_length^2):factor(temporary_size)4             4.266e+07  1.671e+06
+I(vector_length^2):factor(vector_recompute)true       -6.746e+06  1.671e+06
+I(vector_length^2):factor(load_overlap)true           -2.998e+07  1.671e+06
+I(vector_length^2):x                                   3.807e+03  1.368e+03
+I(vector_length^2):y                                  -1.029e+04  2.607e+03
+factor(temporary_size)4:factor(vector_recompute)true  -2.517e+08  7.280e+07
+factor(temporary_size)4:factor(load_overlap)true      -1.834e+08  7.280e+07
+factor(temporary_size)4:x                              2.555e+04  5.959e+04
+factor(temporary_size)4:y                             -6.267e+04  1.135e+05
+factor(vector_recompute)true:factor(load_overlap)true  3.116e+08  7.280e+07
+factor(vector_recompute)true:x                        -1.071e+04  5.959e+04
+factor(vector_recompute)true:y                        -1.125e+03  1.135e+05
+factor(load_overlap)true:x                            -4.277e+04  5.959e+04
+factor(load_overlap)true:y                             1.277e+05  1.135e+05
+x:y                                                   -3.127e+01  8.001e+00
+                                                      t value Pr(>|t|)
+(Intercept)                                             5.787 7.71e-09 ***
+x_component_number                                     -8.226 2.61e-16 ***
+I(x_component_number^2)                                 1.116 0.264635
+y_component_number                                     -1.036 0.300474
+I(y_component_number^2)                                -0.460 0.645550
+vector_length                                          -8.085 8.20e-16 ***
+I(vector_length^2)                                     -2.508 0.012185 *
+factor(temporary_size)4                                 9.070  < 2e-16 ***
+factor(vector_recompute)true                           -2.845 0.004461 **
+factor(load_overlap)true                               -8.653  < 2e-16 ***
+x                                                       1.925 0.054320 .
+y                                                      -1.722 0.085220 .
+x_component_number:I(x_component_number^2)              4.160 3.25e-05 ***
+x_component_number:y_component_number                   2.786 0.005366 **
+x_component_number:I(y_component_number^2)             -1.571 0.116374
+x_component_number:vector_length                       41.266  < 2e-16 ***
+x_component_number:I(vector_length^2)                 -42.784  < 2e-16 ***
+x_component_number:factor(temporary_size)4             -2.911 0.003622 **
+x_component_number:factor(vector_recompute)true         7.294 3.62e-13 ***
+x_component_number:factor(load_overlap)true             6.964 3.85e-12 ***
+x_component_number:x                                   -0.466 0.641385
+x_component_number:y                                    1.125 0.260777
+I(x_component_number^2):y_component_number             -2.098 0.035992 *
+I(x_component_number^2):I(y_component_number^2)         0.823 0.410285
+I(x_component_number^2):vector_length                 -30.818  < 2e-16 ***
+I(x_component_number^2):I(vector_length^2)             33.185  < 2e-16 ***
+I(x_component_number^2):factor(temporary_size)4         1.641 0.100889
+I(x_component_number^2):factor(vector_recompute)true   -6.362 2.21e-10 ***
+I(x_component_number^2):factor(load_overlap)true       -4.637 3.66e-06 ***
+I(x_component_number^2):x                              -0.123 0.902113
+I(x_component_number^2):y                              -0.358 0.720055
+y_component_number:I(y_component_number^2)              1.353 0.176258
+y_component_number:vector_length                        8.346  < 2e-16 ***
+y_component_number:I(vector_length^2)                  -8.365  < 2e-16 ***
+y_component_number:factor(temporary_size)4             -1.076 0.282210
+y_component_number:factor(vector_recompute)true        -0.096 0.923490
+y_component_number:factor(load_overlap)true             2.051 0.040360 *
+y_component_number:x                                   -0.398 0.690373
+y_component_number:y                                    0.524 0.600107
+I(y_component_number^2):vector_length                  -5.898 3.98e-09 ***
+I(y_component_number^2):I(vector_length^2)              5.913 3.64e-09 ***
+I(y_component_number^2):factor(temporary_size)4         0.785 0.432530
+I(y_component_number^2):factor(vector_recompute)true    0.129 0.897005
+I(y_component_number^2):factor(load_overlap)true       -1.988 0.046879 *
+I(y_component_number^2):x                               0.328 0.742588
+I(y_component_number^2):y                              -0.416 0.677657
+vector_length:I(vector_length^2)                       13.144  < 2e-16 ***
+vector_length:factor(temporary_size)4                 -24.670  < 2e-16 ***
+vector_length:factor(vector_recompute)true              2.130 0.033270 *
+vector_length:factor(load_overlap)true                 18.195  < 2e-16 ***
+vector_length:x                                        -2.804 0.005077 **
+vector_length:y                                         3.949 7.98e-05 ***
+I(vector_length^2):factor(temporary_size)4             25.523  < 2e-16 ***
+I(vector_length^2):factor(vector_recompute)true        -4.036 5.54e-05 ***
+I(vector_length^2):factor(load_overlap)true           -17.935  < 2e-16 ***
+I(vector_length^2):x                                    2.782 0.005421 **
+I(vector_length^2):y                                   -3.948 8.03e-05 ***
+factor(temporary_size)4:factor(vector_recompute)true   -3.458 0.000551 ***
+factor(temporary_size)4:factor(load_overlap)true       -2.518 0.011825 *
+factor(temporary_size)4:x                               0.429 0.668131
+factor(temporary_size)4:y                              -0.552 0.581004
+factor(vector_recompute)true:factor(load_overlap)true   4.279 1.92e-05 ***
+factor(vector_recompute)true:x                         -0.180 0.857361
+factor(vector_recompute)true:y                         -0.010 0.992093
+factor(load_overlap)true:x                             -0.718 0.472966
+factor(load_overlap)true:y                              1.124 0.260960
+x:y                                                    -3.909 9.43e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1.151e+09 on 3933 degrees of freedom
+Multiple R-squared:  0.802,    Adjusted R-squared:  0.7987
+F-statistic: 241.3 on 66 and 3933 DF,  p-value: < 2.2e-16
+#+end_example
+
+Bon, là, c'est pas mal, le R^2 n'est pas ridicule et bien des
+paramètres sont non significatifs (dont =x= et =y= mais on peut voir que
+=x*y= l'est...).
+
+
+Idéalement, on voudrait donc maintenant réduire le modèle. J'enlève
+ceux qui semblent sans importance: =x=, =y=, =y_component_number=. C'est un
+peu pénible car =I(x_component_number^2)= est non significatif mais sa
+contribution s'est perdue dans les interactions avec les autres
+paramètres. On voit l'intérêt qu'il y aurait ici à utiliser une
+approche MDL... D'autre part, certains paramètres semblent significatifs
+sans pour autant être importants (par exemple =vector_recompute=)
+
+#+begin_src R :results output :session :exports both
+summary(lm(data=df, flops ~ (x_component_number + I(x_component_number^2) +
+                            vector_length      + I(vector_length^2) +
+                            factor(temporary_size) + factor(vector_recompute) + factor(load_overlap))^2))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = flops ~ (x_component_number + I(x_component_number^2) +
+    vector_length + I(vector_length^2) + factor(temporary_size) +
+    factor(vector_recompute) + factor(load_overlap))^2, data = df)
+
+Residuals:
+       Min         1Q     Median         3Q        Max
+-5.459e+09 -6.205e+08 -2.736e+07  5.874e+08  6.409e+09
+
+Coefficients:
+                                                        Estimate Std. Error
+(Intercept)                                            1.531e+09  1.873e+08
+x_component_number                                    -4.687e+08  7.410e+07
+I(x_component_number^2)                               -8.632e+06  9.824e+06
+vector_length                                          2.015e+08  7.410e+07
+I(vector_length^2)                                    -8.669e+07  9.824e+06
+factor(temporary_size)4                                1.900e+09  1.393e+08a
+factor(vector_recompute)true                          -7.523e+08  1.393e+08
+factor(load_overlap)true                              -1.588e+09  1.393e+08
+x_component_number:I(x_component_number^2)             1.452e+06  3.868e+05
+x_component_number:vector_length                       4.965e+08  1.333e+07
+x_component_number:I(vector_length^2)                 -2.907e+07  7.531e+05
+x_component_number:factor(temporary_size)4            -8.615e+07  3.280e+07
+x_component_number:factor(vector_recompute)true        2.159e+08  3.280e+07
+x_component_number:factor(load_overlap)true            2.061e+08  3.280e+07
+I(x_component_number^2):vector_length                 -2.094e+07  7.531e+05
+I(x_component_number^2):I(vector_length^2)             1.273e+06  4.253e+04
+I(x_component_number^2):factor(temporary_size)4        2.743e+06  1.853e+06
+I(x_component_number^2):factor(vector_recompute)true  -1.063e+07  1.853e+06
+I(x_component_number^2):factor(load_overlap)true      -7.750e+06  1.853e+06
+vector_length:I(vector_length^2)                       4.587e+06  3.868e+05
+vector_length:factor(temporary_size)4                 -7.301e+08  3.280e+07
+vector_length:factor(vector_recompute)true             6.302e+07  3.280e+07
+vector_length:factor(load_overlap)true                 5.385e+08  3.280e+07
+I(vector_length^2):factor(temporary_size)4             4.266e+07  1.853e+06
+I(vector_length^2):factor(vector_recompute)true       -6.746e+06  1.853e+06
+I(vector_length^2):factor(load_overlap)true           -2.998e+07  1.853e+06
+factor(temporary_size)4:factor(vector_recompute)true  -2.517e+08  8.070e+07
+factor(temporary_size)4:factor(load_overlap)true      -1.834e+08  8.070e+07
+factor(vector_recompute)true:factor(load_overlap)true  3.116e+08  8.070e+07
+                                                      t value Pr(>|t|)
+(Intercept)                                             8.175 3.93e-16 ***
+x_component_number                                     -6.325 2.81e-10 ***
+I(x_component_number^2)                                -0.879 0.379645
+vector_length                                           2.720 0.006564 **
+I(vector_length^2)                                     -8.824  < 2e-16 ***
+factor(temporary_size)4                                13.641  < 2e-16 ***
+factor(vector_recompute)true                           -5.402 6.99e-08 ***
+factor(load_overlap)true                              -11.406  < 2e-16 ***
+x_component_number:I(x_component_number^2)              3.753 0.000177 ***
+x_component_number:vector_length                       37.231  < 2e-16 ***
+x_component_number:I(vector_length^2)                 -38.600  < 2e-16 ***
+x_component_number:factor(temporary_size)4             -2.626 0.008662 **
+x_component_number:factor(vector_recompute)true         6.581 5.29e-11 ***
+x_component_number:factor(load_overlap)true             6.283 3.67e-10 ***
+I(x_component_number^2):vector_length                 -27.804  < 2e-16 ***
+I(x_component_number^2):I(vector_length^2)             29.940  < 2e-16 ***
+I(x_component_number^2):factor(temporary_size)4         1.480 0.138824
+I(x_component_number^2):factor(vector_recompute)true   -5.740 1.02e-08 ***
+I(x_component_number^2):factor(load_overlap)true       -4.183 2.94e-05 ***
+vector_length:I(vector_length^2)                       11.859  < 2e-16 ***
+vector_length:factor(temporary_size)4                 -22.257  < 2e-16 ***
+vector_length:factor(vector_recompute)true              1.921 0.054764 .
+vector_length:factor(load_overlap)true                 16.415  < 2e-16 ***
+I(vector_length^2):factor(temporary_size)4             23.028  < 2e-16 ***
+I(vector_length^2):factor(vector_recompute)true        -3.641 0.000275 ***
+I(vector_length^2):factor(load_overlap)true           -16.182  < 2e-16 ***
+factor(temporary_size)4:factor(vector_recompute)true   -3.119 0.001825 **
+factor(temporary_size)4:factor(load_overlap)true       -2.272 0.023127 *
+factor(vector_recompute)true:factor(load_overlap)true   3.861 0.000115 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1.276e+09 on 3971 degrees of freedom
+Multiple R-squared:  0.7544,    Adjusted R-squared:  0.7526
+F-statistic: 435.6 on 28 and 3971 DF,  p-value: < 2.2e-16
+#+end_example
+
+#+end_src
+
+Y verrait-on plus clair en se concentrant sur les résultats
+"intéressants". Pas sûr...
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
+plot(df[df$flops>1E10 & df$temporary_size==2 & df$vector_length==8 & df$load_overlap=="true",!(names(df) %in% c("duration","x","y"))]) # ,"temporary_size","vector_length"
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-195179TF/figure19517VFv.png]]
+
+But as we have less points and do not cover the parameter space,
+fitting the previous model is now meaningless.
+
+Entered on [2015-11-19 jeu. 20:56]
