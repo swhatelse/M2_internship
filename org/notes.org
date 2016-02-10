@@ -1,5 +1,6 @@
+#+TITLE:       Notes
 #+AUTHOR:      Steven QUINITO MASNADA
-#+BABEL: :tangle yes
+#+BABEL:       :tangle yes
 
 * Topic
 ** Overview
@@ -220,10 +221,14 @@
 **** Summary
      - Two type of moves:
        - Exploratory \to get knowledge(inference about successful or not
-         moves). Move to directions with higher probability making
-         successful move.
+         moves). Sampling the space. Try to find better solution
+         elsewhere. Moves in directions defined by patterns of a size
+         that evolves (increases if sucessful move else decreases).
+         Define an area for the current iterate.
        - Pattern \to Use knowledge to minimize f. Search around a base
-         point.  
+         point.
+**** Questions/Remarks
+     - I don't really get how a pattern is built.
 **** Link
     http://delivery.acm.org/10.1145/330000/321069/p212-hooke.pdf?ip=194.199.27.221&id=321069&acc=ACTIVE%20SERVICE&key=7EBF6E77E86B478F%2E9B0CC472860F67C6%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&CFID=751594268&CFTOKEN=50107111&__acm__=1455030106_ccd8cb9aa66e698e79840f74cfa6aa91
 **** Bibtex
@@ -247,7 +252,12 @@
     address = {New York, NY, USA},
     } 
     #+END_SRC
-*** Generalized pttern searches with derivative information
+*** On The Convergence of Pattern Search Algorithm
+**** Summary
+**** Link
+     http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.53.4715&rep=rep1&type=pdf
+**** Bibtex
+*** Generalized pattern searches with derivative information
 **** Summary
     - Direct search / pattern search methods
     - For unconstrained and linearly constrained problems
@@ -257,8 +267,13 @@
           - possible to use any technics \to Genetic algo, surrogate
             based searches, etc...
           - Try to improve the current optimal
+          - Exploratory move not restricted by the size of the mesh \to
+            more various exploration at the begining.
       - POLL \to local exploration to examine interesting regions
-    - Use derivative information when available to speed the POLL phase
+        (around a base). Points to visit are define by a pattern
+        
+    - Henanced version of pattern search \to Use derivative information
+      when available to speed the POLL phase
 **** Questions/remarks
 **** Links
     http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=35C815204C5D2F2BD69ADA2BD527763A?doi=10.1.1.381.255&rep=rep1&type=pdf
