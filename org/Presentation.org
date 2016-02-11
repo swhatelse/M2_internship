@@ -1,0 +1,95 @@
+# -*- coding: utf-8 -*-
+# -*- mode: org -*-
+#+startup: beamer
+#+STARTUP: overview
+#+STARTUP: indent
+#+TAGS: noexport(n)
+
+#+Title: Autotuning: Study of existing
+#+AUTHOR:      Steven QUINITO MASNADA
+
+#+EPRESENT_FRAME_LEVEL: 2
+
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [11pt,xcolor=dvipsnames,presentation]
+#+OPTIONS:   H:2 num:t toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+
+#+LATEX_HEADER: \usedescriptionitemofwidthas{bl}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage[utf8]{inputenc}
+#+LATEX_HEADER: \usepackage[american]{babel}
+#+LATEX_HEADER: \usepackage{ifthen,figlatex,amsmath,amstext,gensymb,amssymb}
+#+LATEX_HEADER: \usepackage{boxedminipage,xspace,multicol}
+#+LATEX_HEADER: %%%%%%%%% Begin of Beamer Layout %%%%%%%%%%%%%
+#+LATEX_HEADER: \ProcessOptionsBeamer
+#+latex_header: \mode<beamer>{\usetheme{Madrid}}
+#+LATEX_HEADER: \usecolortheme{whale}
+#+LATEX_HEADER: \usecolortheme[named=BrickRed]{structure}
+# #+LATEX_HEADER: \useinnertheme{rounded}
+#+LATEX_HEADER: \useoutertheme{infolines}
+#+LATEX_HEADER: \setbeamertemplate{footline}[frame number]
+#+LATEX_HEADER: \setbeamertemplate{headline}[default]
+#+LATEX_HEADER: \setbeamertemplate{navigation symbols}{}
+#+LATEX_HEADER: \defbeamertemplate*{headline}{info theme}{}
+#+LATEX_HEADER: \defbeamertemplate*{footline}{info theme}{\leavevmode%
+#+LATEX_HEADER:   \hbox{%
+#+LATEX_HEADER:     \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+#+LATEX_HEADER:       \usebeamerfont{author in head/foot}\insertshortauthor
+#+LATEX_HEADER:     \end{beamercolorbox}%
+#+LATEX_HEADER:   \begin{beamercolorbox}[wd=.41\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+#+LATEX_HEADER:     \usebeamerfont{title in head/foot}\insertsectionhead
+#+LATEX_HEADER:   \end{beamercolorbox}%
+#+LATEX_HEADER:   \begin{beamercolorbox}[wd=.09\paperwidth,ht=2.25ex,dp=1ex,right]{section in head/foot}%
+#+LATEX_HEADER:     \usebeamerfont{section in head/foot}\insertframenumber{}~/~\inserttotalframenumber\hspace*{2ex} 
+#+LATEX_HEADER:   \end{beamercolorbox}
+#+LATEX_HEADER:   }\vskip0pt}
+#+LATEX_HEADER: \setbeamertemplate{footline}[info theme]
+#+LATEX_HEADER: %%%%%%%%% End of Beamer Layout %%%%%%%%%%%%%
+#+LATEX_HEADER: \usepackage{verbments}
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LATEX_HEADER: \usepackage{color}
+#+LATEX_HEADER: \usepackage{url} \urlstyle{sf}
+
+#+LATEX_HEADER: \let\alert=\structure % to make sure the org * * works of tools
+#+BEAMER_FRAME_LEVEL: 2
+
+
+#+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
+
+* Optimization - overview
+** Knowledge about the problem
+*** Know shape of the problem
+- Exploit information about the problem
+- Derivative based methods
+- Use of analytic models \to surrogates-based search
+- Build appromixations
+*** No knowledge
+- Optimization problem not differentiable \to cannot build reliable
+  model
+- Derivative-free based methods
+- Based on heuristics \to Genetic algorithm, simplex, pattern search
+*** Partial knowledge
+- Derivative informations not available everywhere
+** Search space strategy
+*** Local:
+- Focus on a particular area 
+- Effective when knowing where to concentrate the search
+- The optimal found can be far worst than the global optimum
+- E.g: simplex, surrogates-based search
+*** Global :
+- Cover various part of the search space
+- Effective when no knowledge about the problem
+- Escape bad local optimum
+- E.g: Random, Genetic algorithm
+
+** Mixed strategy
+*** Global and local search
+- Two phases
+- E.g pattern search, simulated annealing
+*** 
+
+** Autotuning optimization problem
+- Nonsmooth
+- Discrete and continuous search space
+ 
+* Idea
