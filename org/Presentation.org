@@ -57,12 +57,15 @@
 #+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
 
 * Optimization - overview
+** Autotuning optimization problem
+- Nonsmooth objective function and constraints
+- Discrete and continuous
+
 ** Knowledge about the problem
 *** Know shape of the problem
 - Exploit information about the problem
 - Derivative based methods
 - Use of analytic models \to surrogates-based search
-- Build appromixations
 *** No knowledge
 - Optimization problem not differentiable \to cannot build reliable
   model
@@ -84,12 +87,43 @@
 
 ** Mixed strategy
 *** Global and local search
-- Two phases
+- Two phases 
+- Global \to escape bad local optima
+- Local \to refine solution
 - E.g pattern search, simulated annealing
-*** 
+*** Derivative and derivative-free
+- Partial knowledge
+- Reduce exploration time
+- E.g.: Generalized Pattern Search 
 
-** Autotuning optimization problem
-- Nonsmooth
-- Discrete and continuous search space
- 
+** Generalized Pattern Search
+- Extended pattern search version
+- For unconstrained and linearly constrained problems
+- Iteration over two phases:
+  - Global search \to SEARCH
+    - Sampling the space to find interesting regions \to building a mesh
+    - Try to improve current optimal elsewhere
+    - Possible to use any methods \to Genetic Algo, surrogates based
+      search,  etc...
+  - Local search \to POLL
+    - Exploiting interesting region to refine the solution
+- Uses derivative informations to speedup POLL phase
+    
+* Models
+** Reuseable
+- "Deconstructing Iterative Optimization" \to Common working compiler
+  flags combination across program 
+- Build appromixations \to surrogates-based search (trust-regions
+  algorithm, 
+** Building knowledge
+*** Machine learning
+- Similar applications \to similar behaviors \to similar optimizations
+- Building knowledge over iterative optimization
+- Training overhead \to Collective optimization
+- Used in GCC \to Milepost GCC
+
 * Idea
+** Guidelines
+- Characterization of the autotuning optimization search problem
+- Which algorithm are the most suited for each kind of problems
+- Devise an adaptive approach
