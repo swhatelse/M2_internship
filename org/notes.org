@@ -38,8 +38,22 @@
 **** Random
 **** Genetic algorithms
 **** Simulated Annealing
+     - Discrete search space.
+     - Neighbours \to states that are similars to the considered
+       state. Explore the space using neighbours.
+     - Can accept worse neighbours
+     - Temperature \to time
+     - Energie \to result return by the system
+     - Start Global to slow go to local.
+     - The temperature defined the probability of accepting worse
+       value \to avoid to get stuck in a bad local optima. As long as
+       the temperature decrease the probability of accepting worse
+       value decrease and make smaller moves. 
+       
 *** Local search
 **** Nelder Mead Simplex
+     - Direct search methods
+     - Derivative-free
 **** Surogates-based search
      - Use approximation models about what could be the behavior of an
        application in order to make an estimation of the correct
@@ -57,6 +71,10 @@
        - _Support Vector Machine_
          - Classification \to gives in which category belong the problem
            and thus to which model suit the most.
+       - _Trust-region algorithm_
+         Try to fit a quadratic model into a "trusted region". If it
+         fits the region is expanded(increases the size) else
+         contracted(decreases the size).
 * Biblio
 ** A comparison of Search Heuristics for Empirical Code Optimization
 *** Summary
@@ -129,7 +147,7 @@
       - Genetic Algorithm
       - Simulated annealing
       - Nelder Mead simplex
-      - Surrogate based search
+      - Surrogate based search \to trust-region algorithm
     - Strong time constraint \to getting the best variant in a short
       time
     - Local algo
@@ -298,6 +316,9 @@
     #+END_SRC
 *** Mesh Adaptive Direct Search Algorithms for Constrained Optimization
 **** Summary
+     - Extended version of Generalized Pattern Search
+     - Infinte set of directions
+     - Works with nonsmooth functions
 **** Questions/remarks
 **** Link
     http://epubs.siam.org/doi/pdf/10.1137/040603371
@@ -360,6 +381,14 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
+** Milepost GCC: machine learning enabled self-tuning
+*** Summary
+    - Learning over iterative optimization
+    - Can target multi-objective optimization
+*** Questions/remarks
+*** Links
+    http://fursin.net/papers/fkmp2011.pdf
+*** Bibtex
 ** Exploiting Performance Portability in Search Algorithms for Autotuning
 *** Summary
 *** Questions / remarks
@@ -381,3 +410,4 @@
   - Autotuning is an optimization problem but what are its specificities
     if it had some? Because if there are some specificities, we can
     then modelize and approximite what are the best parameters.
+  - What is the size of the search space of BOAST?
