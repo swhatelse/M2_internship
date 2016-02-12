@@ -136,6 +136,7 @@ https://en.wikipedia.org/wiki/Genetic_algorithm#Limitations
 :ID:       f8f8e899-bef1-40b7-add3-788636a18c68
 :END:      
     
+Formatting of the data to use it with R:
 #+BEGIN_SRC ruby :results output :exports both :var output = "/tmp/file.csv" input="data/f8/f8e899-bef1-40b7-add3-788636a18c68/res_arnaud.txt"
   require 'yaml'
   require 'pp'
