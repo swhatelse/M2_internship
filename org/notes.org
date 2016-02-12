@@ -27,34 +27,33 @@
      a random approach.
 
 * Goal
-  - Understand why certain methods work?
   - Try to characterize the problem of optimization.
-    If we know the problem's shape we can use this knowledge to be
+    If we know the shape of the problem we can use this knowledge to be
     more efficient.
+  - Understand why certain methods works better for some class of problem.
   - Find efficient solution and implement it as an optimizer.
 * State of the art
-** Empirical approach
-*** Global search
-**** Random
-**** Genetic algorithms
-**** Simulated Annealing
-     - Discrete search space.
-     - Neighbours \to states that are similars to the considered
-       state. Explore the space using neighbours.
+** Search methods 
+*** Random
+*** Genetic algorithms
+*** Simulated Annealing
+     - Made for discrete search space.
+     - Explore the space using neighbours (states that are similars to
+       the considered state).
+     - The algo visit neighbours to find better values.
      - Can accept worse neighbours
      - Temperature \to time
      - Energie \to result return by the system
-     - Start Global to slow go to local.
+     - Start Global to slowly go to local.
      - The temperature defined the probability of accepting worse
        value \to avoid to get stuck in a bad local optima. As long as
        the temperature decrease the probability of accepting worse
        value decrease and make smaller moves. 
        
-*** Local search
-**** Nelder Mead Simplex
+*** Nelder Mead Simplex
      - Direct search methods
      - Derivative-free
-**** Surogates-based search
+*** Surogates-based search
      - Use approximation models about what could be the behavior of an
        application in order to make an estimation of the correct
        parameters. The effectiveness relies on the accuracy of the
@@ -407,7 +406,8 @@
     }
     #+END_SRC
 * Questions
-  - Autotuning is an optimization problem but what are its specificities
-    if it had some? Because if there are some specificities, we can
-    then modelize and approximite what are the best parameters.
-  - What is the size of the search space of BOAST?
+** Autotuning is an optimization problem but what are its specificities if it had some? 
+   Because if there are some specificities, we can then modelize and
+   approximite what are the best parameters. 
+** What is the size of the search space of BOAST?
+    There is no given size, it depends on the user's problem
