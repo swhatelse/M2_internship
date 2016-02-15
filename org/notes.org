@@ -359,10 +359,34 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
-** Machine learning enabled self-tuning compiler
+** Milepost GCC: machine learning enabled self-tuning
 *** Summary
+    - Learning over iterative optimization
+    - Can target multi-objective optimization
+    - Used two models:
+      - Probabilistic:
+        - Attributes are independants
+        - Use probability distribution of good solutions and take the
+          mode. 
+        - To learn the model:
+          - They first learn the distribution of good solution (one
+            that bring a speedup more than 98%) on each programs (in
+            the training set)using uniform sampling. 
+          - They estimate the distribution of a program by using the
+            euclidian distance (take the closest program \to 1 nearst
+            neighbors) 
+      - Transductive:
+        - Analyze interaction between attributes
+        - Model built using a decision tree
+        - Correlation of compilation optimization and program
+          characteristics that give good speedup
+        - Easier to analyze than probabilistic model
+    - Using the solutions of the closest neighbors works for the same plateform
 *** Questions/remarks
-*** Link
+**** For the probabilistic model, do they use a different uniform sampling on each program? 
+**** Why in the probabilistic model good solutions are those that give 98% of speedup  and in the transductive model it is 95% ?
+**** Using the solutions of the closest neighbors works for the same plateform, does this work in cross platform context?
+*** Links
     http://fursin.net/papers/fkmp2011.pdf
 *** Bibtex
     #+BEGIN_SRC 
@@ -380,14 +404,6 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
-** Milepost GCC: machine learning enabled self-tuning
-*** Summary
-    - Learning over iterative optimization
-    - Can target multi-objective optimization
-*** Questions/remarks
-*** Links
-    http://fursin.net/papers/fkmp2011.pdf
-*** Bibtex
 ** Exploiting Performance Portability in Search Algorithms for Autotuning
 *** Summary
 *** Questions / remarks
