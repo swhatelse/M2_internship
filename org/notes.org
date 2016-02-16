@@ -78,7 +78,7 @@
 ** A comparison of Search Heuristics for Empirical Code Optimization
 *** Summary
     - Comparing:
-      - Random
+      - Random \to simple and effective
       - Simplex
       - Particule Swarm
       - Orthogonal
@@ -406,6 +406,20 @@
     #+END_SRC
 ** Exploiting Performance Portability in Search Algorithms for Autotuning
 *** Summary
+    - Correlation between peformance and *code optimization* across
+      platforms  
+    - Supervised machine learning to build the model \to recursive
+      partitionning approach \to random forest
+    - Two strategy:
+      - Pruning \to *Bad* optimizations an machine A are expected to be
+        *bad* on machine B.
+        Use the model from machine A, sample at random machine B,
+        make prediction and don't evaluate set that are worst than a
+        thresold. 
+      - Biasing \to *Good* optimizations an machine A are expected to be
+        *good* on machine B
+        Almost like pruning but try unevaluated with the best
+        predicted value.
 *** Questions / remarks
 *** Link
     http://www.mcs.anl.gov/papers/P5397-0915.pdf
