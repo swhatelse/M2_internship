@@ -589,20 +589,21 @@ Entered on [2015-11-19 jeu. 20:56]
    - Wrong hypothesis can lead to bad solution \to need to make less
      hypothesis as possible.
 ** 2016-02-16
-   Activate performance logs:
-   #+begin_src sh :results output :exports both
+   - Activate performance logs:
+     #+begin_src sh :results output :exports both
      OPTIMIZER_LOG_FILE=file OPTIMIZER_LOG=true ruby prog.rb
    #+end_src
-   Using bench_optimizer:
-   #+begin_src sh :results output :exports both
+   - Using bench_optimizer:
+     #+begin_src sh :results output :exports both
      OPTIMIZER_LOG_FILE=/tmp/test2.yaml OPTIMIZER_LOG=true ruby bench_optimizer.rb test_parameters.yaml test.yaml
    #+end_src
-   Get experiment environment:
-   #+begin_src sh :results output :exports both
+   - Get experiment environment:
+     #+begin_src sh :results output :exports both :tangle scripts/run_xp.sh
      #!/bin/bash
-     BASE="$PWD/.."
+     BASE="$PWD/../.."
      DATADIR="$BASE/org/data"
           
+     # Get information about the platform
      cd $DATADIR
      DATAFOLD=`date +%Y_%m_%d`
      INFO_NAME="Info"
@@ -610,13 +611,17 @@ Entered on [2015-11-19 jeu. 20:56]
      mkdir -p $DATAFOLD
      BKUP=`date +%T`
      INFO_FILE="$DATADIR/$DATAFOLD/$INFO_NAME${BKUP}.org"
-     DATA_FILE="$DATADIR/$DATAFOLD/$DATA_FILE${BKUP}.txt"
+     DATA_FILE="$DATADIR/$DATAFOLD/$DATA_FILE${BKUP}"
           
-     echo "* Environment infos" >> $INFOS
-     echo "** Hardware" >> $INFOS
-     echo "*** CPU" >> $INFOS
-     less /proc/cpuinfo >> $INFOS
-     echo "*** GPU" >> $INFOS
-     # nvidia-smi -q >> $INFOS
-     lshw -numeric -C display >> $INFOS
+     echo "* Environment infos" >> $INFO_FILE
+     echo "** Hardware" >> $INFO_FILE
+     echo "*** CPU" >> $INFO_FILE
+     less /proc/cpuinfo >> $INFO_FILE
+     echo "*** GPU" >> $INFO_FILE
+     # nvidia-smi -q >> $INFO_FILE
+     lshw -numeric -C display >> $INFO_FILE
+
+     # Run the experiment
+     cd $BASE/boast-lig/ARMclbench
+     OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
    #+end_src
