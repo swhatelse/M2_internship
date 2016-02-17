@@ -406,20 +406,26 @@
     #+END_SRC
 ** Exploiting Performance Portability in Search Algorithms for Autotuning
 *** Summary
-    - Correlation between peformance and *code optimization* across
-      platforms  
+    - Correlation between peformance and *code optimization across*
+      *platforms*
     - Supervised machine learning to build the model \to recursive
       partitionning approach \to random forest
     - Two strategy:
       - Pruning \to *Bad* optimizations an machine A are expected to be
         *bad* on machine B.
         Use the model from machine A, sample at random machine B,
-        make prediction and don't evaluate set that are worst than a
+        make prediction and evaluate only set that are *smaller* than a
         thresold. 
       - Biasing \to *Good* optimizations an machine A are expected to be
         *good* on machine B
-        Almost like pruning but try unevaluated with the best
-        predicted value.
+        Almost like pruning but try unevaluated configurations with the
+        *smallest* predicted value.
+    - The more the architectures similar are the more correlated the
+      results. But what is the more important is the correlation
+      between high performing combination.
+    - They found correlation in high peforming combination between
+      intel CPU(Sandy Bridge and Westmere), IBM Power7 and Xeon Phi
+      but not really with ARM. 
 *** Questions / remarks
 *** Link
     http://www.mcs.anl.gov/papers/P5397-0915.pdf

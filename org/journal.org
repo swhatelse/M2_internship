@@ -597,3 +597,26 @@ Entered on [2015-11-19 jeu. 20:56]
    #+begin_src sh :results output :exports both
      OPTIMIZER_LOG_FILE=/tmp/test2.yaml OPTIMIZER_LOG=true ruby bench_optimizer.rb test_parameters.yaml test.yaml
    #+end_src
+   Get experiment environment:
+   #+begin_src sh :results output :exports both
+     #!/bin/bash
+     BASE="$PWD/.."
+     DATADIR="$BASE/org/data"
+          
+     cd $DATADIR
+     DATAFOLD=`date +%Y_%m_%d`
+     INFO_NAME="Info"
+     DATA_FILE="Data"
+     mkdir -p $DATAFOLD
+     BKUP=`date +%T`
+     INFO_FILE="$DATADIR/$DATAFOLD/$INFO_NAME${BKUP}.org"
+     DATA_FILE="$DATADIR/$DATAFOLD/$DATA_FILE${BKUP}.txt"
+          
+     echo "* Environment infos" >> $INFOS
+     echo "** Hardware" >> $INFOS
+     echo "*** CPU" >> $INFOS
+     less /proc/cpuinfo >> $INFOS
+     echo "*** GPU" >> $INFOS
+     # nvidia-smi -q >> $INFOS
+     lshw -numeric -C display >> $INFOS
+   #+end_src
