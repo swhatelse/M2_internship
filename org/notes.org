@@ -427,6 +427,12 @@
       intel CPU(Sandy Bridge and Westmere), IBM Power7 and Xeon Phi
       but not really with ARM. 
 *** Questions / remarks
+    - I don't if I can really trust their results because they didn't
+      mention the number of time they repeated the experiment and it
+      might be some variablity especially for the random search.
+    - It is strange that the model-free version is very close to the
+      model-based one and some time it is able to find good
+      configuration faster even if the search time is longer.
 *** Link
     http://www.mcs.anl.gov/papers/P5397-0915.pdf
 *** Bibtex
