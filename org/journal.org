@@ -588,3 +588,12 @@ Entered on [2015-11-19 jeu. 20:56]
 ** 2016-02-11
    - Wrong hypothesis can lead to bad solution \to need to make less
      hypothesis as possible.
+** 2016-02-16
+   Activate performance logs:
+   #+begin_src sh :results output :exports both
+     OPTIMIZER_LOG_FILE=file OPTIMIZER_LOG=true ruby prog.rb
+   #+end_src
+   Using bench_optimizer:
+   #+begin_src sh :results output :exports both
+     OPTIMIZER_LOG_FILE=/tmp/test2.yaml OPTIMIZER_LOG=true ruby bench_optimizer.rb test_parameters.yaml test.yaml
+   #+end_src
