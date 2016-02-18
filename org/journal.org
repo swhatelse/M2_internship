@@ -599,29 +599,31 @@ Entered on [2015-11-19 jeu. 20:56]
    #+end_src
    - Get experiment environment:
      #+begin_src sh :results output :exports both :tangle scripts/run_xp.sh
-     #!/bin/bash
-     BASE="$PWD/../.."
-     DATADIR="$BASE/org/data"
-          
-     # Get information about the platform
-     cd $DATADIR
-     DATAFOLD=`date +%Y_%m_%d`
-     INFO_NAME="Info"
-     DATA_FILE="Data"
-     mkdir -p $DATAFOLD
-     BKUP=`date +%T`
-     INFO_FILE="$DATADIR/$DATAFOLD/$INFO_NAME${BKUP}.org"
-     DATA_FILE="$DATADIR/$DATAFOLD/$DATA_FILE${BKUP}"
-          
-     echo "* Environment infos" >> $INFO_FILE
-     echo "** Hardware" >> $INFO_FILE
-     echo "*** CPU" >> $INFO_FILE
-     less /proc/cpuinfo >> $INFO_FILE
-     echo "*** GPU" >> $INFO_FILE
-     # nvidia-smi -q >> $INFO_FILE
-     lshw -numeric -C display >> $INFO_FILE
+       #!/bin/bash
+       BASE="$PWD/../.."
+       DATADIR="$BASE/org/data"
+            
+       # Get information about the platform
+       cd $DATADIR
+       DATAFOLD=`date +%Y_%m_%d`
+       INFO_NAME="Info"
+       DATA_FILE="Data"
+       mkdir -p $DATAFOLD
+       BKUP=`date +%T`
+       INFO_FILE="$DATADIR/$DATAFOLD/$INFO_NAME${BKUP}.org"
+       DATA_FILE="$DATA_FILE${BKUP}"
+            
+       echo "* Environment infos" >> $INFO_FILE
+       echo "** Hardware" >> $INFO_FILE
+       echo "*** CPU" >> $INFO_FILE
+       less /proc/cpuinfo >> $INFO_FILE
+       echo "*** GPU" >> $INFO_FILE
+       # nvidia-smi -q >> $INFO_FILE
+       lshw -numeric -C display >> $INFO_FILE
 
-     # Run the experiment
-     cd $BASE/boast-lig/ARMclbench
-     OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
+       # Run the experiment
+       cd $BASE/boast-lig/ARMclbench
+       OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
+       mv $DATA_FILE'.yaml' $DATADIR/$DATAFOLD
+       mv $DATA_FILE_paremeters'.yaml' $DATADIR/$DATAFOLD
    #+end_src
