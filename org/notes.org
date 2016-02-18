@@ -16,7 +16,7 @@
    test very different possibilities keep the best ones and make try 
    combinations of them, keep the bests and continue until they find
    an optimal one.
-** Problem   
+** Problem
    - The first thing is that we do not really why genetic algorithm
      perform well.
    
@@ -33,7 +33,7 @@
   - Understand why certain methods works better for some class of problem.
   - Find efficient solution and implement it as an optimizer.
 * State of the art
-** Search methods 
+** Heuristic-based search methods
 *** Random
 *** Genetic algorithms
 *** Simulated Annealing
@@ -48,11 +48,13 @@
      - The temperature defined the probability of accepting worse
        value \to avoid to get stuck in a bad local optima. As long as
        the temperature decrease the probability of accepting worse
-       value decrease and make smaller moves. 
-       
+       value decrease and make smaller moves.
+
+*** Particule swarm 
 *** Nelder Mead Simplex
      - Direct search methods
      - Derivative-free
+** Statistic-based methods
 *** Surogates-based search
      - Use approximation models about what could be the behavior of an
        application in order to make an estimation of the correct
@@ -210,11 +212,12 @@
 ** Direct search
 *** Templating and Automatic Code for Performance with Python
 **** Summary
-    - They don't use a empirical or heuristic method but they use a
-      mesh-adaptive direct search
     - Tested 3 variant of NOMAD but no comparison with empirical
       approach.       
 **** Questions/Remarks
+    - They claim they don't use a empirical or heuristic method but
+      they use the mesh-adaptive direct search and from what I
+      understand it is clearly a heuristic method
     - No comparison with other state of the art approaches (empirical
       methods)
     - This paper does not seems to to directly bring
@@ -407,7 +410,7 @@
 ** Exploiting Performance Portability in Search Algorithms for Autotuning
 *** Summary
     - Correlation between peformance and *code optimization across*
-      *platforms*
+      *platforms* with different kernels
     - Supervised machine learning to build the model \to recursive
       partitionning approach \to random forest
     - Two strategy:
@@ -447,9 +450,34 @@
     year = {2015}
     }
     #+END_SRC
+** The Speedup Test
+*** Summary
+*** Link
+    https://hal.archives-ouvertes.fr/file/index/docid/443839/filename/SpeedupTestDocument.pdf
+*** Bibtex
+    #+BEGIN_SRC 
+    @article{touati:hal-00764454,
+    TITLE = {{The Speedup-Test: A Statistical Methodology for Program Speedup Analysis and Computation}},
+    AUTHOR = {Touati, Sid-Ahmed-Ali and Worms, Julien and Briais, S{\'e}bastien},
+    URL = {https://hal.inria.fr/hal-00764454},
+    NOTE = {Article first published online: 15 OCT 2012},
+    JOURNAL = {{Concurrency and Computation: Practice and Experience}},
+    PUBLISHER = {{Wiley}},
+    VOLUME = {25},
+    NUMBER = {10},
+    PAGES = {1410-1426},
+    YEAR = {2013},
+    DOI = {10.1002/cpe.2939},
+    KEYWORDS = {Program performance evaluation and analysis ; code optimisation ; statistics},
+    PDF = {https://hal.inria.fr/hal-00764454/file/Speedup-Test-Article-freestyle.pdf},
+    HAL_ID = {hal-00764454},
+    HAL_VERSION = {v1},
+    }
+    #+END_SRC
 * Questions
 ** Autotuning is an optimization problem but what are its specificities if it had some? 
    Because if there are some specificities, we can then modelize and
    approximite what are the best parameters. 
 ** What is the size of the search space of BOAST?
     There is no given size, it depends on the user's problem
+** Are we interested in using knowledge from other platforms and applications or only making prediction "on the fly" of the application we want to optimize? 
