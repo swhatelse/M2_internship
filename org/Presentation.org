@@ -113,8 +113,11 @@
 ** Reuseable
 - "Deconstructing Iterative Optimization" \to Common working compiler
   flags combination across program 
+- "Exploiting Performance Portability in Search Algorithms for
+  Autotuning" \to correlation between code optimization and speedup
+  across plateforms
 - Build appromixations \to surrogates-based search (trust-regions
-  algorithm, 
+  algorithm) 
 ** Building knowledge
 *** Machine learning
 - Similar applications \to similar behaviors \to similar optimizations
