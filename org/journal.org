@@ -83,7 +83,29 @@
       cd $ROOT_DIR
       git clone https://forge.imag.fr/anonscm/git/boast/boast.git boast-lig
     #+end_src
-   
+
+** Grid5k setup
+*** Reserving node
+    -I : Interactive
+    -l : list of parameters
+    #+begin_src sh :results output :exports both
+      oarsub -p "gpu='YES'" -I -t deploy -l nodes=nbNodes,walltime=duration
+      oarsub -p "gpu='YES'" -t deploy -l nodes=nbNodes,walltime=duration -r 'yyyy-mm-dd hh:mm:ss'
+    #+end_src
+*** Deploying an environment
+    -k : no password mode, using key ssh
+    #+begin_src sh :results output :exports both
+      kadeploy3 -e environment -f $OAR_FILE_NODES -k
+    #+end_src
+*** Connection:
+     #+begin_src sh :results output :exports both
+       ssh root@node
+     #+end_src
+*** BOAST
+     #+begin_src sh :results output :exports both
+       rsync -avzP --exclude '.git' boast squinitomasnada@access.grid5000.fr
+       rsync -avzP --exclude '.git' boast-lig squinitomasnada@access.grid5000.fr
+     #+end_src
 * February
 ** 2016-02-02 Notes from Arnaud
 - [[http://mescal.imag.fr/membres/arnaud.legrand/research/M2R_boast.pdf][internships]]
