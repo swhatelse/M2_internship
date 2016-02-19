@@ -14,13 +14,15 @@
    as mathematical optimization problem where we want to minize or
    maximize y = f(x_0, x_1, ..., x_n) with x being an optimization
    parameters. The search space being huge it not possible is not
-   possible to try every possiblity, it exists methods to find good
-   optimization parameters using only part of the search space.
-
-   For this genetic algorithms works reasonnably well, they
-   test very different possibilities keep the best ones and make try 
-   combinations of them, keep the bests and continue until they find
-   an optimal one.
+   possible to try every possiblities, it exists methods to find good
+   optimization parameters using only part of the search space. Some
+   are more effective than other due to the characteristics of the
+   problem. We can distinguish three main category of approach. The
+   first one does not rely on any kind of information about the
+   problem like random search or genetic algorithms works. The second
+   one use partial information  or "on the fly" about the problem like
+   direct search methods. And the last one use information build on
+   top of models.  
 ** Problem
    - The first thing is that we do not really why genetic algorithm
      perform well.
