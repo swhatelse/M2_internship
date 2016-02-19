@@ -4,15 +4,20 @@
 
 * Topic
 ** Overview
-   To optimize correctly an application, we have to find what are the
-   best combinations of optimization parameters and compilation 
-   flags. This can be modelized as a mathematical optimization problem 
-   where we want to minize or maximize y = f(x_0, x_1, ..., x_n) with x
-   being an optimization parameter or a compilation flag. The problem
-   is the search space being huge and we cannot use the brute
-   force approach and test every combinations. Thus we need to explore
-   only parts of the search space to try to find an optimal
-   solution. For this genetic algorithms works reasonnably well, they
+   The goal of optimization in autotuning is try to reach the best
+   speedup by finding what is the best combination of optimization
+   parameters. To know if a combination of optimization parameters
+   brings a speedup, one need to evaluate it. The difficult is that we
+   can not really know by advance what are the best combinations,
+   moreover the search space can be huge and the brute force approach
+   is not viable. The autotuning optimization is a generally modelized
+   as mathematical optimization problem where we want to minize or
+   maximize y = f(x_0, x_1, ..., x_n) with x being an optimization
+   parameters. The search space being huge it not possible is not
+   possible to try every possiblity, it exists methods to find good
+   optimization parameters using only part of the search space.
+
+   For this genetic algorithms works reasonnably well, they
    test very different possibilities keep the best ones and make try 
    combinations of them, keep the bests and continue until they find
    an optimal one.
