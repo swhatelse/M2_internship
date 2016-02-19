@@ -103,8 +103,8 @@
      #+end_src
 *** BOAST
      #+begin_src sh :results output :exports both
-       rsync -avzP --exclude '.git' boast squinitomasnada@access.grid5000.fr
-       rsync -avzP --exclude '.git' boast-lig squinitomasnada@access.grid5000.fr
+       rsync -avzP --exclude '.git' boast squinitomasnada@access.grid5000.fr:~/grenoble/boast
+       rsync -avzP --exclude '.git' boast-lig squinitomasnada@access.grid5000.fr:~/grenoble/boast
      #+end_src
 * February
 ** 2016-02-02 Notes from Arnaud
@@ -630,8 +630,8 @@ Entered on [2015-11-19 jeu. 20:56]
        DATAFOLD=`date +%Y_%m_%d`
        INFO_NAME="Info"
        DATA_FILE="Data"
-       mkdir -p $DATAFOLD
        BKUP=`date +%T`
+       mkdir -p $DATAFOLD
        INFO_FILE="$DATADIR/$DATAFOLD/$INFO_NAME${BKUP}.org"
        DATA_FILE="$DATA_FILE${BKUP}"
             
@@ -649,3 +649,31 @@ Entered on [2015-11-19 jeu. 20:56]
        mv $DATA_FILE'.yaml' $DATADIR/$DATAFOLD
        mv $DATA_FILE_paremeters'.yaml' $DATADIR/$DATAFOLD
    #+end_src
+     
+   - Bruteforce Adonis:
+       #+begin_src sh :results output :exports both :tangle scripts/bruteforce_adonis.sh
+         DATADIR="/tmp"
+         DATAFOLD=`date +%Y_%m_%d`
+         DATAFOLD="$DATADIR/$DATAFOLD"
+         BKUP=`date +%T`
+         DATAFOLD2="$DATAFOLD/$BKUP"
+         mkdir -p $DATAFOLD
+         mkdir -p $DATAFOLD2
+         INFO_NAME="Info"
+         DATA_FILE="Data"
+         INFO_FILE="$DATAFOLD2/$INFO_NAME${BKUP}.org"
+         DATA_FILE="$DATA_FILE${BKUP}"
+         
+         echo "* Environment infos" >> $INFO_FILE
+         echo "** Hardware" >> $INFO_FILE
+         echo "*** CPU" >> $INFO_FILE
+         less /proc/cpuinfo >> $INFO_FILE
+         echo "*** GPU" >> $INFO_FILE
+         # nvidia-smi -q >> $INFO_FILE
+         lshw -numeric -C display >> $INFO_FILE
+                  
+         cd $BASE/boast-lig/ARMclbench
+         OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
+         mv $DATA_FILE'.yaml' $DATAFOLD2
+         mv $DATA_FILE_paremeters'.yaml' $DATAFOLD2 
+       #+end_src
