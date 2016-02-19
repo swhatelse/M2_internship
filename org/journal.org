@@ -95,7 +95,7 @@
 *** Deploying an environment
     -k : no password mode, using key ssh
     #+begin_src sh :results output :exports both
-      kadeploy3 -e environment -f $OAR_FILE_NODES -k
+      kadeploy3 -a environment.env -f $OAR_FILE_NODES -k
     #+end_src
 *** Connection:
      #+begin_src sh :results output :exports both
@@ -619,50 +619,37 @@ Entered on [2015-11-19 jeu. 20:56]
      #+begin_src sh :results output :exports both
      OPTIMIZER_LOG_FILE=/tmp/test2.yaml OPTIMIZER_LOG=true ruby bench_optimizer.rb test_parameters.yaml test.yaml
    #+end_src
-   - Get experiment environment:
-     #+begin_src sh :results output :exports both :tangle scripts/run_xp.sh
-       #!/bin/bash
-       BASE="$PWD/../.."
-       DATADIR="$BASE/org/data"
-            
-       # Get information about the platform
-       cd $DATADIR
-       DATAFOLD=`date +%Y_%m_%d`
-       INFO_NAME="Info"
-       DATA_FILE="Data"
-       BKUP=`date +%T`
-       mkdir -p $DATAFOLD
-       INFO_FILE="$DATADIR/$DATAFOLD/$INFO_NAME${BKUP}.org"
-       DATA_FILE="$DATA_FILE${BKUP}"
-            
-       echo "* Environment infos" >> $INFO_FILE
-       echo "** Hardware" >> $INFO_FILE
-       echo "*** CPU" >> $INFO_FILE
-       less /proc/cpuinfo >> $INFO_FILE
-       echo "*** GPU" >> $INFO_FILE
-       # nvidia-smi -q >> $INFO_FILE
-       lshw -numeric -C display >> $INFO_FILE
-
-       # Run the experiment
-       cd $BASE/boast-lig/ARMclbench
-       OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
-       mv $DATA_FILE'.yaml' $DATADIR/$DATAFOLD
-       mv $DATA_FILE_paremeters'.yaml' $DATADIR/$DATAFOLD
-   #+end_src
-     
-   - Bruteforce Adonis:
+   - Let's try to make a first experiment and how look likes the
+     optimization space of the Laplacian.rb by running brute force on
+     adonis nodes to see if we can see something interesting, and
+     compare it with Brice's results. Let's also run the experiment
+     several time to see how is the variability. 
+   - Send to grenoble:
+     #+begin_src sh :results output :exports both :tangle scripts/send_to_grenoble.sh
+       BASE="$PWD/.."
+       ssh squinitomasnada@grid5000.fr:~/grenoble 'mkdir -p boast'
+       rsync -avzP --exclude '.git' $BASE/boast squinitomasnada@access.grid5000.fr:~/grenoble/boast
+       rsync -avzP --exclude '.git' $BASE/boast-lig squinitomasnada@access.grid5000.fr:~/grenoble/boast
+       rsync -avzP --exclude '.git' $BASE/scripts squinitomasnada@access.grid5000.fr:~/grenoble/boast
+     #+end_src
+   - Install BOAST and run Bruteforce on Adonis:
        #+begin_src sh :results output :exports both :tangle scripts/bruteforce_adonis.sh
+         BASE="$PWD/.."
+         cd $BASE/boast
+         gem build *.gemspec
+         gem install --user-install *.gem
+
          DATADIR="/tmp"
          DATAFOLD=`date +%Y_%m_%d`
          DATAFOLD="$DATADIR/$DATAFOLD"
-         BKUP=`date +%T`
+         BKUP=`date +%H_%M_%S`
          DATAFOLD2="$DATAFOLD/$BKUP"
          mkdir -p $DATAFOLD
          mkdir -p $DATAFOLD2
          INFO_NAME="Info"
          DATA_FILE="Data"
          INFO_FILE="$DATAFOLD2/$INFO_NAME${BKUP}.org"
-         DATA_FILE="$DATA_FILE${BKUP}"
+         DATA_FILE="$DATAFOLD2/$DATA_FILE${BKUP}"
          
          echo "* Environment infos" >> $INFO_FILE
          echo "** Hardware" >> $INFO_FILE
@@ -675,5 +662,5 @@ Entered on [2015-11-19 jeu. 20:56]
          cd $BASE/boast-lig/ARMclbench
          OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
          mv $DATA_FILE'.yaml' $DATAFOLD2
-         mv $DATA_FILE_paremeters'.yaml' $DATAFOLD2 
+         mv $DATA_FILE'_paremeters.yaml' $DATAFOLD2 
        #+end_src
