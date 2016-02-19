@@ -1,0 +1,26 @@
+---
+:x_component_number:
+- 1
+- 2
+- 4
+- 8
+- 16
+:vector_length:
+- 1
+- 2
+- 4
+- 8
+- 16
+:y_component_number: !ruby/range
+  begin: 1
+  end: 4
+  excl: false
+:temporary_size:
+- 2
+- 4
+:vector_recompute:
+- true
+- false
+:load_overlap:
+- true
+- false
