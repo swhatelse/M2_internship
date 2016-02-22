@@ -632,6 +632,22 @@ Entered on [2015-11-19 jeu. 20:56]
        rsync -avzP --exclude '.git' $BASE/boast-lig squinitomasnada@access.grid5000.fr:~/grenoble/boast
        rsync -avzP --exclude '.git' $BASE/scripts squinitomasnada@access.grid5000.fr:~/grenoble/boast
      #+end_src
+   - Send to nodes:
+     #+begin_src sh :results output :exports both :tangle scripts/send_to_nodes.sh
+       #!/bin/bash
+       BASE="$PWD/.."
+       PREV_NODE=''
+       while read NODE; do
+           if [[ "$NODE" != "$PREV_NODE" ]]; then
+               ssh root@$NODE:~/ 'mkdir -p boast'
+               rsync -avzP --exclude '.git' $BASE/boast root@$NODE:~/boast
+               rsync -avzP --exclude '.git' $BASE/boast-lig root@$NODE:~/boast
+               rsync -avzP --exclude '.git' $BASE/scripts root@$NODE:~/boast
+               PREV_NODE=$NODE
+               fi
+       done < $OAR_NODE_FILE
+
+     #+end_src
    - Install BOAST and run Bruteforce on Adonis:
        #+begin_src sh :results output :exports both :tangle scripts/bruteforce_adonis.sh
          BASE="$PWD/.."
