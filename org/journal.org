@@ -664,7 +664,7 @@ Entered on [2015-11-19 jeu. 20:56]
          mkdir -p $DATAFOLD2
          INFO_NAME="Info"
          DATA_FILE="Data"
-         INFO_FILE="$INFO_NAME${BKUP}.org"
+         INFO_FILE="$DATAFOLD2/$INFO_NAME${BKUP}.org"
          DATA_FILE="$DATA_FILE${BKUP}"
          
          echo "* Environment infos" >> $INFO_FILE
@@ -678,7 +678,7 @@ Entered on [2015-11-19 jeu. 20:56]
          cd $BASE/boast-lig/ARMclbench
          OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
          mv $DATA_FILE'.yaml' $DATAFOLD2
-         mv $DATA_FILE'_paremeters.yaml' $DATAFOLD2 
+         mv $DATA_FILE'_parameters.yaml' $DATAFOLD2 
        #+end_src
  
    - Here are some of the result obtained on different execution on
