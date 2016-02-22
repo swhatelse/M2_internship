@@ -17,13 +17,23 @@
    possible to try every possiblities, it exists methods to find good
    optimization parameters using only part of the search space. Some
    are more effective than other due to the characteristics of the
-   problem. We can distinguish three main category of approach. The
-   first one does not rely on any kind of information about the
+   problem. We can distinguish three main categories of approach. The
+   first one does not rely on any kind of informations about the 
    problem like random search or genetic algorithms works. The second
-   one use partial information  or "on the fly" about the problem like
-   direct search methods. And the last one use information build on
+   one use partial informations or "on the fly" about the problem like
+   direct search methods. And the last one use informations build on
    top of models.  
 ** Problem
+   - We are not really sure on how the different methods compare to
+     each others because of the lack of informations about the
+     conditions of experiments on some papers or just because they are
+     not comparison with the state of the art methods.  
+     
+   - It is not trivial to know what is the most suited optimization
+     methods because we do not really how the problem looks like, it
+     is very application and platform dependent. We only know its
+     global characteristics, non-smooth objective and constraints.
+
    - The first thing is that we do not really why genetic algorithm
      perform well.
    
@@ -391,7 +401,8 @@
         - Correlation of compilation optimization and program
           characteristics that give good speedup
         - Easier to analyze than probabilistic model
-    - Using the solutions of the closest neighbors works for the same plateform
+    - Using the solutions of the closest neighbors works for the same
+      plateform
 *** Questions/remarks
 **** For the probabilistic model, do they use a different uniform sampling on each program? 
 **** Why in the probabilistic model good solutions are those that give 98% of speedup  and in the transductive model it is 95% ?
@@ -459,6 +470,7 @@
     #+END_SRC
 ** The Speedup Test
 *** Summary
+*** Remarks/Questions
 *** Link
     https://hal.archives-ouvertes.fr/file/index/docid/443839/filename/SpeedupTestDocument.pdf
 *** Bibtex
@@ -481,10 +493,38 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
+** OpenTuner: An Extensible Framework for Program Autotuning
+*** Summary
+*** Remarks/Questions
+*** Link
+    http://groups.csail.mit.edu/commit/papers/2014/ansel-pact14-opentuner.pdf
+*** Bibtex
+    #+BEGIN_SRC 
+    @inproceedings{Ansel:2014:OEF:2628071.2628092,
+    author = {Ansel, Jason and Kamil, Shoaib and Veeramachaneni, Kalyan and Ragan-Kelley, Jonathan and Bosboom, Jeffrey and O'Reilly, Una-May and Amarasinghe, Saman},
+    title = {OpenTuner: An Extensible Framework for Program Autotuning},
+    booktitle = {Proceedings of the 23rd International Conference on Parallel Architectures and Compilation},
+    series = {PACT '14},
+    year = {2014},
+    isbn = {978-1-4503-2809-8},
+    location = {Edmonton, AB, Canada},
+    pages = {303--316},
+    numpages = {14},
+    url = {http://doi.acm.org/10.1145/2628071.2628092},
+    doi = {10.1145/2628071.2628092},
+    acmid = {2628092},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {autotuner, optimization},
+    } 
+    #+END_SRC
 * Questions
 ** Autotuning is an optimization problem but what are its specificities if it had some? 
    Because if there are some specificities, we can then modelize and
    approximite what are the best parameters. 
+** What is the good representation to use?
+** Can we use information about the code from the compiler to make some infererences and guess what are the promising optimizations?
+   Maybe coupling this with the information about the platform.
 ** What is the size of the search space of BOAST?
     There is no given size, it depends on the user's problem
 ** Are we interested in using knowledge from other platforms and applications or only making prediction "on the fly" of the application we want to optimize? 
