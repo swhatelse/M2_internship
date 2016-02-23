@@ -495,6 +495,10 @@
     #+END_SRC
 ** OpenTuner: An Extensible Framework for Program Autotuning
 *** Summary
+    - Adapting the search method to particularities of the search
+      space.
+    - Testing multiple methods at the same time and keep those which
+      performs better. Improvment are shared between methods.
 *** Remarks/Questions
 *** Link
     http://groups.csail.mit.edu/commit/papers/2014/ansel-pact14-opentuner.pdf
