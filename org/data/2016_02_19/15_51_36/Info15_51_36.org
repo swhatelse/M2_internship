@@ -1,6 +1,7 @@
 * Environment infos
 ** Hardware
 *** CPU
+#+begin_example
 processor	: 0
 vendor_id	: GenuineIntel
 cpu family	: 6
@@ -208,7 +209,7 @@ clflush size	: 64
 cache_alignment	: 64
 address sizes	: 40 bits physical, 48 bits virtual
 power management:
-
+#+end_example
 *** GPU
   *-display
        description: 3D controller
