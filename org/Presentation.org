@@ -56,34 +56,64 @@
 
 #+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
 
-* Optimization - overview
+* Related work on autotuning
+** Dongarra
+  types de problème, type d'approch
+** Wild
+  types de problème, type d'approche (code transformation Orio, optimization)
+** Fursin
+** Touati
+** ASK
+** BOAST
+   - specific generation/metaprogramming  of kernels
+   - requires involvement of the developper and code restructuration
+   - allows optimizations that no compiler would dare
+   - At the moment, no strategy for tuning code
+* Optimization overview
 ** Autotuning optimization problem
-- Nonsmooth objective function and constraints
-- Discrete and continuous
+- *Nonsmooth* and *Empirical* objective function and constraints
+- Both discrete and continuous parameters
+- Large optimization space with potential interactions between parameters
 
-** Knowledge about the problem
-*** Know shape of the problem
-- Exploit information about the problem
-- Derivative based methods
-- Use of analytic models \to surrogates-based search
-*** No knowledge
-- Optimization problem not differentiable \to cannot build reliable
-  model
-- Derivative-free based methods
-- Based on heuristics \to Genetic algorithm, simplex, pattern search
-*** Partial knowledge
-- Derivative informations not available everywhere
 ** Search space strategy
-*** Local:
-- Focus on a particular area 
-- Effective when knowing where to concentrate the search
-- The optimal found can be far worst than the global optimum
-- E.g: simplex, surrogates-based search
-*** Global :
-- Cover various part of the search space
-- Effective when no knowledge about the problem
-- Escape bad local optimum
-- E.g: Random, Genetic algorithm
+*** A priori on the objective function
+- Exploit information about the problem (e.g., convexity, locality)
+- Derivative based methods (*local* search generaly based on *gradient* descent)
+  - Non convex (, hence local minimum): randomized strategies (e.g., simulated annealing)
+  - If derivation is not available (function too complex)
+     - Pattern search (e.g., Nelder-Mead)
+     - Mesh Adaptive Direct search
+  - If derivation is not possible (empiric function): estimate with regressions (e.g., surrogates-based search)
+  - If evaluation is costly: meta-models (e.g., krigging) but derivation of interpolation is dubious...
+- Additional difficulty depending on whether the parameters are contrained or not
+
+*** "No a priori" (or other kind of a priori)
+- Other kind of (discrete) structure (e.g. permutation, binary vector, tree, ...)
+- Different notion of locality, hence need to cover a largev part of the search space
+- Based on heuristics: Naive sampling, Genetic algorithm, tabu search, ant colonies, swarm 
+
+*** Many combinations of heuristics
+  GPS: SEARCH, POLL, ...
+  
+
+* And in practice...
+** Laplacian
+   code, parameters, ...
+   OpenCL
+** Brute force exploration on Adonis
+  - how much time (full, per configuration)
+  - Results: actually not that stable
+** Efficiency of the random sampling
+  - Need for complex exploration scheme?  
+  
+  
+  
+  
+* Models, exploration, notes :noexport:
+  
+  
+  
+  
 
 ** Mixed strategy
 *** Global and local search
@@ -130,3 +160,5 @@
 - Characterization of the autotuning optimization search problem
 - Which algorithm are the most suited for each kind of problems
 - Devise an adaptive approach
+
+
