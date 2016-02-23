@@ -651,6 +651,7 @@ Entered on [2015-11-19 jeu. 20:56]
    - Install BOAST and run Bruteforce on Adonis:
        #+begin_src sh :results output :exports both :tangle scripts/bruteforce_adonis.sh
          BASE="$PWD/.."
+         ####### BOAST installation #######
          cd $BASE/boast
          gem build *.gemspec
          gem install --user-install *.gem
@@ -666,15 +667,60 @@ Entered on [2015-11-19 jeu. 20:56]
          DATA_FILE="Data"
          INFO_FILE="$DATAFOLD2/$INFO_NAME${BKUP}.org"
          DATA_FILE="$DATA_FILE${BKUP}"
-         
+
+         ######### Collecting informations about the platform #########
+         echo "#+TITLE: Experiment information" >> $INFO_FILE
+         echo "#+DATE: $(eval date)" >> $INFO_FILE
+         echo "#+MACHINE: $(eval hostname)" >> $INFO_FILE
+         echo "#+FILE: $INFO_FILE" >> $INFO_FILE
+
          echo "* Environment infos" >> $INFO_FILE
+
          echo "** Hardware" >> $INFO_FILE
+
          echo "*** CPU" >> $INFO_FILE
+         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
          less /proc/cpuinfo >> $INFO_FILE
+         echo "#+END_EXAMPLE" >> $INFO_FILE
+
          echo "*** GPU" >> $INFO_FILE
+         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
          # nvidia-smi -q >> $INFO_FILE
          lshw -numeric -C display >> $INFO_FILE
-                  
+         echo "#+END_EXAMPLE" >> $INFO_FILE
+
+         echo "** Software" >> $INFO_FILE
+
+         if [ -f /proc/version ];
+         then
+             echo "*** LINUX AND GCC VERSIONS" >> $info
+             echo "#+BEGIN_EXAMPLE" >> $info    
+             cat /proc/version >> $info
+             echo "#+END_EXAMPLE" >> $info
+         fi
+
+         echo "*** Environment Variables"
+         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
+         env >> $INFO_FILE
+         echo "#+END_EXAMPLE" >> $INFO_FILE
+
+         if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ];
+         then
+             echo "*** CPU GOVERNOR" >> $info
+             echo "#+BEGIN_EXAMPLE" >> $info    
+             cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor >> $info
+             echo "#+END_EXAMPLE" >> $info
+         fi
+
+         if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ];
+         then
+             echo "*** CPU FREQUENCY" >> $info
+             echo "#+BEGIN_EXAMPLE" >> $info    
+             cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq >> $info
+             echo "#+END_EXAMPLE" >> $info
+         fi
+
+         ######## Run experiment ########
          cd $BASE/boast-lig/ARMclbench
          OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
          mv $DATA_FILE'.yaml' $DATAFOLD2
