@@ -729,22 +729,22 @@ Entered on [2015-11-19 jeu. 20:56]
  
    - Here are some of the result obtained on different execution on
      adonis platforms:
-     - Adonis-5 15:32:21
+     - [[file:data/2016_02_19/15_32_21_adonis-5/Info15_32_21.org][Adonis-5]] 15:32:21
        #+BEGIN_SRC 
        {:x_component_number=>1, :vector_length=>8, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>false, :load_overlap=>false}
        6.381553113495854e-10
        #+END_SRC
-     - Adonis-9 15:23:23
+     - [[file:data/2016_02_19/15_23_23_adonis-9/Info15_23_23.org][Adonis-9]] 15:23:23
        #+BEGIN_SRC 
        {:x_component_number=>1, :vector_length=>16, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>false, :load_overlap=>false}
        6.379672182710354e-10
        #+END_SRC
-     - Adonis-6 15:42:14
+     - [[file:data/2016_02_19/15_42_14_adonis-6/Info15_42_14.org][Adonis-6]] 15:42:14
        #+BEGIN_SRC 
        {:x_component_number=>8, :vector_length=>8, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false}
        1.7839996605890094e-09
        #+END_SRC
-     - Adonis-2 15:51:36
+     - [[file:data/2016_02_19/15_51_36_adonis-2/Info15_51_36.org][Adonis-2]] 15:51:36
        #+BEGIN_SRC 
        {:x_component_number=>8, :vector_length=>8, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>false, :load_overlap=>false}
        1.7518950929881022e-09
