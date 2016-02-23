@@ -1,6 +1,7 @@
 * Environment infos
 ** Hardware
 *** CPU
+#+BEGIN_EXAMPLE
 processor	: 0
 vendor_id	: GenuineIntel
 cpu family	: 6
@@ -104,8 +105,9 @@ clflush size	: 64
 cache_alignment	: 64
 address sizes	: 36 bits physical, 48 bits virtual
 power management:
-
+#+END_EXAMPLE
 *** GPU
+#+BEGIN_EXAMPLE
   *-display
        description: VGA compatible controller
        produit: Core Processor Integrated Graphics Controller [8086:46]
@@ -118,3 +120,4 @@ power management:
        fonctionnalités: vga_controller bus_master cap_list rom
        configuration: driver=i915 latency=0
        ressources: irq:42 mémoire:f2000000-f23fffff mémoire:d0000000-dfffffff portE/S:1800(taille=8)
+#+END_EXAMPLE

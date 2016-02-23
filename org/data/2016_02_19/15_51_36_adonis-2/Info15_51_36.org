@@ -211,6 +211,7 @@ address sizes	: 40 bits physical, 48 bits virtual
 power management:
 #+end_example
 *** GPU
+#+BEGIN_EXAMPLE
   *-display
        description: 3D controller
        product: GT200 [Tesla C1060] [10DE:5E7]
@@ -247,3 +248,4 @@ power management:
        capabilities: pm vga_controller bus_master cap_list
        configuration: latency=64 maxlatency=32 mingnt=16
        resources: memory:d8000000-d8ffffff memory:fbefc000-fbefffff memory:fb000000-fb7fffff
+#+END_EXAMPLE
