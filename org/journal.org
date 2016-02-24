@@ -727,8 +727,27 @@ Entered on [2015-11-19 jeu. 20:56]
          mv $DATA_FILE'_parameters.yaml' $DATAFOLD2 
        #+end_src
  
-   - Here are some of the result obtained on different execution on
-     adonis platforms:
+   - The results below are obtained from different executions of
+     Laplacian.rb on adonis platforms. The best configuration is found
+     as follow:
+     - For each configurations:
+       - For each size of image [768x432, 2560x1600, 2048x2048, 5760x3240,
+         7680x4320]:
+         - Laplacian is computed 4 times:
+           - Each time is calculated the average time to compute a
+             pixel (for a given image)
+           - Keep the minimum of the average time to compute a pixel
+         - Make the average of the of the min the different size of
+           image
+       - Keep the best value.
+
+     - Which more formally would look like this:
+       min(avg_k(min_j(t_i))) 
+       i \in {0..3} 
+       j \in {768x432,2560x1600,2048x2048,5760x3240,7680x4320}
+       k \in X which is the set of configuration.
+
+       Here are the best configurations found:
      - [[file:data/2016_02_19/15_32_21_adonis-5/Info15_32_21.org][Adonis-5]] 15:32:21
        #+BEGIN_SRC 
        {:x_component_number=>1, :vector_length=>8, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>false, :load_overlap=>false}
