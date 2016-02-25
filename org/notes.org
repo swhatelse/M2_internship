@@ -122,6 +122,7 @@
     #+END_SRC
 ** Can Search algorithms save large-scale automatic performance tuning?
 *** Summary
+    - Discrete derivative-free constraint nonconvex optimization
     - *Formulation* of the autotuning search problem *as mathematical*
       *optimization problem*.
     - *Algorithms* need to be *adapted to the autotuning problem* \to naïve
@@ -209,6 +210,15 @@
     isbn        = "978-3-642-38717-3"
     }
     #+END_SRC
+** A Batch, Derivative-Free Algorithm for Finding Multiple Local Minima
+*** Link
+    http://www.mcs.anl.gov/papers/P5228-1114.pdf
+** A Taxonomy of Constraints in Simulation-Based Optimization
+*** Link
+    http://arxiv.org/pdf/1505.07881.pdf
+** Empirical Performance modeling of GPU kernels using active learning
+*** Link
+    http://www.mcs.anl.gov/papers/P4097-0713_1.pdf
 ** Deconstructing Iterative optimization
 *** Summary
     - Compiler flags optimizations only
@@ -383,6 +393,7 @@
 *** Summary
     - Learning over iterative optimization
     - Can target multi-objective optimization
+    - Using random search to build the models
     - Used two models:
       - Probabilistic:
         - Attributes are independants
@@ -441,6 +452,8 @@
         *good* on machine B
         Almost like pruning but try unevaluated configurations with the
         *smallest* predicted value.
+    - Keeping the most interesting search space and then exploring at
+      random (obvisously more efficient approach can be used)
     - The more the architectures similar are the more correlated the
       results. But what is the more important is the correlation
       between high performing combination.
@@ -454,6 +467,7 @@
     - It is strange that the model-free version is very close to the
       model-based one and some time it is able to find good
       configuration faster even if the search time is longer.
+      Are their models well suited?
 *** Link
     http://www.mcs.anl.gov/papers/P5397-0915.pdf
 *** Bibtex
@@ -527,6 +541,8 @@
    Because if there are some specificities, we can then modelize and
    approximite what are the best parameters. 
 ** What is the good representation to use?
+   The order of the paramters have an importance to the representation
+   of the problem.
 ** Can we use information about the code from the compiler to make some infererences and guess what are the promising optimizations?
    Maybe coupling this with the information about the platform.
 ** What is the size of the search space of BOAST?
