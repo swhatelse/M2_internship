@@ -58,17 +58,30 @@
 
 * Related work on autotuning
 ** Dongarra
-  types de problème, type d'approch
+types de problème, type d'approch
 ** Wild
-  types de problème, type d'approche (code transformation Orio, optimization)
+types de problème, type d'approche (code transformation Orio,
+optimization)
+- Discrete derivative-free constraint optimization
+- Correlation between peformance and *code optimization across*
+  *platforms* with different kernels
+- Machine learning to learn good combination of optimization
+  parameters on one plateform
 ** Fursin
+- Discrete optimization
+- Multi-objective optimization (e.g: size and performances)
+- Possible to build model of compiler flags that works across
+  applications
+- Use of machine learning technics
+- Models build using random search
+- Training overhead reduce by Collective optimization
 ** Touati
 ** ASK
 ** BOAST
    - specific generation/metaprogramming  of kernels
    - requires involvement of the developper and code restructuration
    - allows optimizations that no compiler would dare
-   - At the moment, no strategy for tuning code
+   - At the moment, no strategy for tuning code 
 * Optimization overview
 ** Autotuning optimization problem
 - *Nonsmooth* and *Empirical* objective function and constraints
