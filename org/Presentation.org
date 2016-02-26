@@ -58,11 +58,11 @@
 
 * Related work on autotuning
 ** Dongarra
-types de problème, type d'approch
+# types de problème, type d'approch
 ** Wild
-types de problème, type d'approche (code transformation Orio,
-optimization)
-- Discrete derivative-free constraint optimization
+# types de problème, type d'approche (code transformation Orio,
+# optimization)
+- Discrete, derivative-free, and constraint optimization
 - Correlation between peformance and *code optimization across*
   *platforms* with different kernels
 - Machine learning to learn good combination of optimization
@@ -77,8 +77,10 @@ optimization)
 - Training overhead reduce by Collective optimization
 ** Touati
 ** ASK
+- Partitioning search into regions with different variance
+- Region with more variance are allocated more sample
 ** BOAST
-   - specific generation/metaprogramming  of kernels
+   - specific generation/metaprogramming of kernels
    - requires involvement of the developper and code restructuration
    - allows optimizations that no compiler would dare
    - At the moment, no strategy for tuning code 
@@ -152,7 +154,7 @@ optimization)
     - Exploiting interesting region to refine the solution
 - Uses derivative informations to speedup POLL phase
     
-* Models
+* Models :noexport:
 ** Reuseable
 - "Deconstructing Iterative Optimization" \to Common working compiler
   flags combination across program 
@@ -168,7 +170,7 @@ optimization)
 - Training overhead \to Collective optimization
 - Used in GCC \to Milepost GCC
 
-* Idea
+* Idea :noexport:
 ** Guidelines
 - Characterization of the autotuning optimization search problem
 - Which algorithm are the most suited for each kind of problems

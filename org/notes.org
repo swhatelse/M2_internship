@@ -482,6 +482,10 @@
     year = {2015}
     }
     #+END_SRC
+** Solving Derivative-Free Nonlinear Least Squares Problems with POUNDERS
+*** Link
+    http://www.mcs.anl.gov/papers/P5120-0414.pdf
+** Multi-Objective Optimization of HPC Kernels for Performance, Power, and Energy
 ** The Speedup Test
 *** Summary
 *** Remarks/Questions
@@ -536,6 +540,11 @@
     keywords = {autotuner, optimization},
     } 
     #+END_SRC
+** ASK: Adaptative sampling Kit for Performance Characterization
+*** Summary
+    - Dividing the search space into area with different variance
+      upper bound using classication, regression trees and ANOVA.
+    - Regions with more variance are allocated more sample.
 * Questions
 ** Autotuning is an optimization problem but what are its specificities if it had some? 
    Because if there are some specificities, we can then modelize and
