@@ -222,7 +222,7 @@ summary(df);
 
 #+RESULTS:
 #+begin_example
-'data.frame':    4000 obs. of  9 variables:
+'data.frame':	4000 obs. of  9 variables:
  $ x_component_number: int  1 1 1 1 1 4 4 4 4 4 ...
  $ vector_length     : int  16 16 16 16 16 16 16 16 16 16 ...
  $ y_component_number: int  2 2 2 2 2 1 1 1 1 1 ...
@@ -233,19 +233,19 @@ summary(df);
  $ y                 : int  432 1600 2048 3240 4320 432 1600 2048 3240 4320 ...
  $ duration          : num  0.0208 0.2564 0.2636 1.1805 2.0768 ...
  x_component_number vector_length  y_component_number temporary_size
- Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2
- 1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2
- Median : 4.0       Median : 4.0   Median :2.50       Median :3
- Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3
- 3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4
- Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4
- vector_recompute load_overlap       x              y duration
- false:2000       false:2000   Min.   : 768   Min.   : 432   Min. :0.000204
- true :2000       true :2000   1st Qu.:2048   1st Qu.:1600   1st Qu.:0.006667
-                               Median :2560   Median :2048   Median :0.023882
-                               Mean   :3763   Mean   :2328   Mean :0.072823
-                               3rd Qu.:5760   3rd Qu.:3240   3rd Qu.:0.088747
-                               Max.   :7680   Max.   :4320   Max. :3.472179
+ Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
+ 1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
+ Median : 4.0       Median : 4.0   Median :2.50       Median :3     
+ Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3     
+ 3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4     
+ Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4     
+ vector_recompute load_overlap       x              y           duration       
+ false:2000       false:2000   Min.   : 768   Min.   : 432   Min.   :0.000204  
+ true :2000       true :2000   1st Qu.:2048   1st Qu.:1600   1st Qu.:0.006667  
+                               Median :2560   Median :2048   Median :0.023882  
+                               Mean   :3763   Mean   :2328   Mean   :0.072823  
+                               3rd Qu.:5760   3rd Qu.:3240   3rd Qu.:0.088747  
+                               Max.   :7680   Max.   :4320   Max.   :3.472179
 #+end_example
 
 #+begin_src R :results output :session :exports both
@@ -259,7 +259,7 @@ plot(df[!(names(df)%in%c("duration"))]);
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-195179TF/figure19517USQ.png]]
+[[file:/tmp/babel-4721NXH/figure4721Bgp.png]]
 
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -267,7 +267,7 @@ hist(df$flops)
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-195179TF/figure19517I7o.png]]
+[[file:/tmp/babel-4721NXH/figure4721aIL.png]]
 
 
 #+begin_src R :results output :session :exports both
@@ -787,16 +787,16 @@ Entered on [2015-11-19 jeu. 20:56]
        #+BEGIN_SRC ruby :tangle scripts/format_data.rb
          require 'yaml'
          require 'pp'
-
+         
          h = YAML::load(File::open("../data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml").read)
-
+         
          t = []
          t2 = []
-
-         h.first[0].each {|key, value| t2.push key } 
-         t2.push :time_per_pixel
-         t.push t2
-
+         head = []
+         
+         h.first[0].each {|key, value| head.push key } 
+         head.push :time_per_pixel
+         
          h.each {|key, value| 
            t2 = []
            key.each { |key2, value2|
@@ -805,13 +805,81 @@ Entered on [2015-11-19 jeu. 20:56]
            t2.push value
            t.push t2
          }
-
-         t.collect { |v| v }.join(", ")
-
+         
+         # sorted = t.sort{ |a,b| (a[0] <=> b[0]) == 0 ? (a[1] <=> b[1]) == 0 ? (a[2] <=> b[2]) == 0 ? (a[3] <=> b[3]) == 0 ? a[4] ? a[5] ? 1 : 0 : 1 : (a[3] <=> b[3])  : (a[2] <=> b[2]) : (a[1] <=> b[1]) : (a[0] <=> b[0]) }
+         
          File::open("/tmp/test.csv", "w"){ |f|
+           f.puts head.collect{ |v| v }.join(", ")
            t.each{ |e|
              f.puts e.collect{ |v| v }.join(", ")
            }
          }
-
        #+END_SRC
+     - 
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]
+         
+         head(sorted)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       The following objects are masked from df (pos = 3):
+
+           load_overlap, temporary_size, time_per_pixel, vector_length,
+           vector_recompute, x_component_number, y_component_number
+           x_component_number vector_length y_component_number temporary_size
+       268                  1             1                  1              2
+       264                  1             1                  1              2
+       149                  1             1                  1              2
+       548                  1             1                  1              2
+       300                  1             1                  1              4
+       127                  1             1                  1              4
+           vector_recompute load_overlap time_per_pixel
+       268            false        false   1.185234e-09
+       264            false         true   1.184208e-09
+       149             true        false   1.184270e-09
+       548             true         true   1.184641e-09
+       300            false        false   1.189092e-09
+       127            false         true   1.189452e-09
+#+end_example
+
+       #+begin_src R :results output :session :exports both
+         summary(sorted)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+        x_component_number vector_length  y_component_number temporary_size
+        Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
+        1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
+        Median : 4.0       Median : 4.0   Median :2.50       Median :3     
+        Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3     
+        3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4     
+        Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4     
+        vector_recompute load_overlap time_per_pixel     
+        false:400        false:400    Min.   :6.380e-10  
+        true :400        true :400    1st Qu.:1.141e-09  
+                                      Median :1.754e-09  
+                                      Mean   :2.767e-09  
+                                      3rd Qu.:3.154e-09  
+                                      Max.   :4.776e-08
+        #+end_example
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-4721NXH/figure4721oFw.png]]
+
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         hist(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-4721NXH/figure4721nZF.png]]
+
