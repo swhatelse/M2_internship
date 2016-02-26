@@ -77,8 +77,10 @@
 - Training overhead reduce by Collective optimization
 ** Touati
 ** ASK
-- Partitioning search into regions with different variance
+- Partitioning search into regions with different level of variance
 - Region with more variance are allocated more sample
+** OpenTuner
+
 ** BOAST
    - specific generation/metaprogramming of kernels
    - requires involvement of the developper and code restructuration
@@ -104,7 +106,7 @@
 
 *** "No a priori" (or other kind of a priori)
 - Other kind of (discrete) structure (e.g. permutation, binary vector, tree, ...)
-- Different notion of locality, hence need to cover a largev part of the search space
+- Different notion of locality, hence need to cover a larger part of the search space
 - Based on heuristics: Naive sampling, Genetic algorithm, tabu search, ant colonies, swarm 
 
 *** Many combinations of heuristics
