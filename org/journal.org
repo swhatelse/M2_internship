@@ -788,7 +788,10 @@ Entered on [2015-11-19 jeu. 20:56]
          require 'yaml'
          require 'pp'
          
-         h = YAML::load(File::open("../data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml").read)
+         input = ARGV[0]
+         
+         # h = YAML::load(File::open("../data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml").read)
+         h = YAML::load(File::open(input).read)
          
          t = []
          t2 = []
@@ -815,13 +818,130 @@ Entered on [2015-11-19 jeu. 20:56]
            }
          }
        #+END_SRC
-     - 
+     - Adonis-5 15:32:21
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_19/15_32_21_adonis-5/Data15_32_21.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]         
+       #+end_src
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-13311ddc/figure133112eT.png]]
+     - Adonis-9 15:23:23:
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml
+       #+end_src
+
        #+begin_src R :results output :session :exports both
          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
          attach(df)
          sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]
-         
-         head(sorted)
+       #+end_src
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-4721NXH/figure4721oFw.png]]
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         hist(sorted$time_per_pixel)
+       #+end_src
+   
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-12889xAc/figure12889LDa.png]]
+     - Adonis-6 15:42:14
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_19/15_42_14_adonis-6/Data15_42_14.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]
+       #+end_src
+
+       #+RESULTS:
+       : The following objects are masked from df (pos = 3):
+       : 
+       :     load_overlap, temporary_size, time_per_pixel, vector_length,
+       :     vector_recompute, x_component_number, y_component_number
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-13311ddc/figure133113Ry.png]]
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         hist(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-13311ddc/figure13311pbB.png]]
+     - Adonis-2 15:51:36
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_19/15_51_36_adonis-2/Data15_51_36.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]         
+       #+end_src
+
+       #+RESULTS:
+       : The following objects are masked from df (pos = 3):
+       : 
+       :     load_overlap, temporary_size, time_per_pixel, vector_length,
+       :     vector_recompute, x_component_number, y_component_number
+       : 
+       : The following objects are masked from df (pos = 4):
+       : 
+       :     load_overlap, temporary_size, time_per_pixel, vector_length,
+       :     vector_recompute, x_component_number, y_component_number
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-13311ddc/figure13311dEa.png]]
+     - We can see that the structure is completly different between
+       Adonis-5 and Adonis-6 it seemed to be due to some
+       variability but Adonis-5 and Adonis-9 have the same structure
+       and Adonis-6 and Adonis-2 also. So the difference is not
+       related to a big variablity but to other things.
+     - Lets have a look on Adonis-6 with another test:
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_22/15_14_33_adonis-6.grenoble.grid5000.fr/Data15_14_33.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]         
        #+end_src
 
        #+RESULTS:
@@ -830,56 +950,24 @@ Entered on [2015-11-19 jeu. 20:56]
 
            load_overlap, temporary_size, time_per_pixel, vector_length,
            vector_recompute, x_component_number, y_component_number
-           x_component_number vector_length y_component_number temporary_size
-       268                  1             1                  1              2
-       264                  1             1                  1              2
-       149                  1             1                  1              2
-       548                  1             1                  1              2
-       300                  1             1                  1              4
-       127                  1             1                  1              4
-           vector_recompute load_overlap time_per_pixel
-       268            false        false   1.185234e-09
-       264            false         true   1.184208e-09
-       149             true        false   1.184270e-09
-       548             true         true   1.184641e-09
-       300            false        false   1.189092e-09
-       127            false         true   1.189452e-09
+
+       The following objects are masked from df (pos = 4):
+
+           load_overlap, temporary_size, time_per_pixel, vector_length,
+           vector_recompute, x_component_number, y_component_number
+
+       The following objects are masked from df (pos = 5):
+
+           load_overlap, temporary_size, time_per_pixel, vector_length,
+           vector_recompute, x_component_number, y_component_number
 #+end_example
 
-       #+begin_src R :results output :session :exports both
-         summary(sorted)
-       #+end_src
-
-       #+RESULTS:
-       #+begin_example
-        x_component_number vector_length  y_component_number temporary_size
-        Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
-        1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
-        Median : 4.0       Median : 4.0   Median :2.50       Median :3     
-        Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3     
-        3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4     
-        Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4     
-        vector_recompute load_overlap time_per_pixel     
-        false:400        false:400    Min.   :6.380e-10  
-        true :400        true :400    1st Qu.:1.141e-09  
-                                      Median :1.754e-09  
-                                      Mean   :2.767e-09  
-                                      3rd Qu.:3.154e-09  
-                                      Max.   :4.776e-08
-        #+end_example
-
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
-         plot(sorted)
+         plot(sorted$time_per_pixel)
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-4721NXH/figure4721oFw.png]]
+       [[file:/tmp/babel-13311ddc/figure13311Rty.png]]
 
-
-       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
-         hist(sorted$time_per_pixel)
-       #+end_src
-
-       #+RESULTS:
-       [[file:/tmp/babel-4721NXH/figure4721nZF.png]]
-
+       - We have the same structure has before maybe there are some
+         differences between Adonis platform.
