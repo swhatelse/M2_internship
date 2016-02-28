@@ -12,7 +12,7 @@
 
 #+LaTeX_CLASS: beamer
 #+LaTeX_CLASS_OPTIONS: [11pt,xcolor=dvipsnames,presentation]
-#+OPTIONS:   H:2 num:t toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 
 #+LATEX_HEADER: \usedescriptionitemofwidthas{bl}
 #+LATEX_HEADER: \usepackage[T1]{fontenc}
@@ -57,9 +57,9 @@
 #+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
 
 * Related work on autotuning
-** Dongarra
+*** Dongarra
 # types de problème, type d'approch
-** Wild
+*** Wild
 # types de problème, type d'approche (code transformation Orio,
 # optimization)
 - Discrete, derivative-free, and constraint optimization
@@ -67,7 +67,7 @@
   *platforms* with different kernels
 - Machine learning to learn good combination of optimization
   parameters on one plateform
-** Fursin
+*** Fursin
 - Discrete optimization
 - Multi-objective optimization (e.g: size and performances)
 - Possible to build model of compiler flags that works across
@@ -75,19 +75,24 @@
 - Use of machine learning technics
 - Models build using random search
 - Training overhead reduce by Collective optimization
-** Touati
-** ASK
+*** Touati
+*** ASK
 - Partitioning search into regions with different level of variance
 - Region with more variance are allocated more sample
-** OpenTuner
+*** OpenTuner
+- Discontinuous, non-smooth
+- Adatping the search method to the particularities of the search
+  space
+- Testing multiple methods at the same time and keep those which
+  performs better. Improvment are shared between methods.
 
-** BOAST
+*** BOAST
    - specific generation/metaprogramming of kernels
    - requires involvement of the developper and code restructuration
    - allows optimizations that no compiler would dare
    - At the moment, no strategy for tuning code 
 * Optimization overview
-** Autotuning optimization problem
+*** Autotuning optimization problem
 - *Nonsmooth* and *Empirical* objective function and constraints
 - Both discrete and continuous parameters
 - Large optimization space with potential interactions between parameters
@@ -96,13 +101,13 @@
 *** A priori on the objective function
 - Exploit information about the problem (e.g., convexity, locality)
 - Derivative based methods (*local* search generaly based on *gradient* descent)
-  - Non convex (, hence local minimum): randomized strategies (e.g., simulated annealing)
+  - Non convex (hence local minimum): randomized strategies (e.g., simulated annealing)
   - If derivation is not available (function too complex)
      - Pattern search (e.g., Nelder-Mead)
      - Mesh Adaptive Direct search
   - If derivation is not possible (empiric function): estimate with regressions (e.g., surrogates-based search)
   - If evaluation is costly: meta-models (e.g., krigging) but derivation of interpolation is dubious...
-- Additional difficulty depending on whether the parameters are contrained or not
+- Additional difficulty depending on whether the parameters are constrained or not
 
 *** "No a priori" (or other kind of a priori)
 - Other kind of (discrete) structure (e.g. permutation, binary vector, tree, ...)

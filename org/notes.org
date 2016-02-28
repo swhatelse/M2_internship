@@ -542,6 +542,7 @@
     #+END_SRC
 ** ASK: Adaptative sampling Kit for Performance Characterization
 *** Summary
+    - Excessive pruning \to missing optimal solutions.
     - Dividing the search space into area with different variance
       upper bound using classication, regression trees and ANOVA.
     - Regions with more variance are allocated more sample.
