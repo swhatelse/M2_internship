@@ -418,6 +418,7 @@
 **** For the probabilistic model, do they use a different uniform sampling on each program? 
 **** Why in the probabilistic model good solutions are those that give 98% of speedup  and in the transductive model it is 95% ?
 **** Using the solutions of the closest neighbors works for the same plateform, does this work in cross platform context?
+**** The models are built using a random sampling, 
 *** Links
     http://fursin.net/papers/fkmp2011.pdf
 *** Bibtex
@@ -542,10 +543,15 @@
     #+END_SRC
 ** ASK: Adaptative sampling Kit for Performance Characterization
 *** Summary
+    - Empirical, blackbox function
     - Excessive pruning \to missing optimal solutions.
     - Dividing the search space into area with different variance
       upper bound using classication, regression trees and ANOVA.
     - Regions with more variance are allocated more sample.
+* Memo
+** Non-smooth
+    Discontinous and non differentiable functions. 
+    Abrupt bends.
 * Questions
 ** Autotuning is an optimization problem but what are its specificities if it had some? 
    Because if there are some specificities, we can then modelize and
@@ -557,4 +563,5 @@
    Maybe coupling this with the information about the platform.
 ** What is the size of the search space of BOAST?
     There is no given size, it depends on the user's problem
-** Are we interested in using knowledge from other platforms and applications or only making prediction "on the fly" of the application we want to optimize? 
+** Are we interested in using knowledge from other platforms and applications or only making prediction "on the fly" of the application we want to optimize?
+** Is linear regression a surrogates-based models?
