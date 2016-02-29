@@ -657,15 +657,18 @@ Entered on [2015-11-19 jeu. 20:56]
          gem install --user-install *.gem
 
          DATADIR="/tmp"
-         DATAFOLD=`date +%Y_%m_%d`
-         DATAFOLD="$DATADIR/$DATAFOLD"
+         DATA_FOLD_DAY=`date +%Y_%m_%d`
+         DATA_FOLD_DAY="$DATADIR/$DATA_FOLD_DAY"
          BKUP=`date +%H_%M_%S`
-         DATAFOLD2="$DATAFOLD/$BKUP"
-         mkdir -p $DATAFOLD
-         mkdir -p $DATAFOLD2
+         DATA_FOLD_HOST=`hostname`
+         DATA_FOLD_HOST="$DATA_FOLD_DAY/$DATA_FOLD_HOST"
+         DATA_FOLD_TIME="$DATA_FOLD_HOST/$BKUP"
+         mkdir -p $DATA_FOLD_DAY
+         mkdir -p $DATA_FOLD_HOST
+         mkdir -p $DATA_FOLD_TIME
          INFO_NAME="Info"
          DATA_FILE="Data"
-         INFO_FILE="$DATAFOLD2/$INFO_NAME${BKUP}.org"
+         INFO_FILE="$DATA_FOLD_TIME/$INFO_NAME${BKUP}.org"
          DATA_FILE="$DATA_FILE${BKUP}"
 
          ######### Collecting informations about the platform #########
@@ -674,57 +677,67 @@ Entered on [2015-11-19 jeu. 20:56]
          echo "#+MACHINE: $(eval hostname)" >> $INFO_FILE
          echo "#+FILE: $INFO_FILE" >> $INFO_FILE
 
-         echo "* Environment infos" >> $INFO_FILE
+         echo "* ENVIRONMENT INFOS" >> $INFO_FILE
 
-         echo "** Hardware" >> $INFO_FILE
+         echo "** HARDWARE" >> $INFO_FILE
 
          echo "*** CPU" >> $INFO_FILE
          echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
          less /proc/cpuinfo >> $INFO_FILE
          echo "#+END_EXAMPLE" >> $INFO_FILE
 
-         echo "*** GPU" >> $INFO_FILE
-         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
-         # nvidia-smi -q >> $INFO_FILE
-         lshw -numeric -C display >> $INFO_FILE
-         echo "#+END_EXAMPLE" >> $INFO_FILE
+         if [[ -n $(command -v nvidia-smi) ]];
+         then
+             echo "*** GPU INFO FROM NVIDIA-SMI" >> $INFO_FILE
+             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
+             nvidia-smi -q >> $INFO_FILE
+             echo "#+END_EXAMPLE" >> $INFO_FILE
+         else
+             echo "*** GPU" >> $INFO_FILE
+             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
+             lshw -numeric -C display >> $INFO_FILE
+             echo "#+END_EXAMPLE" >> $INFO_FILE
+         fi 
 
-         echo "** Software" >> $INFO_FILE
+         echo "** SOFTWARE" >> $INFO_FILE
 
          if [ -f /proc/version ];
          then
-             echo "*** LINUX AND GCC VERSIONS" >> $info
-             echo "#+BEGIN_EXAMPLE" >> $info    
-             cat /proc/version >> $info
-             echo "#+END_EXAMPLE" >> $info
+             echo "*** LINUX AND GCC VERSIONS" >> $INFO_FILE
+             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
+             cat /proc/version >> $INFO_FILE
+             echo "#+END_EXAMPLE" >> $INFO_FILE
          fi
 
-         echo "*** Environment Variables"
+         echo "*** ENVIRONMENT VARIABLES"
          echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
          env >> $INFO_FILE
          echo "#+END_EXAMPLE" >> $INFO_FILE
 
          if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ];
          then
-             echo "*** CPU GOVERNOR" >> $info
-             echo "#+BEGIN_EXAMPLE" >> $info    
-             cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor >> $info
-             echo "#+END_EXAMPLE" >> $info
+             echo "*** CPU GOVERNOR" >> $INFO_FILE
+             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
+             cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor >> $INFO_FILE
+             echo "#+END_EXAMPLE" >> $INFO_FILE
          fi
 
          if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ];
          then
-             echo "*** CPU FREQUENCY" >> $info
-             echo "#+BEGIN_EXAMPLE" >> $info    
-             cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq >> $info
-             echo "#+END_EXAMPLE" >> $info
+             echo "*** CPU FREQUENCY" >> $INFO_FILE
+             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
+             cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq >> $INFO_FILE
+             echo "#+END_EXAMPLE" >> $INFO_FILE
          fi
 
          ######## Run experiment ########
          cd $BASE/boast-lig/ARMclbench
-         OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb
-         mv $DATA_FILE'.yaml' $DATAFOLD2
-         mv $DATA_FILE'_parameters.yaml' $DATAFOLD2 
+         echo "* PROGRAM OUTPUT" >> $INFO_FILE
+         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
+         OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb >> $INFO_FILE
+         echo "#+END_EXAMPLE" >> $INFO_FILE
+         mv $DATA_FILE'.yaml' $DATA_FOLD_TIME
+         mv $DATA_FILE'_parameters.yaml' $DATA_FOLD_TIME 
        #+end_src
  
    - The results below are obtained from different executions of
@@ -971,3 +984,6 @@ Entered on [2015-11-19 jeu. 20:56]
 
        - We have the same structure has before maybe there are some
          differences between Adonis platform.
+** 2016-02-29
+   - [ ] Check if there are errors in the kernel computation
+   - [ ] Check which implementation of OpenCL is used
