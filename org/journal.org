@@ -1090,29 +1090,22 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       #+begin_example
-       The following objects are masked from df (pos = 3):
-
-           load_overlap, temporary_size, time_per_pixel, vector_length,
-           vector_recompute, x_component_number, y_component_number
-
-       The following objects are masked from df (pos = 4):
-
-           load_overlap, temporary_size, time_per_pixel, vector_length,
-           vector_recompute, x_component_number, y_component_number
-
-       The following objects are masked from df (pos = 5):
-
-           load_overlap, temporary_size, time_per_pixel, vector_length,
-           vector_recompute, x_component_number, y_component_number
-#+end_example
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
          plot(sorted$time_per_pixel)
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-9562LHG/figure9562jjG.png]]
+       [[file:/tmp/babel-9562LHG/figure9562YGy.png]]
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-10001xgG/figure10001vhG.png]]
+
+
    - The previous differences we had between adonis-6 and adonis-9
      came from the fact that on one machine the nvidia implementation
      of the opencl was not used.
