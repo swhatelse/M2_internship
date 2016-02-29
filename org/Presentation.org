@@ -68,29 +68,39 @@
 - Machine learning to learn good combination of optimization
   parameters on one plateform
 *** Fursin
-- Discrete optimization
-- Multi-objective optimization (e.g: size and performances)
+**** Milepost
+- Discrete & Multi-objective optimization (e.g: size and performances)
 - Possible to build model of compiler flags that works across
   applications
 - Use of machine learning technics
 - Models build using random search
+# How is this information exploited?
 - Training overhead reduce by Collective optimization
-*** Touati
+**** Performance portability
+- Correlation between peformance and *code optimization across*
+  *platforms* with different kernels
+- Build model on one architecture and try to apply to another one
+- Strong correlation with similar architecture
+- The most important are the correlation between high performing
+  combination
+*** Touati :noexport:
 *** ASK
+- Accuracy of a model relies on the sampling
 - Partitioning search into regions with different level of variance
-- Region with more variance are allocated more sample
+- Region with more variance are allocated more samples
 *** OpenTuner
-- Discontinuous, non-smooth
+- *Discontinuous*, *non-smooth* optimization
+- Efficient of a search technic depends on the problem
 - Adatping the search method to the particularities of the search
   space
 - Testing multiple methods at the same time and keep those which
   performs better. Improvment are shared between methods.
 
 *** BOAST
-   - specific generation/metaprogramming of kernels
-   - requires involvement of the developper and code restructuration
-   - allows optimizations that no compiler would dare
-   - At the moment, no strategy for tuning code 
+- specific generation/metaprogramming of kernels
+- requires involvement of the developper and code restructuration
+- allows optimizations that no compiler would dare
+- At the moment, no strategy for tuning code 
 * Optimization overview
 *** Autotuning optimization problem
 - *Nonsmooth* and *Empirical* objective function and constraints
