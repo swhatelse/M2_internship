@@ -626,11 +626,11 @@ Entered on [2015-11-19 jeu. 20:56]
      several time to see how is the variability. 
    - Send to grenoble:
      #+begin_src sh :results output :exports both :tangle scripts/send_to_grenoble.sh
-       BASE="$PWD/.."
-       ssh squinitomasnada@grid5000.fr:~/grenoble 'mkdir -p boast'
+       BASE="$PWD/../.."
+       ssh squinitomasnada@access.grid5000.fr 'mkdir -p ~/grenoble/boast'
        rsync -avzP --exclude '.git' $BASE/boast squinitomasnada@access.grid5000.fr:~/grenoble/boast
        rsync -avzP --exclude '.git' $BASE/boast-lig squinitomasnada@access.grid5000.fr:~/grenoble/boast
-       rsync -avzP --exclude '.git' $BASE/scripts squinitomasnada@access.grid5000.fr:~/grenoble/boast
+       rsync -avzP --exclude '.git' $BASE/org/scripts squinitomasnada@access.grid5000.fr:~/grenoble/boast
      #+end_src
    - Send to nodes:
      #+begin_src sh :results output :exports both :tangle scripts/send_to_nodes.sh
@@ -651,10 +651,6 @@ Entered on [2015-11-19 jeu. 20:56]
    - Install BOAST and run Bruteforce on Adonis:
        #+begin_src sh :results output :exports both :tangle scripts/bruteforce_adonis.sh
          BASE="$PWD/.."
-         ####### BOAST installation #######
-         cd $BASE/boast
-         gem build *.gemspec
-         gem install --user-install *.gem
 
          DATADIR="/tmp"
          DATA_FOLD_DAY=`date +%Y_%m_%d`
@@ -709,7 +705,7 @@ Entered on [2015-11-19 jeu. 20:56]
              echo "#+END_EXAMPLE" >> $INFO_FILE
          fi
 
-         echo "*** ENVIRONMENT VARIABLES"
+         echo "*** ENVIRONMENT VARIABLES"  >> $INFO_FILE
          echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
          env >> $INFO_FILE
          echo "#+END_EXAMPLE" >> $INFO_FILE
@@ -730,16 +726,25 @@ Entered on [2015-11-19 jeu. 20:56]
              echo "#+END_EXAMPLE" >> $INFO_FILE
          fi
 
+         ####### BOAST installation #######
+         cd $BASE/boast
+         gem build *.gemspec
+         gem install --user-install *.gem
+
          ######## Run experiment ########
          cd $BASE/boast-lig/ARMclbench
          echo "* PROGRAM OUTPUT" >> $INFO_FILE
          echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
-         OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb >> $INFO_FILE
+         CLPLATFORM=NVIDIA VERBOSE=true OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb >> $INFO_FILE
          echo "#+END_EXAMPLE" >> $INFO_FILE
          mv $DATA_FILE'.yaml' $DATA_FOLD_TIME
          mv $DATA_FILE'_parameters.yaml' $DATA_FOLD_TIME 
        #+end_src
  
+     #+BEGIN_SRC ruby
+
+     #+END_SRC
+
    - The results below are obtained from different executions of
      Laplacian.rb on adonis platforms. The best configuration is found
      as follow:
@@ -986,4 +991,128 @@ Entered on [2015-11-19 jeu. 20:56]
          differences between Adonis platform.
 ** 2016-02-29
    - [ ] Check if there are errors in the kernel computation
-   - [ ] Check which implementation of OpenCL is used
+   - [X] Check which implementation of OpenCL is used
+     
+   - Let's try with the check on adonis-9 and adonis-6:
+     #+begin_src sh :session foo :results output :exports both 
+       oarsub -p "gpu='YES' and network_address in ('adonis-9.grenoble.grid5000.fr', 'adonis-6.grenoble.grid5000.fr')" -t deploy -l nodes=2,walltime=3 -I
+     #+end_src
+   - Results adonis-6
+     - 14:15:35
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_29/adonis-6.grenoble.grid5000.fr/14_15_35/Data14_15_35.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]         
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-9562LHG/figure95629pq.png]]
+      
+     - 15:12:51
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_29/adonis-6.grenoble.grid5000.fr/15_12_51/Data15_12_51.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]         
+       #+end_src
+
+       #+RESULTS:
+       : The following objects are masked from df (pos = 3):
+       : 
+       :     load_overlap, temporary_size, time_per_pixel, vector_length,
+       :     vector_recompute, x_component_number, y_component_number
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-9562LHG/figure9562WSM.png]]
+   - Results adonis-9
+     - 14:08:07
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_29/adonis-9.grenoble.grid5000.fr/14_08_07/Data14_08_07.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]         
+       #+end_src
+
+       #+RESULTS:
+       : The following objects are masked from df (pos = 3):
+       : 
+       :     load_overlap, temporary_size, time_per_pixel, vector_length,
+       :     vector_recompute, x_component_number, y_component_number
+       : 
+       : The following objects are masked from df (pos = 4):
+       : 
+       :     load_overlap, temporary_size, time_per_pixel, vector_length,
+       :     vector_recompute, x_component_number, y_component_number
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-9562LHG/figure9562K7k.png]]
+     - 15:05:38
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_02_29/adonis-9.grenoble.grid5000.fr/15_05_38/Data15_05_38.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]         
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       The following objects are masked from df (pos = 3):
+
+           load_overlap, temporary_size, time_per_pixel, vector_length,
+           vector_recompute, x_component_number, y_component_number
+
+       The following objects are masked from df (pos = 4):
+
+           load_overlap, temporary_size, time_per_pixel, vector_length,
+           vector_recompute, x_component_number, y_component_number
+
+       The following objects are masked from df (pos = 5):
+
+           load_overlap, temporary_size, time_per_pixel, vector_length,
+           vector_recompute, x_component_number, y_component_number
+#+end_example
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 500 :session
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-9562LHG/figure9562jjG.png]]
+   - The previous differences we had between adonis-6 and adonis-9
+     came from the fact that on one machine the nvidia implementation
+     of the opencl was not used.
