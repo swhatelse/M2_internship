@@ -63,10 +63,18 @@
 # types de problème, type d'approche (code transformation Orio,
 # optimization)
 - Discrete, derivative-free, and constraint optimization
-- Correlation between peformance and *code optimization across*
-  *platforms* with different kernels
-- Machine learning to learn good combination of optimization
-  parameters on one plateform
+- Correlation between peformance and *tuning across* *platforms*
+- Learning good combination on one architecture and try to
+  apply to another one 
+- Strong correlation with similar architecture
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.3]{./img/20160302/correlation.png}
+\includegraphics[scale=0.25]{./img/20160302/correlation2.png}
+\end{figure}
+#+END_LaTeX
 *** Fursin
 **** Milepost
 - Discrete & Multi-objective optimization (e.g: size and performances)
@@ -76,18 +84,20 @@
 - Models build using random search
 # How is this information exploited?
 - Training overhead reduce by Collective optimization
-**** Performance portability
-- Correlation between peformance and *code optimization across*
-  *platforms* with different kernels
-- Build model on one architecture and try to apply to another one
-- Strong correlation with similar architecture
-- The most important are the correlation between high performing
-  combination
 *** Touati :noexport:
 *** ASK
 - Accuracy of a model relies on the sampling
 - Partitioning search into regions with different level of variance
 - Region with more variance are allocated more samples
+
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.2]{./img/20160302/HSV_example.png}
+\end{figure}
+#+END_LaTeX
+
 *** OpenTuner
 - *Discontinuous*, *non-smooth* optimization
 - Efficient of a search technic depends on the problem
@@ -113,7 +123,7 @@
 - Derivative based methods (*local* search generaly based on *gradient* descent)
   - Non convex (hence local minimum): randomized strategies (e.g., simulated annealing)
   - If derivation is not available (function too complex)
-     - Pattern search (e.g., Nelder-Mead)
+     - Direct search (e.g., Nelder-Mead, pattern search)
      - Mesh Adaptive Direct search
   - If derivation is not possible (empiric function): estimate with regressions (e.g., surrogates-based search)
   - If evaluation is costly: meta-models (e.g., krigging) but derivation of interpolation is dubious...
@@ -125,8 +135,10 @@
 - Based on heuristics: Naive sampling, Genetic algorithm, tabu search, ant colonies, swarm 
 
 *** Many combinations of heuristics
-  GPS: SEARCH, POLL, ...
-  
+Generalized Pattern Search: 
+- Global exploration \to SEARCH
+  - Possible to use any technics (e.g. randomized, surrogate-based, etc...)
+- Local exploration \to POLL
 
 * And in practice...
 ** Laplacian

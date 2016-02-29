@@ -548,6 +548,10 @@
     - Dividing the search space into area with different variance
       upper bound using classication, regression trees and ANOVA.
     - Regions with more variance are allocated more sample.
+** Annotation-Based Empirical Performance Tuning Using Orio
+*** Summary
+    - Only use random search, Nelder Mead Simplex and simulated
+      annealing for the moment
 * Memo
 ** Non-smooth
     Discontinous and non differentiable functions. 
