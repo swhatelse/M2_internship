@@ -59,6 +59,9 @@
 * Related work on autotuning
 *** Dongarra
 # types de problème, type d'approch
+- ATLAS \to specialized autotuner for dense linear algebra
+- Relaxed 1-D linear search \to require to know good starting point and
+  interaction between optimizations
 *** Wild
 # types de problème, type d'approche (code transformation Orio,
 # optimization)
@@ -76,10 +79,9 @@
 \end{figure}
 #+END_LaTeX
 *** Fursin
-**** Milepost
 - Discrete & Multi-objective optimization (e.g: size and performances)
 - Possible to build model of compiler flags that works across
-  applications
+  applications \to Milepost GCC
 - Use of machine learning technics
 - Models build using random search
 # How is this information exploited?
@@ -118,14 +120,14 @@
 - Large optimization space with potential interactions between parameters
 
 ** Search space strategy
-*** A priori on the objective function
+*** A priori on the objective functoin
 - Exploit information about the problem (e.g., convexity, locality)
 - Derivative based methods (*local* search generaly based on *gradient* descent)
   - Non convex (hence local minimum): randomized strategies (e.g., simulated annealing)
   - If derivation is not available (function too complex)
-     - Direct search (e.g., Nelder-Mead, pattern search)
-     - Mesh Adaptive Direct search
-  - If derivation is not possible (empiric function): estimate with regressions (e.g., surrogates-based search)
+    - Direct search (e.g., Nelder-Mead, pattern search)
+    - randomized strategies
+  - If derivation is not possible (empirical function): estimate with regressions (e.g., surrogates-based search)
   - If evaluation is costly: meta-models (e.g., krigging) but derivation of interpolation is dubious...
 - Additional difficulty depending on whether the parameters are constrained or not
 
@@ -137,17 +139,31 @@
 *** Many combinations of heuristics
 Generalized Pattern Search: 
 - Global exploration \to SEARCH
-  - Possible to use any technics (e.g. randomized, surrogate-based, etc...)
+  - Possible to use any technics (e.g. randomized, surrogate-based,
+    etc...)
+  - Try find better solution than the local optimal elsewhere
 - Local exploration \to POLL
+  - Try refine the solution by exploring a mesh
+- Use derivative informations when available to speedup the exploration
 
 * And in practice...
-** Laplacian
-   code, parameters, ...
-   OpenCL
-** Brute force exploration on Adonis
-  - how much time (full, per configuration)
-  - Results: actually not that stable
-** Efficiency of the random sampling
+*** Laplacian
+# code, parameters, ...
+- Parameters:
+  - x_component_number [1,2,4,8,16]
+  - vector_length [1,2,4,8,16]
+  - y_component_number [1,4]
+  - temporary_size [2,4]
+  - vector_recompute [true,false]
+  - load_overlap [true,false]
+
+- OpenCL Nvidia implementation
+*** Brute force exploration on Adonis
+- Search space = 800
+- Each version tested on 4 image sizes and four time per image size.
+#  - how much time (full, per configuration)
+#  - Results: actually not that stable
+*** Efficiency of the random sampling
   - Need for complex exploration scheme?  
   
   
