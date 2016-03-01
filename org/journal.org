@@ -2,6 +2,12 @@
 #+AUTHOR: Steven QUINITO MASNADA
 #+BABEL: :tangle yes
 
+* Memo
+  - Get opencl platform
+    #+begin_src R :results output :session :exports both
+      require 'opencl_ruby_ffi'
+      OpenCL::get_platforms
+    #+end_src
 * Installation
   Here the installation that download and install al the necessary tools.
 ** Base
@@ -639,7 +645,7 @@ Entered on [2015-11-19 jeu. 20:56]
        PREV_NODE=''
        while read NODE; do
            if [[ "$NODE" != "$PREV_NODE" ]]; then
-               ssh root@$NODE:~/ 'mkdir -p boast'
+               ssh root@$NODE 'mkdir -p ~/boast'
                rsync -avzP --exclude '.git' $BASE/boast root@$NODE:~/boast
                rsync -avzP --exclude '.git' $BASE/boast-lig root@$NODE:~/boast
                rsync -avzP --exclude '.git' $BASE/scripts root@$NODE:~/boast
@@ -1109,3 +1115,5 @@ Entered on [2015-11-19 jeu. 20:56]
    - The previous differences we had between adonis-6 and adonis-9
      came from the fact that on one machine the nvidia implementation
      of the opencl was not used.
+** 2016-03-01
+ - 

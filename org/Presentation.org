@@ -120,7 +120,7 @@
 - Large optimization space with potential interactions between parameters
 
 ** Search space strategy
-*** A priori on the objective functoin
+*** A priori on the objective function
 - Exploit information about the problem (e.g., convexity, locality)
 - Derivative based methods (*local* search generaly based on *gradient* descent)
   - Non convex (hence local minimum): randomized strategies (e.g., simulated annealing)
@@ -164,11 +164,13 @@ Generalized Pattern Search:
 #  - how much time (full, per configuration)
 #  - Results: actually not that stable
 *** Efficiency of the random sampling
-  - Need for complex exploration scheme?  
-  
-  
-  
-  
+  - Need for complex exploration scheme  
+* Goal
+*** Idea
+- Characterization of the autotuning optimization search problems
+- Which algorithms are the most suited for each kind of problems
+- Devise an adaptive approach
+
 * Models, exploration, notes :noexport:
   
   
@@ -215,10 +217,5 @@ Generalized Pattern Search:
 - Training overhead \to Collective optimization
 - Used in GCC \to Milepost GCC
 
-* Idea :noexport:
-** Guidelines
-- Characterization of the autotuning optimization search problem
-- Which algorithm are the most suited for each kind of problems
-- Devise an adaptive approach
 
 
