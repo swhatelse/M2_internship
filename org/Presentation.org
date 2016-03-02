@@ -55,14 +55,17 @@
 
 
 #+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
-
+* Laboratory book
+*** Laboratory book
+- Available at https://github.com/swhatelse/M2_internship
+- Journal and notes
 * Related work on autotuning
-*** Dongarra
+*** Jack Dongarra
 # types de problème, type d'approch
 - ATLAS \to specialized autotuner for dense linear algebra
 - Relaxed 1-D linear search \to require to know good starting point and
   interaction between optimizations
-*** Wild
+*** Stefan M. Wild
 # types de problème, type d'approche (code transformation Orio,
 # optimization)
 - Discrete, derivative-free, and constraint optimization
@@ -78,7 +81,7 @@
 \includegraphics[scale=0.25]{./img/20160302/correlation2.png}
 \end{figure}
 #+END_LaTeX
-*** Fursin
+*** Grigory Fursin
 - Discrete & Multi-objective optimization (e.g: size and performances)
 - Possible to build model of compiler flags that works across
   applications \to Milepost GCC
@@ -86,7 +89,6 @@
 - Models build using random search
 # How is this information exploited?
 - Training overhead reduce by Collective optimization
-*** Touati :noexport:
 *** ASK
 - Accuracy of a model relies on the sampling
 - Partitioning search into regions with different level of variance
@@ -126,7 +128,7 @@
   - Non convex (hence local minimum): randomized strategies (e.g., simulated annealing)
   - If derivation is not available (function too complex)
     - Direct search (e.g., Nelder-Mead, pattern search)
-    - randomized strategies
+    - plus randomized strategies
   - If derivation is not possible (empirical function): estimate with regressions (e.g., surrogates-based search)
   - If evaluation is costly: meta-models (e.g., krigging) but derivation of interpolation is dubious...
 - Additional difficulty depending on whether the parameters are constrained or not
@@ -158,19 +160,55 @@ Generalized Pattern Search:
   - load_overlap [true,false]
 
 - OpenCL Nvidia implementation
-*** Brute force exploration on Adonis
-- Search space = 800
-- Each version tested on 4 image sizes and four time per image size.
+
 #  - how much time (full, per configuration)
 #  - Results: actually not that stable
-*** Efficiency of the random sampling
-  - Need for complex exploration scheme  
-* Goal
-*** Idea
+
+*** Brute force exploration on GPU NVIDIA
+- Search space = 800
+- Each version tested 4 time on 4 image sizes.
+
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.4]{./img/not_ordered.png}
+\end{figure}
+#+END_LaTeX
+*** One possible order 
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.4]{./img/another_order.png}
+\end{figure}
+#+END_LaTeX
+*** And another one
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.4]{./img/ordered_1.png}
+\end{figure}
+#+END_LaTeX
+
+*** Can we achieve an efficient "search space simplification" ?
+- Facilitates the search
+- Do we still need for complex exploration scheme ?
+- Comparison between search technics which are correctly adapted to
+  the autotuning search problem, with a correctly presented problem
+  (especially with the random search with high number of parameters)
+* Summary
+*** Objectives
+- Find how to present the problem to have the nicest shape as possible
+  in order to facilitate the search
 - Characterization of the autotuning optimization search problems
 - Which algorithms are the most suited for each kind of problems
 - Devise an adaptive approach
 
+* End
+*** End
+Thank you for your attention 
 * Models, exploration, notes :noexport:
   
   
