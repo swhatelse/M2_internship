@@ -265,7 +265,7 @@ plot(df[!(names(df)%in%c("duration"))]);
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-4721NXH/figure4721Bgp.png]]
+[[file:/tmp/babel-30783Rp/figure30781gR.png]]
 
 
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -273,7 +273,7 @@ hist(df$flops)
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-4721NXH/figure4721aIL.png]]
+[[file:/tmp/babel-30783Rp/figure3078pJq.png]]
 
 
 #+begin_src R :results output :session :exports both
@@ -295,32 +295,32 @@ summary(lm(data=df, flops ~ (x_component_number + y_component_number + vector_le
 
 #+RESULTS:
 #+begin_example
-
+ 
 Call:
-lm(formula = flops ~ (x_component_number + y_component_number +
-    vector_length + factor(temporary_size) + factor(vector_recompute) +
+lm(formula = flops ~ (x_component_number + y_component_number + 
+    vector_length + factor(temporary_size) + factor(vector_recompute) + 
     factor(load_overlap) + x + y), data = df)
 
 Residuals:
-       Min         1Q     Median         3Q        Max
--4.532e+09 -1.340e+09 -4.478e+08  5.483e+08  1.239e+10
+       Min         1Q     Median         3Q        Max 
+-4.532e+09 -1.340e+09 -4.478e+08  5.483e+08  1.239e+10 
 
 Coefficients:
-                               Estimate Std. Error t value Pr(>|t|)
+                               Estimate Std. Error t value Pr(>|t|)    
 (Intercept)                   827765774  145444921   5.691 1.35e-08 ***
 x_component_number            168354043    6796767  24.770  < 2e-16 ***
 y_component_number            324149508   33163768   9.774  < 2e-16 ***
-vector_length                  -7796884    6796767  -1.147 0.251390
+vector_length                  -7796884    6796767  -1.147 0.251390    
 factor(temporary_size)4      -281970610   74156439  -3.802 0.000145 ***
-factor(vector_recompute)true -178649163   74156439  -2.409 0.016038 *
+factor(vector_recompute)true -178649163   74156439  -2.409 0.016038 *  
 factor(load_overlap)true      518930201   74156439   6.998 3.04e-12 ***
-x                               -104684      60695  -1.725 0.084649 .
-y                                291403     115655   2.520 0.011788 *
+x                               -104684      60695  -1.725 0.084649 .  
+y                                291403     115655   2.520 0.011788 *  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Residual standard error: 2.345e+09 on 3991 degrees of freedom
-Multiple R-squared:  0.1661,    Adjusted R-squared:  0.1645
+Multiple R-squared:  0.1661,	Adjusted R-squared:  0.1645 
 F-statistic: 99.39 on 8 and 3991 DF,  p-value: < 2.2e-16
 #+end_example
 
@@ -341,16 +341,16 @@ summary(lm(data=df, flops ~ (x_component_number + I(x_component_number^2) +
 
 #+RESULTS:
 #+begin_example
-
+ 
 Call:
-lm(formula = flops ~ (x_component_number + I(x_component_number^2) +
-    y_component_number + I(y_component_number^2) + vector_length +
-    I(vector_length^2) + factor(temporary_size) + factor(vector_recompute) +
+lm(formula = flops ~ (x_component_number + I(x_component_number^2) + 
+    y_component_number + I(y_component_number^2) + vector_length + 
+    I(vector_length^2) + factor(temporary_size) + factor(vector_recompute) + 
     factor(load_overlap) + x + y)^2, data = df)
 
 Residuals:
-       Min         1Q     Median         3Q        Max
--5.030e+09 -6.204e+08 -1.971e+07  5.541e+08  6.033e+09
+       Min         1Q     Median         3Q        Max 
+-5.030e+09 -6.204e+08 -1.971e+07  5.541e+08  6.033e+09 
 
 Coefficients:
                                                         Estimate Std. Error
@@ -421,79 +421,79 @@ factor(vector_recompute)true:y                        -1.125e+03  1.135e+05
 factor(load_overlap)true:x                            -4.277e+04  5.959e+04
 factor(load_overlap)true:y                             1.277e+05  1.135e+05
 x:y                                                   -3.127e+01  8.001e+00
-                                                      t value Pr(>|t|)
+                                                      t value Pr(>|t|)    
 (Intercept)                                             5.787 7.71e-09 ***
 x_component_number                                     -8.226 2.61e-16 ***
-I(x_component_number^2)                                 1.116 0.264635
-y_component_number                                     -1.036 0.300474
-I(y_component_number^2)                                -0.460 0.645550
+I(x_component_number^2)                                 1.116 0.264635    
+y_component_number                                     -1.036 0.300474    
+I(y_component_number^2)                                -0.460 0.645550    
 vector_length                                          -8.085 8.20e-16 ***
-I(vector_length^2)                                     -2.508 0.012185 *
+I(vector_length^2)                                     -2.508 0.012185 *  
 factor(temporary_size)4                                 9.070  < 2e-16 ***
-factor(vector_recompute)true                           -2.845 0.004461 **
+factor(vector_recompute)true                           -2.845 0.004461 ** 
 factor(load_overlap)true                               -8.653  < 2e-16 ***
-x                                                       1.925 0.054320 .
-y                                                      -1.722 0.085220 .
+x                                                       1.925 0.054320 .  
+y                                                      -1.722 0.085220 .  
 x_component_number:I(x_component_number^2)              4.160 3.25e-05 ***
-x_component_number:y_component_number                   2.786 0.005366 **
-x_component_number:I(y_component_number^2)             -1.571 0.116374
+x_component_number:y_component_number                   2.786 0.005366 ** 
+x_component_number:I(y_component_number^2)             -1.571 0.116374    
 x_component_number:vector_length                       41.266  < 2e-16 ***
 x_component_number:I(vector_length^2)                 -42.784  < 2e-16 ***
-x_component_number:factor(temporary_size)4             -2.911 0.003622 **
+x_component_number:factor(temporary_size)4             -2.911 0.003622 ** 
 x_component_number:factor(vector_recompute)true         7.294 3.62e-13 ***
 x_component_number:factor(load_overlap)true             6.964 3.85e-12 ***
-x_component_number:x                                   -0.466 0.641385
-x_component_number:y                                    1.125 0.260777
-I(x_component_number^2):y_component_number             -2.098 0.035992 *
-I(x_component_number^2):I(y_component_number^2)         0.823 0.410285
+x_component_number:x                                   -0.466 0.641385    
+x_component_number:y                                    1.125 0.260777    
+I(x_component_number^2):y_component_number             -2.098 0.035992 *  
+I(x_component_number^2):I(y_component_number^2)         0.823 0.410285    
 I(x_component_number^2):vector_length                 -30.818  < 2e-16 ***
 I(x_component_number^2):I(vector_length^2)             33.185  < 2e-16 ***
-I(x_component_number^2):factor(temporary_size)4         1.641 0.100889
+I(x_component_number^2):factor(temporary_size)4         1.641 0.100889    
 I(x_component_number^2):factor(vector_recompute)true   -6.362 2.21e-10 ***
 I(x_component_number^2):factor(load_overlap)true       -4.637 3.66e-06 ***
-I(x_component_number^2):x                              -0.123 0.902113
-I(x_component_number^2):y                              -0.358 0.720055
-y_component_number:I(y_component_number^2)              1.353 0.176258
+I(x_component_number^2):x                              -0.123 0.902113    
+I(x_component_number^2):y                              -0.358 0.720055    
+y_component_number:I(y_component_number^2)              1.353 0.176258    
 y_component_number:vector_length                        8.346  < 2e-16 ***
 y_component_number:I(vector_length^2)                  -8.365  < 2e-16 ***
-y_component_number:factor(temporary_size)4             -1.076 0.282210
-y_component_number:factor(vector_recompute)true        -0.096 0.923490
-y_component_number:factor(load_overlap)true             2.051 0.040360 *
-y_component_number:x                                   -0.398 0.690373
-y_component_number:y                                    0.524 0.600107
+y_component_number:factor(temporary_size)4             -1.076 0.282210    
+y_component_number:factor(vector_recompute)true        -0.096 0.923490    
+y_component_number:factor(load_overlap)true             2.051 0.040360 *  
+y_component_number:x                                   -0.398 0.690373    
+y_component_number:y                                    0.524 0.600107    
 I(y_component_number^2):vector_length                  -5.898 3.98e-09 ***
 I(y_component_number^2):I(vector_length^2)              5.913 3.64e-09 ***
-I(y_component_number^2):factor(temporary_size)4         0.785 0.432530
-I(y_component_number^2):factor(vector_recompute)true    0.129 0.897005
-I(y_component_number^2):factor(load_overlap)true       -1.988 0.046879 *
-I(y_component_number^2):x                               0.328 0.742588
-I(y_component_number^2):y                              -0.416 0.677657
+I(y_component_number^2):factor(temporary_size)4         0.785 0.432530    
+I(y_component_number^2):factor(vector_recompute)true    0.129 0.897005    
+I(y_component_number^2):factor(load_overlap)true       -1.988 0.046879 *  
+I(y_component_number^2):x                               0.328 0.742588    
+I(y_component_number^2):y                              -0.416 0.677657    
 vector_length:I(vector_length^2)                       13.144  < 2e-16 ***
 vector_length:factor(temporary_size)4                 -24.670  < 2e-16 ***
-vector_length:factor(vector_recompute)true              2.130 0.033270 *
+vector_length:factor(vector_recompute)true              2.130 0.033270 *  
 vector_length:factor(load_overlap)true                 18.195  < 2e-16 ***
-vector_length:x                                        -2.804 0.005077 **
+vector_length:x                                        -2.804 0.005077 ** 
 vector_length:y                                         3.949 7.98e-05 ***
 I(vector_length^2):factor(temporary_size)4             25.523  < 2e-16 ***
 I(vector_length^2):factor(vector_recompute)true        -4.036 5.54e-05 ***
 I(vector_length^2):factor(load_overlap)true           -17.935  < 2e-16 ***
-I(vector_length^2):x                                    2.782 0.005421 **
+I(vector_length^2):x                                    2.782 0.005421 ** 
 I(vector_length^2):y                                   -3.948 8.03e-05 ***
 factor(temporary_size)4:factor(vector_recompute)true   -3.458 0.000551 ***
-factor(temporary_size)4:factor(load_overlap)true       -2.518 0.011825 *
-factor(temporary_size)4:x                               0.429 0.668131
-factor(temporary_size)4:y                              -0.552 0.581004
+factor(temporary_size)4:factor(load_overlap)true       -2.518 0.011825 *  
+factor(temporary_size)4:x                               0.429 0.668131    
+factor(temporary_size)4:y                              -0.552 0.581004    
 factor(vector_recompute)true:factor(load_overlap)true   4.279 1.92e-05 ***
-factor(vector_recompute)true:x                         -0.180 0.857361
-factor(vector_recompute)true:y                         -0.010 0.992093
-factor(load_overlap)true:x                             -0.718 0.472966
-factor(load_overlap)true:y                              1.124 0.260960
+factor(vector_recompute)true:x                         -0.180 0.857361    
+factor(vector_recompute)true:y                         -0.010 0.992093    
+factor(load_overlap)true:x                             -0.718 0.472966    
+factor(load_overlap)true:y                              1.124 0.260960    
 x:y                                                    -3.909 9.43e-05 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Residual standard error: 1.151e+09 on 3933 degrees of freedom
-Multiple R-squared:  0.802,    Adjusted R-squared:  0.7987
+Multiple R-squared:  0.802,	Adjusted R-squared:  0.7987 
 F-statistic: 241.3 on 66 and 3933 DF,  p-value: < 2.2e-16
 #+end_example
 
@@ -607,7 +607,7 @@ plot(df[df$flops>1E10 & df$temporary_size==2 & df$vector_length==8 & df$load_ove
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-195179TF/figure19517VFv.png]]
+[[file:/tmp/babel-30783Rp/figure30782Tw.png]]
 
 But as we have less points and do not cover the parameter space,
 fitting the previous model is now meaningless.
@@ -1116,4 +1116,175 @@ Entered on [2015-11-19 jeu. 20:56]
      came from the fact that on one machine the nvidia implementation
      of the opencl was not used.
 ** 2016-03-01
- - 
+ - Result on a machine with a GPU Nvidia GTX960 
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_01/pantheon/22_11_09/Data22_11_09.yaml
+       #+end_src
+
+   - Lets plot simply the result
+       #+begin_src R :results output graphics :file img/not_ordered.png :exports both :width 700 :height 500 :session
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         plot(df$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/not_ordered.png]]
+     - Here we can see no structure because the configuration are
+       generated in random order 
+   - Now lets try plot in certain order
+       #+begin_src R :results output graphics :file img/ordered.png :exports both :width 700 :height 500 :session
+         attach(df)
+         sorted <- df[order(x_component_number, vector_length, y_component_number, temporary_size, vector_recompute, load_overlap),]         
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+     [[file:img/ordered.png]]
+
+       #+begin_src R :results output graphics :file img/another_order.png :exports both :width 700 :height 500 :session
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(y_component_number, x_component_number,  temporary_size, vector_length,  vector_recompute, load_overlap),]         
+
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/another_order.png]]
+
+   - Lets see what are the parameters that have the bigger impact:
+     #+begin_src R :results output :session :exports both
+       head(df)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+     x_component_number vector_length y_component_number temporary_size
+     1                  1             2                  3              2
+     2                  1             2                  1              2
+     3                  4             2                  1              2
+     4                 16             8                  3              4
+     5                  2             4                  4              4
+     6                  8             1                  3              4
+     vector_recompute load_overlap time_per_pixel
+     1            false        false   1.604461e-10
+     2             true         true   4.561930e-10
+     3            false         true   3.974526e-10
+     4             true        false   5.710954e-10
+     5            false        false   1.572302e-10
+     6            false         true   3.197862e-10
+     #+end_example
+
+     #+begin_src R :results output :session :exports both
+       summary(lm(data=df,time_per_pixel ~ x_component_number + vector_length + y_component_number + vector_recompute  )) # + temporary_size + load_overlap
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+     
+     Call:
+     lm(formula = time_per_pixel ~ x_component_number + vector_length + 
+     y_component_number + vector_recompute, data = df)
+     
+     Residuals:
+       Min         1Q     Median         3Q        Max 
+     -3.494e-10 -1.409e-10 -3.041e-11  8.200e-11  1.627e-09 
+     
+     Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)           2.770e-10  2.622e-11  10.567   <2e-16 ***
+     x_component_number    1.364e-11  1.552e-12   8.785   <2e-16 ***
+     vector_length         2.308e-11  1.552e-12  14.870   <2e-16 ***
+     y_component_number   -6.680e-11  7.575e-12  -8.819   <2e-16 ***
+     vector_recomputetrue  2.162e-10  1.694e-11  12.763   <2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+     
+     Residual standard error: 2.395e-10 on 795 degrees of freedom
+     Multiple R-squared:  0.404,	Adjusted R-squared:  0.401 
+     F-statistic: 134.7 on 4 and 795 DF,  p-value: < 2.2e-16
+     #+end_example
+
+     We can see that temporary_size and load_overlap don't any impact on
+     the result.
+
+   - By keeping the best value for the most important parameters we can
+    get the best times per pixel
+     #+begin_src R :results output :session :exports both
+       x = min(df$x_component_number)
+       v = min(df$vector_length)
+       y = max(df$y_component_number)
+       min(df$time_per_pixel)
+       df[df$x_component_number==x & df$y_component_number==y & df$vector_length == v & df$vector_recompute == "false", ]
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+     [1] 1.432887e-10
+     x_component_number vector_length y_component_number temporary_size
+     33                   1             1                  4              4
+     165                  1             1                  4              4
+     389                  1             1                  4              2
+     789                  1             1                  4              2
+     vector_recompute load_overlap time_per_pixel
+     33             false        false   1.432887e-10
+     165            false         true   1.436893e-10
+     389            false         true   1.449263e-10
+     789            false        false   1.444410e-10
+     #+end_example
+
+   - Now can make the same conclusion by using less measurement. For
+    example here we try to take 80 points at with a totally random
+    strategy and we most of the time we can get which are the more
+    important parameters.
+     #+begin_src R :results output :session :exports both
+       summary(lm(data=df[sample(size = 80, x = 1:length(df$time_per_pixel),replace = F),],time_per_pixel ~ x_component_number + vector_length + y_component_number + vector_recompute + temporary_size + load_overlap )) 
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+
+     Call:
+     lm(formula = time_per_pixel ~ x_component_number + vector_length + 
+     y_component_number + vector_recompute + temporary_size + 
+     load_overlap, data = df[sample(size = 80, x = 1:length(df$time_per_pixel), 
+     replace = F), ])
+     
+     Residuals:
+       Min         1Q     Median         3Q        Max 
+     -1.750e-10 -5.990e-11 -1.045e-11  4.103e-11  3.183e-10 
+     
+     Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)           3.554e-10  5.668e-11   6.270 2.28e-08 ***
+     x_component_number    2.519e-11  2.210e-12  11.398  < 2e-16 ***
+     vector_length         8.272e-12  2.308e-12   3.584 0.000608 ***
+     y_component_number   -7.489e-11  1.211e-11  -6.183 3.27e-08 ***
+     vector_recomputetrue  1.145e-10  2.437e-11   4.697 1.21e-05 ***
+     temporary_size       -1.910e-11  1.217e-11  -1.570 0.120790    
+     load_overlaptrue      5.258e-12  2.413e-11   0.218 0.828133    
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+     
+     Residual standard error: 1.062e-10 on 73 degrees of freedom
+     Multiple R-squared:  0.7412,	Adjusted R-squared:   0.72 
+     F-statistic: 34.85 on 6 and 73 DF,  p-value: < 2.2e-16
+     #+end_example
+
+     #+end_src
+   - Lets try better order
+       #+begin_src R :results output graphics :file img/ordered_1.png :exports both :width 700 :height 500 :session
+                  df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+                  attach(df)
+                  # sorted <- df[order(x_component_number, -y_component_number, vector_length, vector_recompute, temporary_size, load_overlap ),]         
+                  # sorted <- df[order( -vector_recompute, x_component_number, -y_component_number, vector_length, temporary_size, load_overlap),]        
+                  # sorted <- df[order( -vector_recompute, x_component_number, -y_component_number, vector_length),]         
+                  # sorted <- df[order(vector_length, -vector_recompute, -y_component_number, x_component_number),]         
+                                                 # sorted <- df[order(x_component_number, -y_component_number, -vector_recompute, vector_length),]        
+                  sorted <- df[order(x_component_number, -y_component_number, -vector_recompute, vector_length),]         
+                  plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/ordered_1.png]]
+
