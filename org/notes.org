@@ -219,6 +219,14 @@
 ** Empirical Performance modeling of GPU kernels using active learning
 *** Link
     http://www.mcs.anl.gov/papers/P4097-0713_1.pdf
+** Empirical Performance Tuning of Dense Linear Algebra Sofware
+*** Summary
+*** Link
+    http://www.netlib.org/utk/people/JackDongarra/PAPERS/master.pdf
+*** Bibtex
+   #+BEGIN_SRC 
+   
+   #+END_SRC
 ** Deconstructing Iterative optimization
 *** Summary
     - Compiler flags optimizations only
@@ -325,7 +333,7 @@
 **** Links
     http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=35C815204C5D2F2BD69ADA2BD527763A?doi=10.1.1.381.255&rep=rep1&type=pdf
 **** Bibtex
-    #+BEGIN_SRC 
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
     @article{DBLP:journals/mp/AbramsonAD04,
     author    = {Mark A. Abramson and
                  Charles Audet and
@@ -375,7 +383,7 @@
 *** Link
     https://hal.inria.fr/hal-00944513/document
 *** Bibtex
-    #+BEGIN_SRC 
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
     @inproceedings{memon:hal-00944513,
     TITLE = {{Crowdtuning: systematizing auto-tuning using predictive modeling and crowdsourcing}},
     AUTHOR = {Memon, Abdul Wahid and Fursin, Grigori},
@@ -422,20 +430,20 @@
 *** Links
     http://fursin.net/papers/fkmp2011.pdf
 *** Bibtex
-    #+BEGIN_SRC 
-    @article{fursin:hal-00685276,
-    TITLE = {{Milepost GCC: Machine Learning Enabled Self-tuning Compiler}},
-    AUTHOR = {Fursin, Grigori and Kashnikov, Yuriy and Memon, Abdul Wahid and Chamski, Zbigniew and Temam, Olivier and Namolaru, Mircea and Yom-Tov, Elad and Mendelson, Bilha and Zaks, Ayal and Courtois, Eric and Bodin, Fran{\c c}ois and Barnard, Phil and Ashton, Elton and Bonilla, Edwin and Thomson, John and Williams, Christopher K. I. and O'Boyle, Michael},
-    URL = {https://hal.inria.fr/hal-00685276},
-    JOURNAL = {{International Journal of Parallel Programming}},
-    PUBLISHER = {{Springer Verlag}},
-    VOLUME = {39},
-    PAGES = {296-327},
-    YEAR = {2011},
-    DOI = {10.1007/s10766-010-0161-2},
-    HAL_ID = {hal-00685276},
-    HAL_VERSION = {v1},
-    }
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+      @article{fursin:hal-00685276,
+      TITLE = {{Milepost GCC: Machine Learning Enabled Self-tuning Compiler}},
+      AUTHOR = {Fursin, Grigori and Kashnikov, Yuriy and Memon, Abdul Wahid and Chamski, Zbigniew and Temam, Olivier and Namolaru, Mircea and Yom-Tov, Elad and Mendelson, Bilha and Zaks, Ayal and Courtois, Eric and Bodin, Fran{\c c}ois and Barnard, Phil and Ashton, Elton and Bonilla, Edwin and Thomson, John and Williams, Christopher K. I. and O'Boyle, Michael},
+      URL = {https://hal.inria.fr/hal-00685276},
+      JOURNAL = {{International Journal of Parallel Programming}},
+      PUBLISHER = {{Springer Verlag}},
+      VOLUME = {39},
+      PAGES = {296-327},
+      YEAR = {2011},
+      DOI = {10.1007/s10766-010-0161-2},
+      HAL_ID = {hal-00685276},
+      HAL_VERSION = {v1},
+      }
     #+END_SRC
 ** Exploiting Performance Portability in Search Algorithms for Autotuning
 *** Summary
@@ -472,7 +480,7 @@
 *** Link
     http://www.mcs.anl.gov/papers/P5397-0915.pdf
 *** Bibtex
-    #+BEGIN_SRC 
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib 
     @techreport{RoyBalHovWil2015,
     author = {A. Roy and P. Balaprakash and P. D. Hovland and S. M. Wild},
     date-added = {2015-09-11 18:59:31 +0000},
@@ -522,7 +530,7 @@
 *** Link
     http://groups.csail.mit.edu/commit/papers/2014/ansel-pact14-opentuner.pdf
 *** Bibtex
-    #+BEGIN_SRC 
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
     @inproceedings{Ansel:2014:OEF:2628071.2628092,
     author = {Ansel, Jason and Kamil, Shoaib and Veeramachaneni, Kalyan and Ragan-Kelley, Jonathan and Bosboom, Jeffrey and O'Reilly, Una-May and Amarasinghe, Saman},
     title = {OpenTuner: An Extensible Framework for Program Autotuning},
@@ -548,6 +556,25 @@
     - Dividing the search space into area with different variance
       upper bound using classication, regression trees and ANOVA.
     - Regions with more variance are allocated more sample.
+*** Link
+*** Bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+      @inproceedings{deoliveiracastro:hal-00952307,
+        TITLE = {{ASK: Adaptive Sampling Kit for Performance Characterization}},
+        AUTHOR = {De Oliveira Castro, Pablo and Petit, Eric and Beyler, Jean Christophe and Jalby, William},
+        URL = {https://hal.archives-ouvertes.fr/hal-00952307},
+        BOOKTITLE = {{Euro-Par 2012 Parallel Processing}},
+        ADDRESS = {Greece},
+        PUBLISHER = {{springer}},
+        VOLUME = {7484},
+        PAGES = {89-101},
+        YEAR = {2012},
+        DOI = {10.1007/978-3-642-32820-6\_11},
+        KEYWORDS = {performance ; sampling ; adaptive},
+        HAL_ID = {hal-00952307},
+        HAL_VERSION = {v1},
+      }
+    #+END_SRC
 ** Annotation-Based Empirical Performance Tuning Using Orio
 *** Summary
     - Only use random search, Nelder Mead Simplex and simulated
