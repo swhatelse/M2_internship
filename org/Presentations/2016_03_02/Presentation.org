@@ -53,44 +53,55 @@
 #+LATEX_HEADER: \let\alert=\structure % to make sure the org * * works of tools
 #+BEAMER_FRAME_LEVEL: 2
 
-
 #+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
+
+#+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
+#+LATEX_HEADER: \bibliography{../../biblio.bib}
+
 * Laboratory book
 *** Laboratory book
 - Available at https://github.com/swhatelse/M2_internship
 - Journal and notes
 * Related work on autotuning
 *** Jack Dongarra
+# Shirley Moore : University of Tennessee / Oak Ridge National Laboratory
 # types de problème, type d'approch
 - ATLAS \to specialized autotuner for dense linear algebra
 - Relaxed 1-D linear search \to require to know good starting point and
-  interaction between optimizations
-*** Stefan M. Wild
+  interaction between optimizations 
+*** Stefan M. Wild - Aragonne National Laboratory
+# Amit Roy, Prasanna Balaprakash, Paul D. Hovland
 # types de problème, type d'approche (code transformation Orio,
 # optimization)
 - Discrete, derivative-free, and constraint optimization
 - Correlation between peformance and *tuning across* *platforms*
-- Learning good combination on one architecture and try to
+  \cite{RoyBalHovWil2015} 
+- Learning good combinations on one architecture and try to
   apply to another one 
-- Strong correlation with similar architecture
+- Strong correlation with similar architectures
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
 \centering
 \vspace{-1.5mm}
-\includegraphics[scale=0.3]{./img/20160302/correlation.png}
-\includegraphics[scale=0.25]{./img/20160302/correlation2.png}
+\includegraphics[scale=0.3]{../../img/20160302/correlation.png}
+\includegraphics[scale=0.25]{../../img/20160302/correlation2.png}
 \end{figure}
 #+END_LaTeX
 *** Grigory Fursin
+# Yuriy Kashnikov, Abdul Wahid Memon, Michael O'Boyle et al
 - Discrete & Multi-objective optimization (e.g: size and performances)
 - Possible to build model of compiler flags that works across
-  applications \to Milepost GCC
+  applications \to Milepost GCC \cite{fursin:hal-00685276}
 - Use of machine learning technics
 - Models build using random search
 # How is this information exploited?
-- Training overhead reduce by Collective optimization
+- Training overhead reduce by Collective optimization \to cTunning
+  \cite{memon:hal-00944513} 
 *** ASK
-- Accuracy of a model relies on the sampling
+# Exascale Computing research / LRC ITACA / Intel Corporation
+- Pablo de Oliveira Castro, William Jalby, Eric Petit, et
+  al. \cite{deoliveiracastro:hal-00952307} 
+- Accuracy of a model relies on the sampling 
 - Partitioning search into regions with different level of variance
 - Region with more variance are allocated more samples
 
@@ -98,15 +109,17 @@
 \begin{figure}[tbh]
 \centering
 \vspace{-1.5mm}
-\includegraphics[scale=0.2]{./img/20160302/HSV_example.png}
+\includegraphics[scale=0.18]{../../img/20160302/HSV_example.png}
 \end{figure}
 #+END_LaTeX
 
 *** OpenTuner
+- MIT: Jason Ansel, Shoaib Kamil, Saman Amarasinghe et al
+  \cite{Ansel:2014:OEF:2628071.2628092} 
 - *Discontinuous*, *non-smooth* optimization
-- Efficient of a search technic depends on the problem
+- Efficient of a search technic depends on the problem 
 - Adatping the search method to the particularities of the search
-  space
+  space 
 - Testing multiple methods at the same time and keep those which
   performs better. Improvment are shared between methods.
 
@@ -139,7 +152,7 @@
 - Based on heuristics: Naive sampling, Genetic algorithm, tabu search, ant colonies, swarm 
 
 *** Many combinations of heuristics
-Generalized Pattern Search: 
+Generalized Pattern Search \cite{DBLP:journals/mp/AbramsonAD04}: 
 - Global exploration \to SEARCH
   - Possible to use any technics (e.g. randomized, surrogate-based,
     etc...)
@@ -154,7 +167,7 @@ Generalized Pattern Search:
 - Parameters:
   - x_component_number [1,2,4,8,16]
   - vector_length [1,2,4,8,16]
-  - y_component_number [1,4]
+  - y_component_number [1,2,3,4]
   - temporary_size [2,4]
   - vector_recompute [true,false]
   - load_overlap [true,false]
@@ -167,12 +180,12 @@ Generalized Pattern Search:
 *** Brute force exploration on GPU NVIDIA
 - Search space = 800
 - Each version tested 4 time on 4 image sizes.
-
+  
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
 \centering
 \vspace{-1.5mm}
-\includegraphics[scale=0.4]{./img/not_ordered.png}
+\includegraphics[scale=0.4]{../../img/not_ordered.png}
 \end{figure}
 #+END_LaTeX
 *** One possible order 
@@ -180,7 +193,7 @@ Generalized Pattern Search:
 \begin{figure}[tbh]
 \centering
 \vspace{-1.5mm}
-\includegraphics[scale=0.4]{./img/another_order.png}
+\includegraphics[scale=0.4]{../../img/another_order.png}
 \end{figure}
 #+END_LaTeX
 *** And another one
@@ -188,7 +201,7 @@ Generalized Pattern Search:
 \begin{figure}[tbh]
 \centering
 \vspace{-1.5mm}
-\includegraphics[scale=0.4]{./img/ordered_1.png}
+\includegraphics[scale=0.4]{../../img/ordered_1.png}
 \end{figure}
 #+END_LaTeX
 
@@ -209,51 +222,9 @@ Generalized Pattern Search:
 * End
 *** End
 Thank you for your attention 
-* Models, exploration, notes :noexport:
-  
-  
-  
-  
-
-** Mixed strategy
-*** Global and local search
-- Two phases 
-- Global \to escape bad local optima
-- Local \to refine solution
-- E.g pattern search, simulated annealing
-*** Derivative and derivative-free
-- Partial knowledge
-- Reduce exploration time
-- E.g.: Generalized Pattern Search 
-
-** Generalized Pattern Search
-- Extended pattern search version
-- For unconstrained and linearly constrained problems
-- Iteration over two phases:
-  - Global search \to SEARCH
-    - Sampling the space to find interesting regions \to building a mesh
-    - Try to improve current optimal elsewhere
-    - Possible to use any methods \to Genetic Algo, surrogates based
-      search,  etc...
-  - Local search \to POLL
-    - Exploiting interesting region to refine the solution
-- Uses derivative informations to speedup POLL phase
-    
-* Models :noexport:
-** Reuseable
-- "Deconstructing Iterative Optimization" \to Common working compiler
-  flags combination across program 
-- "Exploiting Performance Portability in Search Algorithms for
-  Autotuning" \to correlation between code optimization and speedup
-  across plateforms
-- Build appromixations \to surrogates-based search (trust-regions
-  algorithm) 
-** Building knowledge
-*** Machine learning
-- Similar applications \to similar behaviors \to similar optimizations
-- Building knowledge over iterative optimization
-- Training overhead \to Collective optimization
-- Used in GCC \to Milepost GCC
-
-
-
+* References
+*** References
+  :PROPERTIES:
+  :BEAMER_OPT: fragile,allowframebreaks,label=
+  :END:      
+  \printbibliography
