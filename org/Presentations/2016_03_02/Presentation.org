@@ -55,8 +55,9 @@
 
 #+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
 
-#+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
-#+LATEX_HEADER: \bibliography{../../biblio.bib}
+#+LATEX_HEADER: %\usepackage{biblatex}
+# #+LATEX_HEADER: \bibliography{../../biblio.bib}
+# #+LATEX_HEADER: \usepackage{cite}
 
 * Laboratory book
 *** Laboratory book
@@ -64,13 +65,13 @@
 - Journal and notes
 * Related work on autotuning
 *** Jack Dongarra
-# Shirley Moore : University of Tennessee / Oak Ridge National Laboratory
+# S. Moore : University of Tennessee / Oak Ridge National Laboratory
 # types de problème, type d'approch
 - ATLAS \to specialized autotuner for dense linear algebra
 - Relaxed 1-D linear search \to require to know good starting point and
   interaction between optimizations 
 *** Stefan M. Wild - Aragonne National Laboratory
-# Amit Roy, Prasanna Balaprakash, Paul D. Hovland
+# A. Roy, P. Balaprakash, P. D. Hovland
 # types de problème, type d'approche (code transformation Orio,
 # optimization)
 - Discrete, derivative-free, and constraint optimization
@@ -88,7 +89,7 @@
 \end{figure}
 #+END_LaTeX
 *** Grigory Fursin
-# Yuriy Kashnikov, Abdul Wahid Memon, Michael O'Boyle et al
+# Y. Kashnikov, A. W. Memon, M. O'Boyle et al
 - Discrete & Multi-objective optimization (e.g: size and performances)
 - Possible to build model of compiler flags that works across
   applications \to Milepost GCC \cite{fursin:hal-00685276}
@@ -99,8 +100,7 @@
   \cite{memon:hal-00944513} 
 *** ASK
 # Exascale Computing research / LRC ITACA / Intel Corporation
-- Pablo de Oliveira Castro, William Jalby, Eric Petit, et
-  al. \cite{deoliveiracastro:hal-00952307} 
+- Exascale Computing research, UVSQ \cite{deoliveiracastro:hal-00952307} 
 - Accuracy of a model relies on the sampling 
 - Partitioning search into regions with different level of variance
 - Region with more variance are allocated more samples
@@ -114,8 +114,7 @@
 #+END_LaTeX
 
 *** OpenTuner
-- MIT: Jason Ansel, Shoaib Kamil, Saman Amarasinghe et al
-  \cite{Ansel:2014:OEF:2628071.2628092} 
+- MIT - CSAIL \cite{Ansel:2014:OEF:2628071.2628092} 
 - *Discontinuous*, *non-smooth* optimization
 - Efficient of a search technic depends on the problem 
 - Adatping the search method to the particularities of the search
@@ -220,11 +219,13 @@ Generalized Pattern Search \cite{DBLP:journals/mp/AbramsonAD04}:
 - Devise an adaptive approach
 
 * End
+
 *** End
 Thank you for your attention 
-* References
+
 *** References
-  :PROPERTIES:
-  :BEAMER_OPT: fragile,allowframebreaks,label=
-  :END:      
-  \printbibliography
+:PROPERTIES:
+:BEAMER_OPT: fragile,allowframebreaks,label=
+:END:   
+\bibliographystyle{alpha}
+\bibliography{../../biblio}
