@@ -8,6 +8,10 @@
       require 'opencl_ruby_ffi'
       OpenCL::get_platforms
     #+end_src
+    - Get usefull info
+      #+begin_src sh :results output :exports both
+        inxi -Fx
+      #+end_src
 * Installation
   Here the installation that download and install al the necessary tools.
 ** Base
@@ -654,102 +658,6 @@ Entered on [2015-11-19 jeu. 20:56]
        done < $OAR_NODE_FILE
 
      #+end_src
-   - Install BOAST and run Bruteforce on Adonis:
-       #+begin_src sh :results output :exports both :tangle scripts/bruteforce_adonis.sh
-         BASE="$PWD/.."
-
-         DATADIR="/tmp"
-         DATA_FOLD_DAY=`date +%Y_%m_%d`
-         DATA_FOLD_DAY="$DATADIR/$DATA_FOLD_DAY"
-         BKUP=`date +%H_%M_%S`
-         DATA_FOLD_HOST=`hostname`
-         DATA_FOLD_HOST="$DATA_FOLD_DAY/$DATA_FOLD_HOST"
-         DATA_FOLD_TIME="$DATA_FOLD_HOST/$BKUP"
-         mkdir -p $DATA_FOLD_DAY
-         mkdir -p $DATA_FOLD_HOST
-         mkdir -p $DATA_FOLD_TIME
-         INFO_NAME="Info"
-         DATA_FILE="Data"
-         INFO_FILE="$DATA_FOLD_TIME/$INFO_NAME${BKUP}.org"
-         DATA_FILE="$DATA_FILE${BKUP}"
-
-         ######### Collecting informations about the platform #########
-         echo "#+TITLE: Experiment information" >> $INFO_FILE
-         echo "#+DATE: $(eval date)" >> $INFO_FILE
-         echo "#+MACHINE: $(eval hostname)" >> $INFO_FILE
-         echo "#+FILE: $INFO_FILE" >> $INFO_FILE
-
-         echo "* ENVIRONMENT INFOS" >> $INFO_FILE
-
-         echo "** HARDWARE" >> $INFO_FILE
-
-         echo "*** CPU" >> $INFO_FILE
-         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
-         less /proc/cpuinfo >> $INFO_FILE
-         echo "#+END_EXAMPLE" >> $INFO_FILE
-
-         if [[ -n $(command -v nvidia-smi) ]];
-         then
-             echo "*** GPU INFO FROM NVIDIA-SMI" >> $INFO_FILE
-             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
-             nvidia-smi -q >> $INFO_FILE
-             echo "#+END_EXAMPLE" >> $INFO_FILE
-         else
-             echo "*** GPU" >> $INFO_FILE
-             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
-             lshw -numeric -C display >> $INFO_FILE
-             echo "#+END_EXAMPLE" >> $INFO_FILE
-         fi 
-
-         echo "** SOFTWARE" >> $INFO_FILE
-
-         if [ -f /proc/version ];
-         then
-             echo "*** LINUX AND GCC VERSIONS" >> $INFO_FILE
-             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
-             cat /proc/version >> $INFO_FILE
-             echo "#+END_EXAMPLE" >> $INFO_FILE
-         fi
-
-         echo "*** ENVIRONMENT VARIABLES"  >> $INFO_FILE
-         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
-         env >> $INFO_FILE
-         echo "#+END_EXAMPLE" >> $INFO_FILE
-
-         if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ];
-         then
-             echo "*** CPU GOVERNOR" >> $INFO_FILE
-             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
-             cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor >> $INFO_FILE
-             echo "#+END_EXAMPLE" >> $INFO_FILE
-         fi
-
-         if [ -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ];
-         then
-             echo "*** CPU FREQUENCY" >> $INFO_FILE
-             echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
-             cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq >> $INFO_FILE
-             echo "#+END_EXAMPLE" >> $INFO_FILE
-         fi
-
-         ####### BOAST installation #######
-         cd $BASE/boast
-         gem build *.gemspec
-         gem install --user-install *.gem
-
-         ######## Run experiment ########
-         cd $BASE/boast-lig/ARMclbench
-         echo "* PROGRAM OUTPUT" >> $INFO_FILE
-         echo "#+BEGIN_EXAMPLE" >> $INFO_FILE    
-         CLPLATFORM=NVIDIA VERBOSE=true OPTIMIZER_LOG_FILE=$DATA_FILE OPTIMIZER_LOG=true ruby Laplacian.rb >> $INFO_FILE
-         echo "#+END_EXAMPLE" >> $INFO_FILE
-         mv $DATA_FILE'.yaml' $DATA_FOLD_TIME
-         mv $DATA_FILE'_parameters.yaml' $DATA_FOLD_TIME 
-       #+end_src
- 
-     #+BEGIN_SRC ruby
-
-     #+END_SRC
 
    - The results below are obtained from different executions of
      Laplacian.rb on adonis platforms. The best configuration is found
@@ -996,7 +904,8 @@ Entered on [2015-11-19 jeu. 20:56]
        - We have the same structure has before maybe there are some
          differences between Adonis platform.
 ** 2016-02-29
-   - [ ] Check if there are errors in the kernel computation
+   - [X] Check if there are errors in the kernel computation
+     Yes, there are!
    - [X] Check which implementation of OpenCL is used
      
    - Let's try with the check on adonis-9 and adonis-6:
@@ -1115,6 +1024,7 @@ Entered on [2015-11-19 jeu. 20:56]
    - The previous differences we had between adonis-6 and adonis-9
      came from the fact that on one machine the nvidia implementation
      of the opencl was not used.
+* Mars
 ** 2016-03-01
  - Result on a machine with a GPU Nvidia GTX960 
        #+begin_src sh :results output :exports both
@@ -1288,3 +1198,8 @@ Entered on [2015-11-19 jeu. 20:56]
        #+RESULTS:
        [[file:img/ordered_1.png]]
 
+** 2016-03-02
+*** Meeting report
+    Atlas ~ brute force?
+    Berkley autotuning
+    - Next meeting : 4 avril 14h
