@@ -1300,4 +1300,57 @@ Entered on [2015-11-19 jeu. 20:56]
          #+RESULTS:
          [[file:img/pilipili2_global_impact.png]]
 
+       - Trying with another model:
+         #+begin_src R :results output :session :exports both
+           model <- lm(data=df,time_per_pixel ~ x_component_number + y_component_number + (vector_length : vector_recompute) +  (x_component_number : vector_length : vector_recompute))
+           summary(model)
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+
+         Call:
+         lm(formula = time_per_pixel ~ x_component_number + y_component_number + 
+             (vector_length:vector_recompute) + (x_component_number:vector_length:vector_recompute), 
+             data = df)
+
+         Residuals:
+                Min         1Q     Median         3Q        Max 
+         -4.746e-10 -8.865e-11 -1.000e-13  6.870e-11  1.108e-09 
+
+         Coefficients:
+                                                                Estimate Std. Error
+         (Intercept)                                             4.575e-10  2.010e-11
+         x_component_number                                      8.807e-12  1.742e-12
+         y_component_number                                     -8.612e-11  5.614e-12
+         vector_length:vector_recomputefalse                     1.938e-12  2.088e-12
+         vector_length:vector_recomputetrue                      6.294e-11  2.088e-12
+         x_component_number:vector_length:vector_recomputefalse -9.141e-14  2.528e-13
+         x_component_number:vector_length:vector_recomputetrue  -4.703e-12  2.528e-13
+                                                                t value Pr(>|t|)    
+         (Intercept)                                             22.765  < 2e-16 ***
+         x_component_number                                       5.056 5.31e-07 ***
+         y_component_number                                     -15.340  < 2e-16 ***
+         vector_length:vector_recomputefalse                      0.929    0.353    
+         vector_length:vector_recomputetrue                      30.152  < 2e-16 ***
+         x_component_number:vector_length:vector_recomputefalse  -0.362    0.718    
+         x_component_number:vector_length:vector_recomputetrue  -18.605  < 2e-16 ***
+         ---
+         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         Residual standard error: 1.775e-10 on 793 degrees of freedom
+         Multiple R-squared:  0.6307,	Adjusted R-squared:  0.6279 
+         F-statistic: 225.7 on 6 and 793 DF,  p-value: < 2.2e-16
+         #+end_example
+
+     - *Warning* it seems that the result are not coherent:
+       #+begin_src R :results output :session :exports both
+         df[df$time_per_pixel==min(df$time_per_pixel),]
+       #+end_src
+
+       #+RESULTS:
+       :     x_component_number vector_length y_component_number temporary_size
+       : 605                  4            16                  4              4
+       :     vector_recompute load_overlap time_per_pixel
+       : 605            false        false   1.747586e-10
 
