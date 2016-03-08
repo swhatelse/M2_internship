@@ -531,6 +531,7 @@
 *** Summary
     - Adapting the search method to particularities of the search
       space.
+    - The search space have to be structured
     - Testing multiple methods at the same time and keep those which
       performs better. Improvment are shared between methods.
 *** Remarks/Questions
@@ -590,10 +591,14 @@
 *** Summary
     - Only use random search, Nelder Mead Simplex and simulated
       annealing for the moment
+** Precimonious: Tuning Assistant for Floating-Point Precision
+*** Summary
+    - Tuning the level of precision of floating point variables
+    - Use of delta debugging search
 * Memo
 ** Non-smooth
-    Discontinous and non differentiable functions. 
-    Abrupt bends.
+   Discontinous and non differentiable functions. 
+   Abrupt bends.
 * Questions
 ** Autotuning is an optimization problem but what are its specificities if it had some? 
    Because if there are some specificities, we can then modelize and
@@ -601,6 +606,7 @@
 ** What is the good representation to use?
    The order of the paramters have an importance to the representation
    of the problem.
+*** Is there other thing than the order of the parameter that we could take into account?
 ** Can we use information about the code from the compiler to make some infererences and guess what are the promising optimizations?
    Maybe coupling this with the information about the platform.
 ** What is the size of the search space of BOAST?
