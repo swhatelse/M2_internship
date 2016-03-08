@@ -1,0 +1,907 @@
+#+TITLE: Experiment information
+#+DATE: Tue Mar  1 14:45:16 CET 2016
+#+MACHINE: adonis-5.grenoble.grid5000.fr
+#+FILE: /tmp/2016_03_01/adonis-5.grenoble.grid5000.fr/14_45_16/Info14_45_16.org
+* ENVIRONMENT INFOS
+** HARDWARE
+*** CPU
+#+BEGIN_EXAMPLE
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+stepping	: 5
+microcode	: 0x11
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 4
+core id		: 0
+cpu cores	: 4
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4533.64
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+stepping	: 5
+microcode	: 0x11
+cpu MHz		: 2268.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 4
+core id		: 1
+cpu cores	: 4
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4533.34
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+stepping	: 5
+microcode	: 0x11
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 4
+core id		: 2
+cpu cores	: 4
+apicid		: 4
+initial apicid	: 4
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4533.34
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+stepping	: 5
+microcode	: 0x11
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 4
+core id		: 3
+cpu cores	: 4
+apicid		: 6
+initial apicid	: 6
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4533.34
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 4
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+stepping	: 5
+microcode	: 0x11
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 1
+siblings	: 4
+core id		: 0
+cpu cores	: 4
+apicid		: 16
+initial apicid	: 16
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4533.39
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 5
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+stepping	: 5
+microcode	: 0x11
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 1
+siblings	: 4
+core id		: 1
+cpu cores	: 4
+apicid		: 18
+initial apicid	: 18
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4533.42
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 6
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+stepping	: 5
+microcode	: 0x11
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 1
+siblings	: 4
+core id		: 2
+cpu cores	: 4
+apicid		: 20
+initial apicid	: 20
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4533.36
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 7
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+stepping	: 5
+microcode	: 0x11
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 1
+siblings	: 4
+core id		: 3
+cpu cores	: 4
+apicid		: 22
+initial apicid	: 22
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 4533.40
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+#+END_EXAMPLE
+*** GPU INFO FROM NVIDIA-SMI
+#+BEGIN_EXAMPLE
+
+==============NVSMI LOG==============
+
+Timestamp                       : Tue Mar  1 14:45:18 2016
+Driver Version                  : 304.125
+
+Attached GPUs                   : 2
+GPU 0000:0C:00.0
+    Product Name                : Tesla T10 Processor
+    Display Mode                : Disabled
+    Persistence Mode            : Disabled
+    Driver Model
+        Current                 : N/A
+        Pending                 : N/A
+    Serial Number               : N/A
+    GPU UUID                    : GPU-e08d94a0-be7a-5ca1-bb53-b0701aad92d4
+    VBIOS Version               : 62.00.62.00.09
+    Inforom Version
+        Image Version           : N/A
+        OEM Object              : N/A
+        ECC Object              : N/A
+        Power Management Object : N/A
+    GPU Operation Mode
+        Current                 : N/A
+        Pending                 : N/A
+    PCI
+        Bus                     : 0x0C
+        Device                  : 0x00
+        Domain                  : 0x0000
+        Device Id               : 0x05E710DE
+        Bus Id                  : 0000:0C:00.0
+        Sub System Id           : 0x068F10DE
+        GPU Link Info
+            PCIe Generation
+                Max             : 2
+                Current         : 2
+            Link Width
+                Max             : 16x
+                Current         : 16x
+    Fan Speed                   : N/A
+    Performance State           : P0
+    Clocks Throttle Reasons     : N/A
+    Memory Usage
+        Total                   : 4095 MB
+        Used                    : 3 MB
+        Free                    : 4092 MB
+    Compute Mode                : Default
+    Utilization
+        Gpu                     : 0 %
+        Memory                  : 0 %
+    Ecc Mode
+        Current                 : N/A
+        Pending                 : N/A
+    ECC Errors
+        Volatile
+            Single Bit            
+                Device Memory   : N/A
+                Register File   : N/A
+                L1 Cache        : N/A
+                L2 Cache        : N/A
+                Texture Memory  : N/A
+                Total           : N/A
+            Double Bit            
+                Device Memory   : N/A
+                Register File   : N/A
+                L1 Cache        : N/A
+                L2 Cache        : N/A
+                Texture Memory  : N/A
+                Total           : N/A
+        Aggregate
+            Single Bit            
+                Device Memory   : N/A
+                Register File   : N/A
+                L1 Cache        : N/A
+                L2 Cache        : N/A
+                Texture Memory  : N/A
+                Total           : N/A
+            Double Bit            
+                Device Memory   : N/A
+                Register File   : N/A
+                L1 Cache        : N/A
+                L2 Cache        : N/A
+                Texture Memory  : N/A
+                Total           : N/A
+    Temperature
+        Gpu                     : 31 C
+    Power Readings
+        Power Management        : N/A
+        Power Draw              : N/A
+        Power Limit             : N/A
+        Default Power Limit     : N/A
+        Min Power Limit         : N/A
+        Max Power Limit         : N/A
+    Clocks
+        Graphics                : 610 MHz
+        SM                      : 1296 MHz
+        Memory                  : 800 MHz
+    Applications Clocks
+        Graphics                : N/A
+        Memory                  : N/A
+    Max Clocks
+        Graphics                : 610 MHz
+        SM                      : 1296 MHz
+        Memory                  : 800 MHz
+    Compute Processes           : None
+
+GPU 0000:0A:00.0
+    Product Name                : Tesla T10 Processor
+    Display Mode                : Disabled
+    Persistence Mode            : Disabled
+    Driver Model
+        Current                 : N/A
+        Pending                 : N/A
+    Serial Number               : N/A
+    GPU UUID                    : GPU-827e0cc6-010e-6d39-12e6-4581346dc10c
+    VBIOS Version               : 62.00.62.00.09
+    Inforom Version
+        Image Version           : N/A
+        OEM Object              : N/A
+        ECC Object              : N/A
+        Power Management Object : N/A
+    GPU Operation Mode
+        Current                 : N/A
+        Pending                 : N/A
+    PCI
+        Bus                     : 0x0A
+        Device                  : 0x00
+        Domain                  : 0x0000
+        Device Id               : 0x05E710DE
+        Bus Id                  : 0000:0A:00.0
+        Sub System Id           : 0x068F10DE
+        GPU Link Info
+            PCIe Generation
+                Max             : 2
+                Current         : 2
+            Link Width
+                Max             : 16x
+                Current         : 16x
+    Fan Speed                   : N/A
+    Performance State           : P0
+    Clocks Throttle Reasons     : N/A
+    Memory Usage
+        Total                   : 4095 MB
+        Used                    : 3 MB
+        Free                    : 4092 MB
+    Compute Mode                : Default
+    Utilization
+        Gpu                     : 0 %
+        Memory                  : 0 %
+    Ecc Mode
+        Current                 : N/A
+        Pending                 : N/A
+    ECC Errors
+        Volatile
+            Single Bit            
+                Device Memory   : N/A
+                Register File   : N/A
+                L1 Cache        : N/A
+                L2 Cache        : N/A
+                Texture Memory  : N/A
+                Total           : N/A
+            Double Bit            
+                Device Memory   : N/A
+                Register File   : N/A
+                L1 Cache        : N/A
+                L2 Cache        : N/A
+                Texture Memory  : N/A
+                Total           : N/A
+        Aggregate
+            Single Bit            
+                Device Memory   : N/A
+                Register File   : N/A
+                L1 Cache        : N/A
+                L2 Cache        : N/A
+                Texture Memory  : N/A
+                Total           : N/A
+            Double Bit            
+                Device Memory   : N/A
+                Register File   : N/A
+                L1 Cache        : N/A
+                L2 Cache        : N/A
+                Texture Memory  : N/A
+                Total           : N/A
+    Temperature
+        Gpu                     : 31 C
+    Power Readings
+        Power Management        : N/A
+        Power Draw              : N/A
+        Power Limit             : N/A
+        Default Power Limit     : N/A
+        Min Power Limit         : N/A
+        Max Power Limit         : N/A
+    Clocks
+        Graphics                : 610 MHz
+        SM                      : 1296 MHz
+        Memory                  : 800 MHz
+    Applications Clocks
+        Graphics                : N/A
+        Memory                  : N/A
+    Max Clocks
+        Graphics                : 610 MHz
+        SM                      : 1296 MHz
+        Memory                  : 800 MHz
+    Compute Processes           : None
+
+#+END_EXAMPLE
+** SOFTWARE
+*** LINUX AND GCC VERSIONS
+#+BEGIN_EXAMPLE
+Linux version 3.2.0-4-amd64 (debian-kernel@lists.debian.org) (gcc version 4.6.3 (Debian 4.6.3-14) ) #1 SMP Debian 3.2.35-2
+#+END_EXAMPLE
+*** ENVIRONMENT VARIABLES
+#+BEGIN_EXAMPLE
+LC_PAPER=fr_FR.UTF-8
+LC_ADDRESS=fr_FR.UTF-8
+LC_MONETARY=fr_FR.UTF-8
+SHELL=/bin/bash
+TERM=xterm
+XDG_SESSION_COOKIE=a90a4877919666415c3c29a55135b529-1456839891.484042-1962648933
+SSH_CLIENT=172.16.31.101 34371 22
+LC_NUMERIC=fr_FR.UTF-8
+SSH_TTY=/dev/pts/0
+LC_ALL=en_US.UTF-8
+USER=root
+LC_TELEPHONE=fr_FR.UTF-8
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cuda-5.0/bin
+MAIL=/var/mail/root
+LC_IDENTIFICATION=fr_FR.UTF-8
+PWD=/root/boast/scripts
+LANG=en_US.UTF-8
+LC_MEASUREMENT=fr_FR.UTF-8
+HOME=/root
+SHLVL=2
+LOGNAME=root
+SSH_CONNECTION=172.16.31.101 34371 172.16.18.5 22
+LC_TIME=fr_FR.UTF-8
+LC_NAME=fr_FR.UTF-8
+_=/usr/bin/env
+#+END_EXAMPLE
+*** CPU GOVERNOR
+#+BEGIN_EXAMPLE
+ondemand
+#+END_EXAMPLE
+*** CPU FREQUENCY
+#+BEGIN_EXAMPLE
+1600000
+#+END_EXAMPLE
+* PROGRAM OUTPUT
+#+BEGIN_EXAMPLE
+void math(const int32_t width, const int32_t height, const uint8_t * psrc, uint8_t * pdst){
+  int32_t i;
+  int32_t j;
+  int32_t c;
+  int32_t tmp;
+  int32_t w;
+  w = (width) * (3);
+  for (j = 1; j <= height - (2); j += 1) {
+    for (i = 1; i <= width - (2); i += 1) {
+      for (c = 0; c <= 2; c += 1) {
+        tmp =  -(psrc[c + (3) * (i - (1) + (width) * (j - (1)))]) - (psrc[c + (3) * (i + (width) * (j - (1)))]) - (psrc[c + (3) * (i + 1 + (width) * (j - (1)))]) - (psrc[c + (3) * (i - (1) + (width) * (j))]) + (psrc[c + (3) * (i + (width) * (j))]) * (9) - (psrc[c + (3) * (i + 1 + (width) * (j))]) - (psrc[c + (3) * (i - (1) + (width) * (j + 1))]) - (psrc[c + (3) * (i + (width) * (j + 1))]) - (psrc[c + (3) * (i + 1 + (width) * (j + 1))]);
+        pdst[c + (3) * (i + (width) * (j))] = (tmp < 0 ? 0 : (tmp > 255 ? 255 : tmp));
+      }
+    }
+  }
+}
+{:x_component_number=>16, :vector_length=>16, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true}
+__kernel void math(const __global uchar * psrc, __global uchar * pdst, const int width, const int height){
+  int y;
+  int x;
+  int w;
+  x = (get_global_id(0)) * (16);
+  y = (get_global_id(1)) * (2);
+  w = (width) * (3);
+  x = (x < 3 ? 3 : (x > w - (19) ? w - (19) : x));
+  y = (y < 1 ? 1 : (y > height - (3) ? height - (3) : y));
+  uchar16 temp000;
+  uchar16 temp001;
+  uchar16 temp002;
+  uchar16 temp003;
+  uchar16 temp010;
+  uchar16 temp011;
+  uchar16 temp012;
+  uchar16 temp013;
+  uchar16 temp020;
+  uchar16 temp021;
+  uchar16 temp022;
+  uchar16 temp023;
+  uchar16 res00;
+  uchar16 res01;
+  short16 tempc000;
+  short16 tempc001;
+  short16 tempc002;
+  short16 tempc003;
+  short16 tempc010;
+  short16 tempc011;
+  short16 tempc012;
+  short16 tempc013;
+  short16 tempc020;
+  short16 tempc021;
+  short16 tempc022;
+  short16 tempc023;
+  short16 resc00;
+  short16 resc01;
+  temp000 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + -1)]);
+  tempc000 = convert_short16( temp000 );
+  temp010 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + -1)]);
+  tempc010 = convert_short16( temp010 );
+  temp020 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + -1)]);
+  tempc020 = convert_short16( temp020 );
+  temp001 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 0)]);
+  tempc001 = convert_short16( temp001 );
+  temp011 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 0)]);
+  tempc011 = convert_short16( temp011 );
+  temp021 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 0)]);
+  tempc021 = convert_short16( temp021 );
+  temp002 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 1)]);
+  tempc002 = convert_short16( temp002 );
+  temp012 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 1)]);
+  tempc012 = convert_short16( temp012 );
+  temp022 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 1)]);
+  tempc022 = convert_short16( temp022 );
+  temp003 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 2)]);
+  tempc003 = convert_short16( temp003 );
+  temp013 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 2)]);
+  tempc013 = convert_short16( temp013 );
+  temp023 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 2)]);
+  tempc023 = convert_short16( temp023 );
+  resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
+  res00 = convert_uchar16( clamp(resc00, (short)0, (short)255) );
+  resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * ((short)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
+  res01 = convert_uchar16( clamp(resc01, (short)0, (short)255) );
+  vstore16(res00, 0, &pdst[x + 0 + (w) * (y + 0)]);
+  vstore16(res01, 0, &pdst[x + 0 + (w) * (y + 1)]);
+}
+768 x 432 :
+Tesla T10 Processor: 
+4.010346712004372e-09 s
+2560 x 1600 :
+3.7141188017469062e-09 s
+2048 x 2048 :
+3.6184300673942148e-09 s
+5760 x 3240 :
+3.6390835555805377e-09 s
+7680 x 4320 :
+3.6580073768149007e-09 s
+{:x_component_number=>1, :vector_length=>8, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false}
+__kernel void math(const __global uchar * psrc, __global uchar * pdst, const int width, const int height){
+  int y;
+  int x;
+  int w;
+  x = (get_global_id(0)) * (1);
+  y = (get_global_id(1)) * (4);
+  w = (width) * (3);
+  x = (x < 3 ? 3 : (x > w - (11) ? w - (11) : x));
+  y = (y < 1 ? 1 : (y > height - (5) ? height - (5) : y));
+  uchar8 tempload0_7;
+  uchar4 tempload8_11;
+  uchar2 tempload12_13;
+  uchar8 res00;
+  uchar8 res01;
+  uchar8 res02;
+  uchar8 res03;
+  short8 tempc000;
+  short8 tempc001;
+  short8 tempc002;
+  short8 tempc003;
+  short8 tempc004;
+  short8 tempc005;
+  short8 tempc010;
+  short8 tempc011;
+  short8 tempc012;
+  short8 tempc013;
+  short8 tempc014;
+  short8 tempc015;
+  short8 tempc020;
+  short8 tempc021;
+  short8 tempc022;
+  short8 tempc023;
+  short8 tempc024;
+  short8 tempc025;
+  short8 resc00;
+  short8 resc01;
+  short8 resc02;
+  short8 resc03;
+  tempload0_7 = vload8(0, &psrc[x + -3 + (w) * (y + -1)]);
+  tempload8_11 = vload4(0, &psrc[x + 5 + (w) * (y + -1)]);
+  tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + -1)]);
+  tempc000 = convert_short8( (uchar8)(tempload0_7.s01234567) );
+  tempc010 = convert_short8( (uchar8)(tempload0_7.s345,tempload0_7.s67,tempload8_11.s012) );
+  tempc020 = convert_short8( (uchar8)(tempload0_7.s67,tempload8_11.s0123,tempload12_13.s01) );
+  tempload0_7 = vload8(0, &psrc[x + -3 + (w) * (y + 0)]);
+  tempload8_11 = vload4(0, &psrc[x + 5 + (w) * (y + 0)]);
+  tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + 0)]);
+  tempc001 = convert_short8( (uchar8)(tempload0_7.s01234567) );
+  tempc011 = convert_short8( (uchar8)(tempload0_7.s345,tempload0_7.s67,tempload8_11.s012) );
+  tempc021 = convert_short8( (uchar8)(tempload0_7.s67,tempload8_11.s0123,tempload12_13.s01) );
+  tempload0_7 = vload8(0, &psrc[x + -3 + (w) * (y + 1)]);
+  tempload8_11 = vload4(0, &psrc[x + 5 + (w) * (y + 1)]);
+  tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + 1)]);
+  tempc002 = convert_short8( (uchar8)(tempload0_7.s01234567) );
+  tempc012 = convert_short8( (uchar8)(tempload0_7.s345,tempload0_7.s67,tempload8_11.s012) );
+  tempc022 = convert_short8( (uchar8)(tempload0_7.s67,tempload8_11.s0123,tempload12_13.s01) );
+  tempload0_7 = vload8(0, &psrc[x + -3 + (w) * (y + 2)]);
+  tempload8_11 = vload4(0, &psrc[x + 5 + (w) * (y + 2)]);
+  tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + 2)]);
+  tempc003 = convert_short8( (uchar8)(tempload0_7.s01234567) );
+  tempc013 = convert_short8( (uchar8)(tempload0_7.s345,tempload0_7.s67,tempload8_11.s012) );
+  tempc023 = convert_short8( (uchar8)(tempload0_7.s67,tempload8_11.s0123,tempload12_13.s01) );
+  tempload0_7 = vload8(0, &psrc[x + -3 + (w) * (y + 3)]);
+  tempload8_11 = vload4(0, &psrc[x + 5 + (w) * (y + 3)]);
+  tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + 3)]);
+  tempc004 = convert_short8( (uchar8)(tempload0_7.s01234567) );
+  tempc014 = convert_short8( (uchar8)(tempload0_7.s345,tempload0_7.s67,tempload8_11.s012) );
+  tempc024 = convert_short8( (uchar8)(tempload0_7.s67,tempload8_11.s0123,tempload12_13.s01) );
+  tempload0_7 = vload8(0, &psrc[x + -3 + (w) * (y + 4)]);
+  tempload8_11 = vload4(0, &psrc[x + 5 + (w) * (y + 4)]);
+  tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + 4)]);
+  tempc005 = convert_short8( (uchar8)(tempload0_7.s01234567) );
+  tempc015 = convert_short8( (uchar8)(tempload0_7.s345,tempload0_7.s67,tempload8_11.s012) );
+  tempc025 = convert_short8( (uchar8)(tempload0_7.s67,tempload8_11.s0123,tempload12_13.s01) );
+  resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
+  res00 = convert_uchar8( clamp(resc00, (short)0, (short)255) );
+  resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * ((short)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
+  res01 = convert_uchar8( clamp(resc01, (short)0, (short)255) );
+  resc02 =  -(tempc002) - (tempc012) - (tempc022) - (tempc003) + (tempc013) * ((short)9) - (tempc023) - (tempc004) - (tempc014) - (tempc024);
+  res02 = convert_uchar8( clamp(resc02, (short)0, (short)255) );
+  resc03 =  -(tempc003) - (tempc013) - (tempc023) - (tempc004) + (tempc014) * ((short)9) - (tempc024) - (tempc005) - (tempc015) - (tempc025);
+  res03 = convert_uchar8( clamp(resc03, (short)0, (short)255) );
+  vstore8(res00, 0, &pdst[x + 0 + (w) * (y + 0)]);
+  vstore8(res01, 0, &pdst[x + 0 + (w) * (y + 1)]);
+  vstore8(res02, 0, &pdst[x + 0 + (w) * (y + 2)]);
+  vstore8(res03, 0, &pdst[x + 0 + (w) * (y + 3)]);
+}
+768 x 432 :
+Tesla T10 Processor: 
+4.549735867387212e-09 s
+2560 x 1600 :
+3.908857925416936e-09 s
+2048 x 2048 :
+3.922070004749033e-09 s
+5760 x 3240 :
+3.870189468110646e-09 s
+7680 x 4320 :
+3.8459606382461465e-09 s
+{:x_component_number=>1, :vector_length=>16, :y_component_number=>2, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true}
+__kernel void math(const __global uchar * psrc, __global uchar * pdst, const int width, const int height){
+  int y;
+  int x;
+  int w;
+  x = (get_global_id(0)) * (1);
+  y = (get_global_id(1)) * (2);
+  w = (width) * (3);
+  x = (x < 3 ? 3 : (x > w - (19) ? w - (19) : x));
+  y = (y < 1 ? 1 : (y > height - (3) ? height - (3) : y));
+  uchar16 temp000;
+  uchar16 temp001;
+  uchar16 temp002;
+  uchar16 temp003;
+  uchar16 temp010;
+  uchar16 temp011;
+  uchar16 temp012;
+  uchar16 temp013;
+  uchar16 temp020;
+  uchar16 temp021;
+  uchar16 temp022;
+  uchar16 temp023;
+  uchar16 res00;
+  uchar16 res01;
+  int16 tempc000;
+  int16 tempc001;
+  int16 tempc002;
+  int16 tempc003;
+  int16 tempc010;
+  int16 tempc011;
+  int16 tempc012;
+  int16 tempc013;
+  int16 tempc020;
+  int16 tempc021;
+  int16 tempc022;
+  int16 tempc023;
+  int16 resc00;
+  int16 resc01;
+  temp000 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + -1)]);
+  tempc000 = convert_int16( temp000 );
+  temp010 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + -1)]);
+  tempc010 = convert_int16( temp010 );
+  temp020 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + -1)]);
+  tempc020 = convert_int16( temp020 );
+  temp001 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 0)]);
+  tempc001 = convert_int16( temp001 );
+  temp011 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 0)]);
+  tempc011 = convert_int16( temp011 );
+  temp021 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 0)]);
+  tempc021 = convert_int16( temp021 );
+  temp002 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 1)]);
+  tempc002 = convert_int16( temp002 );
+  temp012 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 1)]);
+  tempc012 = convert_int16( temp012 );
+  temp022 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 1)]);
+  tempc022 = convert_int16( temp022 );
+  temp003 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 2)]);
+  tempc003 = convert_int16( temp003 );
+  temp013 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 2)]);
+  tempc013 = convert_int16( temp013 );
+  temp023 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 2)]);
+  tempc023 = convert_int16( temp023 );
+  resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * ((int)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
+  res00 = convert_uchar16( clamp(resc00, (int)0, (int)255) );
+  resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * ((int)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
+  res01 = convert_uchar16( clamp(resc01, (int)0, (int)255) );
+  vstore16(res00, 0, &pdst[x + 0 + (w) * (y + 0)]);
+  vstore16(res01, 0, &pdst[x + 0 + (w) * (y + 1)]);
+}
+768 x 432 :
+Tesla T10 Processor: 
+2.998554860647277e-08 s
+2560 x 1600 :
+2.849057021041744e-08 s
+2048 x 2048 :
+2.778538960697697e-08 s
+5760 x 3240 :
+2.83595433782705e-08 s
+7680 x 4320 :
+2.8510946803852755e-08 s
+{:x_component_number=>2, :vector_length=>2, :y_component_number=>1, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false}
+__kernel void math(const __global uchar * psrc, __global uchar * pdst, const int width, const int height){
+  int y;
+  int x;
+  int w;
+  x = (get_global_id(0)) * (2);
+  y = (get_global_id(1)) * (1);
+  w = (width) * (3);
+  x = (x < 3 ? 3 : (x > w - (5) ? w - (5) : x));
+  y = (y < 1 ? 1 : (y > height - (2) ? height - (2) : y));
+  uchar2 tempload0_1;
+  uchar2 tempload2_3;
+  uchar2 tempload4_5;
+  uchar2 tempload6_7;
+  uchar2 res00;
+  short2 tempc000;
+  short2 tempc001;
+  short2 tempc002;
+  short2 tempc010;
+  short2 tempc011;
+  short2 tempc012;
+  short2 tempc020;
+  short2 tempc021;
+  short2 tempc022;
+  short2 resc00;
+  tempload0_1 = vload2(0, &psrc[x + -3 + (w) * (y + -1)]);
+  tempload2_3 = vload2(0, &psrc[x + -1 + (w) * (y + -1)]);
+  tempload4_5 = vload2(0, &psrc[x + 1 + (w) * (y + -1)]);
+  tempload6_7 = vload2(0, &psrc[x + 3 + (w) * (y + -1)]);
+  tempc000 = convert_short2( (uchar2)(tempload0_1.s01) );
+  tempc010 = convert_short2( (uchar2)(tempload2_3.s1,tempload4_5.s0) );
+  tempc020 = convert_short2( (uchar2)(tempload6_7.s01) );
+  tempload0_1 = vload2(0, &psrc[x + -3 + (w) * (y + 0)]);
+  tempload2_3 = vload2(0, &psrc[x + -1 + (w) * (y + 0)]);
+  tempload4_5 = vload2(0, &psrc[x + 1 + (w) * (y + 0)]);
+  tempload6_7 = vload2(0, &psrc[x + 3 + (w) * (y + 0)]);
+  tempc001 = convert_short2( (uchar2)(tempload0_1.s01) );
+  tempc011 = convert_short2( (uchar2)(tempload2_3.s1,tempload4_5.s0) );
+  tempc021 = convert_short2( (uchar2)(tempload6_7.s01) );
+  tempload0_1 = vload2(0, &psrc[x + -3 + (w) * (y + 1)]);
+  tempload2_3 = vload2(0, &psrc[x + -1 + (w) * (y + 1)]);
+  tempload4_5 = vload2(0, &psrc[x + 1 + (w) * (y + 1)]);
+  tempload6_7 = vload2(0, &psrc[x + 3 + (w) * (y + 1)]);
+  tempc002 = convert_short2( (uchar2)(tempload0_1.s01) );
+  tempc012 = convert_short2( (uchar2)(tempload2_3.s1,tempload4_5.s0) );
+  tempc022 = convert_short2( (uchar2)(tempload6_7.s01) );
+  resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
+  res00 = convert_uchar2( clamp(resc00, (short)0, (short)255) );
+  vstore2(res00, 0, &pdst[x + 0 + (w) * (y + 0)]);
+}
+768 x 432 :
+Tesla T10 Processor: 
+1.4496083550913837e-09 s
+2560 x 1600 :
+1.4290576277422618e-09 s
+2048 x 2048 :
+1.3970831195313268e-09 s
+5760 x 3240 :
+1.4041575155741101e-09 s
+7680 x 4320 :
+1.3815731164551523e-09 s
+{:x_component_number=>4, :vector_length=>16, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true}
+__kernel void math(const __global uchar * psrc, __global uchar * pdst, const int width, const int height){
+  int y;
+  int x;
+  int w;
+  x = (get_global_id(0)) * (4);
+  y = (get_global_id(1)) * (3);
+  w = (width) * (3);
+  x = (x < 3 ? 3 : (x > w - (19) ? w - (19) : x));
+  y = (y < 1 ? 1 : (y > height - (4) ? height - (4) : y));
+  uchar16 temp000;
+  uchar16 temp001;
+  uchar16 temp002;
+  uchar16 temp003;
+  uchar16 temp004;
+  uchar16 temp010;
+  uchar16 temp011;
+  uchar16 temp012;
+  uchar16 temp013;
+  uchar16 temp014;
+  uchar16 temp020;
+  uchar16 temp021;
+  uchar16 temp022;
+  uchar16 temp023;
+  uchar16 temp024;
+  uchar16 res00;
+  uchar16 res01;
+  uchar16 res02;
+  short16 tempc000;
+  short16 tempc001;
+  short16 tempc002;
+  short16 tempc003;
+  short16 tempc004;
+  short16 tempc010;
+  short16 tempc011;
+  short16 tempc012;
+  short16 tempc013;
+  short16 tempc014;
+  short16 tempc020;
+  short16 tempc021;
+  short16 tempc022;
+  short16 tempc023;
+  short16 tempc024;
+  short16 resc00;
+  short16 resc01;
+  short16 resc02;
+  temp000 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + -1)]);
+  tempc000 = convert_short16( temp000 );
+  temp010 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + -1)]);
+  tempc010 = convert_short16( temp010 );
+  temp020 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + -1)]);
+  tempc020 = convert_short16( temp020 );
+  temp001 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 0)]);
+  tempc001 = convert_short16( temp001 );
+  temp011 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 0)]);
+  tempc011 = convert_short16( temp011 );
+  temp021 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 0)]);
+  tempc021 = convert_short16( temp021 );
+  temp002 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 1)]);
+  tempc002 = convert_short16( temp002 );
+  temp012 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 1)]);
+  tempc012 = convert_short16( temp012 );
+  temp022 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 1)]);
+  tempc022 = convert_short16( temp022 );
+  temp003 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 2)]);
+  tempc003 = convert_short16( temp003 );
+  temp013 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 2)]);
+  tempc013 = convert_short16( temp013 );
+  temp023 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 2)]);
+  tempc023 = convert_short16( temp023 );
+  temp004 = vload16(0, &psrc[x + 0 + -3 + (w) * (y + 3)]);
+  tempc004 = convert_short16( temp004 );
+  temp014 = vload16(0, &psrc[x + 0 + 0 + (w) * (y + 3)]);
+  tempc014 = convert_short16( temp014 );
+  temp024 = vload16(0, &psrc[x + 0 + 3 + (w) * (y + 3)]);
+  tempc024 = convert_short16( temp024 );
+  resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
+  res00 = convert_uchar16( clamp(resc00, (short)0, (short)255) );
+  resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * ((short)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
+  res01 = convert_uchar16( clamp(resc01, (short)0, (short)255) );
+  resc02 =  -(tempc002) - (tempc012) - (tempc022) - (tempc003) + (tempc013) * ((short)9) - (tempc023) - (tempc004) - (tempc014) - (tempc024);
+  res02 = convert_uchar16( clamp(resc02, (short)0, (short)255) );
+  vstore16(res00, 0, &pdst[x + 0 + (w) * (y + 0)]);
+  vstore16(res01, 0, &pdst[x + 0 + (w) * (y + 1)]);
+  vstore16(res02, 0, &pdst[x + 0 + (w) * (y + 2)]);
+}
+768 x 432 :
+Tesla T10 Processor: 
+1.2293934057927016e-08 s
+#+END_EXAMPLE
+* ERRORS
+#+BEGIN_EXAMPLE
+Laplacian.rb:311:in `block (3 levels) in <main>': Warning: residue too big: 183 1,0,0 (RuntimeError)
+	from Laplacian.rb:308:in `each'
+	from Laplacian.rb:308:in `block (2 levels) in <main>'
+	from Laplacian.rb:292:in `each_index'
+	from Laplacian.rb:292:in `block in <main>'
+	from /root/.gem/ruby/1.9.1/gems/BOAST-1.0.9/lib/BOAST/Optimization/Optimization.rb:175:in `call'
+	from /root/.gem/ruby/1.9.1/gems/BOAST-1.0.9/lib/BOAST/Optimization/Optimization.rb:175:in `block in optimize'
+	from /root/.gem/ruby/1.9.1/gems/BOAST-1.0.9/lib/BOAST/Optimization/Optimization.rb:173:in `each'
+	from /root/.gem/ruby/1.9.1/gems/BOAST-1.0.9/lib/BOAST/Optimization/Optimization.rb:173:in `optimize'
+	from Laplacian.rb:286:in `<main>'
+#+END_EXAMPLE

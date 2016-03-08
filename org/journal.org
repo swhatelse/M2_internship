@@ -1,6 +1,7 @@
 #+TITLE:  LabBook
 #+AUTHOR: Steven QUINITO MASNADA
 #+BABEL: :tangle yes
+#+TAGS: Arnaud(A) Brice(B)
 
 * Memo
   - Get opencl platform
@@ -117,7 +118,7 @@
        rsync -avzP --exclude '.git' boast-lig squinitomasnada@access.grid5000.fr:~/grenoble/boast
      #+end_src
 * February
-** 2016-02-02 Notes from Arnaud
+** 2016-02-02 Notes from Arnaud :Arnaud:
 - [[http://mescal.imag.fr/membres/arnaud.legrand/research/M2R_boast.pdf][internships]]
 - Stephan Wild's slides at JLPC
 - Pointer from Emmanuel Aggulo: [[https://www.gerad.ca/~orban/papers.html][Dominique Orban]]
@@ -131,7 +132,7 @@
 Have a look at
 https://en.wikipedia.org/wiki/Genetic_algorithm#Limitations
 ** 2016-02-02
-*** Summary discussion with Arnaud
+*** Summary discussion with Arnaud :Arnaud:
     Optimization can be seen as:
     - _Minimization problem_
       E.g gradient approach if the function is convexe and second
@@ -145,7 +146,7 @@ https://en.wikipedia.org/wiki/Genetic_algorithm#Limitations
     - A good starting point would be to characterize the autotuning
       search problem.
 ** 2016-02-05
-*** Discussion with Brice
+*** Discussion with Brice :Brice:
     - Local search only gives local optimal. It is quicker but the
       result can far from the global optimal unless we know where to
       search.
@@ -156,12 +157,12 @@ https://en.wikipedia.org/wiki/Genetic_algorithm#Limitations
       changing architecture, it is possible that the search space is
       different.  
 ** 2016-02-09
-*** Summary of the discussion with Arnaud
+*** Summary of the discussion with Arnaud :Arnaud:
     - It is possible to translate the constraint problem into a
       non-constraint one \to moving the constraint into the Obj. Func.
       Use of barrier methods.
     - I have to try to generate data and analyze it with R.
-*** Analyse des données autotuning de Brice                         :ATTACH:
+*** Analyse des données autotuning de Brice                         :Brice:ATTACH:
     Retrieved from Arnaud.
 :PROPERTIES:
 :Attachments: res_arnaud.txt
@@ -1027,9 +1028,15 @@ Entered on [2015-11-19 jeu. 20:56]
 * Mars
 ** 2016-03-01
  - Result on a machine with a GPU Nvidia GTX960 
+   - [[file:data/2016_03_01/pantheon/22_11_09/Info22_11_09.org][Conditions of experiment]]
+   - [[file:data/2016_03_01/pantheon/22_11_09/Data22_11_09_parameters.yaml][Search space]]
+   - [[file:data/2016_03_01/pantheon/22_11_09/Data22_11_09.yaml][Results of experiment]]
+ - Observations:    
        #+begin_src sh :results output :exports both
          ruby scripts/format_data.rb data/2016_03_01/pantheon/22_11_09/Data22_11_09.yaml
        #+end_src
+
+       #+RESULTS:
 
    - Lets plot simply the result
        #+begin_src R :results output graphics :file img/not_ordered.png :exports both :width 700 :height 500 :session
@@ -1060,7 +1067,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:img/another_order.png]]
+     [[file:img/another_order.png]]
 
    - Lets see what are the parameters that have the bigger impact:
      #+begin_src R :results output :session :exports both
@@ -1203,3 +1210,94 @@ Entered on [2015-11-19 jeu. 20:56]
     Atlas ~ brute force?
     Berkley autotuning
     - Next meeting : 4 avril 14h
+** 2016-03-07
+*** Bruteforce on Pilipili2
+**** Results
+     - [[file:data/2016_03_07/pilipili2/10_19_36/Info10_19_36.org][Conditions of experiment]]
+     - [[file:data/2016_03_07/pilipili2/10_19_36/Data10_19_36_parameters.yaml][Search space]]
+     - [[file:data/2016_03_07/pilipili2/10_19_36/Data10_19_36.yaml][Results of experiment]]
+**** Observations
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_03_07/pilipili2/10_19_36/Data10_19_36.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     - The structure is close to what was obtained earlier with a
+       GTX960 but they are some little differences. We can see that
+       we have 5 groups of points due to the five value that can take
+       x_component_number. And in this groups we can distinguish 4
+       others which seems to be related to the y_component_number. 
+
+       #+begin_src R :results output graphics :file img/pilipili2_gtx960_order.png :exports both :width 600 :height 400 :session
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         attach(df)
+         sorted <- df[order(x_component_number, -y_component_number, -vector_recompute, vector_length),]         
+         plot(sorted$time_per_pixel)
+       #+end_src
+     
+       #+RESULTS:
+       [[file:img/pilipili2_gtx960_order.png]]
+    
+     - At first sight the other factors don't seems to have any
+       impact, so try to order according to : 
+
+       #+begin_src R :results output :session :exports both
+         sorted <- df[order(x_component_number, -y_component_number ),]         
+         plot(sorted$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+
+     - But when we try to make a linear regression it tells me that
+       vector_length and vector_recompute have an impact
+       #+begin_src R :results output :session :exports both
+         summary(lm(data=df,time_per_pixel ~ x_component_number + vector_length + y_component_number + vector_recompute  )) #+ temporary_size + load_overlap
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = time_per_pixel ~ x_component_number + vector_length + 
+           y_component_number + vector_recompute, data = df)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -3.104e-10 -1.517e-10 -3.305e-11  6.809e-11  1.588e-09 
+
+       Coefficients:
+                              Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)           4.563e-10  2.605e-11  17.512  < 2e-16 ***
+       x_component_number   -6.055e-12  1.543e-12  -3.925 9.42e-05 ***
+       vector_length         1.758e-11  1.543e-12  11.393  < 2e-16 ***
+       y_component_number   -8.612e-11  7.528e-12 -11.441  < 2e-16 ***
+       vector_recomputetrue  1.868e-10  1.683e-11  11.096  < 2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 2.38e-10 on 795 degrees of freedom
+       Multiple R-squared:  0.3343,	Adjusted R-squared:  0.3309 
+       F-statistic: 99.81 on 4 and 795 DF,  p-value: < 2.2e-16
+       #+end_example
+       
+       - Locally they have almost no impact:
+         #+begin_src R :results output graphics :file img/pilipili2_local_impact.png :exports both :width 600 :height 400 :session
+           sorted <- df[ order(x_component_number, -y_component_number, vector_recompute, vector_length),]         
+           plot(sorted$time_per_pixel)
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/pilipili2_local_impact.png]]
+
+       - Globally we can see that outliers are linked to
+         vector_recompute=false
+         #+begin_src R :results output graphics :file img/pilipili2_global_impact.png :exports both :width 600 :height 400 :session
+           sorted <- df[ order(-vector_recompute, vector_length, -y_component_number, x_component_number),]         
+           plot(sorted$time_per_pixel)
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/pilipili2_global_impact.png]]
+
+
