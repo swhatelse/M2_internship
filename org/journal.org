@@ -1042,9 +1042,20 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
 
+   - Best candidate:
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       df[df$time_per_pixel==min(df$time_per_pixel),]
+     #+end_src
+
+     #+RESULTS:
+     :    x_component_number vector_length y_component_number temporary_size
+     : 33                  1             1                  4              4
+     :    vector_recompute load_overlap time_per_pixel
+     : 33            false        false   1.432887e-10
+
    - Lets plot simply the result
        #+begin_src R :results output graphics :file img/not_ordered.png :exports both :width 700 :height 500 :session
-         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
          plot(df$time_per_pixel)
        #+end_src
 
@@ -1243,6 +1254,18 @@ Entered on [2015-11-19 jeu. 20:56]
        : Warning message:
        : In Ops.factor(vector_recompute) : ‘-’ not meaningful for factors
 
+     - *Warning* it seems that the result are not coherent:
+       #+begin_src R :results output :session :exports both
+         df[df$time_per_pixel==min(df$time_per_pixel),]
+       #+end_src
+
+       #+RESULTS:
+       :     x_component_number vector_length y_component_number temporary_size
+       : 605                  4            16                  4              4
+       :     vector_recompute load_overlap time_per_pixel
+       : 605            false        false   1.747586e-10
+
+
        #+begin_src R :results output graphics :file img/pilipili2_gtx960_order.png :exports both :width 600 :height 400 :session
          plot(sorted$time_per_pixel)
        #+end_src
@@ -1370,175 +1393,33 @@ Entered on [2015-11-19 jeu. 20:56]
        x_component_number is and the bigger worst the performances but
        this case doesn't interest us. 
 
-     - *Warning* it seems that the result are not coherent:
-       #+begin_src R :results output :session :exports both
-         df[df$time_per_pixel==min(df$time_per_pixel),]
-       #+end_src
-
-       #+RESULTS:
-       :     x_component_number vector_length y_component_number temporary_size
-       : 605                  4            16                  4              4
-       :     vector_recompute load_overlap time_per_pixel
-       : 605            false        false   1.747586e-10
-**** Quick analysis of Laplacian.rb
+**** Quick study of optimization of Laplacian.rb
      To be able to understand the result I must first understand
      exactly what is done.
      
-     - {:x_component_number=>8, :vector_length=>2, :y_component_number=>1, :temporary_size=>4, :vector_recompute=>false, :load_overlap=>false}
-       #+BEGIN_SRC C
-         __kernel void math(const __global uchar * psrc, __global uchar * pdst, const int width, const int height){
-             int y;
-             int x;
-             int w;
-             x = (get_global_id(0)) * (8);
-             y = (get_global_id(1)) * (1);
-             w = (width) * (3);
-             x = (x < 3 ? 3 : (x > w - (11) ? w - (11) : x));
-             y = (y < 1 ? 1 : (y > height - (2) ? height - (2) : y));
-             uchar2 tempload0_1;
-             uchar2 tempload2_3;
-             uchar2 tempload4_5;
-             uchar2 tempload6_7;
-             uchar2 tempload8_9;
-             uchar2 tempload10_11;
-             uchar2 tempload12_13;
-             uchar2 res00;
-             uchar2 res10;
-             uchar2 res20;
-             uchar2 res30;
-             int2 tempc000;
-             int2 tempc001;
-             int2 tempc002;
-             int2 tempc100;
-             int2 tempc101;
-             int2 tempc102;
-             int2 tempc200;
-             int2 tempc201;
-             int2 tempc202;
-             int2 tempc300;
-             int2 tempc301;
-             int2 tempc302;
-             int2 tempc010;
-             int2 tempc011;
-             int2 tempc012;
-             int2 tempc110;
-             int2 tempc111;
-             int2 tempc112;
-             int2 tempc210;
-             int2 tempc211;
-             int2 tempc212;
-             int2 tempc310;
-             int2 tempc311;
-             int2 tempc312;
-             int2 tempc020;
-             int2 tempc021;
-             int2 tempc022;
-             int2 tempc120;
-             int2 tempc121;
-             int2 tempc122;
-             int2 tempc220;
-             int2 tempc221;
-             int2 tempc222;
-             int2 tempc320;
-             int2 tempc321;
-             int2 tempc322;
-             int2 resc00;
-             int2 resc10;
-             int2 resc20;
-             int2 resc30;
-             tempload0_1 = vload2(0, &psrc[x + -3 + (w) * (y + -1)]);
-             tempload2_3 = vload2(0, &psrc[x + -1 + (w) * (y + -1)]);
-             tempload4_5 = vload2(0, &psrc[x + 1 + (w) * (y + -1)]);
-             tempload6_7 = vload2(0, &psrc[x + 3 + (w) * (y + -1)]);
-             tempload8_9 = vload2(0, &psrc[x + 5 + (w) * (y + -1)]);
-             tempload10_11 = vload2(0, &psrc[x + 7 + (w) * (y + -1)]);
-             tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + -1)]);
-             tempc000 = convert_int2( (uchar2)(tempload0_1.s01) );
-             tempc100 = convert_int2( (uchar2)(tempload2_3.s01) );
-             tempc200 = convert_int2( (uchar2)(tempload4_5.s01) );
-             tempc300 = convert_int2( (uchar2)(tempload6_7.s01) );
-             tempc010 = convert_int2( (uchar2)(tempload2_3.s1,tempload4_5.s0) );
-             tempc110 = convert_int2( (uchar2)(tempload4_5.s1,tempload6_7.s0) );
-             tempc210 = convert_int2( (uchar2)(tempload6_7.s1,tempload8_9.s0) );
-             tempc310 = convert_int2( (uchar2)(tempload8_9.s1,tempload10_11.s0) );
-             tempc020 = convert_int2( (uchar2)(tempload6_7.s01) );
-             tempc120 = convert_int2( (uchar2)(tempload8_9.s01) );
-             tempc220 = convert_int2( (uchar2)(tempload10_11.s01) );
-             tempc320 = convert_int2( (uchar2)(tempload12_13.s01) );
-             tempload0_1 = vload2(0, &psrc[x + -3 + (w) * (y + 0)]);
-             tempload2_3 = vload2(0, &psrc[x + -1 + (w) * (y + 0)]);
-             tempload4_5 = vload2(0, &psrc[x + 1 + (w) * (y + 0)]);
-             tempload6_7 = vload2(0, &psrc[x + 3 + (w) * (y + 0)]);
-             tempload8_9 = vload2(0, &psrc[x + 5 + (w) * (y + 0)]);
-             tempload10_11 = vload2(0, &psrc[x + 7 + (w) * (y + 0)]);
-             tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + 0)]);
-             tempc001 = convert_int2( (uchar2)(tempload0_1.s01) );
-             tempc101 = convert_int2( (uchar2)(tempload2_3.s01) );
-             tempc201 = convert_int2( (uchar2)(tempload4_5.s01) );
-             tempc301 = convert_int2( (uchar2)(tempload6_7.s01) );
-             tempc011 = convert_int2( (uchar2)(tempload2_3.s1,tempload4_5.s0) );
-             tempc111 = convert_int2( (uchar2)(tempload4_5.s1,tempload6_7.s0) );
-             tempc211 = convert_int2( (uchar2)(tempload6_7.s1,tempload8_9.s0) );
-             tempc311 = convert_int2( (uchar2)(tempload8_9.s1,tempload10_11.s0) );
-             tempc021 = convert_int2( (uchar2)(tempload6_7.s01) );
-             tempc121 = convert_int2( (uchar2)(tempload8_9.s01) );
-             tempc221 = convert_int2( (uchar2)(tempload10_11.s01) );
-             tempc321 = convert_int2( (uchar2)(tempload12_13.s01) );
-             tempload0_1 = vload2(0, &psrc[x + -3 + (w) * (y + 1)]);
-             tempload2_3 = vload2(0, &psrc[x + -1 + (w) * (y + 1)]);
-             tempload4_5 = vload2(0, &psrc[x + 1 + (w) * (y + 1)]);
-             tempload6_7 = vload2(0, &psrc[x + 3 + (w) * (y + 1)]);
-             tempload8_9 = vload2(0, &psrc[x + 5 + (w) * (y + 1)]);
-             tempload10_11 = vload2(0, &psrc[x + 7 + (w) * (y + 1)]);
-             tempload12_13 = vload2(0, &psrc[x + 9 + (w) * (y + 1)]);
-             tempc002 = convert_int2( (uchar2)(tempload0_1.s01) );
-             tempc102 = convert_int2( (uchar2)(tempload2_3.s01) );
-             tempc202 = convert_int2( (uchar2)(tempload4_5.s01) );
-             tempc302 = convert_int2( (uchar2)(tempload6_7.s01) );
-             tempc012 = convert_int2( (uchar2)(tempload2_3.s1,tempload4_5.s0) );
-             tempc112 = convert_int2( (uchar2)(tempload4_5.s1,tempload6_7.s0) );
-             tempc212 = convert_int2( (uchar2)(tempload6_7.s1,tempload8_9.s0) );
-             tempc312 = convert_int2( (uchar2)(tempload8_9.s1,tempload10_11.s0) );
-             tempc022 = convert_int2( (uchar2)(tempload6_7.s01) );
-             tempc122 = convert_int2( (uchar2)(tempload8_9.s01) );
-             tempc222 = convert_int2( (uchar2)(tempload10_11.s01) );
-             tempc322 = convert_int2( (uchar2)(tempload12_13.s01) );
-             resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * ((int)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
-             res00 = convert_uchar2( clamp(resc00, (int)0, (int)255) );
-             resc10 =  -(tempc100) - (tempc110) - (tempc120) - (tempc101) + (tempc111) * ((int)9) - (tempc121) - (tempc102) - (tempc112) - (tempc122);
-             res10 = convert_uchar2( clamp(resc10, (int)0, (int)255) );
-             resc20 =  -(tempc200) - (tempc210) - (tempc220) - (tempc201) + (tempc211) * ((int)9) - (tempc221) - (tempc202) - (tempc212) - (tempc222);
-             res20 = convert_uchar2( clamp(resc20, (int)0, (int)255) );
-             resc30 =  -(tempc300) - (tempc310) - (tempc320) - (tempc301) + (tempc311) * ((int)9) - (tempc321) - (tempc302) - (tempc312) - (tempc322);
-             res30 = convert_uchar2( clamp(resc30, (int)0, (int)255) );
-             vstore2(res00, 0, &pdst[x + 0 + (w) * (y + 0)]);
-             vstore2(res10, 0, &pdst[x + 2 + (w) * (y + 0)]);
-             vstore2(res20, 0, &pdst[x + 4 + (w) * (y + 0)]);
-             vstore2(res30, 0, &pdst[x + 6 + (w) * (y + 0)]);
-         }
-       #+END_SRC
-
      The laplacian filter is optimized according to 6 parameters:
      - x_component_number and y_component_number : split the image into
        part on which the computational unit will work.
      - vector_length : Number of component that are vectorized
-     - temporary_size :
+     - temporary_size : size of the temporary type
      - vector_recompute : As it is ARM code it prevent segfault on
        Intel. 
      - load_overlap : activate the synthetizing load optimization
 ** 2016-03-09
 *** Changing the search space
     - By exlporing values for global_work_size and local_work_size
-      - Local_size \to limited by the physical device
-      - Global_size \to should be a multiple of the local_work_size and
-        depend of the size of the work. So it should be image_size /
-        local_work_size. It specifies the number of work-groups in each
-        dimension (1 \to 3)
-        
-      
+      - Local_work_size \to Number of work-items in a group. Limited by the
+        physical device. 
+      - Global_work_size \to Total number of work-items. Each dimension
+        should be a multiple of the corresponding dimension in
+        local_work_size and it also dependson the size of the work. So it 
+        should be equal to the be number of work-groups *
+        local_work_size.       
+      - It seems that for the K40 GPU I can not have more than 256
+        work item per work-group.
 **** Results
 
-**** Observation
+**** Observations
      #+begin_src sh :results output :exports both
      #+end_src
 
