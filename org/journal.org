@@ -3,6 +3,9 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s)
 
+* TODO [0/1]
+  - [ ] Run brute force with load_overlap = [true,false],
+    vector_recompute = [true,false] and different combination of local_work_size
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -17,6 +20,10 @@
     #+begin_src sh :results output :exports both
       ps -ft pts/0 -t pts/2    
     #+end_src
+  - Bench optimizer
+   #+begin_src sh :results output :exports both
+     OPTIMIZER_LOG_FILE=/tmp/test2.yaml OPTIMIZER_LOG=true ruby bench_optimizer.rb test_parameters.yaml test.yaml
+   #+end_src
 * Installation
   Here the installation that download and install al the necessary tools.
 ** Base
@@ -1418,18 +1425,20 @@ Entered on [2015-11-19 jeu. 20:56]
         local_work_size.       
       - It seems that for the K40 GPU I can not have more than 256
         work item per work-group.
+*** Bruteforce on pilipili2
 **** Results
      - [[file:data/2016_03_11/pilipili2/19_13_54/Info19_13_54.org][Conditions of experiment]]
      - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml][Search space]]
      - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml][Results of experiments]]
 **** Formatting data script :Script:
-       #+BEGIN_SRC ruby :tangle scripts/format_data.rb
+       #+BEGIN_SRC ruby
          require 'yaml'
          require 'pp'
          require 'csv'
          input = ARGV[0]
 
-         h = YAML::load(File::open(input).read)
+         # h = YAML::load(File::open(input).read)
+         h = YAML::load_documents(File::open(input).read)
 
          t = []
          t2 = []
@@ -1454,6 +1463,44 @@ Entered on [2015-11-19 jeu. 20:56]
            }
          }                  
        #+END_SRC
+**** Formatting data 2 :Script:
+     #+BEGIN_SRC ruby :tangle scripts/format_data.rb
+       require 'yaml'
+       require 'pp'
+       require 'csv'
+       input = ARGV[0]
+
+       t = []
+       t2 = []
+       head = []
+
+       # h = YAML::load(File::open(input).read)
+       h = YAML::load_documents(File::open(input).read){ |doc|
+
+         if head.empty?
+           # h.first[0].each {|key, value| head.push key }
+           doc.first[0].each {|key, value| head.push key } 
+           head.push :time_per_pixel
+         end
+
+         # h.each {|key, value| 
+         doc.each {|key, value| 
+           t2 = []
+           key.each { |key2, value2|
+             t2.push value2
+           }
+           t2.push value
+           t.push t2
+         }
+       }
+
+       CSV.open("/tmp/test.csv", "w"){ |f|
+         f << head
+         t.each{ |e|
+           f << e
+         }
+       }
+     #+END_SRC
 **** Observations
      #+begin_src sh :results output :exports both
        ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
@@ -1461,30 +1508,1259 @@ Entered on [2015-11-19 jeu. 20:56]
      
      #+RESULTS:
 
-
-     #+begin_src R :results output :session :exports both
+     #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_sg.png :exports both :width 800 :height 600 :session
        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       attach(df)
        plot(df)
      #+end_src
 
      #+RESULTS:
-
-     #+begin_src R :results output :session :exports both
-       sorted <- df[order(x_component_number, -y_component_number, -vector_recompute, vector_length),]         
-       plot(sorted$time_per_pixel)
-     #+end_src
-
-     #+RESULTS:
-     : Warning message:
-     : In Ops.factor(vector_recompute) : ‘-’ not meaningful for factors
-
-     #+begin_src R :results output :session :exports both
-       library(ggplot2)
-       df$y_component_number.cat <- as.factor(df$y_component_number)
-       ggplot(df) + aes(x=x_component_number, y=time_per_pixel, color=y_component_number.cat) + geom_point(alpha=0.5) + facet_grid( vector_length ~ local_work_size)       
-     #+end_src
-
-     #+RESULTS:
-
+     [[file:img/20160311/pilipili2/pilipili2_sg.png]]
      
-     
+     - Fitting a simple model doesn't really work:
+       #+begin_src R :results output :session :exports both
+         summary(lm(data=df,time_per_pixel ~ x_component_number + y_component_number + local_work_size + vector_length)) #+ temporary_size
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = time_per_pixel ~ x_component_number + y_component_number + 
+           local_work_size + vector_length, data = df)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -4.123e-10 -1.586e-10 -5.251e-11  1.100e-10  1.413e-09 
+  
+       Coefficients:
+                                    Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                 4.814e-10  2.284e-11  21.075  < 2e-16 ***
+       x_component_number         -1.027e-11  9.986e-13 -10.286  < 2e-16 ***
+       y_component_number         -8.007e-11  4.873e-12 -16.432  < 2e-16 ***
+       local_work_size[128, 2, 1]  1.118e-11  2.436e-11   0.459  0.64629    
+       local_work_size[256, 1, 1]  1.568e-11  2.436e-11   0.644  0.51983    
+       local_work_size[32, 1, 1]   7.581e-11  2.436e-11   3.112  0.00189 ** 
+       local_work_size[32, 2, 1]   2.476e-12  2.436e-11   0.102  0.91905    
+       local_work_size[32, 4, 1]  -2.783e-12  2.436e-11  -0.114  0.90907    
+       local_work_size[32, 8, 1]   7.394e-12  2.436e-11   0.303  0.76156    
+       local_work_size[64, 1, 1]   2.301e-11  2.436e-11   0.945  0.34496    
+       local_work_size[64, 2, 1]  -1.268e-12  2.436e-11  -0.052  0.95850    
+       local_work_size[64, 4, 1]   9.419e-12  2.436e-11   0.387  0.69910    
+       vector_length               3.376e-11  9.986e-13  33.810  < 2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 2.436e-10 on 1987 degrees of freedom
+       Multiple R-squared:  0.4359,	Adjusted R-squared:  0.4324 
+       F-statistic: 127.9 on 12 and 1987 DF,  p-value: < 2.2e-16
+       #+end_example
+     - Neither a more complex one:
+       It seems that the local_work_size doesn't have a significant effect... 
+       #+begin_src R :results output :session :exports both
+         summary(lm(data=df,time_per_pixel ~ x_component_number * y_component_number * local_work_size * vector_length)) #+ temporary_size
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = time_per_pixel ~ x_component_number * y_component_number * 
+           local_work_size * vector_length, data = df)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -5.351e-10 -1.024e-10 -1.680e-11  8.515e-11  9.055e-10 
+
+       Coefficients:
+                                                                                        Estimate
+       (Intercept)                                                                     2.155e-10
+       x_component_number                                                              2.383e-11
+       y_component_number                                                             -4.086e-11
+       local_work_size[128, 2, 1]                                                      2.398e-11
+       local_work_size[256, 1, 1]                                                      3.167e-11
+       local_work_size[32, 1, 1]                                                       1.826e-10
+       local_work_size[32, 2, 1]                                                       2.868e-11
+       local_work_size[32, 4, 1]                                                      -5.634e-12
+       local_work_size[32, 8, 1]                                                       1.566e-11
+       local_work_size[64, 1, 1]                                                       3.215e-12
+       local_work_size[64, 2, 1]                                                      -2.377e-12
+       local_work_size[64, 4, 1]                                                       1.896e-11
+       vector_length                                                                   7.948e-11
+       x_component_number:y_component_number                                          -2.287e-12
+       x_component_number:local_work_size[128, 2, 1]                                  -2.576e-12
+       x_component_number:local_work_size[256, 1, 1]                                  -3.683e-12
+       x_component_number:local_work_size[32, 1, 1]                                   -1.508e-11
+       x_component_number:local_work_size[32, 2, 1]                                   -3.016e-12
+       x_component_number:local_work_size[32, 4, 1]                                   -1.552e-13
+       x_component_number:local_work_size[32, 8, 1]                                   -2.666e-12
+       x_component_number:local_work_size[64, 1, 1]                                   -9.496e-13
+       x_component_number:local_work_size[64, 2, 1]                                   -3.054e-13
+       x_component_number:local_work_size[64, 4, 1]                                   -2.734e-12
+       y_component_number:local_work_size[128, 2, 1]                                  -1.687e-11
+       y_component_number:local_work_size[256, 1, 1]                                  -1.900e-11
+       y_component_number:local_work_size[32, 1, 1]                                   -3.347e-11
+       y_component_number:local_work_size[32, 2, 1]                                   -3.700e-12
+       y_component_number:local_work_size[32, 4, 1]                                    5.126e-12
+       y_component_number:local_work_size[32, 8, 1]                                   -1.016e-11
+       y_component_number:local_work_size[64, 1, 1]                                   -2.884e-13
+       y_component_number:local_work_size[64, 2, 1]                                    2.189e-12
+       y_component_number:local_work_size[64, 4, 1]                                   -1.336e-11
+       x_component_number:vector_length                                               -5.846e-12
+       y_component_number:vector_length                                               -7.884e-12
+       local_work_size[128, 2, 1]:vector_length                                       -8.218e-12
+       local_work_size[256, 1, 1]:vector_length                                       -7.760e-12
+       local_work_size[32, 1, 1]:vector_length                                         8.643e-12
+       local_work_size[32, 2, 1]:vector_length                                         7.793e-13
+       local_work_size[32, 4, 1]:vector_length                                         2.840e-12
+       local_work_size[32, 8, 1]:vector_length                                        -4.316e-12
+       local_work_size[64, 1, 1]:vector_length                                         1.319e-11
+       local_work_size[64, 2, 1]:vector_length                                         1.716e-12
+       local_work_size[64, 4, 1]:vector_length                                        -5.489e-12
+       x_component_number:y_component_number:local_work_size[128, 2, 1]                2.064e-12
+       x_component_number:y_component_number:local_work_size[256, 1, 1]                2.469e-12
+       x_component_number:y_component_number:local_work_size[32, 1, 1]                 3.010e-12
+       x_component_number:y_component_number:local_work_size[32, 2, 1]                 4.556e-13
+       x_component_number:y_component_number:local_work_size[32, 4, 1]                -2.338e-13
+       x_component_number:y_component_number:local_work_size[32, 8, 1]                 1.756e-12
+       x_component_number:y_component_number:local_work_size[64, 1, 1]                 2.137e-13
+       x_component_number:y_component_number:local_work_size[64, 2, 1]                -4.305e-15
+       x_component_number:y_component_number:local_work_size[64, 4, 1]                 1.916e-12
+       x_component_number:y_component_number:vector_length                             5.763e-13
+       x_component_number:local_work_size[128, 2, 1]:vector_length                     6.007e-13
+       x_component_number:local_work_size[256, 1, 1]:vector_length                     5.864e-13
+       x_component_number:local_work_size[32, 1, 1]:vector_length                     -6.546e-13
+       x_component_number:local_work_size[32, 2, 1]:vector_length                     -6.384e-14
+       x_component_number:local_work_size[32, 4, 1]:vector_length                     -2.534e-13
+       x_component_number:local_work_size[32, 8, 1]:vector_length                      2.520e-13
+       x_component_number:local_work_size[64, 1, 1]:vector_length                     -1.033e-12
+       x_component_number:local_work_size[64, 2, 1]:vector_length                     -1.543e-13
+       x_component_number:local_work_size[64, 4, 1]:vector_length                      3.644e-13
+       y_component_number:local_work_size[128, 2, 1]:vector_length                     4.690e-12
+       y_component_number:local_work_size[256, 1, 1]:vector_length                     4.762e-12
+       y_component_number:local_work_size[32, 1, 1]:vector_length                     -5.191e-13
+       y_component_number:local_work_size[32, 2, 1]:vector_length                     -1.039e-12
+       y_component_number:local_work_size[32, 4, 1]:vector_length                     -1.894e-12
+       y_component_number:local_work_size[32, 8, 1]:vector_length                      2.175e-12
+       y_component_number:local_work_size[64, 1, 1]:vector_length                     -2.301e-12
+       y_component_number:local_work_size[64, 2, 1]:vector_length                     -9.942e-13
+       y_component_number:local_work_size[64, 4, 1]:vector_length                      3.239e-12
+       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length -3.278e-13
+       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length -3.346e-13
+       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length   3.418e-14
+       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length   8.746e-14
+       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length   1.677e-13
+       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length  -1.063e-13
+       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length   1.738e-13
+       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length   8.634e-14
+       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length  -1.983e-13
+                                                                                      Std. Error
+       (Intercept)                                                                     7.986e-11
+       x_component_number                                                              9.670e-12
+       y_component_number                                                              2.916e-11
+       local_work_size[128, 2, 1]                                                      1.129e-10
+       local_work_size[256, 1, 1]                                                      1.129e-10
+       local_work_size[32, 1, 1]                                                       1.129e-10
+       local_work_size[32, 2, 1]                                                       1.129e-10
+       local_work_size[32, 4, 1]                                                       1.129e-10
+       local_work_size[32, 8, 1]                                                       1.129e-10
+       local_work_size[64, 1, 1]                                                       1.129e-10
+       local_work_size[64, 2, 1]                                                       1.129e-10
+       local_work_size[64, 4, 1]                                                       1.129e-10
+       vector_length                                                                   9.670e-12
+       x_component_number:y_component_number                                           3.531e-12
+       x_component_number:local_work_size[128, 2, 1]                                   1.368e-11
+       x_component_number:local_work_size[256, 1, 1]                                   1.368e-11
+       x_component_number:local_work_size[32, 1, 1]                                    1.368e-11
+       x_component_number:local_work_size[32, 2, 1]                                    1.368e-11
+       x_component_number:local_work_size[32, 4, 1]                                    1.368e-11
+       x_component_number:local_work_size[32, 8, 1]                                    1.368e-11
+       x_component_number:local_work_size[64, 1, 1]                                    1.368e-11
+       x_component_number:local_work_size[64, 2, 1]                                    1.368e-11
+       x_component_number:local_work_size[64, 4, 1]                                    1.368e-11
+       y_component_number:local_work_size[128, 2, 1]                                   4.124e-11
+       y_component_number:local_work_size[256, 1, 1]                                   4.124e-11
+       y_component_number:local_work_size[32, 1, 1]                                    4.124e-11
+       y_component_number:local_work_size[32, 2, 1]                                    4.124e-11
+       y_component_number:local_work_size[32, 4, 1]                                    4.124e-11
+       y_component_number:local_work_size[32, 8, 1]                                    4.124e-11
+       y_component_number:local_work_size[64, 1, 1]                                    4.124e-11
+       y_component_number:local_work_size[64, 2, 1]                                    4.124e-11
+       y_component_number:local_work_size[64, 4, 1]                                    4.124e-11
+       x_component_number:vector_length                                                1.171e-12
+       y_component_number:vector_length                                                3.531e-12
+       local_work_size[128, 2, 1]:vector_length                                        1.368e-11
+       local_work_size[256, 1, 1]:vector_length                                        1.368e-11
+       local_work_size[32, 1, 1]:vector_length                                         1.368e-11
+       local_work_size[32, 2, 1]:vector_length                                         1.368e-11
+       local_work_size[32, 4, 1]:vector_length                                         1.368e-11
+       local_work_size[32, 8, 1]:vector_length                                         1.368e-11
+       local_work_size[64, 1, 1]:vector_length                                         1.368e-11
+       local_work_size[64, 2, 1]:vector_length                                         1.368e-11
+       local_work_size[64, 4, 1]:vector_length                                         1.368e-11
+       x_component_number:y_component_number:local_work_size[128, 2, 1]                4.994e-12
+       x_component_number:y_component_number:local_work_size[256, 1, 1]                4.994e-12
+       x_component_number:y_component_number:local_work_size[32, 1, 1]                 4.994e-12
+       x_component_number:y_component_number:local_work_size[32, 2, 1]                 4.994e-12
+       x_component_number:y_component_number:local_work_size[32, 4, 1]                 4.994e-12
+       x_component_number:y_component_number:local_work_size[32, 8, 1]                 4.994e-12
+       x_component_number:y_component_number:local_work_size[64, 1, 1]                 4.994e-12
+       x_component_number:y_component_number:local_work_size[64, 2, 1]                 4.994e-12
+       x_component_number:y_component_number:local_work_size[64, 4, 1]                 4.994e-12
+       x_component_number:y_component_number:vector_length                             4.276e-13
+       x_component_number:local_work_size[128, 2, 1]:vector_length                     1.656e-12
+       x_component_number:local_work_size[256, 1, 1]:vector_length                     1.656e-12
+       x_component_number:local_work_size[32, 1, 1]:vector_length                      1.656e-12
+       x_component_number:local_work_size[32, 2, 1]:vector_length                      1.656e-12
+       x_component_number:local_work_size[32, 4, 1]:vector_length                      1.656e-12
+       x_component_number:local_work_size[32, 8, 1]:vector_length                      1.656e-12
+       x_component_number:local_work_size[64, 1, 1]:vector_length                      1.656e-12
+       x_component_number:local_work_size[64, 2, 1]:vector_length                      1.656e-12
+       x_component_number:local_work_size[64, 4, 1]:vector_length                      1.656e-12
+       y_component_number:local_work_size[128, 2, 1]:vector_length                     4.994e-12
+       y_component_number:local_work_size[256, 1, 1]:vector_length                     4.994e-12
+       y_component_number:local_work_size[32, 1, 1]:vector_length                      4.994e-12
+       y_component_number:local_work_size[32, 2, 1]:vector_length                      4.994e-12
+       y_component_number:local_work_size[32, 4, 1]:vector_length                      4.994e-12
+       y_component_number:local_work_size[32, 8, 1]:vector_length                      4.994e-12
+       y_component_number:local_work_size[64, 1, 1]:vector_length                      4.994e-12
+       y_component_number:local_work_size[64, 2, 1]:vector_length                      4.994e-12
+       y_component_number:local_work_size[64, 4, 1]:vector_length                      4.994e-12
+       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length  6.047e-13
+       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length  6.047e-13
+       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length   6.047e-13
+       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length   6.047e-13
+       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length   6.047e-13
+       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length   6.047e-13
+       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length   6.047e-13
+       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length   6.047e-13
+       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length   6.047e-13
+                                                                                      t value
+       (Intercept)                                                                      2.699
+       x_component_number                                                               2.464
+       y_component_number                                                              -1.401
+       local_work_size[128, 2, 1]                                                       0.212
+       local_work_size[256, 1, 1]                                                       0.280
+       local_work_size[32, 1, 1]                                                        1.617
+       local_work_size[32, 2, 1]                                                        0.254
+       local_work_size[32, 4, 1]                                                       -0.050
+       local_work_size[32, 8, 1]                                                        0.139
+       local_work_size[64, 1, 1]                                                        0.028
+       local_work_size[64, 2, 1]                                                       -0.021
+       local_work_size[64, 4, 1]                                                        0.168
+       vector_length                                                                    8.219
+       x_component_number:y_component_number                                           -0.648
+       x_component_number:local_work_size[128, 2, 1]                                   -0.188
+       x_component_number:local_work_size[256, 1, 1]                                   -0.269
+       x_component_number:local_work_size[32, 1, 1]                                    -1.102
+       x_component_number:local_work_size[32, 2, 1]                                    -0.221
+       x_component_number:local_work_size[32, 4, 1]                                    -0.011
+       x_component_number:local_work_size[32, 8, 1]                                    -0.195
+       x_component_number:local_work_size[64, 1, 1]                                    -0.069
+       x_component_number:local_work_size[64, 2, 1]                                    -0.022
+       x_component_number:local_work_size[64, 4, 1]                                    -0.200
+       y_component_number:local_work_size[128, 2, 1]                                   -0.409
+       y_component_number:local_work_size[256, 1, 1]                                   -0.461
+       y_component_number:local_work_size[32, 1, 1]                                    -0.811
+       y_component_number:local_work_size[32, 2, 1]                                    -0.090
+       y_component_number:local_work_size[32, 4, 1]                                     0.124
+       y_component_number:local_work_size[32, 8, 1]                                    -0.246
+       y_component_number:local_work_size[64, 1, 1]                                    -0.007
+       y_component_number:local_work_size[64, 2, 1]                                     0.053
+       y_component_number:local_work_size[64, 4, 1]                                    -0.324
+       x_component_number:vector_length                                                -4.992
+       y_component_number:vector_length                                                -2.233
+       local_work_size[128, 2, 1]:vector_length                                        -0.601
+       local_work_size[256, 1, 1]:vector_length                                        -0.567
+       local_work_size[32, 1, 1]:vector_length                                          0.632
+       local_work_size[32, 2, 1]:vector_length                                          0.057
+       local_work_size[32, 4, 1]:vector_length                                          0.208
+       local_work_size[32, 8, 1]:vector_length                                         -0.316
+       local_work_size[64, 1, 1]:vector_length                                          0.964
+       local_work_size[64, 2, 1]:vector_length                                          0.126
+       local_work_size[64, 4, 1]:vector_length                                         -0.401
+       x_component_number:y_component_number:local_work_size[128, 2, 1]                 0.413
+       x_component_number:y_component_number:local_work_size[256, 1, 1]                 0.494
+       x_component_number:y_component_number:local_work_size[32, 1, 1]                  0.603
+       x_component_number:y_component_number:local_work_size[32, 2, 1]                  0.091
+       x_component_number:y_component_number:local_work_size[32, 4, 1]                 -0.047
+       x_component_number:y_component_number:local_work_size[32, 8, 1]                  0.352
+       x_component_number:y_component_number:local_work_size[64, 1, 1]                  0.043
+       x_component_number:y_component_number:local_work_size[64, 2, 1]                 -0.001
+       x_component_number:y_component_number:local_work_size[64, 4, 1]                  0.384
+       x_component_number:y_component_number:vector_length                              1.348
+       x_component_number:local_work_size[128, 2, 1]:vector_length                      0.363
+       x_component_number:local_work_size[256, 1, 1]:vector_length                      0.354
+       x_component_number:local_work_size[32, 1, 1]:vector_length                      -0.395
+       x_component_number:local_work_size[32, 2, 1]:vector_length                      -0.039
+       x_component_number:local_work_size[32, 4, 1]:vector_length                      -0.153
+       x_component_number:local_work_size[32, 8, 1]:vector_length                       0.152
+       x_component_number:local_work_size[64, 1, 1]:vector_length                      -0.624
+       x_component_number:local_work_size[64, 2, 1]:vector_length                      -0.093
+       x_component_number:local_work_size[64, 4, 1]:vector_length                       0.220
+       y_component_number:local_work_size[128, 2, 1]:vector_length                      0.939
+       y_component_number:local_work_size[256, 1, 1]:vector_length                      0.954
+       y_component_number:local_work_size[32, 1, 1]:vector_length                      -0.104
+       y_component_number:local_work_size[32, 2, 1]:vector_length                      -0.208
+       y_component_number:local_work_size[32, 4, 1]:vector_length                      -0.379
+       y_component_number:local_work_size[32, 8, 1]:vector_length                       0.436
+       y_component_number:local_work_size[64, 1, 1]:vector_length                      -0.461
+       y_component_number:local_work_size[64, 2, 1]:vector_length                      -0.199
+       y_component_number:local_work_size[64, 4, 1]:vector_length                       0.649
+       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length  -0.542
+       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length  -0.553
+       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length    0.057
+       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length    0.145
+       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length    0.277
+       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length   -0.176
+       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length    0.287
+       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length    0.143
+       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length   -0.328
+                                                                                      Pr(>|t|)
+       (Intercept)                                                                     0.00703
+       x_component_number                                                              0.01382
+       y_component_number                                                              0.16135
+       local_work_size[128, 2, 1]                                                      0.83190
+       local_work_size[256, 1, 1]                                                      0.77922
+       local_work_size[32, 1, 1]                                                       0.10604
+       local_work_size[32, 2, 1]                                                       0.79957
+       local_work_size[32, 4, 1]                                                       0.96022
+       local_work_size[32, 8, 1]                                                       0.88977
+       local_work_size[64, 1, 1]                                                       0.97730
+       local_work_size[64, 2, 1]                                                       0.98321
+       local_work_size[64, 4, 1]                                                       0.86672
+       vector_length                                                                  3.72e-16
+       x_component_number:y_component_number                                           0.51722
+       x_component_number:local_work_size[128, 2, 1]                                   0.85062
+       x_component_number:local_work_size[256, 1, 1]                                   0.78774
+       x_component_number:local_work_size[32, 1, 1]                                    0.27040
+       x_component_number:local_work_size[32, 2, 1]                                    0.82549
+       x_component_number:local_work_size[32, 4, 1]                                    0.99095
+       x_component_number:local_work_size[32, 8, 1]                                    0.84548
+       x_component_number:local_work_size[64, 1, 1]                                    0.94465
+       x_component_number:local_work_size[64, 2, 1]                                    0.98219
+       x_component_number:local_work_size[64, 4, 1]                                    0.84155
+       y_component_number:local_work_size[128, 2, 1]                                   0.68261
+       y_component_number:local_work_size[256, 1, 1]                                   0.64503
+       y_component_number:local_work_size[32, 1, 1]                                    0.41719
+       y_component_number:local_work_size[32, 2, 1]                                    0.92852
+       y_component_number:local_work_size[32, 4, 1]                                    0.90110
+       y_component_number:local_work_size[32, 8, 1]                                    0.80547
+       y_component_number:local_work_size[64, 1, 1]                                    0.99442
+       y_component_number:local_work_size[64, 2, 1]                                    0.95768
+       y_component_number:local_work_size[64, 4, 1]                                    0.74592
+       x_component_number:vector_length                                               6.51e-07
+       y_component_number:vector_length                                                0.02569
+       local_work_size[128, 2, 1]:vector_length                                        0.54799
+       local_work_size[256, 1, 1]:vector_length                                        0.57048
+       local_work_size[32, 1, 1]:vector_length                                         0.52747
+       local_work_size[32, 2, 1]:vector_length                                         0.95457
+       local_work_size[32, 4, 1]:vector_length                                         0.83551
+       local_work_size[32, 8, 1]:vector_length                                         0.75237
+       local_work_size[64, 1, 1]:vector_length                                         0.33497
+       local_work_size[64, 2, 1]:vector_length                                         0.90014
+       local_work_size[64, 4, 1]:vector_length                                         0.68818
+       x_component_number:y_component_number:local_work_size[128, 2, 1]                0.67936
+       x_component_number:y_component_number:local_work_size[256, 1, 1]                0.62114
+       x_component_number:y_component_number:local_work_size[32, 1, 1]                 0.54669
+       x_component_number:y_component_number:local_work_size[32, 2, 1]                 0.92732
+       x_component_number:y_component_number:local_work_size[32, 4, 1]                 0.96266
+       x_component_number:y_component_number:local_work_size[32, 8, 1]                 0.72508
+       x_component_number:y_component_number:local_work_size[64, 1, 1]                 0.96587
+       x_component_number:y_component_number:local_work_size[64, 2, 1]                 0.99931
+       x_component_number:y_component_number:local_work_size[64, 4, 1]                 0.70122
+       x_component_number:y_component_number:vector_length                             0.17791
+       x_component_number:local_work_size[128, 2, 1]:vector_length                     0.71683
+       x_component_number:local_work_size[256, 1, 1]:vector_length                     0.72329
+       x_component_number:local_work_size[32, 1, 1]:vector_length                      0.69268
+       x_component_number:local_work_size[32, 2, 1]:vector_length                      0.96925
+       x_component_number:local_work_size[32, 4, 1]:vector_length                      0.87838
+       x_component_number:local_work_size[32, 8, 1]:vector_length                      0.87909
+       x_component_number:local_work_size[64, 1, 1]:vector_length                      0.53277
+       x_component_number:local_work_size[64, 2, 1]:vector_length                      0.92578
+       x_component_number:local_work_size[64, 4, 1]:vector_length                      0.82586
+       y_component_number:local_work_size[128, 2, 1]:vector_length                     0.34772
+       y_component_number:local_work_size[256, 1, 1]:vector_length                     0.34039
+       y_component_number:local_work_size[32, 1, 1]:vector_length                      0.91722
+       y_component_number:local_work_size[32, 2, 1]:vector_length                      0.83525
+       y_component_number:local_work_size[32, 4, 1]:vector_length                      0.70452
+       y_component_number:local_work_size[32, 8, 1]:vector_length                      0.66317
+       y_component_number:local_work_size[64, 1, 1]:vector_length                      0.64505
+       y_component_number:local_work_size[64, 2, 1]:vector_length                      0.84222
+       y_component_number:local_work_size[64, 4, 1]:vector_length                      0.51668
+       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length  0.58784
+       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length  0.58015
+       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length   0.95493
+       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length   0.88502
+       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length   0.78157
+       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length   0.86054
+       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length   0.77384
+       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length   0.88648
+       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length   0.74303
+
+       (Intercept)                                                                    ** 
+       x_component_number                                                             *  
+       y_component_number                                                                
+       local_work_size[128, 2, 1]                                                        
+       local_work_size[256, 1, 1]                                                        
+       local_work_size[32, 1, 1]                                                         
+       local_work_size[32, 2, 1]                                                         
+       local_work_size[32, 4, 1]                                                         
+       local_work_size[32, 8, 1]                                                         
+       local_work_size[64, 1, 1]                                                         
+       local_work_size[64, 2, 1]                                                         
+       local_work_size[64, 4, 1]                                                         
+       vector_length                                                                  ***
+       x_component_number:y_component_number                                             
+       x_component_number:local_work_size[128, 2, 1]                                     
+       x_component_number:local_work_size[256, 1, 1]                                     
+       x_component_number:local_work_size[32, 1, 1]                                      
+       x_component_number:local_work_size[32, 2, 1]                                      
+       x_component_number:local_work_size[32, 4, 1]                                      
+       x_component_number:local_work_size[32, 8, 1]                                      
+       x_component_number:local_work_size[64, 1, 1]                                      
+       x_component_number:local_work_size[64, 2, 1]                                      
+       x_component_number:local_work_size[64, 4, 1]                                      
+       y_component_number:local_work_size[128, 2, 1]                                     
+       y_component_number:local_work_size[256, 1, 1]                                     
+       y_component_number:local_work_size[32, 1, 1]                                      
+       y_component_number:local_work_size[32, 2, 1]                                      
+       y_component_number:local_work_size[32, 4, 1]                                      
+       y_component_number:local_work_size[32, 8, 1]                                      
+       y_component_number:local_work_size[64, 1, 1]                                      
+       y_component_number:local_work_size[64, 2, 1]                                      
+       y_component_number:local_work_size[64, 4, 1]                                      
+       x_component_number:vector_length                                               ***
+       y_component_number:vector_length                                               *  
+       local_work_size[128, 2, 1]:vector_length                                          
+       local_work_size[256, 1, 1]:vector_length                                          
+       local_work_size[32, 1, 1]:vector_length                                           
+       local_work_size[32, 2, 1]:vector_length                                           
+       local_work_size[32, 4, 1]:vector_length                                           
+       local_work_size[32, 8, 1]:vector_length                                           
+       local_work_size[64, 1, 1]:vector_length                                           
+       local_work_size[64, 2, 1]:vector_length                                           
+       local_work_size[64, 4, 1]:vector_length                                           
+       x_component_number:y_component_number:local_work_size[128, 2, 1]                  
+       x_component_number:y_component_number:local_work_size[256, 1, 1]                  
+       x_component_number:y_component_number:local_work_size[32, 1, 1]                   
+       x_component_number:y_component_number:local_work_size[32, 2, 1]                   
+       x_component_number:y_component_number:local_work_size[32, 4, 1]                   
+       x_component_number:y_component_number:local_work_size[32, 8, 1]                   
+       x_component_number:y_component_number:local_work_size[64, 1, 1]                   
+       x_component_number:y_component_number:local_work_size[64, 2, 1]                   
+       x_component_number:y_component_number:local_work_size[64, 4, 1]                   
+       x_component_number:y_component_number:vector_length                               
+       x_component_number:local_work_size[128, 2, 1]:vector_length                       
+       x_component_number:local_work_size[256, 1, 1]:vector_length                       
+       x_component_number:local_work_size[32, 1, 1]:vector_length                        
+       x_component_number:local_work_size[32, 2, 1]:vector_length                        
+       x_component_number:local_work_size[32, 4, 1]:vector_length                        
+       x_component_number:local_work_size[32, 8, 1]:vector_length                        
+       x_component_number:local_work_size[64, 1, 1]:vector_length                        
+       x_component_number:local_work_size[64, 2, 1]:vector_length                        
+       x_component_number:local_work_size[64, 4, 1]:vector_length                        
+       y_component_number:local_work_size[128, 2, 1]:vector_length                       
+       y_component_number:local_work_size[256, 1, 1]:vector_length                       
+       y_component_number:local_work_size[32, 1, 1]:vector_length                        
+       y_component_number:local_work_size[32, 2, 1]:vector_length                        
+       y_component_number:local_work_size[32, 4, 1]:vector_length                        
+       y_component_number:local_work_size[32, 8, 1]:vector_length                        
+       y_component_number:local_work_size[64, 1, 1]:vector_length                        
+       y_component_number:local_work_size[64, 2, 1]:vector_length                        
+       y_component_number:local_work_size[64, 4, 1]:vector_length                        
+       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length    
+       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length    
+       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length     
+       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length     
+       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length     
+       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length     
+       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length     
+       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length     
+       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length     
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 2.012e-10 on 1920 degrees of freedom
+       Multiple R-squared:  0.6282,	Adjusted R-squared:  0.6129 
+       F-statistic: 41.07 on 79 and 1920 DF,  p-value: < 2.2e-16
+       #+end_example
+
+     - But we can see that it has an impact: 
+       #+begin_src R :results output :session :exports both
+         library(ggplot2)
+         df$y_component_number.cat <- as.factor(df$y_component_number)
+         df$vector_length.cat <- as.factor(df$vector_length)
+         ggplot(df) + aes(x=x_component_number, y=time_per_pixel, color=vector_length.cat) + scale_y_log10() + geom_point(alpha=0.5) + facet_wrap(~ local_work_size, ncol=10)       
+       #+end_src
+
+       #+RESULTS:
+
+     - Genetic algo on brute force results
+       #+begin_src sh :results output :exports both
+         ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+       #+end_src
+
+       #+RESULTS:
+       : {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       : 1.2466509034021744e-10
+       : 2000
+       : {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       : 1.2466509034021744e-10
+       : 210
+     - How frequently the genetic algo can hit the best value:
+       #+begin_src sh :results output :exports both
+         for i in `seq 1 100`; do
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml data/2016_03_11/pilipili2/19_13_54/GenData19_13_54.yaml
+         done
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.454572838047117e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.355607181964973e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4719812116126017e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.273354292477101e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.505875915195742e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.592122967721286e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.2792532564187264e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4799300946579003e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4719812116126017e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.26451863659571e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>4, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5757451430312544e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.3677113531099145e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4799300946579003e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>4, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5757451430312544e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.4815754215803011e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.273354292477101e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>4, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5757451430312544e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4719812116126017e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.4651616091154568e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.5935495827052707e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4799300946579003e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.26451863659571e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.26451863659571e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.454572838047117e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.454572838047117e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5165358603283972e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.5582289103262858e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.454572838047117e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.454572838047117e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.4817793636426216e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.273354292477101e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.273354292477101e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4719812116126017e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.4606094882055858e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.454572838047117e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.4606094882055858e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2829227608170006e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.273354292477101e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.4815754215803011e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>4, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5757451430312544e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.26451863659571e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4799300946579003e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.4606094882055858e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.2875093575170066e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.505875915195742e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.592122967721286e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.4029326473013859e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.2875093575170066e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.454572838047117e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.4817793636426216e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.4606094882055858e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.3675932183855746e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.2762727494278176e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.3926561402808184e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.5582289103262858e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.26451863659571e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.4606094882055858e-10
+       210
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       210
+       #+end_example
+
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/GenData19_13_54.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+         attach(df)
+         summary(df)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+        x_component_number vector_length  y_component_number temporary_size
+        Min.   :1.00       Min.   :1.00   Min.   :3.00       Min.   :2.0   
+        1st Qu.:1.00       1st Qu.:1.00   1st Qu.:4.00       1st Qu.:2.0   
+        Median :1.00       Median :1.00   Median :4.00       Median :4.0   
+        Mean   :1.47       Mean   :1.37   Mean   :3.93       Mean   :3.2   
+        3rd Qu.:2.00       3rd Qu.:2.00   3rd Qu.:4.00       3rd Qu.:4.0   
+        Max.   :4.00       Max.   :4.00   Max.   :4.00       Max.   :4.0   
+
+        vector_recompute load_overlap    local_work_size time_per_pixel     
+        true:100         true:100     [64, 2, 1] :29     Min.   :1.247e-10  
+                                      [128, 2, 1]:24     1st Qu.:1.258e-10  
+                                      [256, 1, 1]:11     Median :1.273e-10  
+                                      [32, 8, 1] :11     Mean   :1.354e-10  
+                                      [128, 1, 1]: 8     3rd Qu.:1.462e-10  
+                                      [32, 4, 1] : 7     Max.   :1.594e-10  
+                                      (Other)    :10
+       #+end_example
+
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_gen_100.png :exports both :width 600 :height 600 :session       
+         default <- par()
+         count <- table(df$time_per_pixel)
+         barplot(count, xlab="time_per_pixel", ylab="frequency", space=1)
+         axis(1,labels=FALSE)
+         text(rownames(count), par("usr")[3]-0.3, 
+             srt = 45, xpd = TRUE, adj=1,
+             labels = paste(rownames(count)))
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_gen_100.png]]
+
+       On this 100 runs the global optimium is hit more 15% of the time.
+
+       #+begin_src R :results output :session :exports both
+       count
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       1.24665090340217e-10 1.25777380150395e-10 1.26405067536272e-10 
+                         17                   17                    9 
+       1.26451863659571e-10  1.2733542924771e-10 1.27627274942782e-10 
+                          5                    5                    1 
+       1.27925325641873e-10   1.282922760817e-10 1.28750935751701e-10 
+                          1                    1                    2 
+       1.35560718196497e-10 1.36759321838557e-10 1.36771135310991e-10 
+                          1                    1                    1 
+       1.39265614028082e-10 1.40293264730139e-10 1.45457283804712e-10 
+                          1                    1                    7 
+       1.46060948820559e-10 1.46516160911546e-10  1.4719812116126e-10 
+                          5                    1                    4 
+        1.4799300946579e-10  1.4815754215803e-10 1.48177936364262e-10 
+                          4                    2                    2 
+       1.50587591519574e-10  1.5165358603284e-10 1.55822891032629e-10 
+                          2                    1                    2 
+       1.57574514303125e-10 1.59212296772129e-10 1.59354958270527e-10 
+                          4                    2                    1
+       #+end_example
+
+       - What are the 27 first values?
+         #+begin_src R :results output :session :exports both
+           df[1:30,]
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+            x_component_number vector_length y_component_number temporary_size
+         1                   2             2                  4              2
+         2                   1             1                  3              4
+         3                   2             2                  4              2
+         4                   1             1                  4              4
+         5                   1             1                  4              4
+         6                   1             1                  4              2
+         7                   2             2                  4              2
+         8                   1             1                  4              4
+         9                   1             1                  4              4
+         10                  2             2                  3              4
+         11                  1             1                  4              4
+         12                  2             1                  4              2
+         13                  1             1                  4              4
+         14                  1             1                  4              4
+         15                  2             2                  4              2
+         16                  1             1                  4              4
+         17                  1             1                  4              4
+         18                  4             4                  4              2
+         19                  1             1                  4              4
+         20                  1             1                  3              4
+         21                  1             1                  4              4
+         22                  2             1                  4              2
+         23                  4             4                  4              2
+         24                  2             1                  4              2
+         25                  1             1                  4              2
+         26                  1             1                  4              4
+         27                  4             4                  4              2
+         28                  2             2                  4              2
+         29                  2             2                  4              2
+         30                  4             2                  4              2
+            vector_recompute load_overlap local_work_size time_per_pixel
+         1              true         true     [128, 1, 1]   1.454573e-10
+         2              true         true     [256, 1, 1]   1.355607e-10
+         3              true         true      [64, 2, 1]   1.471981e-10
+         4              true         true      [64, 2, 1]   1.257774e-10
+         5              true         true      [64, 2, 1]   1.257774e-10
+         6              true         true     [256, 1, 1]   1.273354e-10
+         7              true         true      [32, 4, 1]   1.505876e-10
+         8              true         true      [64, 2, 1]   1.257774e-10
+         9              true         true      [32, 8, 1]   1.264051e-10
+         10             true         true      [64, 2, 1]   1.592123e-10
+         11             true         true      [64, 4, 1]   1.279253e-10
+         12             true         true      [64, 2, 1]   1.479930e-10
+         13             true         true     [128, 2, 1]   1.246651e-10
+         14             true         true     [128, 2, 1]   1.246651e-10
+         15             true         true      [64, 2, 1]   1.471981e-10
+         16             true         true     [256, 1, 1]   1.264519e-10
+         17             true         true      [32, 8, 1]   1.264051e-10
+         18             true         true      [64, 1, 1]   1.575745e-10
+         19             true         true      [32, 8, 1]   1.264051e-10
+         20             true         true      [64, 4, 1]   1.367711e-10
+         21             true         true     [128, 2, 1]   1.246651e-10
+         22             true         true      [64, 2, 1]   1.479930e-10
+         23             true         true      [64, 1, 1]   1.575745e-10
+         24             true         true      [64, 4, 1]   1.481575e-10
+         25             true         true     [256, 1, 1]   1.273354e-10
+         26             true         true     [128, 2, 1]   1.246651e-10
+         27             true         true      [64, 1, 1]   1.575745e-10
+         28             true         true      [64, 2, 1]   1.471981e-10
+         29             true         true      [64, 4, 1]   1.465162e-10
+         30             true         true     [128, 2, 1]   1.593550e-10
+         #+end_example
+
