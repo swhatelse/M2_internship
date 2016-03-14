@@ -721,6 +721,7 @@ Entered on [2015-11-19 jeu. 20:56]
      It is seems we have a lot of variability (~3x)
    - Let's try to make some plots to see if the result have the same shape:
      - Formatting data:
+       *Warning:* this is an outdated version
        #+BEGIN_SRC ruby :tangle scripts/format_data.rb
          require 'yaml'
          require 'pp'
@@ -1420,20 +1421,69 @@ Entered on [2015-11-19 jeu. 20:56]
 **** Results
 
 **** Observations
+     - Formatting data:
+       #+BEGIN_SRC ruby :tangle scripts/format_data.rb
+         require 'yaml'
+         require 'pp'
+         require 'csv'
+         input = ARGV[0]
+         
+         # h = YAML::load(File::open("../data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml").read)
+         h = YAML::load(File::open(input).read)
+         
+         t = []
+         t2 = []
+         head = []
+         
+         h.first[0].each {|key, value| head.push key } 
+         head.push :time_per_pixel
+         
+         h.each {|key, value| 
+           t2 = []
+           key.each { |key2, value2|
+             t2.push value2
+           }
+           t2.push value
+           t.push t2
+         }
+         
+         CSV.open("/tmp/test.csv", "w"){ |f|
+           f << head
+           t.each{ |e|
+             f << e
+           }
+         }
+                  
+       #+END_SRC
+
      #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+     #+end_src
+     
+     #+RESULTS:
+
+
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       plot(df)
      #+end_src
 
      #+RESULTS:
-     
-       #+begin_src R :results output :session :exports both
-         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-         attach(df)
-         sorted <- df[order(x_component_number, -y_component_number, -vector_recompute, vector_length),]         
-         plot(sorted$time_per_pixel)
-       #+end_src
 
-     - Best value:
-       #+begin_src R :results output :session :exports both
-         df[df$time_per_pixel==min(df$time_per_pixel),]
-       #+end_src
-       
+     #+begin_src R :results output :session :exports both
+       sorted <- df[order(x_component_number, -y_component_number, -vector_recompute, vector_length),]         
+       plot(sorted$time_per_pixel)
+     #+end_src
+
+     #+RESULTS:
+     : Warning message:
+     : In Ops.factor(vector_recompute) : ‘-’ not meaningful for factors
+
+     #+begin_src R :results output :session :exports both
+       library(ggplot2)
+       df$y_component_number.cat <- as.factor(df$y_component_number)
+       ggplot(df) + aes(x=x_component_number, y=time_per_pixel, color=y_component_number.cat) + geom_point(alpha=0.5) + facet_grid( vector_length ~ local_work_size)       
+     #+end_src
+
+     #+RESULTS:
+

@@ -1,6 +1,7 @@
 
 require 'yaml'
 require 'pp'
+require 'csv'
 
 input = ARGV[0]
 
@@ -25,9 +26,16 @@ h.each {|key, value|
 
 # sorted = t.sort{ |a,b| (a[0] <=> b[0]) == 0 ? (a[1] <=> b[1]) == 0 ? (a[2] <=> b[2]) == 0 ? (a[3] <=> b[3]) == 0 ? a[4] ? a[5] ? 1 : 0 : 1 : (a[3] <=> b[3])  : (a[2] <=> b[2]) : (a[1] <=> b[1]) : (a[0] <=> b[0]) }
 
-File::open("/tmp/test.csv", "w"){ |f|
-  f.puts head.collect{ |v| v }.join(", ")
+# File::open("/tmp/test.csv", "w"){ |f|
+#   f.puts head.collect{ |v| v }.join(", ")
+#   t.each{ |e|
+#     f.puts e.collect{ |v| v }.join(", ")
+#   }
+# }
+
+CSV.open("/tmp/test.csv", "w"){ |f|
+  f << head
   t.each{ |e|
-    f.puts e.collect{ |v| v }.join(", ")
+    f << e
   }
 }
