@@ -1,7 +1,7 @@
 #+TITLE:  LabBook
 #+AUTHOR: Steven QUINITO MASNADA
 #+BABEL: :tangle yes
-#+TAGS: Arnaud(A) Brice(B)
+#+TAGS: Arnaud(a) Brice(b) Script(s)
 
 * Memo
   - Get opencl platform
@@ -722,7 +722,7 @@ Entered on [2015-11-19 jeu. 20:56]
    - Let's try to make some plots to see if the result have the same shape:
      - Formatting data:
        *Warning:* this is an outdated version
-       #+BEGIN_SRC ruby :tangle scripts/format_data.rb
+       #+BEGIN_SRC ruby
          require 'yaml'
          require 'pp'
          
@@ -1419,25 +1419,25 @@ Entered on [2015-11-19 jeu. 20:56]
       - It seems that for the K40 GPU I can not have more than 256
         work item per work-group.
 **** Results
-
-**** Observations
-     - Formatting data:
+     - [[file:data/2016_03_11/pilipili2/19_13_54/Info19_13_54.org][Conditions of experiment]]
+     - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml][Search space]]
+     - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml][Results of experiments]]
+**** Formatting data script :Script:
        #+BEGIN_SRC ruby :tangle scripts/format_data.rb
          require 'yaml'
          require 'pp'
          require 'csv'
          input = ARGV[0]
-         
-         # h = YAML::load(File::open("../data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml").read)
+
          h = YAML::load(File::open(input).read)
-         
+
          t = []
          t2 = []
          head = []
-         
+
          h.first[0].each {|key, value| head.push key } 
          head.push :time_per_pixel
-         
+
          h.each {|key, value| 
            t2 = []
            key.each { |key2, value2|
@@ -1446,16 +1446,15 @@ Entered on [2015-11-19 jeu. 20:56]
            t2.push value
            t.push t2
          }
-         
+
          CSV.open("/tmp/test.csv", "w"){ |f|
            f << head
            t.each{ |e|
              f << e
            }
-         }
-                  
+         }                  
        #+END_SRC
-
+**** Observations
      #+begin_src sh :results output :exports both
        ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
      #+end_src
@@ -1487,3 +1486,5 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
 
+     
+     
