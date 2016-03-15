@@ -1519,7 +1519,15 @@ Entered on [2015-11-19 jeu. 20:56]
      
      - Fitting a simple model doesn't really work:
        #+begin_src R :results output :session :exports both
-         summary(lm(data=df,time_per_pixel ~ x_component_number + y_component_number + local_work_size + vector_length)) #+ temporary_size
+         summary(lm(data=df,time_per_pixel ~ x_component_number + y_component_number + vector_length + temporary_size +  factor(local_work_size)))
+
+         # Par curiosité 
+         summary(lm(data=df[sample(1:length(df$x_component_number),size = 200,replace = FALSE),],time_per_pixel ~ x_component_number + y_component_number + vector_length + temporary_size +  factor(local_work_size)))
+
+
+         summary(lm(data=df,time_per_pixel ~ x_component_number * y_component_number * vector_length)) # + temporary_size +  factor(local_work_size)
+
+         summary(lm(data=df[df$x_component_number==1 & df$y_component_number==4 & df$vector_length==1,],time_per_pixel ~ temporary_size + factor(local_work_size)))
        #+end_src
 
        #+RESULTS:
@@ -1527,34 +1535,124 @@ Entered on [2015-11-19 jeu. 20:56]
 
        Call:
        lm(formula = time_per_pixel ~ x_component_number + y_component_number + 
-           local_work_size + vector_length, data = df)
+           vector_length + temporary_size + factor(local_work_size), 
+           data = df)
 
        Residuals:
               Min         1Q     Median         3Q        Max 
-       -4.123e-10 -1.586e-10 -5.251e-11  1.100e-10  1.413e-09 
-  
+       -4.124e-10 -1.586e-10 -5.260e-11  1.101e-10  1.413e-09 
+
        Coefficients:
-                                    Estimate Std. Error t value Pr(>|t|)    
-       (Intercept)                 4.814e-10  2.284e-11  21.075  < 2e-16 ***
-       x_component_number         -1.027e-11  9.986e-13 -10.286  < 2e-16 ***
-       y_component_number         -8.007e-11  4.873e-12 -16.432  < 2e-16 ***
-       local_work_size[128, 2, 1]  1.118e-11  2.436e-11   0.459  0.64629    
-       local_work_size[256, 1, 1]  1.568e-11  2.436e-11   0.644  0.51983    
-       local_work_size[32, 1, 1]   7.581e-11  2.436e-11   3.112  0.00189 ** 
-       local_work_size[32, 2, 1]   2.476e-12  2.436e-11   0.102  0.91905    
-       local_work_size[32, 4, 1]  -2.783e-12  2.436e-11  -0.114  0.90907    
-       local_work_size[32, 8, 1]   7.394e-12  2.436e-11   0.303  0.76156    
-       local_work_size[64, 1, 1]   2.301e-11  2.436e-11   0.945  0.34496    
-       local_work_size[64, 2, 1]  -1.268e-12  2.436e-11  -0.052  0.95850    
-       local_work_size[64, 4, 1]   9.419e-12  2.436e-11   0.387  0.69910    
-       vector_length               3.376e-11  9.986e-13  33.810  < 2e-16 ***
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                         4.817e-10  2.810e-11  17.145  < 2e-16 ***
+       x_component_number                 -1.027e-11  9.989e-13 -10.283  < 2e-16 ***
+       y_component_number                 -8.007e-11  4.874e-12 -16.428  < 2e-16 ***
+       vector_length                       3.376e-11  9.989e-13  33.801  < 2e-16 ***
+       temporary_size                     -8.882e-14  5.449e-12  -0.016  0.98700    
+       factor(local_work_size)[128, 2, 1]  1.118e-11  2.437e-11   0.459  0.64637    
+       factor(local_work_size)[256, 1, 1]  1.568e-11  2.437e-11   0.644  0.51993    
+       factor(local_work_size)[32, 1, 1]   7.581e-11  2.437e-11   3.111  0.00189 ** 
+       factor(local_work_size)[32, 2, 1]   2.476e-12  2.437e-11   0.102  0.91907    
+       factor(local_work_size)[32, 4, 1]  -2.783e-12  2.437e-11  -0.114  0.90910    
+       factor(local_work_size)[32, 8, 1]   7.394e-12  2.437e-11   0.303  0.76161    
+       factor(local_work_size)[64, 1, 1]   2.301e-11  2.437e-11   0.944  0.34508    
+       factor(local_work_size)[64, 2, 1]  -1.268e-12  2.437e-11  -0.052  0.95851    
+       factor(local_work_size)[64, 4, 1]   9.419e-12  2.437e-11   0.386  0.69917    
        ---
        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-       Residual standard error: 2.436e-10 on 1987 degrees of freedom
-       Multiple R-squared:  0.4359,	Adjusted R-squared:  0.4324 
-       F-statistic: 127.9 on 12 and 1987 DF,  p-value: < 2.2e-16
+       Residual standard error: 2.437e-10 on 1986 degrees of freedom
+       Multiple R-squared:  0.4359,	Adjusted R-squared:  0.4322 
+       F-statistic:   118 on 13 and 1986 DF,  p-value: < 2.2e-16
+
+       Call:
+       lm(formula = time_per_pixel ~ x_component_number + y_component_number + 
+           vector_length + temporary_size + factor(local_work_size), 
+           data = df[sample(1:length(df$x_component_number), size = 50, 
+               replace = FALSE), ])
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -4.758e-10 -1.220e-10 -2.107e-11  7.927e-11  9.323e-10 
+
+       Coefficients:
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                         8.823e-10  1.844e-10   4.786 2.89e-05 ***
+       x_component_number                 -5.166e-12  6.657e-12  -0.776  0.44275    
+       y_component_number                 -1.033e-10  3.188e-11  -3.240  0.00257 ** 
+       vector_length                       3.208e-11  7.069e-12   4.538 6.10e-05 ***
+       temporary_size                     -6.956e-11  3.674e-11  -1.894  0.06634 .  
+       factor(local_work_size)[128, 2, 1] -1.964e-10  1.594e-10  -1.232  0.22599    
+       factor(local_work_size)[256, 1, 1] -2.297e-10  2.755e-10  -0.834  0.40993    
+       factor(local_work_size)[32, 1, 1]  -8.517e-11  1.522e-10  -0.559  0.57930    
+       factor(local_work_size)[32, 2, 1]  -4.067e-10  2.159e-10  -1.884  0.06771 .  
+       factor(local_work_size)[32, 4, 1]  -1.508e-10  1.856e-10  -0.813  0.42177    
+       factor(local_work_size)[32, 8, 1]  -5.817e-11  1.495e-10  -0.389  0.69955    
+       factor(local_work_size)[64, 1, 1]  -2.941e-10  1.648e-10  -1.784  0.08279 .  
+       factor(local_work_size)[64, 2, 1]  -1.105e-10  1.681e-10  -0.658  0.51502    
+       factor(local_work_size)[64, 4, 1]  -1.923e-10  1.496e-10  -1.285  0.20694    
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 2.372e-10 on 36 degrees of freedom
+       Multiple R-squared:  0.5141,	Adjusted R-squared:  0.3386 
+       F-statistic:  2.93 on 13 and 36 DF,  p-value: 0.005383
+
+       Call:
+       lm(formula = time_per_pixel ~ x_component_number * y_component_number * 
+           vector_length, data = df)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -4.722e-10 -1.029e-10 -1.970e-11  9.081e-11  1.130e-09 
+
+       Coefficients:
+                                                             Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                                          2.452e-10  2.520e-11   9.730  < 2e-16 ***
+       x_component_number                                   2.071e-11  3.051e-12   6.788 1.49e-11 ***
+       y_component_number                                  -4.981e-11  9.201e-12  -5.414 6.93e-08 ***
+       vector_length                                        7.962e-11  3.051e-12  26.095  < 2e-16 ***
+       x_component_number:y_component_number               -1.123e-12  1.114e-12  -1.008    0.314    
+       x_component_number:vector_length                    -5.881e-12  3.695e-13 -15.918  < 2e-16 ***
+       y_component_number:vector_length                    -7.072e-12  1.114e-12  -6.347 2.71e-10 ***
+       x_component_number:y_component_number:vector_length  5.345e-13  1.349e-13   3.962 7.70e-05 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 2.008e-10 on 1992 degrees of freedom
+       Multiple R-squared:  0.616,	Adjusted R-squared:  0.6147 
+       F-statistic: 456.5 on 7 and 1992 DF,  p-value: < 2.2e-16
+
+       Call:
+       lm(formula = time_per_pixel ~ temporary_size + factor(local_work_size), 
+           data = df[df$x_component_number == 1 & df$y_component_number == 
+               4 & df$vector_length == 1, ])
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -3.576e-12 -1.469e-12  0.000e+00  1.469e-12  3.576e-12 
+
+       Coefficients:
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                         1.334e-10  2.612e-12  51.056 2.13e-12 ***
+       temporary_size                     -1.890e-12  5.993e-13  -3.154 0.011671 *  
+       factor(local_work_size)[128, 2, 1]  3.680e-13  2.680e-12   0.137 0.893822    
+       factor(local_work_size)[256, 1, 1] -8.104e-13  2.680e-12  -0.302 0.769234    
+       factor(local_work_size)[32, 1, 1]   1.096e-10  2.680e-12  40.903 1.55e-11 ***
+       factor(local_work_size)[32, 2, 1]   1.896e-11  2.680e-12   7.073 5.84e-05 ***
+       factor(local_work_size)[32, 4, 1]   1.484e-12  2.680e-12   0.554 0.593215    
+       factor(local_work_size)[32, 8, 1]  -3.554e-13  2.680e-12  -0.133 0.897422    
+       factor(local_work_size)[64, 1, 1]   1.716e-11  2.680e-12   6.403 0.000125 ***
+       factor(local_work_size)[64, 2, 1]  -1.290e-12  2.680e-12  -0.481 0.641876    
+       factor(local_work_size)[64, 4, 1]   6.897e-13  2.680e-12   0.257 0.802697    
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 2.68e-12 on 9 degrees of freedom
+       Multiple R-squared:  0.997,	Adjusted R-squared:  0.9936 
+       F-statistic: 294.7 on 10 and 9 DF,  p-value: 4.455e-10
        #+end_example
+
      - Neither a more complex one:
        It seems that the local_work_size doesn't have a significant effect... 
        #+begin_src R :results output :session :exports both
@@ -1987,14 +2085,31 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_example
 
      - But we can see that it has an impact: 
-       #+begin_src R :results output :session :exports both
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_f_lws.png :exports both :width 800 :height 600 :session
          library(ggplot2)
          df$y_component_number.cat <- as.factor(df$y_component_number)
          df$vector_length.cat <- as.factor(df$vector_length)
-         ggplot(df) + aes(x=x_component_number, y=time_per_pixel, color=vector_length.cat) + scale_y_log10() + geom_point(alpha=0.5) + facet_wrap(~ local_work_size, ncol=10)       
+         ggplot(df) + 
+             aes(x=x_component_number, y=time_per_pixel, color=vector_length.cat) + 
+             scale_y_log10() + 
+             geom_point(alpha=0.5) + 
+             facet_wrap(~ local_work_size, ncol=10) + 
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2)
        #+end_src
 
        #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_f_lws.png]]
+
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_bp_lws.png :exports both :width 600 :height 400 :session
+         ggplot(df) + 
+             aes(x=local_work_size, y=time_per_pixel) + 
+             scale_y_log10() + 
+             geom_boxplot() + 
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2)
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_bp_lws.png]]
 
      - Genetic algo on brute force results
        #+begin_src sh :results output :exports both
@@ -2011,7 +2126,7 @@ Entered on [2015-11-19 jeu. 20:56]
      - How frequently the genetic algo can hit the best value:
        #+begin_src sh :results output :exports both
          for i in `seq 1 100`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml data/2016_03_11/pilipili2/19_13_54/GenData19_13_54.yaml
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml -r data/2016_03_11/pilipili2/19_13_54/GenData19_13_54.yaml
          done
        #+end_src
 
@@ -2633,6 +2748,11 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
        #+begin_example
+       The following objects are masked from df (pos = 3):
+
+           load_overlap, local_work_size, temporary_size, time_per_pixel,
+           vector_length, vector_recompute, x_component_number,
+           y_component_number
         x_component_number vector_length  y_component_number temporary_size
         Min.   :1.00       Min.   :1.00   Min.   :3.00       Min.   :2.0   
         1st Qu.:1.00       1st Qu.:1.00   1st Qu.:4.00       1st Qu.:2.0   
@@ -2654,11 +2774,9 @@ Entered on [2015-11-19 jeu. 20:56]
        #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_gen_100.png :exports both :width 600 :height 600 :session       
          default <- par()
          count <- table(df$time_per_pixel)
-         barplot(count, xlab="time_per_pixel", ylab="frequency", space=1)
-         axis(1,labels=FALSE)
-         text(rownames(count), par("usr")[3]-0.3, 
-             srt = 45, xpd = TRUE, adj=1,
-             labels = paste(rownames(count)))
+         par(mar=c(11.1,5.1,2.1,2.1))
+         barplot(count, xlab="time_per_pixel", ylab="frequency", space=1, las=2)
+         par(default)
        #+end_src
 
        #+RESULTS:
@@ -2667,7 +2785,7 @@ Entered on [2015-11-19 jeu. 20:56]
        On this 100 runs the global optimium is hit more 15% of the time.
 
        #+begin_src R :results output :session :exports both
-       count
+         count
        #+end_src
 
        #+RESULTS:
@@ -2693,74 +2811,75 @@ Entered on [2015-11-19 jeu. 20:56]
                           4                    2                    1
        #+end_example
 
-       - What are the 27 first values?
+       - What are the 30 first values?
          #+begin_src R :results output :session :exports both
-           df[1:30,]
+           options(width=150)
+           head(df[order(time_per_pixel),],n=30)
          #+end_src
 
          #+RESULTS:
          #+begin_example
-            x_component_number vector_length y_component_number temporary_size
-         1                   2             2                  4              2
-         2                   1             1                  3              4
-         3                   2             2                  4              2
-         4                   1             1                  4              4
-         5                   1             1                  4              4
-         6                   1             1                  4              2
-         7                   2             2                  4              2
-         8                   1             1                  4              4
-         9                   1             1                  4              4
-         10                  2             2                  3              4
-         11                  1             1                  4              4
-         12                  2             1                  4              2
-         13                  1             1                  4              4
-         14                  1             1                  4              4
-         15                  2             2                  4              2
-         16                  1             1                  4              4
-         17                  1             1                  4              4
-         18                  4             4                  4              2
-         19                  1             1                  4              4
-         20                  1             1                  3              4
-         21                  1             1                  4              4
-         22                  2             1                  4              2
-         23                  4             4                  4              2
-         24                  2             1                  4              2
-         25                  1             1                  4              2
-         26                  1             1                  4              4
-         27                  4             4                  4              2
-         28                  2             2                  4              2
-         29                  2             2                  4              2
-         30                  4             2                  4              2
-            vector_recompute load_overlap local_work_size time_per_pixel
-         1              true         true     [128, 1, 1]   1.454573e-10
-         2              true         true     [256, 1, 1]   1.355607e-10
-         3              true         true      [64, 2, 1]   1.471981e-10
-         4              true         true      [64, 2, 1]   1.257774e-10
-         5              true         true      [64, 2, 1]   1.257774e-10
-         6              true         true     [256, 1, 1]   1.273354e-10
-         7              true         true      [32, 4, 1]   1.505876e-10
-         8              true         true      [64, 2, 1]   1.257774e-10
-         9              true         true      [32, 8, 1]   1.264051e-10
-         10             true         true      [64, 2, 1]   1.592123e-10
-         11             true         true      [64, 4, 1]   1.279253e-10
-         12             true         true      [64, 2, 1]   1.479930e-10
-         13             true         true     [128, 2, 1]   1.246651e-10
-         14             true         true     [128, 2, 1]   1.246651e-10
-         15             true         true      [64, 2, 1]   1.471981e-10
-         16             true         true     [256, 1, 1]   1.264519e-10
-         17             true         true      [32, 8, 1]   1.264051e-10
-         18             true         true      [64, 1, 1]   1.575745e-10
-         19             true         true      [32, 8, 1]   1.264051e-10
-         20             true         true      [64, 4, 1]   1.367711e-10
-         21             true         true     [128, 2, 1]   1.246651e-10
-         22             true         true      [64, 2, 1]   1.479930e-10
-         23             true         true      [64, 1, 1]   1.575745e-10
-         24             true         true      [64, 4, 1]   1.481575e-10
-         25             true         true     [256, 1, 1]   1.273354e-10
-         26             true         true     [128, 2, 1]   1.246651e-10
-         27             true         true      [64, 1, 1]   1.575745e-10
-         28             true         true      [64, 2, 1]   1.471981e-10
-         29             true         true      [64, 4, 1]   1.465162e-10
-         30             true         true     [128, 2, 1]   1.593550e-10
+              x_component_number vector_length y_component_number temporary_size vector_recompute load_overlap local_work_size time_per_pixel
+         806                   1             1                  4              4             true         true     [128, 2, 1]   1.246651e-10
+         1492                  1             1                  4              4             true         true      [64, 2, 1]   1.257774e-10
+         276                   1             1                  4              4             true         true      [32, 8, 1]   1.264051e-10
+         1028                  1             1                  4              4             true         true     [256, 1, 1]   1.264519e-10
+         676                   1             1                  4              2             true         true      [64, 2, 1]   1.270515e-10
+         241                   1             1                  4              2             true         true     [256, 1, 1]   1.273354e-10
+         536                   1             1                  4              4             true         true     [128, 1, 1]   1.276273e-10
+         1024                  1             1                  4              2             true         true     [128, 1, 1]   1.277809e-10
+         1740                  1             1                  4              4             true         true      [64, 4, 1]   1.279253e-10
+         1573                  1             1                  4              2             true         true      [32, 8, 1]   1.282923e-10
+         1168                  1             1                  4              4             true         true      [32, 4, 1]   1.287509e-10
+         680                   1             1                  4              2             true         true      [64, 4, 1]   1.288623e-10
+         1588                  1             1                  4              2             true         true      [32, 4, 1]   1.296257e-10
+         32                    1             1                  4              2             true         true     [128, 2, 1]   1.314790e-10
+         77                    1             1                  3              4             true         true     [256, 1, 1]   1.355607e-10
+         361                   1             1                  3              4             true         true      [32, 8, 1]   1.367593e-10
+         1816                  1             1                  3              4             true         true      [64, 4, 1]   1.367711e-10
+         1753                  1             1                  3              2             true         true      [64, 4, 1]   1.367997e-10
+         684                   1             1                  3              4             true         true      [32, 4, 1]   1.369153e-10
+         1991                  1             1                  3              4             true         true      [64, 2, 1]   1.371417e-10
+         1167                  1             1                  3              2             true         true      [64, 2, 1]   1.376082e-10
+         1885                  1             1                  3              2             true         true      [32, 8, 1]   1.377295e-10
+         158                   1             1                  3              2             true         true     [128, 1, 1]   1.386640e-10
+         514                   1             1                  3              4             true         true     [128, 2, 1]   1.392656e-10
+         1059                  1             1                  3              4             true         true     [128, 1, 1]   1.393014e-10
+         917                   1             1                  3              2             true         true     [256, 1, 1]   1.397919e-10
+         613                   1             1                  3              2             true         true      [32, 4, 1]   1.402933e-10
+         946                   1             1                  4              4             true         true      [64, 1, 1]   1.413883e-10
+         135                   1             1                  4              4             true         true      [32, 2, 1]   1.431177e-10
+         608                   1             1                  3              2             true         true     [128, 2, 1]   1.433538e-10
+              y_component_number.cat vector_length.cat
+         806                       4                 1
+         1492                      4                 1
+         276                       4                 1
+         1028                      4                 1
+         676                       4                 1
+         241                       4                 1
+         536                       4                 1
+         1024                      4                 1
+         1740                      4                 1
+         1573                      4                 1
+         1168                      4                 1
+         680                       4                 1
+         1588                      4                 1
+         32                        4                 1
+         77                        3                 1
+         361                       3                 1
+         1816                      3                 1
+         1753                      3                 1
+         684                       3                 1
+         1991                      3                 1
+         1167                      3                 1
+         1885                      3                 1
+         158                       3                 1
+         514                       3                 1
+         1059                      3                 1
+         917                       3                 1
+         613                       3                 1
+         946                       4                 1
+         135                       4                 1
+         608                       3                 1
          #+end_example
 
