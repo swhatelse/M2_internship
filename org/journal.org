@@ -3,9 +3,11 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s)
 
-* TODO [0/1]
+* TODO [0/2]
   - [ ] Run brute force with load_overlap = [true,false],
-    vector_recompute = [true,false] and different combination of local_work_size
+    vector_recompute = [true,false] and different combination of
+    local_work_size
+  - [ ] Try D-Optimal design if we can get enough information
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -1508,22 +1510,47 @@ Entered on [2015-11-19 jeu. 20:56]
      
      #+RESULTS:
 
-     #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_sg.png :exports both :width 800 :height 600 :session
+     #+begin_src R :results output :session :exports both
        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
        attach(df)
-       plot(df)
+       summary(df)
      #+end_src
 
      #+RESULTS:
+     #+begin_example
+      x_component_number vector_length  y_component_number temporary_size
+      Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
+      1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
+      Median : 4.0       Median : 4.0   Median :2.50       Median :3     
+      Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3     
+      3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4     
+      Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4     
+
+      vector_recompute load_overlap    local_work_size time_per_pixel     
+      true:2000        true:2000    [128, 1, 1]:200    Min.   :1.247e-10  
+                                    [128, 2, 1]:200    1st Qu.:2.308e-10  
+                                    [256, 1, 1]:200    Median :3.568e-10  
+                                    [32, 1, 1] :200    Mean   :4.410e-10  
+                                    [32, 2, 1] :200    3rd Qu.:5.040e-10  
+                                    [32, 4, 1] :200    Max.   :2.420e-09  
+                                    (Other)    :800 
+     #+end_example
+
+     #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_sg.png :exports both :width 800 :height 600 :session
+       plot(df)
+     #+end_src
+     
+     #+RESULTS:
      [[file:img/20160311/pilipili2/pilipili2_sg.png]]
      
-     - Fitting a simple model doesn't really work:
+     - Lets fit a model to see what are the factor that have an
+       impaact and then refine the model by removing factors that
+       don't have any significant impact and check the interactions
        #+begin_src R :results output :session :exports both
          summary(lm(data=df,time_per_pixel ~ x_component_number + y_component_number + vector_length + temporary_size +  factor(local_work_size)))
 
          # Par curiosité 
          summary(lm(data=df[sample(1:length(df$x_component_number),size = 200,replace = FALSE),],time_per_pixel ~ x_component_number + y_component_number + vector_length + temporary_size +  factor(local_work_size)))
-
 
          summary(lm(data=df,time_per_pixel ~ x_component_number * y_component_number * vector_length)) # + temporary_size +  factor(local_work_size)
 
@@ -1653,438 +1680,7 @@ Entered on [2015-11-19 jeu. 20:56]
        F-statistic: 294.7 on 10 and 9 DF,  p-value: 4.455e-10
        #+end_example
 
-     - Neither a more complex one:
-       It seems that the local_work_size doesn't have a significant effect... 
-       #+begin_src R :results output :session :exports both
-         summary(lm(data=df,time_per_pixel ~ x_component_number * y_component_number * local_work_size * vector_length)) #+ temporary_size
-       #+end_src
-
-       #+RESULTS:
-       #+begin_example
-
-       Call:
-       lm(formula = time_per_pixel ~ x_component_number * y_component_number * 
-           local_work_size * vector_length, data = df)
-
-       Residuals:
-              Min         1Q     Median         3Q        Max 
-       -5.351e-10 -1.024e-10 -1.680e-11  8.515e-11  9.055e-10 
-
-       Coefficients:
-                                                                                        Estimate
-       (Intercept)                                                                     2.155e-10
-       x_component_number                                                              2.383e-11
-       y_component_number                                                             -4.086e-11
-       local_work_size[128, 2, 1]                                                      2.398e-11
-       local_work_size[256, 1, 1]                                                      3.167e-11
-       local_work_size[32, 1, 1]                                                       1.826e-10
-       local_work_size[32, 2, 1]                                                       2.868e-11
-       local_work_size[32, 4, 1]                                                      -5.634e-12
-       local_work_size[32, 8, 1]                                                       1.566e-11
-       local_work_size[64, 1, 1]                                                       3.215e-12
-       local_work_size[64, 2, 1]                                                      -2.377e-12
-       local_work_size[64, 4, 1]                                                       1.896e-11
-       vector_length                                                                   7.948e-11
-       x_component_number:y_component_number                                          -2.287e-12
-       x_component_number:local_work_size[128, 2, 1]                                  -2.576e-12
-       x_component_number:local_work_size[256, 1, 1]                                  -3.683e-12
-       x_component_number:local_work_size[32, 1, 1]                                   -1.508e-11
-       x_component_number:local_work_size[32, 2, 1]                                   -3.016e-12
-       x_component_number:local_work_size[32, 4, 1]                                   -1.552e-13
-       x_component_number:local_work_size[32, 8, 1]                                   -2.666e-12
-       x_component_number:local_work_size[64, 1, 1]                                   -9.496e-13
-       x_component_number:local_work_size[64, 2, 1]                                   -3.054e-13
-       x_component_number:local_work_size[64, 4, 1]                                   -2.734e-12
-       y_component_number:local_work_size[128, 2, 1]                                  -1.687e-11
-       y_component_number:local_work_size[256, 1, 1]                                  -1.900e-11
-       y_component_number:local_work_size[32, 1, 1]                                   -3.347e-11
-       y_component_number:local_work_size[32, 2, 1]                                   -3.700e-12
-       y_component_number:local_work_size[32, 4, 1]                                    5.126e-12
-       y_component_number:local_work_size[32, 8, 1]                                   -1.016e-11
-       y_component_number:local_work_size[64, 1, 1]                                   -2.884e-13
-       y_component_number:local_work_size[64, 2, 1]                                    2.189e-12
-       y_component_number:local_work_size[64, 4, 1]                                   -1.336e-11
-       x_component_number:vector_length                                               -5.846e-12
-       y_component_number:vector_length                                               -7.884e-12
-       local_work_size[128, 2, 1]:vector_length                                       -8.218e-12
-       local_work_size[256, 1, 1]:vector_length                                       -7.760e-12
-       local_work_size[32, 1, 1]:vector_length                                         8.643e-12
-       local_work_size[32, 2, 1]:vector_length                                         7.793e-13
-       local_work_size[32, 4, 1]:vector_length                                         2.840e-12
-       local_work_size[32, 8, 1]:vector_length                                        -4.316e-12
-       local_work_size[64, 1, 1]:vector_length                                         1.319e-11
-       local_work_size[64, 2, 1]:vector_length                                         1.716e-12
-       local_work_size[64, 4, 1]:vector_length                                        -5.489e-12
-       x_component_number:y_component_number:local_work_size[128, 2, 1]                2.064e-12
-       x_component_number:y_component_number:local_work_size[256, 1, 1]                2.469e-12
-       x_component_number:y_component_number:local_work_size[32, 1, 1]                 3.010e-12
-       x_component_number:y_component_number:local_work_size[32, 2, 1]                 4.556e-13
-       x_component_number:y_component_number:local_work_size[32, 4, 1]                -2.338e-13
-       x_component_number:y_component_number:local_work_size[32, 8, 1]                 1.756e-12
-       x_component_number:y_component_number:local_work_size[64, 1, 1]                 2.137e-13
-       x_component_number:y_component_number:local_work_size[64, 2, 1]                -4.305e-15
-       x_component_number:y_component_number:local_work_size[64, 4, 1]                 1.916e-12
-       x_component_number:y_component_number:vector_length                             5.763e-13
-       x_component_number:local_work_size[128, 2, 1]:vector_length                     6.007e-13
-       x_component_number:local_work_size[256, 1, 1]:vector_length                     5.864e-13
-       x_component_number:local_work_size[32, 1, 1]:vector_length                     -6.546e-13
-       x_component_number:local_work_size[32, 2, 1]:vector_length                     -6.384e-14
-       x_component_number:local_work_size[32, 4, 1]:vector_length                     -2.534e-13
-       x_component_number:local_work_size[32, 8, 1]:vector_length                      2.520e-13
-       x_component_number:local_work_size[64, 1, 1]:vector_length                     -1.033e-12
-       x_component_number:local_work_size[64, 2, 1]:vector_length                     -1.543e-13
-       x_component_number:local_work_size[64, 4, 1]:vector_length                      3.644e-13
-       y_component_number:local_work_size[128, 2, 1]:vector_length                     4.690e-12
-       y_component_number:local_work_size[256, 1, 1]:vector_length                     4.762e-12
-       y_component_number:local_work_size[32, 1, 1]:vector_length                     -5.191e-13
-       y_component_number:local_work_size[32, 2, 1]:vector_length                     -1.039e-12
-       y_component_number:local_work_size[32, 4, 1]:vector_length                     -1.894e-12
-       y_component_number:local_work_size[32, 8, 1]:vector_length                      2.175e-12
-       y_component_number:local_work_size[64, 1, 1]:vector_length                     -2.301e-12
-       y_component_number:local_work_size[64, 2, 1]:vector_length                     -9.942e-13
-       y_component_number:local_work_size[64, 4, 1]:vector_length                      3.239e-12
-       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length -3.278e-13
-       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length -3.346e-13
-       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length   3.418e-14
-       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length   8.746e-14
-       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length   1.677e-13
-       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length  -1.063e-13
-       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length   1.738e-13
-       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length   8.634e-14
-       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length  -1.983e-13
-                                                                                      Std. Error
-       (Intercept)                                                                     7.986e-11
-       x_component_number                                                              9.670e-12
-       y_component_number                                                              2.916e-11
-       local_work_size[128, 2, 1]                                                      1.129e-10
-       local_work_size[256, 1, 1]                                                      1.129e-10
-       local_work_size[32, 1, 1]                                                       1.129e-10
-       local_work_size[32, 2, 1]                                                       1.129e-10
-       local_work_size[32, 4, 1]                                                       1.129e-10
-       local_work_size[32, 8, 1]                                                       1.129e-10
-       local_work_size[64, 1, 1]                                                       1.129e-10
-       local_work_size[64, 2, 1]                                                       1.129e-10
-       local_work_size[64, 4, 1]                                                       1.129e-10
-       vector_length                                                                   9.670e-12
-       x_component_number:y_component_number                                           3.531e-12
-       x_component_number:local_work_size[128, 2, 1]                                   1.368e-11
-       x_component_number:local_work_size[256, 1, 1]                                   1.368e-11
-       x_component_number:local_work_size[32, 1, 1]                                    1.368e-11
-       x_component_number:local_work_size[32, 2, 1]                                    1.368e-11
-       x_component_number:local_work_size[32, 4, 1]                                    1.368e-11
-       x_component_number:local_work_size[32, 8, 1]                                    1.368e-11
-       x_component_number:local_work_size[64, 1, 1]                                    1.368e-11
-       x_component_number:local_work_size[64, 2, 1]                                    1.368e-11
-       x_component_number:local_work_size[64, 4, 1]                                    1.368e-11
-       y_component_number:local_work_size[128, 2, 1]                                   4.124e-11
-       y_component_number:local_work_size[256, 1, 1]                                   4.124e-11
-       y_component_number:local_work_size[32, 1, 1]                                    4.124e-11
-       y_component_number:local_work_size[32, 2, 1]                                    4.124e-11
-       y_component_number:local_work_size[32, 4, 1]                                    4.124e-11
-       y_component_number:local_work_size[32, 8, 1]                                    4.124e-11
-       y_component_number:local_work_size[64, 1, 1]                                    4.124e-11
-       y_component_number:local_work_size[64, 2, 1]                                    4.124e-11
-       y_component_number:local_work_size[64, 4, 1]                                    4.124e-11
-       x_component_number:vector_length                                                1.171e-12
-       y_component_number:vector_length                                                3.531e-12
-       local_work_size[128, 2, 1]:vector_length                                        1.368e-11
-       local_work_size[256, 1, 1]:vector_length                                        1.368e-11
-       local_work_size[32, 1, 1]:vector_length                                         1.368e-11
-       local_work_size[32, 2, 1]:vector_length                                         1.368e-11
-       local_work_size[32, 4, 1]:vector_length                                         1.368e-11
-       local_work_size[32, 8, 1]:vector_length                                         1.368e-11
-       local_work_size[64, 1, 1]:vector_length                                         1.368e-11
-       local_work_size[64, 2, 1]:vector_length                                         1.368e-11
-       local_work_size[64, 4, 1]:vector_length                                         1.368e-11
-       x_component_number:y_component_number:local_work_size[128, 2, 1]                4.994e-12
-       x_component_number:y_component_number:local_work_size[256, 1, 1]                4.994e-12
-       x_component_number:y_component_number:local_work_size[32, 1, 1]                 4.994e-12
-       x_component_number:y_component_number:local_work_size[32, 2, 1]                 4.994e-12
-       x_component_number:y_component_number:local_work_size[32, 4, 1]                 4.994e-12
-       x_component_number:y_component_number:local_work_size[32, 8, 1]                 4.994e-12
-       x_component_number:y_component_number:local_work_size[64, 1, 1]                 4.994e-12
-       x_component_number:y_component_number:local_work_size[64, 2, 1]                 4.994e-12
-       x_component_number:y_component_number:local_work_size[64, 4, 1]                 4.994e-12
-       x_component_number:y_component_number:vector_length                             4.276e-13
-       x_component_number:local_work_size[128, 2, 1]:vector_length                     1.656e-12
-       x_component_number:local_work_size[256, 1, 1]:vector_length                     1.656e-12
-       x_component_number:local_work_size[32, 1, 1]:vector_length                      1.656e-12
-       x_component_number:local_work_size[32, 2, 1]:vector_length                      1.656e-12
-       x_component_number:local_work_size[32, 4, 1]:vector_length                      1.656e-12
-       x_component_number:local_work_size[32, 8, 1]:vector_length                      1.656e-12
-       x_component_number:local_work_size[64, 1, 1]:vector_length                      1.656e-12
-       x_component_number:local_work_size[64, 2, 1]:vector_length                      1.656e-12
-       x_component_number:local_work_size[64, 4, 1]:vector_length                      1.656e-12
-       y_component_number:local_work_size[128, 2, 1]:vector_length                     4.994e-12
-       y_component_number:local_work_size[256, 1, 1]:vector_length                     4.994e-12
-       y_component_number:local_work_size[32, 1, 1]:vector_length                      4.994e-12
-       y_component_number:local_work_size[32, 2, 1]:vector_length                      4.994e-12
-       y_component_number:local_work_size[32, 4, 1]:vector_length                      4.994e-12
-       y_component_number:local_work_size[32, 8, 1]:vector_length                      4.994e-12
-       y_component_number:local_work_size[64, 1, 1]:vector_length                      4.994e-12
-       y_component_number:local_work_size[64, 2, 1]:vector_length                      4.994e-12
-       y_component_number:local_work_size[64, 4, 1]:vector_length                      4.994e-12
-       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length  6.047e-13
-       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length  6.047e-13
-       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length   6.047e-13
-       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length   6.047e-13
-       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length   6.047e-13
-       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length   6.047e-13
-       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length   6.047e-13
-       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length   6.047e-13
-       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length   6.047e-13
-                                                                                      t value
-       (Intercept)                                                                      2.699
-       x_component_number                                                               2.464
-       y_component_number                                                              -1.401
-       local_work_size[128, 2, 1]                                                       0.212
-       local_work_size[256, 1, 1]                                                       0.280
-       local_work_size[32, 1, 1]                                                        1.617
-       local_work_size[32, 2, 1]                                                        0.254
-       local_work_size[32, 4, 1]                                                       -0.050
-       local_work_size[32, 8, 1]                                                        0.139
-       local_work_size[64, 1, 1]                                                        0.028
-       local_work_size[64, 2, 1]                                                       -0.021
-       local_work_size[64, 4, 1]                                                        0.168
-       vector_length                                                                    8.219
-       x_component_number:y_component_number                                           -0.648
-       x_component_number:local_work_size[128, 2, 1]                                   -0.188
-       x_component_number:local_work_size[256, 1, 1]                                   -0.269
-       x_component_number:local_work_size[32, 1, 1]                                    -1.102
-       x_component_number:local_work_size[32, 2, 1]                                    -0.221
-       x_component_number:local_work_size[32, 4, 1]                                    -0.011
-       x_component_number:local_work_size[32, 8, 1]                                    -0.195
-       x_component_number:local_work_size[64, 1, 1]                                    -0.069
-       x_component_number:local_work_size[64, 2, 1]                                    -0.022
-       x_component_number:local_work_size[64, 4, 1]                                    -0.200
-       y_component_number:local_work_size[128, 2, 1]                                   -0.409
-       y_component_number:local_work_size[256, 1, 1]                                   -0.461
-       y_component_number:local_work_size[32, 1, 1]                                    -0.811
-       y_component_number:local_work_size[32, 2, 1]                                    -0.090
-       y_component_number:local_work_size[32, 4, 1]                                     0.124
-       y_component_number:local_work_size[32, 8, 1]                                    -0.246
-       y_component_number:local_work_size[64, 1, 1]                                    -0.007
-       y_component_number:local_work_size[64, 2, 1]                                     0.053
-       y_component_number:local_work_size[64, 4, 1]                                    -0.324
-       x_component_number:vector_length                                                -4.992
-       y_component_number:vector_length                                                -2.233
-       local_work_size[128, 2, 1]:vector_length                                        -0.601
-       local_work_size[256, 1, 1]:vector_length                                        -0.567
-       local_work_size[32, 1, 1]:vector_length                                          0.632
-       local_work_size[32, 2, 1]:vector_length                                          0.057
-       local_work_size[32, 4, 1]:vector_length                                          0.208
-       local_work_size[32, 8, 1]:vector_length                                         -0.316
-       local_work_size[64, 1, 1]:vector_length                                          0.964
-       local_work_size[64, 2, 1]:vector_length                                          0.126
-       local_work_size[64, 4, 1]:vector_length                                         -0.401
-       x_component_number:y_component_number:local_work_size[128, 2, 1]                 0.413
-       x_component_number:y_component_number:local_work_size[256, 1, 1]                 0.494
-       x_component_number:y_component_number:local_work_size[32, 1, 1]                  0.603
-       x_component_number:y_component_number:local_work_size[32, 2, 1]                  0.091
-       x_component_number:y_component_number:local_work_size[32, 4, 1]                 -0.047
-       x_component_number:y_component_number:local_work_size[32, 8, 1]                  0.352
-       x_component_number:y_component_number:local_work_size[64, 1, 1]                  0.043
-       x_component_number:y_component_number:local_work_size[64, 2, 1]                 -0.001
-       x_component_number:y_component_number:local_work_size[64, 4, 1]                  0.384
-       x_component_number:y_component_number:vector_length                              1.348
-       x_component_number:local_work_size[128, 2, 1]:vector_length                      0.363
-       x_component_number:local_work_size[256, 1, 1]:vector_length                      0.354
-       x_component_number:local_work_size[32, 1, 1]:vector_length                      -0.395
-       x_component_number:local_work_size[32, 2, 1]:vector_length                      -0.039
-       x_component_number:local_work_size[32, 4, 1]:vector_length                      -0.153
-       x_component_number:local_work_size[32, 8, 1]:vector_length                       0.152
-       x_component_number:local_work_size[64, 1, 1]:vector_length                      -0.624
-       x_component_number:local_work_size[64, 2, 1]:vector_length                      -0.093
-       x_component_number:local_work_size[64, 4, 1]:vector_length                       0.220
-       y_component_number:local_work_size[128, 2, 1]:vector_length                      0.939
-       y_component_number:local_work_size[256, 1, 1]:vector_length                      0.954
-       y_component_number:local_work_size[32, 1, 1]:vector_length                      -0.104
-       y_component_number:local_work_size[32, 2, 1]:vector_length                      -0.208
-       y_component_number:local_work_size[32, 4, 1]:vector_length                      -0.379
-       y_component_number:local_work_size[32, 8, 1]:vector_length                       0.436
-       y_component_number:local_work_size[64, 1, 1]:vector_length                      -0.461
-       y_component_number:local_work_size[64, 2, 1]:vector_length                      -0.199
-       y_component_number:local_work_size[64, 4, 1]:vector_length                       0.649
-       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length  -0.542
-       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length  -0.553
-       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length    0.057
-       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length    0.145
-       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length    0.277
-       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length   -0.176
-       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length    0.287
-       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length    0.143
-       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length   -0.328
-                                                                                      Pr(>|t|)
-       (Intercept)                                                                     0.00703
-       x_component_number                                                              0.01382
-       y_component_number                                                              0.16135
-       local_work_size[128, 2, 1]                                                      0.83190
-       local_work_size[256, 1, 1]                                                      0.77922
-       local_work_size[32, 1, 1]                                                       0.10604
-       local_work_size[32, 2, 1]                                                       0.79957
-       local_work_size[32, 4, 1]                                                       0.96022
-       local_work_size[32, 8, 1]                                                       0.88977
-       local_work_size[64, 1, 1]                                                       0.97730
-       local_work_size[64, 2, 1]                                                       0.98321
-       local_work_size[64, 4, 1]                                                       0.86672
-       vector_length                                                                  3.72e-16
-       x_component_number:y_component_number                                           0.51722
-       x_component_number:local_work_size[128, 2, 1]                                   0.85062
-       x_component_number:local_work_size[256, 1, 1]                                   0.78774
-       x_component_number:local_work_size[32, 1, 1]                                    0.27040
-       x_component_number:local_work_size[32, 2, 1]                                    0.82549
-       x_component_number:local_work_size[32, 4, 1]                                    0.99095
-       x_component_number:local_work_size[32, 8, 1]                                    0.84548
-       x_component_number:local_work_size[64, 1, 1]                                    0.94465
-       x_component_number:local_work_size[64, 2, 1]                                    0.98219
-       x_component_number:local_work_size[64, 4, 1]                                    0.84155
-       y_component_number:local_work_size[128, 2, 1]                                   0.68261
-       y_component_number:local_work_size[256, 1, 1]                                   0.64503
-       y_component_number:local_work_size[32, 1, 1]                                    0.41719
-       y_component_number:local_work_size[32, 2, 1]                                    0.92852
-       y_component_number:local_work_size[32, 4, 1]                                    0.90110
-       y_component_number:local_work_size[32, 8, 1]                                    0.80547
-       y_component_number:local_work_size[64, 1, 1]                                    0.99442
-       y_component_number:local_work_size[64, 2, 1]                                    0.95768
-       y_component_number:local_work_size[64, 4, 1]                                    0.74592
-       x_component_number:vector_length                                               6.51e-07
-       y_component_number:vector_length                                                0.02569
-       local_work_size[128, 2, 1]:vector_length                                        0.54799
-       local_work_size[256, 1, 1]:vector_length                                        0.57048
-       local_work_size[32, 1, 1]:vector_length                                         0.52747
-       local_work_size[32, 2, 1]:vector_length                                         0.95457
-       local_work_size[32, 4, 1]:vector_length                                         0.83551
-       local_work_size[32, 8, 1]:vector_length                                         0.75237
-       local_work_size[64, 1, 1]:vector_length                                         0.33497
-       local_work_size[64, 2, 1]:vector_length                                         0.90014
-       local_work_size[64, 4, 1]:vector_length                                         0.68818
-       x_component_number:y_component_number:local_work_size[128, 2, 1]                0.67936
-       x_component_number:y_component_number:local_work_size[256, 1, 1]                0.62114
-       x_component_number:y_component_number:local_work_size[32, 1, 1]                 0.54669
-       x_component_number:y_component_number:local_work_size[32, 2, 1]                 0.92732
-       x_component_number:y_component_number:local_work_size[32, 4, 1]                 0.96266
-       x_component_number:y_component_number:local_work_size[32, 8, 1]                 0.72508
-       x_component_number:y_component_number:local_work_size[64, 1, 1]                 0.96587
-       x_component_number:y_component_number:local_work_size[64, 2, 1]                 0.99931
-       x_component_number:y_component_number:local_work_size[64, 4, 1]                 0.70122
-       x_component_number:y_component_number:vector_length                             0.17791
-       x_component_number:local_work_size[128, 2, 1]:vector_length                     0.71683
-       x_component_number:local_work_size[256, 1, 1]:vector_length                     0.72329
-       x_component_number:local_work_size[32, 1, 1]:vector_length                      0.69268
-       x_component_number:local_work_size[32, 2, 1]:vector_length                      0.96925
-       x_component_number:local_work_size[32, 4, 1]:vector_length                      0.87838
-       x_component_number:local_work_size[32, 8, 1]:vector_length                      0.87909
-       x_component_number:local_work_size[64, 1, 1]:vector_length                      0.53277
-       x_component_number:local_work_size[64, 2, 1]:vector_length                      0.92578
-       x_component_number:local_work_size[64, 4, 1]:vector_length                      0.82586
-       y_component_number:local_work_size[128, 2, 1]:vector_length                     0.34772
-       y_component_number:local_work_size[256, 1, 1]:vector_length                     0.34039
-       y_component_number:local_work_size[32, 1, 1]:vector_length                      0.91722
-       y_component_number:local_work_size[32, 2, 1]:vector_length                      0.83525
-       y_component_number:local_work_size[32, 4, 1]:vector_length                      0.70452
-       y_component_number:local_work_size[32, 8, 1]:vector_length                      0.66317
-       y_component_number:local_work_size[64, 1, 1]:vector_length                      0.64505
-       y_component_number:local_work_size[64, 2, 1]:vector_length                      0.84222
-       y_component_number:local_work_size[64, 4, 1]:vector_length                      0.51668
-       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length  0.58784
-       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length  0.58015
-       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length   0.95493
-       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length   0.88502
-       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length   0.78157
-       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length   0.86054
-       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length   0.77384
-       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length   0.88648
-       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length   0.74303
-
-       (Intercept)                                                                    ** 
-       x_component_number                                                             *  
-       y_component_number                                                                
-       local_work_size[128, 2, 1]                                                        
-       local_work_size[256, 1, 1]                                                        
-       local_work_size[32, 1, 1]                                                         
-       local_work_size[32, 2, 1]                                                         
-       local_work_size[32, 4, 1]                                                         
-       local_work_size[32, 8, 1]                                                         
-       local_work_size[64, 1, 1]                                                         
-       local_work_size[64, 2, 1]                                                         
-       local_work_size[64, 4, 1]                                                         
-       vector_length                                                                  ***
-       x_component_number:y_component_number                                             
-       x_component_number:local_work_size[128, 2, 1]                                     
-       x_component_number:local_work_size[256, 1, 1]                                     
-       x_component_number:local_work_size[32, 1, 1]                                      
-       x_component_number:local_work_size[32, 2, 1]                                      
-       x_component_number:local_work_size[32, 4, 1]                                      
-       x_component_number:local_work_size[32, 8, 1]                                      
-       x_component_number:local_work_size[64, 1, 1]                                      
-       x_component_number:local_work_size[64, 2, 1]                                      
-       x_component_number:local_work_size[64, 4, 1]                                      
-       y_component_number:local_work_size[128, 2, 1]                                     
-       y_component_number:local_work_size[256, 1, 1]                                     
-       y_component_number:local_work_size[32, 1, 1]                                      
-       y_component_number:local_work_size[32, 2, 1]                                      
-       y_component_number:local_work_size[32, 4, 1]                                      
-       y_component_number:local_work_size[32, 8, 1]                                      
-       y_component_number:local_work_size[64, 1, 1]                                      
-       y_component_number:local_work_size[64, 2, 1]                                      
-       y_component_number:local_work_size[64, 4, 1]                                      
-       x_component_number:vector_length                                               ***
-       y_component_number:vector_length                                               *  
-       local_work_size[128, 2, 1]:vector_length                                          
-       local_work_size[256, 1, 1]:vector_length                                          
-       local_work_size[32, 1, 1]:vector_length                                           
-       local_work_size[32, 2, 1]:vector_length                                           
-       local_work_size[32, 4, 1]:vector_length                                           
-       local_work_size[32, 8, 1]:vector_length                                           
-       local_work_size[64, 1, 1]:vector_length                                           
-       local_work_size[64, 2, 1]:vector_length                                           
-       local_work_size[64, 4, 1]:vector_length                                           
-       x_component_number:y_component_number:local_work_size[128, 2, 1]                  
-       x_component_number:y_component_number:local_work_size[256, 1, 1]                  
-       x_component_number:y_component_number:local_work_size[32, 1, 1]                   
-       x_component_number:y_component_number:local_work_size[32, 2, 1]                   
-       x_component_number:y_component_number:local_work_size[32, 4, 1]                   
-       x_component_number:y_component_number:local_work_size[32, 8, 1]                   
-       x_component_number:y_component_number:local_work_size[64, 1, 1]                   
-       x_component_number:y_component_number:local_work_size[64, 2, 1]                   
-       x_component_number:y_component_number:local_work_size[64, 4, 1]                   
-       x_component_number:y_component_number:vector_length                               
-       x_component_number:local_work_size[128, 2, 1]:vector_length                       
-       x_component_number:local_work_size[256, 1, 1]:vector_length                       
-       x_component_number:local_work_size[32, 1, 1]:vector_length                        
-       x_component_number:local_work_size[32, 2, 1]:vector_length                        
-       x_component_number:local_work_size[32, 4, 1]:vector_length                        
-       x_component_number:local_work_size[32, 8, 1]:vector_length                        
-       x_component_number:local_work_size[64, 1, 1]:vector_length                        
-       x_component_number:local_work_size[64, 2, 1]:vector_length                        
-       x_component_number:local_work_size[64, 4, 1]:vector_length                        
-       y_component_number:local_work_size[128, 2, 1]:vector_length                       
-       y_component_number:local_work_size[256, 1, 1]:vector_length                       
-       y_component_number:local_work_size[32, 1, 1]:vector_length                        
-       y_component_number:local_work_size[32, 2, 1]:vector_length                        
-       y_component_number:local_work_size[32, 4, 1]:vector_length                        
-       y_component_number:local_work_size[32, 8, 1]:vector_length                        
-       y_component_number:local_work_size[64, 1, 1]:vector_length                        
-       y_component_number:local_work_size[64, 2, 1]:vector_length                        
-       y_component_number:local_work_size[64, 4, 1]:vector_length                        
-       x_component_number:y_component_number:local_work_size[128, 2, 1]:vector_length    
-       x_component_number:y_component_number:local_work_size[256, 1, 1]:vector_length    
-       x_component_number:y_component_number:local_work_size[32, 1, 1]:vector_length     
-       x_component_number:y_component_number:local_work_size[32, 2, 1]:vector_length     
-       x_component_number:y_component_number:local_work_size[32, 4, 1]:vector_length     
-       x_component_number:y_component_number:local_work_size[32, 8, 1]:vector_length     
-       x_component_number:y_component_number:local_work_size[64, 1, 1]:vector_length     
-       x_component_number:y_component_number:local_work_size[64, 2, 1]:vector_length     
-       x_component_number:y_component_number:local_work_size[64, 4, 1]:vector_length     
-       ---
-       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-       Residual standard error: 2.012e-10 on 1920 degrees of freedom
-       Multiple R-squared:  0.6282,	Adjusted R-squared:  0.6129 
-       F-statistic: 41.07 on 79 and 1920 DF,  p-value: < 2.2e-16
-       #+end_example
-
-     - But we can see that it has an impact: 
+     - We can see the impact of the local_work_size: 
        #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_f_lws.png :exports both :width 800 :height 600 :session
          library(ggplot2)
          df$y_component_number.cat <- as.factor(df$y_component_number)
@@ -2110,8 +1706,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
        [[file:img/20160311/pilipili2/pilipili2_bp_lws.png]]
-
-     - Genetic algo on brute force results
+**** Genetic algo on brute force results
        #+begin_src sh :results output :exports both
          ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
        #+end_src
@@ -2748,7 +2343,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
        #+begin_example
-       The following objects are masked from df (pos = 3):
+       The following objects are masked from df (pos = 4):
 
            load_overlap, local_work_size, temporary_size, time_per_pixel,
            vector_length, vector_recompute, x_component_number,
@@ -2769,7 +2364,7 @@ Entered on [2015-11-19 jeu. 20:56]
                                       [128, 1, 1]: 8     3rd Qu.:1.462e-10  
                                       [32, 4, 1] : 7     Max.   :1.594e-10  
                                       (Other)    :10
-       #+end_example
+#+end_example
 
        #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_gen_100.png :exports both :width 600 :height 600 :session       
          default <- par()
@@ -2811,7 +2406,7 @@ Entered on [2015-11-19 jeu. 20:56]
                           4                    2                    1
        #+end_example
 
-       - What are the 30 first values?
+       - Here are the 30 first best combinations of the entire search space
          #+begin_src R :results output :session :exports both
            options(width=150)
            head(df[order(time_per_pixel),],n=30)
@@ -2882,4 +2477,264 @@ Entered on [2015-11-19 jeu. 20:56]
          135                       4                 1
          608                       3                 1
          #+end_example
+
+       - Do we have lots of good combinations?
+         #+begin_src sh :results output :exports both
+           ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+         #+END_SRC
+
+         #+RESULTS:
+
+         #+begin_src R :results output :session :exports both
+           df <- read.csv("/tmp/test.csv", strip.white=T,header=T)
+           attach(df)
+           x <- min(df$time_per_pixel)
+           y <- max(df$time_per_pixel)
+           b <- (y - x) / 1.2733542924771e-10
+           res <- hist(df$time_per_pixel, breaks=b, plot=FALSE)
+           res
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+         $breaks
+          [1] 1.0e-10 2.0e-10 3.0e-10 4.0e-10 5.0e-10 6.0e-10 7.0e-10 8.0e-10 9.0e-10
+         [10] 1.0e-09 1.1e-09 1.2e-09 1.3e-09 1.4e-09 1.5e-09 1.6e-09 1.7e-09 1.8e-09
+         [19] 1.9e-09 2.0e-09 2.1e-09 2.2e-09 2.3e-09 2.4e-09 2.5e-09
+
+         $counts
+          [1] 280 473 452 285 170  66  85  48  15   4  32  22  24   7  10   1   4   2   3
+         [20]  13   0   2   1   1
+
+         $density
+          [1] 1.400e+09 2.365e+09 2.260e+09 1.425e+09 8.500e+08 3.300e+08 4.250e+08
+          [8] 2.400e+08 7.500e+07 2.000e+07 1.600e+08 1.100e+08 1.200e+08 3.500e+07
+         [15] 5.000e+07 5.000e+06 2.000e+07 1.000e+07 1.500e+07 6.500e+07 0.000e+00
+         [22] 1.000e+07 5.000e+06 5.000e+06
+
+         $mids
+          [1] 1.50e-10 2.50e-10 3.50e-10 4.50e-10 5.50e-10 6.50e-10 7.50e-10 8.50e-10
+          [9] 9.50e-10 1.05e-09 1.15e-09 1.25e-09 1.35e-09 1.45e-09 1.55e-09 1.65e-09
+         [17] 1.75e-09 1.85e-09 1.95e-09 2.05e-09 2.15e-09 2.25e-09 2.35e-09 2.45e-09
+
+         $xname
+         [1] "df$time_per_pixel"
+
+         $equidist
+         [1] TRUE
+
+         attr(,"class")
+         [1] "histogram"
+         #+end_example
+
+         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+           plot(res)
+         #+end_src
+
+         #+RESULTS:
+         [[file:/tmp/babel-4953KxS/figure4953bnQ.png]]
+
+** 2016-03-16
+*** Optimal design 
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      library(DoE.base)
+      library(DoE.wrapper)
+      Design.1 <- lhs.design( type= "maximin" , nruns= 200 ,nfactors= 7 ,digits= NULL ,seed=20049 , factor.names=list( log_x_component_number=c(1,4),y_component_number=c(1,4),
+                                                                                                                      log_vector_length=c(1,4),vector_recompute=c(0,1),load_overlap=c(0,1),
+                                                                                                                      local_work_size_index=c(1,10),log_temporary_size=c(1,2) ) )
+      ## creator element of design.info will be different, when using the command line command!
+      plot( Design.1 , select = c( "log_x_component_number","y_component_number",
+                                  "log_vector_length","vector_recompute","load_overlap","local_work_size_index",
+                                  "log_temporary_size" ))
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-8208SmU/figure8208x1H.png]]
+    - Should we round the lhs values?
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        Design.1.rounded <- round(Design.1)
+  
+        plot( Design.1.rounded , select = c( "log_x_component_number","y_component_number",
+                                    "log_vector_length","vector_recompute","load_overlap","local_work_size_index",
+                                    "log_temporary_size" ))
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-8208SmU/figure8208leg.png]]
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        Design.1.Dopt <- Dopt.design( 40 , data= Design.1.rounded , formula= 
+                                                              "~(log_x_component_number  + y_component_number  + log_vector_length  + vector_recompute  + load_overlap  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+        ## creator element of design.info will be different, when using the command line command!
+        plot( Design.1.Dopt , select = c( "log_x_component_number","y_component_number","log_vector_length","vector_recompute","load_overlap","local_work_size_index","log_temporary_size" ))
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-8208SmU/figure8208yom.png]]
+    - Or should we round the D-optimal values?
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        Design.1.Dopt2 <- Dopt.design( 40 , data= Design.1 , formula= 
+                                                              "~(log_x_component_number  + y_component_number  + log_vector_length  + vector_recompute  + load_overlap  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+        ## creator element of design.info will be different, when using the command line command!
+        Design.1.Dopt2 <- round(Design.1.Dopt2)
+        plot( Design.1.Dopt2 , select = c( "log_x_component_number","y_component_number","log_vector_length","vector_recompute","load_overlap","local_work_size_index","log_temporary_size" ))
+      #+end_src
+      #+RESULTS:
+      [[file:/tmp/babel-8208SmU/figure8208_ys.png]]
+    - Even if we have rounded things we don't have duplicated combinations
+      #+begin_src R :results output :session :exports both
+        duplicated(Design.1)
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+        [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+       [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+       [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+       [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+       [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+       [61] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+       [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+       [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+       [97] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      [109] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      [121] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      [133] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      [145] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      [157] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      [169] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      [181] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      [193] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+      #+end_example
+ 
+    - Mapping the local_worksize
+      - Maybe it is useless
+        #+begin_src R :results output :session :exports both
+          x <- list()
+        count <- 1
+        for( i in 1:4 ){ 
+            for( j in 1:log2(2^i)-1 ){
+                x[[count]] <-  c( 2^(i+4) / 2^j, 2^j )
+                count <- count + 1
+                x[[count]] <-  c( 2^j, 2^(i+4) / 2^j )
+                count <- count + 1
+            }
+        }
+        x
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+      [[1]]
+      [1] 32  1
+
+      [[2]]
+      [1]  1 32
+
+      [[3]]
+      [1] 64  1
+
+      [[4]]
+      [1]  1 64
+
+      [[5]]
+      [1] 32  2
+
+      [[6]]
+      [1]  2 32
+
+      [[7]]
+      [1] 128   1
+
+      [[8]]
+      [1]   1 128
+
+      [[9]]
+      [1] 64  2
+
+      [[10]]
+      [1]  2 64
+
+      [[11]]
+      [1] 32  4
+
+      [[12]]
+      [1]  4 32
+
+      [[13]]
+      [1] 256   1
+
+      [[14]]
+      [1]   1 256
+
+      [[15]]
+      [1] 128   2
+
+      [[16]]
+      [1]   2 128
+
+      [[17]]
+      [1] 64  4
+
+      [[18]]
+      [1]  4 64
+
+      [[19]]
+      [1] 32  8
+
+      [[20]]
+      [1]  8 32
+      #+end_example
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+     #+end_src
+     
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       attach(df)
+       summary(df)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+      log_x_component_number vector_length  y_component_number temporary_size
+      Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
+      1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
+      Median : 4.0       Median : 4.0   Median :2.50       Median :3     
+      Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3     
+      3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4     
+      Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4     
+
+      vector_recompute load_overlap    local_work_size time_per_pixel     
+      true:2000        true:2000    [128, 1, 1]:200    Min.   :1.247e-10  
+                                    [128, 2, 1]:200    1st Qu.:2.308e-10  
+                                    [256, 1, 1]:200    Median :3.568e-10  
+                                    [32, 1, 1] :200    Mean   :4.410e-10  
+                                    [32, 2, 1] :200    3rd Qu.:5.040e-10  
+                                    [32, 4, 1] :200    Max.   :2.420e-09  
+                                    (Other)    :800
+      #+end_example
+
+      - Want to keep the point of the D-optimal but it seems it is not
+        the correct way to day it...
+      #+begin_src R :results output :session :exports both
+               df[ x_component_number == 2^Design.1.Dopt$log_x_component_number & 
+                   y_component_number == Design.1.Dopt$y_component_number & 
+                   vector_length == 2^Design.1.Dopt$log_vector_length &
+                   vector_recompute == as.logical(Design.1.Dopt$vector_recompute) &
+                   load_overlap == as.logical(Design.1.Dopt$load_overlap) &
+                   temporary_size == 2^Design.1.Dopt$log_temporary_size &
+                   as.numeric(local_work_size) == Design.1.Dopt$local_work_size_index, ]
+
+
+        # "x_component_number","y_component_number","log_vector_length","vector_recompute","load_overlap","local_work_size_index","log_temporary_size" 
+      #+end_src
+
+      #+RESULTS:
+      : [1] x_component_number vector_length      y_component_number temporary_size    
+      : [5] vector_recompute   load_overlap       local_work_size    time_per_pixel    
+      : <0 lignes> (ou 'row.names' de longueur nulle)
+
+
 
