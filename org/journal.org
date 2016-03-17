@@ -2536,29 +2536,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
 ** 2016-03-16
 *** Optimal design 
-    - Building D-Optimal design
-      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-        library(DoE.base)
-        library(DoE.wrapper)
-        Design.1 <- lhs.design( type= "maximin" , nruns= 200 ,nfactors= 5 ,digits= NULL ,seed=20049 , factor.names=list(log_x_component_number=c(1,4), y_component_number=c(1,4),
-                                                                                                                        log_vector_length=c(1,4), local_work_size_index=c(1,10),
-                                                                                                                        log_temporary_size=c(1,2) ) )
-        ## creator element of design.info will be different, when using the command line command!
-        # plot( Design.1 , select = c( "log_x_component_number","y_component_number",
-        #                             "log_vector_length","local_work_size_index",
-        #                             "log_temporary_size" ))
-        Design.1.rounded <- round(Design.1)
-        Design.1.Dopt <- Dopt.design( 40 , data= Design.1.rounded , formula= 
-                                                              "~(log_x_component_number  + y_component_number  + log_vector_length  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
-
-        plot( Design.1.Dopt , select = c( "log_x_component_number","y_component_number","log_vector_length","local_work_size_index","log_temporary_size" ))
-      #+end_src
-
-      #+RESULTS:
-      [[file:/tmp/babel-4662-nm/figure4662CNq.png]]
-
-    - Applying the D-optimal design
-      - Generating combination of local_work_size. Useless for the
+    - Generating combination of local_work_size. Useless for the
         moment but could be usefull later 
         #+begin_src R :results output :session :exports both
           x <- list()
@@ -2636,82 +2614,147 @@ Entered on [2015-11-19 jeu. 20:56]
       [[20]]
       [1]  8 32
       #+end_example
+    - Building and applying D-Optimal design
       #+begin_src sh :results output :exports both
        ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
       #+end_src
 
+      #+begin_src R :results output :session :exports both
+        library(DoE.base)
+        library(DoE.wrapper)
+        Design.1 <- lhs.design( type= "maximin" , nruns= 500 ,nfactors= 5 ,digits= NULL ,seed=20049 , factor.names=list(log_x_component_number=c(0,4), y_component_number=c(1,4),
+                                                                                                                        log_vector_length=c(0,4), local_work_size_index=c(1,10),
+                                                                                                                        log_temporary_size=c(1,2) ) )
+        ## creator element of design.info will be different, when using the command line command!
+        # plot( Design.1 , select = c( "log_x_component_number","y_component_number",
+        #                             "log_vector_length","local_work_size_index",
+        #                             "log_temporary_size" ))
+        Design.1.rounded <- round(Design.1)
+        Design.1.Dopt <- Dopt.design( 60 , data= Design.1.rounded , formula= 
+                                                              "~(log_x_component_number  + y_component_number  + log_vector_length  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        set <- data.frame()
+        for(i in 1:nrow(Design.1.Dopt)){
+            set <- rbind(set, df[ x_component_number == 2^Design.1.Dopt$log_x_component_number[i]
+                                 & y_component_number == Design.1.Dopt$y_component_number[i]
+                                 & vector_length == 2^Design.1.Dopt$log_vector_length[i]
+                                 & temporary_size == 2^Design.1.Dopt$log_temporary_size[i] 
+                                 & as.numeric(local_work_size) == Design.1.Dopt$local_work_size_index[i], ])
+
+
+        }
+
+        summary(lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length))  # + local_work_size + temporary_size
+        summary(lm(data=set, time_per_pixel ~ x_component_number * y_component_number * vector_length))  # + local_work_size + temporary_size
+        summary(lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length + x_component_number:vector_length))  # + local_work_size + temporary_size
+      #+end_src
+
       #+RESULTS:
+      #+begin_example
 
-     - With our generated experiment planning we extract the
-       corresponding values from the experiment measurements and
-       check if we have enough informations
-        #+begin_src R :results output :session :exports both
-          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-          attach(df)
+      Call:
+      lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+          vector_length, data = set)
 
-          set <- data.frame()
-          for(i in 1:nrow(Design.1.Dopt)){
-              set <- rbind(set, df[ x_component_number == 2^Design.1.Dopt$log_x_component_number[i]
-                                   & y_component_number == Design.1.Dopt$y_component_number[i]
-                                   & vector_length == 2^Design.1.Dopt$log_vector_length[i]
-                                   & temporary_size == 2^Design.1.Dopt$log_temporary_size[i] 
-                                   & as.numeric(local_work_size) == Design.1.Dopt$local_work_size_index[i], ])
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -4.493e-10 -2.389e-10 -5.766e-11  2.031e-10  8.749e-10 
 
+      Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)    
+      (Intercept)         6.540e-10  1.194e-10   5.478 1.06e-06 ***
+      x_component_number -2.019e-11  6.648e-12  -3.037  0.00362 ** 
+      y_component_number -8.546e-11  3.202e-11  -2.669  0.00994 ** 
+      vector_length       4.126e-11  6.690e-12   6.167 8.11e-08 ***
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-          }
+      Residual standard error: 3.449e-10 on 56 degrees of freedom
+      Multiple R-squared:  0.5265,	Adjusted R-squared:  0.5011 
+      F-statistic: 20.76 on 3 and 56 DF,  p-value: 3.617e-09
 
-          summary(lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length))  # + local_work_size + temporary_size
-        #+end_src
-       
-        #+RESULTS:
-        #+begin_example
-        The following objects are masked from df (pos = 3):
+      Call:
+      lm.default(formula = time_per_pixel ~ x_component_number * y_component_number * 
+          vector_length, data = set)
 
-            load_overlap, local_work_size, temporary_size, time_per_pixel,
-            vector_length, vector_recompute, x_component_number,
-            y_component_number
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -5.829e-10 -7.267e-11 -1.375e-11  7.602e-11  5.229e-10 
 
-        The following objects are masked from df (pos = 4):
+      Coefficients:
+                                                            Estimate Std. Error
+      (Intercept)                                          2.574e-10  1.679e-10
+      x_component_number                                   2.740e-11  1.705e-11
+      y_component_number                                  -4.707e-11  5.665e-11
+      vector_length                                        9.656e-11  1.432e-11
+      x_component_number:y_component_number               -2.337e-12  5.615e-12
+      x_component_number:vector_length                    -7.727e-12  1.661e-12
+      y_component_number:vector_length                    -6.872e-12  5.127e-12
+      x_component_number:y_component_number:vector_length  8.645e-13  5.453e-13
+                                                          t value Pr(>|t|)    
+      (Intercept)                                           1.533    0.131    
+      x_component_number                                    1.607    0.114    
+      y_component_number                                   -0.831    0.410    
+      vector_length                                         6.743 1.27e-08 ***
+      x_component_number:y_component_number                -0.416    0.679    
+      x_component_number:vector_length                     -4.653 2.29e-05 ***
+      y_component_number:vector_length                     -1.340    0.186    
+      x_component_number:y_component_number:vector_length   1.585    0.119    
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-            load_overlap, local_work_size, temporary_size, time_per_pixel,
-            vector_length, vector_recompute, x_component_number,
-            y_component_number
+      Residual standard error: 2.448e-10 on 52 degrees of freedom
+      Multiple R-squared:  0.7784,	Adjusted R-squared:  0.7486 
+      F-statistic:  26.1 on 7 and 52 DF,  p-value: 6.446e-15
 
-        The following objects are masked from df (pos = 5):
+      Call:
+      lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+          vector_length + x_component_number:vector_length, data = set)
 
-            load_overlap, local_work_size, temporary_size, time_per_pixel,
-            vector_length, vector_recompute, x_component_number,
-            y_component_number
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -5.388e-10 -8.124e-11  9.820e-12  7.812e-11  6.241e-10 
 
-        Call:
-        lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
-            vector_length, data = set)
+      Coefficients:
+                                         Estimate Std. Error t value Pr(>|t|)    
+      (Intercept)                       3.131e-10  9.776e-11   3.203  0.00226 ** 
+      x_component_number                2.108e-11  7.406e-12   2.847  0.00620 ** 
+      y_component_number               -6.970e-11  2.313e-11  -3.013  0.00390 ** 
+      vector_length                     8.010e-11  7.175e-12  11.163 9.36e-16 ***
+      x_component_number:vector_length -5.426e-12  7.435e-13  -7.297 1.23e-09 ***
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-        Residuals:
-               Min         1Q     Median         3Q        Max 
-        -2.158e-10 -1.168e-10 -2.070e-11  5.365e-11  4.135e-10 
+      Residual standard error: 2.481e-10 on 55 degrees of freedom
+      Multiple R-squared:  0.7594,	Adjusted R-squared:  0.7419 
+      F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
+      #+end_example
 
-        Coefficients:
-                             Estimate Std. Error t value Pr(>|t|)    
-        (Intercept)         3.911e-10  6.803e-11   5.748 1.51e-06 ***
-        x_component_number  8.025e-13  4.031e-12   0.199 0.843301    
-        y_component_number -6.630e-11  1.810e-11  -3.662 0.000797 ***
-        vector_length       2.632e-11  3.947e-12   6.668 8.97e-08 ***
-        ---
-        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+      #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_OptD.png :exports both :width 600 :height 400 :session
+        plot( Design.1.Dopt , select = c( "log_x_component_number","y_component_number","log_vector_length","local_work_size_index","log_temporary_size" ))
+      #+end_src
 
-        Residual standard error: 1.51e-10 on 36 degrees of freedom
-        Multiple R-squared:  0.6021,	Adjusted R-squared:  0.5689 
-        F-statistic: 18.16 on 3 and 36 DF,  p-value: 2.412e-07
-#+end_example
+      #+RESULTS:
+      [[file:img/20160311/pilipili2/pilipili2_OptD.png]]
+
+      #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_OptD_set.png :exports both :width 800 :height 600 :session
+        plot(set)
+      #+end_src
+
+      #+RESULTS:
+      [[file:img/20160311/pilipili2/pilipili2_OptD_set.png]]
 
     - How does it compare to a random sample?
         Some times it can find the impact of the x_component_number but
         it is rare and generally the R-squared is worse
         #+begin_src R :results output :session :exports both
           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-          random_sample <- df[sample(1:length(df$x_component_number),size = 80,replace = FALSE),]
+          random_sample <- df[sample(1:length(df$x_component_number),size = 40,replace = FALSE),]
           summary(lm(data=random_sample, time_per_pixel ~ x_component_number + y_component_number + vector_length))  # + local_work_size + temporary_size
+          summary(lm(data=random_sample, time_per_pixel ~ x_component_number * y_component_number * vector_length))  # + local_work_size + temporary_size
+          summary(lm(data=random_sample, time_per_pixel ~ x_component_number + y_component_number + vector_length + x_component_number:vector_length))  # + local_work_size + temporary_size
+
         #+end_src
 
         #+RESULTS:
@@ -2723,28 +2766,84 @@ Entered on [2015-11-19 jeu. 20:56]
 
         Residuals:
                Min         1Q     Median         3Q        Max 
-        -2.910e-10 -1.257e-10 -3.724e-11  7.628e-11  6.801e-10 
+        -2.388e-10 -1.167e-10 -2.010e-11  9.716e-11  3.453e-10 
 
         Coefficients:
                              Estimate Std. Error t value Pr(>|t|)    
-        (Intercept)         4.821e-10  6.474e-11   7.446 1.26e-10 ***
-        x_component_number -1.271e-12  3.893e-12  -0.327    0.745    
-        y_component_number -1.041e-10  1.939e-11  -5.367 8.38e-07 ***
-        vector_length       3.436e-11  4.250e-12   8.083 7.62e-12 ***
+        (Intercept)         4.789e-10  6.469e-11   7.403 9.79e-09 ***
+        x_component_number -6.879e-12  5.582e-12  -1.232   0.2259    
+        y_component_number -8.009e-11  2.295e-11  -3.489   0.0013 ** 
+        vector_length       2.786e-11  5.691e-12   4.896 2.07e-05 ***
         ---
         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-        Residual standard error: 1.824e-10 on 76 degrees of freedom
-        Multiple R-squared:  0.5616,	Adjusted R-squared:  0.5443 
-        F-statistic: 32.46 on 3 and 76 DF,  p-value: 1.306e-13
+        Residual standard error: 1.581e-10 on 36 degrees of freedom
+        Multiple R-squared:  0.5472,	Adjusted R-squared:  0.5095 
+        F-statistic:  14.5 on 3 and 36 DF,  p-value: 2.364e-06
+
+        Call:
+        lm.default(formula = time_per_pixel ~ x_component_number * y_component_number * 
+            vector_length, data = random_sample)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -1.603e-10 -5.627e-11 -2.693e-11  3.685e-11  2.826e-10 
+
+        Coefficients:
+                                                              Estimate Std. Error
+        (Intercept)                                          2.536e-10  9.209e-11
+        x_component_number                                   1.089e-11  2.109e-11
+        y_component_number                                  -2.340e-11  3.393e-11
+        vector_length                                        9.764e-11  1.508e-11
+        x_component_number:y_component_number               -5.327e-13  6.726e-12
+        x_component_number:vector_length                    -8.234e-12  3.251e-12
+        y_component_number:vector_length                    -2.291e-11  6.204e-12
+        x_component_number:y_component_number:vector_length  2.005e-12  9.256e-13
+                                                            t value Pr(>|t|)    
+        (Intercept)                                           2.754 0.009627 ** 
+        x_component_number                                    0.516 0.609212    
+        y_component_number                                   -0.690 0.495359    
+        vector_length                                         6.476 2.76e-07 ***
+        x_component_number:y_component_number                -0.079 0.937361    
+        x_component_number:vector_length                     -2.533 0.016410 *  
+        y_component_number:vector_length                     -3.693 0.000824 ***
+        x_component_number:y_component_number:vector_length   2.167 0.037818 *  
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 1.167e-10 on 32 degrees of freedom
+        Multiple R-squared:  0.7809,	Adjusted R-squared:  0.7329 
+        F-statistic: 16.29 on 7 and 32 DF,  p-value: 6.336e-09
+
+        Call:
+        lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+            vector_length + x_component_number:vector_length, data = random_sample)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -3.402e-10 -7.496e-11 -1.920e-12  7.877e-11  2.814e-10 
+
+        Coefficients:
+                                           Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)                       3.534e-10  6.748e-11   5.237 7.83e-06 ***
+        x_component_number                1.004e-11  6.943e-12   1.446  0.15699    
+        y_component_number               -6.751e-11  2.046e-11  -3.300  0.00223 ** 
+        vector_length                     4.963e-11  8.064e-12   6.154 4.84e-07 ***
+        x_component_number:vector_length -3.350e-12  9.748e-13  -3.436  0.00154 ** 
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 1.387e-10 on 35 degrees of freedom
+        Multiple R-squared:  0.6614,	Adjusted R-squared:  0.6227 
+        F-statistic: 17.09 on 4 and 35 DF,  p-value: 7.386e-08
         #+end_example
 
     - How does it compare to LHS?
         #+begin_src R :results output :session :exports both
           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
-          Design.2 <- lhs.design( type= "maximin" , nruns= 80 ,nfactors= 5 ,digits= NULL ,seed=20049 , factor.names=list(log_x_component_number=c(1,4), y_component_number=c(1,4),
-                                                                                                                         log_vector_length=c(1,4), local_work_size_index=c(1,10),
+          Design.2 <- lhs.design( type= "maximin" , nruns= 60 ,nfactors= 5 ,digits= NULL ,seed=20049 , factor.names=list(log_x_component_number=c(0,4), y_component_number=c(1,4),
+                                                                                                                         log_vector_length=c(0,4), local_work_size_index=c(1,10),
                                                                                                                          log_temporary_size=c(1,2) ) )
           Design.2.rounded <- round(Design.2)
 
@@ -2760,6 +2859,9 @@ Entered on [2015-11-19 jeu. 20:56]
           }
 
           summary(lm(data=lhs_sample, time_per_pixel ~ x_component_number + y_component_number + vector_length))
+          summary(lm(data=lhs_sample, time_per_pixel ~ x_component_number * y_component_number * vector_length))  # + local_work_size + temporary_size
+          summary(lm(data=lhs_sample, time_per_pixel ~ x_component_number + y_component_number + vector_length + x_component_number:vector_length))  # + local_work_size + temporary_size
+
         #+end_src
 
         #+RESULTS:
@@ -2771,19 +2873,75 @@ Entered on [2015-11-19 jeu. 20:56]
 
         Residuals:
                Min         1Q     Median         3Q        Max 
-        -1.327e-10 -8.527e-11 -2.187e-11  4.876e-11  5.156e-10 
+        -3.862e-10 -1.577e-10 -4.072e-11  1.310e-10  9.883e-10 
 
         Coefficients:
                              Estimate Std. Error t value Pr(>|t|)    
-        (Intercept)         4.166e-10  4.582e-11   9.092 8.90e-14 ***
-        x_component_number -8.715e-13  3.047e-12  -0.286    0.776    
-        y_component_number -8.671e-11  1.420e-11  -6.108 3.98e-08 ***
-        vector_length       1.983e-11  2.956e-12   6.710 3.08e-09 ***
+        (Intercept)         5.544e-10  1.141e-10   4.861 9.84e-06 ***
+        x_component_number -1.224e-11  7.188e-12  -1.703 0.094084 .  
+        y_component_number -1.305e-10  3.546e-11  -3.682 0.000523 ***
+        vector_length       4.272e-11  7.202e-12   5.931 1.97e-07 ***
         ---
         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-        Residual standard error: 1.219e-10 on 76 degrees of freedom
-        Multiple R-squared:  0.5237,	Adjusted R-squared:  0.5049 
-        F-statistic: 27.85 on 3 and 76 DF,  p-value: 2.956e-12
+        Residual standard error: 2.626e-10 on 56 degrees of freedom
+        Multiple R-squared:  0.4826,	Adjusted R-squared:  0.4549 
+        F-statistic: 17.41 on 3 and 56 DF,  p-value: 4.153e-08
+
+        Call:
+        lm.default(formula = time_per_pixel ~ x_component_number * y_component_number * 
+            vector_length, data = lhs_sample)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -3.129e-10 -9.116e-11 -2.833e-11  4.119e-11  6.000e-10 
+
+        Coefficients:
+                                                              Estimate Std. Error
+        (Intercept)                                         -9.618e-11  1.622e-10
+        x_component_number                                   6.444e-11  2.416e-11
+        y_component_number                                   4.243e-11  6.155e-11
+        vector_length                                        1.674e-10  2.092e-11
+        x_component_number:y_component_number               -1.328e-11  1.008e-11
+        x_component_number:vector_length                    -1.690e-11  3.457e-12
+        y_component_number:vector_length                    -3.424e-11  7.959e-12
+        x_component_number:y_component_number:vector_length  3.517e-12  1.385e-12
+                                                            t value Pr(>|t|)    
+        (Intercept)                                          -0.593   0.5557    
+        x_component_number                                    2.667   0.0102 *  
+        y_component_number                                    0.689   0.4937    
+        vector_length                                         8.000 1.27e-10 ***
+        x_component_number:y_component_number                -1.316   0.1938    
+        x_component_number:vector_length                     -4.889 1.01e-05 ***
+        y_component_number:vector_length                     -4.302 7.48e-05 ***
+        x_component_number:y_component_number:vector_length   2.539   0.0142 *  
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 1.832e-10 on 52 degrees of freedom
+        Multiple R-squared:  0.7662,	Adjusted R-squared:  0.7347 
+        F-statistic: 24.35 on 7 and 52 DF,  p-value: 2.504e-14
+
+        Call:
+        lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+            vector_length + x_component_number:vector_length, data = lhs_sample)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -4.262e-10 -1.122e-10 -6.709e-11  7.745e-11  7.377e-10 
+
+        Coefficients:
+                                           Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)                       3.047e-10  1.034e-10   2.948 0.004692 ** 
+        x_component_number                3.179e-11  9.961e-12   3.192 0.002337 ** 
+        y_component_number               -1.162e-10  2.893e-11  -4.016 0.000181 ***
+        vector_length                     8.310e-11  9.433e-12   8.809 4.28e-12 ***
+        x_component_number:vector_length -8.423e-12  1.543e-12  -5.458 1.19e-06 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 2.134e-10 on 55 degrees of freedom
+        Multiple R-squared:  0.6644,	Adjusted R-squared:   0.64 
+        F-statistic: 27.22 on 4 and 55 DF,  p-value: 1.758e-12
         #+end_example
 
