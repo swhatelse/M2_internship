@@ -2536,78 +2536,30 @@ Entered on [2015-11-19 jeu. 20:56]
 
 ** 2016-03-16
 *** Optimal design 
-    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-      library(DoE.base)
-      library(DoE.wrapper)
-      Design.1 <- lhs.design( type= "maximin" , nruns= 200 ,nfactors= 7 ,digits= NULL ,seed=20049 , factor.names=list( log_x_component_number=c(1,4),y_component_number=c(1,4),
-                                                                                                                      log_vector_length=c(1,4),vector_recompute=c(0,1),load_overlap=c(0,1),
-                                                                                                                      local_work_size_index=c(1,10),log_temporary_size=c(1,2) ) )
-      ## creator element of design.info will be different, when using the command line command!
-      plot( Design.1 , select = c( "log_x_component_number","y_component_number",
-                                  "log_vector_length","vector_recompute","load_overlap","local_work_size_index",
-                                  "log_temporary_size" ))
-    #+end_src
-
-    #+RESULTS:
-    [[file:/tmp/babel-8208SmU/figure8208x1H.png]]
-    - Should we round the lhs values?
+    - Building D-Optimal design
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        library(DoE.base)
+        library(DoE.wrapper)
+        Design.1 <- lhs.design( type= "maximin" , nruns= 200 ,nfactors= 5 ,digits= NULL ,seed=20049 , factor.names=list(log_x_component_number=c(1,4), y_component_number=c(1,4),
+                                                                                                                        log_vector_length=c(1,4), local_work_size_index=c(1,10),
+                                                                                                                        log_temporary_size=c(1,2) ) )
+        ## creator element of design.info will be different, when using the command line command!
+        # plot( Design.1 , select = c( "log_x_component_number","y_component_number",
+        #                             "log_vector_length","local_work_size_index",
+        #                             "log_temporary_size" ))
         Design.1.rounded <- round(Design.1)
-  
-        plot( Design.1.rounded , select = c( "log_x_component_number","y_component_number",
-                                    "log_vector_length","vector_recompute","load_overlap","local_work_size_index",
-                                    "log_temporary_size" ))
-      #+end_src
-
-      #+RESULTS:
-      [[file:/tmp/babel-8208SmU/figure8208leg.png]]
-      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
         Design.1.Dopt <- Dopt.design( 40 , data= Design.1.rounded , formula= 
-                                                              "~(log_x_component_number  + y_component_number  + log_vector_length  + vector_recompute  + load_overlap  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
-        ## creator element of design.info will be different, when using the command line command!
-        plot( Design.1.Dopt , select = c( "log_x_component_number","y_component_number","log_vector_length","vector_recompute","load_overlap","local_work_size_index","log_temporary_size" ))
+                                                              "~(log_x_component_number  + y_component_number  + log_vector_length  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+        plot( Design.1.Dopt , select = c( "log_x_component_number","y_component_number","log_vector_length","local_work_size_index","log_temporary_size" ))
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-8208SmU/figure8208yom.png]]
-    - Or should we round the D-optimal values?
-      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-        Design.1.Dopt2 <- Dopt.design( 40 , data= Design.1 , formula= 
-                                                              "~(log_x_component_number  + y_component_number  + log_vector_length  + vector_recompute  + load_overlap  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
-        ## creator element of design.info will be different, when using the command line command!
-        Design.1.Dopt2 <- round(Design.1.Dopt2)
-        plot( Design.1.Dopt2 , select = c( "log_x_component_number","y_component_number","log_vector_length","vector_recompute","load_overlap","local_work_size_index","log_temporary_size" ))
-      #+end_src
-      #+RESULTS:
-      [[file:/tmp/babel-8208SmU/figure8208_ys.png]]
-    - Even if we have rounded things we don't have duplicated combinations
-      #+begin_src R :results output :session :exports both
-        duplicated(Design.1)
-      #+end_src
+      [[file:/tmp/babel-4662-nm/figure4662CNq.png]]
 
-      #+RESULTS:
-      #+begin_example
-        [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-       [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-       [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-       [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-       [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-       [61] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-       [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-       [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-       [97] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      [109] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      [121] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      [133] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      [145] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      [157] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      [169] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      [181] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      [193] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-      #+end_example
- 
-    - Mapping the local_worksize
-      - Maybe it is useless
+    - Applying the D-optimal design
+      - Generating combination of local_work_size. Useless for the
+        moment but could be usefull later 
         #+begin_src R :results output :session :exports both
           x <- list()
         count <- 1
@@ -2684,57 +2636,154 @@ Entered on [2015-11-19 jeu. 20:56]
       [[20]]
       [1]  8 32
       #+end_example
-     #+begin_src sh :results output :exports both
+      #+begin_src sh :results output :exports both
        ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
-     #+end_src
-     
-     #+RESULTS:
-
-     #+begin_src R :results output :session :exports both
-       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-       attach(df)
-       summary(df)
-     #+end_src
-
-     #+RESULTS:
-     #+begin_example
-      log_x_component_number vector_length  y_component_number temporary_size
-      Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
-      1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
-      Median : 4.0       Median : 4.0   Median :2.50       Median :3     
-      Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3     
-      3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4     
-      Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4     
-
-      vector_recompute load_overlap    local_work_size time_per_pixel     
-      true:2000        true:2000    [128, 1, 1]:200    Min.   :1.247e-10  
-                                    [128, 2, 1]:200    1st Qu.:2.308e-10  
-                                    [256, 1, 1]:200    Median :3.568e-10  
-                                    [32, 1, 1] :200    Mean   :4.410e-10  
-                                    [32, 2, 1] :200    3rd Qu.:5.040e-10  
-                                    [32, 4, 1] :200    Max.   :2.420e-09  
-                                    (Other)    :800
-      #+end_example
-
-      - Want to keep the point of the D-optimal but it seems it is not
-        the correct way to day it...
-      #+begin_src R :results output :session :exports both
-               df[ x_component_number == 2^Design.1.Dopt$log_x_component_number & 
-                   y_component_number == Design.1.Dopt$y_component_number & 
-                   vector_length == 2^Design.1.Dopt$log_vector_length &
-                   vector_recompute == as.logical(Design.1.Dopt$vector_recompute) &
-                   load_overlap == as.logical(Design.1.Dopt$load_overlap) &
-                   temporary_size == 2^Design.1.Dopt$log_temporary_size &
-                   as.numeric(local_work_size) == Design.1.Dopt$local_work_size_index, ]
-
-
-        # "x_component_number","y_component_number","log_vector_length","vector_recompute","load_overlap","local_work_size_index","log_temporary_size" 
       #+end_src
 
       #+RESULTS:
-      : [1] x_component_number vector_length      y_component_number temporary_size    
-      : [5] vector_recompute   load_overlap       local_work_size    time_per_pixel    
-      : <0 lignes> (ou 'row.names' de longueur nulle)
+
+     - With our generated experiment planning we extract the
+       corresponding values from the experiment measurements and
+       check if we have enough informations
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          attach(df)
+
+          set <- data.frame()
+          for(i in 1:nrow(Design.1.Dopt)){
+              set <- rbind(set, df[ x_component_number == 2^Design.1.Dopt$log_x_component_number[i]
+                                   & y_component_number == Design.1.Dopt$y_component_number[i]
+                                   & vector_length == 2^Design.1.Dopt$log_vector_length[i]
+                                   & temporary_size == 2^Design.1.Dopt$log_temporary_size[i] 
+                                   & as.numeric(local_work_size) == Design.1.Dopt$local_work_size_index[i], ])
 
 
+          }
+
+          summary(lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length))  # + local_work_size + temporary_size
+        #+end_src
+       
+        #+RESULTS:
+        #+begin_example
+        The following objects are masked from df (pos = 3):
+
+            load_overlap, local_work_size, temporary_size, time_per_pixel,
+            vector_length, vector_recompute, x_component_number,
+            y_component_number
+
+        The following objects are masked from df (pos = 4):
+
+            load_overlap, local_work_size, temporary_size, time_per_pixel,
+            vector_length, vector_recompute, x_component_number,
+            y_component_number
+
+        The following objects are masked from df (pos = 5):
+
+            load_overlap, local_work_size, temporary_size, time_per_pixel,
+            vector_length, vector_recompute, x_component_number,
+            y_component_number
+
+        Call:
+        lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+            vector_length, data = set)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -2.158e-10 -1.168e-10 -2.070e-11  5.365e-11  4.135e-10 
+
+        Coefficients:
+                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)         3.911e-10  6.803e-11   5.748 1.51e-06 ***
+        x_component_number  8.025e-13  4.031e-12   0.199 0.843301    
+        y_component_number -6.630e-11  1.810e-11  -3.662 0.000797 ***
+        vector_length       2.632e-11  3.947e-12   6.668 8.97e-08 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 1.51e-10 on 36 degrees of freedom
+        Multiple R-squared:  0.6021,	Adjusted R-squared:  0.5689 
+        F-statistic: 18.16 on 3 and 36 DF,  p-value: 2.412e-07
+#+end_example
+
+    - How does it compare to a random sample?
+        Some times it can find the impact of the x_component_number but
+        it is rare and generally the R-squared is worse
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          random_sample <- df[sample(1:length(df$x_component_number),size = 80,replace = FALSE),]
+          summary(lm(data=random_sample, time_per_pixel ~ x_component_number + y_component_number + vector_length))  # + local_work_size + temporary_size
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+            vector_length, data = random_sample)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -2.910e-10 -1.257e-10 -3.724e-11  7.628e-11  6.801e-10 
+
+        Coefficients:
+                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)         4.821e-10  6.474e-11   7.446 1.26e-10 ***
+        x_component_number -1.271e-12  3.893e-12  -0.327    0.745    
+        y_component_number -1.041e-10  1.939e-11  -5.367 8.38e-07 ***
+        vector_length       3.436e-11  4.250e-12   8.083 7.62e-12 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 1.824e-10 on 76 degrees of freedom
+        Multiple R-squared:  0.5616,	Adjusted R-squared:  0.5443 
+        F-statistic: 32.46 on 3 and 76 DF,  p-value: 1.306e-13
+        #+end_example
+
+    - How does it compare to LHS?
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+          Design.2 <- lhs.design( type= "maximin" , nruns= 80 ,nfactors= 5 ,digits= NULL ,seed=20049 , factor.names=list(log_x_component_number=c(1,4), y_component_number=c(1,4),
+                                                                                                                         log_vector_length=c(1,4), local_work_size_index=c(1,10),
+                                                                                                                         log_temporary_size=c(1,2) ) )
+          Design.2.rounded <- round(Design.2)
+
+          lhs_sample <- data.frame()
+          for(i in 1:nrow(Design.2.rounded)){
+              lhs_sample <- rbind(lhs_sample, df[ x_component_number == 2^Design.2.rounded$log_x_component_number[i]
+                                   & y_component_number == Design.2.rounded$y_component_number[i]
+                                   & vector_length == 2^Design.2.rounded$log_vector_length[i]
+                                   & temporary_size == 2^Design.2.rounded$log_temporary_size[i] 
+                                   & as.numeric(local_work_size) == Design.2.rounded$local_work_size_index[i], ])
+
+
+          }
+
+          summary(lm(data=lhs_sample, time_per_pixel ~ x_component_number + y_component_number + vector_length))
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+            vector_length, data = lhs_sample)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -1.327e-10 -8.527e-11 -2.187e-11  4.876e-11  5.156e-10 
+
+        Coefficients:
+                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)         4.166e-10  4.582e-11   9.092 8.90e-14 ***
+        x_component_number -8.715e-13  3.047e-12  -0.286    0.776    
+        y_component_number -8.671e-11  1.420e-11  -6.108 3.98e-08 ***
+        vector_length       1.983e-11  2.956e-12   6.710 3.08e-09 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 1.219e-10 on 76 degrees of freedom
+        Multiple R-squared:  0.5237,	Adjusted R-squared:  0.5049 
+        F-statistic: 27.85 on 3 and 76 DF,  p-value: 2.956e-12
+        #+end_example
 
