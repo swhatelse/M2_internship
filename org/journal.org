@@ -689,10 +689,11 @@ Entered on [2015-11-19 jeu. 20:56]
 
      - Which more formally would look like this:
        min(avg_k(min_j(t_i))) 
-       i \in {0..3} 
-       j \in {768x432,2560x1600,2048x2048,5760x3240,7680x4320} which is
-       the sizes of images
-       k \in X which is the set of configuration.
+       let:
+       - t be an image
+       - i \in {0..3} is the number of try
+       - j \in {768x432,2560x1600,2048x2048,5760x3240,7680x4320} be the sizes of images
+       - k \in X which is the set of configuration.
 
        Here are the best configurations found:
      - Adonis-5 15:32:21
@@ -2619,6 +2620,8 @@ Entered on [2015-11-19 jeu. 20:56]
        ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
       #+end_src
 
+      #+RESULTS:
+
       #+begin_src R :results output :session :exports both
         library(DoE.base)
         library(DoE.wrapper)
@@ -2636,11 +2639,11 @@ Entered on [2015-11-19 jeu. 20:56]
         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
         set <- data.frame()
         for(i in 1:nrow(Design.1.Dopt)){
-            set <- rbind(set, df[ x_component_number == 2^Design.1.Dopt$log_x_component_number[i]
-                                 & y_component_number == Design.1.Dopt$y_component_number[i]
-                                 & vector_length == 2^Design.1.Dopt$log_vector_length[i]
-                                 & temporary_size == 2^Design.1.Dopt$log_temporary_size[i] 
-                                 & as.numeric(local_work_size) == Design.1.Dopt$local_work_size_index[i], ])
+            set <- rbind(set, df[ df$x_component_number == 2^Design.1.Dopt$log_x_component_number[i]
+                                 & df$y_component_number == Design.1.Dopt$y_component_number[i]
+                                 & df$vector_length == 2^Design.1.Dopt$log_vector_length[i]
+                                 & df$temporary_size == 2^Design.1.Dopt$log_temporary_size[i] 
+                                 & as.numeric(df$local_work_size) == Design.1.Dopt$local_work_size_index[i], ])
 
 
         }
@@ -2745,9 +2748,21 @@ Entered on [2015-11-19 jeu. 20:56]
       #+RESULTS:
       [[file:img/20160311/pilipili2/pilipili2_OptD_set.png]]
 
+      #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_OptD_model.png :exports both :width 800 :height 600 :session
+        model <- lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length + x_component_number:vector_length)  # + local_work_size + temporary_size
+        default <- par()
+        par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+        plot(model)
+        par(default)
+      #+end_src
+
+      #+RESULTS:
+      [[file:img/20160311/pilipili2/pilipili2_OptD_model.png]]
+
     - How does it compare to a random sample?
         Some times it can find the impact of the x_component_number but
-        it is rare and generally the R-squared is worse
+        it is rare and generally the R-squared is worse than the
+        D-Opitmal set
         #+begin_src R :results output :session :exports both
           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
           random_sample <- df[sample(1:length(df$x_component_number),size = 40,replace = FALSE),]
