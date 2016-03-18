@@ -3,11 +3,12 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s)
 
-* TODO [0/2]
+* TODO [1/3]
   - [ ] Run brute force with load_overlap = [true,false],
     vector_recompute = [true,false] and different combination of
     local_work_size
-  - [ ] Try D-Optimal design if we can get enough information
+  - [X] Try D-Optimal design if we can get enough information
+  - [ ] Add checkpointing mechanism
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -2632,7 +2633,7 @@ Entered on [2015-11-19 jeu. 20:56]
         # plot( Design.1 , select = c( "log_x_component_number","y_component_number",
         #                             "log_vector_length","local_work_size_index",
         #                             "log_temporary_size" ))
-        Design.1.rounded <- round(Design.1)
+        Design.1.rounded <- round(Design.1) # Ideally we would like to express factor(local_work_size_index) but the Dopt.design does not know how to handle it
         Design.1.Dopt <- Dopt.design( 60 , data= Design.1.rounded , formula= 
                                                               "~(log_x_component_number  + y_component_number  + log_vector_length  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
 
@@ -2655,6 +2656,24 @@ Entered on [2015-11-19 jeu. 20:56]
 
       #+RESULTS:
       #+begin_example
+      Le chargement a nécessité le package : grid
+      Le chargement a nécessité le package : conf.design
+
+      Attachement du package : ‘DoE.base’
+
+      The following objects are masked from ‘package:stats’:
+
+          aov, lm
+
+      The following object is masked from ‘package:graphics’:
+
+          plot.design
+
+      The following object is masked from ‘package:base’:
+
+          lengths
+      Le chargement a nécessité le package : FrF2
+      Le chargement a nécessité le package : rsm
 
       Call:
       lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
