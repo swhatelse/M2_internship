@@ -3,12 +3,12 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s)
 
-* TODO [1/3]
+* TODO [2/3]
   - [ ] Run brute force with load_overlap = [true,false],
     vector_recompute = [true,false] and different combination of
     local_work_size
   - [X] Try D-Optimal design if we can get enough information
-  - [ ] Add checkpointing mechanism
+  - [X] Add checkpointing mechanism
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -1429,6 +1429,9 @@ Entered on [2015-11-19 jeu. 20:56]
         local_work_size.       
       - It seems that for the K40 GPU I can not have more than 256
         work item per work-group.
+        In fact I'm only limited by the size of the work group but
+        also by the number of element that can be load for a work
+        group.
 *** Bruteforce on pilipili2
 **** Results
      - [[file:data/2016_03_11/pilipili2/19_13_54/Info19_13_54.org][Conditions of experiment]]
@@ -2979,3 +2982,39 @@ Entered on [2015-11-19 jeu. 20:56]
         F-statistic: 27.22 on 4 and 55 DF,  p-value: 1.758e-12
         #+end_example
 
+** 2016-03-21
+*** Study of Nvidia architecture and programming model
+**** General architecture
+   - Contains several SMX with a global L2 memory:
+      [[file:img/nvidia/nvidia_gk110.jpg]]
+   - SMX: corresponds to OpenCL compute unit
+     Compute a thread block. The register file is the set of registers
+     that is shared by the threads in the SMX. In a SMX more than one
+     threads block can be executed concurrently thus they have to
+     share the ressources (registers, local memory and compute units).
+     Characteristics:
+     - Max Warps 64
+     - Max threads 2048
+     - Max thread blocks 16
+     - Number of 32-bits registers
+     - Shared memory 48K
+     
+     [[file:img/nvidia/smx.png]]
+**** Programming a GPU
+   - Thread block are split into warps (group of 32 threads) a nd
+     schedule on SMX. SMX can execute mulitples block at once.
+   - Notes: CUDA is scalar architecture. Vectorization does not brings
+     anything?
+   - Cuda <-> OpenCL
+     - SMX = compute unit
+     - CUDA thread = work item
+     - Thread-block = work group
+     - Grid = NDRange
+   - Number of register for a thread-block = ceil(number of register
+     for the kernel x ceil(Number of thread per block,32), Number of
+     register max per SMX / 32 )
+*** Changing the search space
+    The max local work size I can use on the pilipili2 platform for
+    the K40 GPU is 1024 and I can increase the number of components up to 48.
+    
+    
