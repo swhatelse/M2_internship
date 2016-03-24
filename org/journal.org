@@ -2993,7 +2993,7 @@ Entered on [2015-11-19 jeu. 20:56]
      to communicated between each others. In a SMX more than one
      threads block can be executed concurrently thus they have to
      share the ressources (registers, local memory and compute units). 
-     - Characteristics:
+     - Characteristics of K40:
        - Max Warps 64
        - Max threads 2048
        - Max thread blocks 16
@@ -3011,7 +3011,7 @@ Entered on [2015-11-19 jeu. 20:56]
        | Grid         | NDRange      |
      - Thread-blocks
        - Group of threads
-       - Executed on one SMX
+       - 1 block is executed on one SMX
          It can not be executed on more than one SMX because the size
          of a block is limited by the number of threads and the number
          of memory ressources that are less than an SMX. But an SMX
@@ -3031,8 +3031,8 @@ Entered on [2015-11-19 jeu. 20:56]
        - keep busy the GPU as much as possible by maximizing the
          number of active threads. That means spliting correctly the
          work. A block represents how the work is distributed among
-         the SMX. The size of a block is limited a maximal number of
-         threads and the quantity of memory available on a SMX.
+         the SMX. The size of a block is limited by a maximal number
+         of threads and the quantity of memory available on a SMX.
          To have the maximum number of active threads the quantity of
          memory they use has to be small enough otherwise the
          occupancy will dicrease.
