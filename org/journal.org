@@ -3025,6 +3025,7 @@ Entered on [2015-11-19 jeu. 20:56]
        - group of 32 threads
        - Unit of scheduling, 32 threads are scheduled at a time.
        - Thread blocks are splitted into warps.
+     - Local NDRange determine how the threads are schedule? 
 **** Programming a GPU
      - Maximize performance 
        - keep busy the GPU as much as possible by maximizing the
@@ -3044,8 +3045,17 @@ Entered on [2015-11-19 jeu. 20:56]
        ceil(number of register for the kernel x ceil(Number of thread
        per block,32), Number of register max per SMX / 32 )
 **** Optimizing
+     - Bigger thread-blocks \to more efficient data sharing
+       but if not enough thread blocks \to SMX idle.
+     - Wrapping together threads that have coherent execution
+       avoid branch divergence
      - The size of thread-blocks
      - The quantity of data need per block/thread
+     - Grouping memory access
+     - The occupancy of a SMX depends on:
+       - The number of threads per threads-block
+       - The number of registers need per thread
+       - The quantity of shared memory used by the thread-block
 *** Changing the search space
     The max local work size I can use on the pilipili2 platform for
     the K40 GPU is 1024 and I can increase the number of components up to 48.
