@@ -2988,31 +2988,64 @@ Entered on [2015-11-19 jeu. 20:56]
    - Contains several SMX with a global L2 memory:
       [[file:img/nvidia/nvidia_gk110.jpg]]
    - SMX: corresponds to OpenCL compute unit
-     Compute a thread block. The register file is the set of registers
-     that is shared by the threads in the SMX. In a SMX more than one
+     The register file is the set of registers that is shared by the
+     threads in the SMX. There is a shared memory that allows threads
+     to communicated between each others. In a SMX more than one
      threads block can be executed concurrently thus they have to
-     share the ressources (registers, local memory and compute units).
-     Characteristics:
-     - Max Warps 64
-     - Max threads 2048
-     - Max thread blocks 16
-     - Number of 32-bits registers
-     - Shared memory 48K
-     
-     [[file:img/nvidia/smx.png]]
-**** Programming a GPU
-   - Thread block are split into warps (group of 32 threads) a nd
-     schedule on SMX. SMX can execute mulitples block at once.
+     share the ressources (registers, local memory and compute units). 
+     - Characteristics:
+       - Max Warps 64
+       - Max threads 2048
+       - Max thread blocks 16
+       - Number of 32-bits registers
+       - Shared memory 48K
    - Notes: CUDA is scalar architecture. Vectorization does not brings
      anything?
-   - Cuda <-> OpenCL
-     - SMX = compute unit
-     - CUDA thread = work item
-     - Thread-block = work group
-     - Grid = NDRange
-   - Number of register for a thread-block = ceil(number of register
-     for the kernel x ceil(Number of thread per block,32), Number of
-     register max per SMX / 32 )
+
+     [[file:img/nvidia/smx.png]]
+**** How does it works
+     - Terminology Cuda <-> OpenCL
+       | CUDA         | OpenCL       |
+       | SMX          | Compute Unit |
+       | Thread-block | Work Group   |
+       | Grid         | NDRange      |
+     - Thread-blocks
+       - Group of threads
+       - Executed on one SMX
+         It can not be executed on more than one SMX because the size
+         of a block is limited by the number of threads and the number
+         of memory ressources that are less than an SMX. But an SMX
+         can execute many block at a time.
+       - The program is splitted into thread-blocks that are dispatched
+         on SMX.
+       - In a thread-block threads can communicate and synchronized
+         between them.
+       - Each thread-block are independent from each others.
+     - Warps 
+       - group of 32 threads
+       - Unit of scheduling, 32 threads are scheduled at a time.
+       - Thread blocks are splitted into warps.
+**** Programming a GPU
+     - Maximize performance 
+       - keep busy the GPU as much as possible by maximizing the
+         number of active threads. That means spliting correctly the
+         work. A block represents how the work is distributed among
+         the SMX. The size of a block is limited a maximal number of
+         threads and the quantity of memory available on a SMX.
+         To have the maximum number of active threads the quantity of
+         memory they use has to be small enough otherwise the
+         occupancy will dicrease.
+       - Reduce memory access
+         - access pattern
+         - locality
+     - Number of register for a thread-block = the number of register
+       used by the kernel * the number of thread in the block.
+       More precisely: 
+       ceil(number of register for the kernel x ceil(Number of thread
+       per block,32), Number of register max per SMX / 32 )
+**** Optimizing
+     - The size of thread-blocks
+     - The quantity of data need per block/thread
 *** Changing the search space
     The max local work size I can use on the pilipili2 platform for
     the K40 GPU is 1024 and I can increase the number of components up to 48.
