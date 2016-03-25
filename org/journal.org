@@ -2994,11 +2994,11 @@ Entered on [2015-11-19 jeu. 20:56]
      threads block can be executed concurrently thus they have to
      share the ressources (registers, local memory and compute units). 
      - Characteristics of K40:
-       - Max Warps 64
-       - Max threads 2048
-       - Max thread blocks 16
-       - Number of 32-bits registers
-       - Shared memory 48K
+       - Max Warps: 64
+       - Max threads: 2048
+       - Max thread blocks: 16
+       - Number of 32-bits registers: 65536
+       - Shared memory: 48K
    - Notes: CUDA is scalar architecture. Vectorization does not brings
      anything?
 
@@ -3009,6 +3009,7 @@ Entered on [2015-11-19 jeu. 20:56]
        | SMX          | Compute Unit |
        | Thread-block | Work Group   |
        | Grid         | NDRange      |
+       | Warps        | Wave-front   |
      - Thread-blocks
        - Group of threads
        - 1 block is executed on one SMX
@@ -3056,8 +3057,41 @@ Entered on [2015-11-19 jeu. 20:56]
        - The number of threads per threads-block
        - The number of registers need per thread
        - The quantity of shared memory used by the thread-block
-*** Changing the search space
-    The max local work size I can use on the pilipili2 platform for
-    the K40 GPU is 1024 and I can increase the number of components up to 48.
+     - Maximizing occupancy doesn't necessary bring maximum
+       performances.
+
+*** Thinking about the search space
+    - Pilipili2 platform :
+      with the limit of 1024 threads the maximum number of component
+      is 48.
+    - Finding the right distribution of the work
+      - In how many pieces shall we split the work?
+        - How many threads do we need? = What size of the work of a
+          thread?
+          number of threads = number of pieces = image_size /
+          (x_component_number * y_component_number) 
+        - How the threads are grouped?
+          - Finding the right size of the block \to enough block to
+            avoid idle SMX. Big enough to have a more efficient data
+            sharing.         
+          - Block size are restricted by the maximal node of threads
+            per block which is 1024 in the case of the K40 and by the
+            quantity memory ressources of an SMX.
+            The maximum number of threads per SMX can be reached if
+            each threads uses less than 32 32bits-registers.
+            Threads using 48 registers with a block size of 1024 we
+            would have only one block per SMX at a time. But we 32
+            registers per threads we would have 2 block at a time.
+      - Few threads using lots of registers or lots of threads using
+        few registers?
+        Trade of between the number of component processed by a thread
+        and the number of threads \to maximizing occupancy or not
+      - Size and number of blocks
+        Maximizing the number of SMX used or maximizing occupancy of
+        an SMX.
+      - Shape of the blocks
+    - Finding the right amount of work per-threads
+      It is determined by the quantity of component the thread has to
+      process which is give by x_component_number x y_component_number
     
     
