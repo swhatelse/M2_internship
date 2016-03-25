@@ -3094,4 +3094,7 @@ Entered on [2015-11-19 jeu. 20:56]
       It is determined by the quantity of component the thread has to
       process which is give by x_component_number x y_component_number
     
-    
+    - What do we want to describe?
+    - What is the best formulation of the search?
+      - x_comp * y_comp and lws_x * lws_y
+      - nb_comp / x_comp and nb_thread / lws_x
