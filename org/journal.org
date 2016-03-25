@@ -3058,6 +3058,8 @@ Entered on [2015-11-19 jeu. 20:56]
        - The quantity of shared memory used by the thread-block
 *** Changing the search space
     The max local work size I can use on the pilipili2 platform for
-    the K40 GPU is 1024 and I can increase the number of components up to 48.
+    the K40 GPU is 1024 and I can increase the number of components up
+    to 48.
+    
     
     
