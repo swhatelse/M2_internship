@@ -3,12 +3,16 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s)
 
-* TODO [2/3]
+* TODO [3/7]
   - [ ] Run brute force with load_overlap = [true,false],
     vector_recompute = [true,false] and different combination of
     local_work_size
   - [X] Try D-Optimal design if we can get enough information
   - [X] Add checkpointing mechanism
+  - [X] Add Constraint mechanism
+  - [ ] Try to correctly tuned the Genetic algo
+  - [ ] Express the search in two different ways
+  - [ ] Find how many points do we need for the D-Optimal
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -3063,7 +3067,7 @@ Entered on [2015-11-19 jeu. 20:56]
 *** Thinking about the search space
     - Pilipili2 platform :
       with the limit of 1024 threads the maximum number of component
-      is 48.
+      is 53.
     - Finding the right distribution of the work
       - In how many pieces shall we split the work?
         - How many threads do we need? = What size of the work of a
@@ -3098,3 +3102,655 @@ Entered on [2015-11-19 jeu. 20:56]
     - What is the best formulation of the search?
       - x_comp * y_comp and lws_x * lws_y
       - nb_comp / x_comp and nb_thread / lws_x
+**** Adding rules
+     Added constraint mechanism to the OptimzationSpace. Constraint
+     can be expressed by the mean of set of rules which simple boolean
+     expressions 
+** 2016-03-30
+*** R explanations
+    - What is exactly the t value?
+      Does it compare the population means to the mean of the model?
+      How do we interpret it?
+      Does it have to be the closer that zero as possible?
+*** Genetic Algo  
+    - Generation limit 6, population size 10
+       #+begin_src sh :results output :exports both
+         DATE=`date +%Y_%m_%d`
+         HOUR=`date +%H_%M_%S`
+         mkdir -p data/$DATE
+         mkdir -p data/$DATE/pilipili2/
+         mkdir -p data/$DATE/pilipili2/$HOUR
+         for i in `seq 1 100`; do
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml -r data/$DATE/pilipili2/$HOUR/Gen.yaml
+         done
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       2.0395561797940489e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.386640103650782e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2829227608170006e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.6065195978784932e-10
+       56
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       59
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       56
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.4651616091154568e-10
+       77
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       82
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.5126163282188272e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.5836338267983517e-10
+       82
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.7751437060682563e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       2.0642969462798655e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.5012345785385922e-10
+       67
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.257773801503952e-10
+       73
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.578352009085073e-10
+       65
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.575261193496042e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5779168866016592e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.49649628722573e-10
+       80
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       2.1326553446355615e-10
+       65
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.5578905005894488e-10
+       60
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.26451863659571e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.590561740096958e-10
+       64
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.575261193496042e-10
+       69
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.2792532564187264e-10
+       61
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.592122967721286e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 2, 1]}
+       1.5950281221489474e-10
+       58
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>2, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       2.0908523222858496e-10
+       86
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.6036169613743593e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.5921544538144275e-10
+       70
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.547677150425057e-10
+       77
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.5578905005894488e-10
+       72
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 2, 1]}
+       1.7548989072015348e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>4, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.6347924392063966e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.3675932183855746e-10
+       71
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.590561740096958e-10
+       72
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.2640506753627206e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.5901888227910537e-10
+       64
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.5836338267983517e-10
+       60
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5779168866016592e-10
+       67
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 1, 1]}
+       1.9101854861440305e-10
+       75
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.2778089021568624e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.2875093575170066e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.592122967721286e-10
+       89
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.3691527116178554e-10
+       88
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.3675932183855746e-10
+       75
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.3675932183855746e-10
+       72
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.4985909684911903e-10
+       64
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.5974870072656843e-10
+       82
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.5935495827052707e-10
+       74
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.607395525733797e-10
+       67
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.3691527116178554e-10
+       63
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>8, :y_component_number=>2, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       2.621397690949779e-10
+       68
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>4, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       2.0564823945729724e-10
+       65
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.4817793636426216e-10
+       56
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.4815754215803011e-10
+       56
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.6036169613743593e-10
+       75
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>4, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       2.0294981249101428e-10
+       72
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>8, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       2.214744585322556e-10
+       71
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.6107789005500414e-10
+       58
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 2, 1]}
+       1.5946349843734293e-10
+       82
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5271361682808377e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>2, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 2, 1]}
+       2.6234927924119923e-10
+       76
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>4, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.7511588913561927e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.57919893896012e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.6356704264910098e-10
+       80
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.2875093575170066e-10
+       65
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.5877653861513516e-10
+       56
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.5827833170411175e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 2, 1]}
+       1.8895472378649059e-10
+       63
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>2, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 1, 1]}
+       2.356149588346123e-10
+       61
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>2, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.575261193496042e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.6429236743346444e-10
+       78
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 2, 1]}
+       1.5020474850241375e-10
+       56
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.3979191045644557e-10
+       65
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       2.0632542527372036e-10
+       76
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.49649628722573e-10
+       70
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 4, 1]}
+       1.2792532564187264e-10
+       75
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>4, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.7511588913561927e-10
+       56
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.3691527116178554e-10
+       57
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 2, 1]}
+       1.6693137507068782e-10
+       79
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.3926561402808184e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 8, 1]}
+       1.5012345785385922e-10
+       59
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.5966520530934737e-10
+       62
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.578352009085073e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.5582289103262858e-10
+       80
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>3, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.7540887976059921e-10
+       74
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.2962572950269056e-10
+       75
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 1, 1]}
+       1.5779168866016592e-10
+       61
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>4, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       2.8900097603139324e-10
+       83
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[64, 2, 1]}
+       1.4799300946579003e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>8, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       2.0623395915723989e-10
+       58
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.4872307664444858e-10
+       75
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>2, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[256, 1, 1]}
+       1.6356704264910098e-10
+       82
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.590561740096958e-10
+       90
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.737334985611548e-10
+       80
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>2, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.5177561489363142e-10
+       66
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>4, :vector_length=>1, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 1, 1]}
+       1.737334985611548e-10
+       73
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>8, :vector_length=>2, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       2.0632542527372036e-10
+       64
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[128, 2, 1]}
+       1.2466509034021744e-10
+       2000
+       {:x_component_number=>1, :vector_length=>1, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :local_work_size=>[32, 4, 1]}
+       1.2875093575170066e-10
+       80
+#+end_example
+
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_30/pilipili2/18_16_33/Gen.yaml 
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+         attach(df)
+         default <- par()
+         count <- table(df$time_per_pixel)
+         par(mar=c(11.1,5.1,2.1,2.1))
+         barplot(count, xlab="time_per_pixel", ylab="frequency", space=1, las=2)
+         par(default)
+       #+end_src
+
+       #+RESULTS:
+       : Warning messages:
+       : 1: In par(default) : le paramètre graphique "cin" ne peut être changé
+       : 2: In par(default) : le paramètre graphique "cra" ne peut être changé
+       : 3: In par(default) : le paramètre graphique "csi" ne peut être changé
+       : 4: In par(default) : le paramètre graphique "cxy" ne peut être changé
+       : 5: In par(default) : le paramètre graphique "din" ne peut être changé
+       : 6: In par(default) : le paramètre graphique "page" ne peut être changé
+
