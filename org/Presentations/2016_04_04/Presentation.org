@@ -5,7 +5,7 @@
 #+STARTUP: indent
 #+TAGS: noexport(n)
 
-#+Title: 
+#+Title: Optimization by modelization and experiment design
 #+AUTHOR:      Steven QUINITO MASNADA
 
 #+EPRESENT_FRAME_LEVEL: 2
@@ -84,9 +84,14 @@
 \end{figure}
 #+END_LaTeX
 **** Notes :noexport:
-This gives us a region to search and no complicated technics is necessary
-* 
-** Complexify the search space
+- This gives us a region to search and no complicated technics is
+  necessary
+*** A simple approach : Linear model 
+- Global optimum :
+- A simple linear regression with a very simple model allowed us to
+  find the structure of the search space \to how does it scales?
+* Optimizing ~ experimenting
+** Enriched the search space
 *** New search space
 - Local work size : [32,1], [32,2], [32,4], [32,8], [64,1] ..., [256,1] 
 - Max 256 threads per work groups
@@ -113,7 +118,8 @@ How many points do we need?
 ** BOAST modifications
 # Maybe in the section work in progress
 *** Constraints
-* 
+*** Checkpointing
+* Conclusion and future work
 *** Working with bigger problem
 # - Quantification if the warmup problem \to gpu performance mode to start
 - Very long \to 1 week for the brute force
@@ -122,4 +128,4 @@ How many points do we need?
 - How does the search look like?
 - D-Optimal still ok?
 *** Thinner observations
-* Summary
+
