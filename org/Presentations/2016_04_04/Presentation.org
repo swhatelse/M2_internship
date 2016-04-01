@@ -1,0 +1,131 @@
+# -*- coding: utf-8 -*-
+# -*- mode: org -*-
+#+startup: beamer
+#+STARTUP: overview
+#+STARTUP: indent
+#+TAGS: noexport(n)
+
+#+Title: Optimization by modelization and experiment design
+#+AUTHOR:      Steven QUINITO MASNADA
+
+#+EPRESENT_FRAME_LEVEL: 2
+
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [11pt,xcolor=dvipsnames,presentation]
+#+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+
+#+LATEX_HEADER: \usedescriptionitemofwidthas{bl}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage[utf8]{inputenc}
+#+LATEX_HEADER: \usepackage[american]{babel}
+#+LATEX_HEADER: \usepackage{ifthen,figlatex,amsmath,amstext,gensymb,amssymb}
+#+LATEX_HEADER: \usepackage{boxedminipage,xspace,multicol}
+#+LATEX_HEADER: %%%%%%%%% Begin of Beamer Layout %%%%%%%%%%%%%
+#+LATEX_HEADER: \ProcessOptionsBeamer
+#+latex_header: \mode<beamer>{\usetheme{Madrid}}
+#+LATEX_HEADER: \usecolortheme{whale}
+#+LATEX_HEADER: \usecolortheme[named=BrickRed]{structure}
+# #+LATEX_HEADER: \useinnertheme{rounded}
+#+LATEX_HEADER: \useoutertheme{infolines}
+#+LATEX_HEADER: \setbeamertemplate{footline}[frame number]
+#+LATEX_HEADER: \setbeamertemplate{headline}[default]
+#+LATEX_HEADER: \setbeamertemplate{navigation symbols}{}
+#+LATEX_HEADER: \defbeamertemplate*{headline}{info theme}{}
+#+LATEX_HEADER: \defbeamertemplate*{footline}{info theme}{\leavevmode%
+#+LATEX_HEADER:   \hbox{%
+#+LATEX_HEADER:     \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+#+LATEX_HEADER:       \usebeamerfont{author in head/foot}\insertshortauthor
+#+LATEX_HEADER:     \end{beamercolorbox}%
+#+LATEX_HEADER:   \begin{beamercolorbox}[wd=.41\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+#+LATEX_HEADER:     \usebeamerfont{title in head/foot}\insertsectionhead
+#+LATEX_HEADER:   \end{beamercolorbox}%
+#+LATEX_HEADER:   \begin{beamercolorbox}[wd=.09\paperwidth,ht=2.25ex,dp=1ex,right]{section in head/foot}%
+#+LATEX_HEADER:     \usebeamerfont{section in head/foot}\insertframenumber{}~/~\inserttotalframenumber\hspace*{2ex} 
+#+LATEX_HEADER:   \end{beamercolorbox}
+#+LATEX_HEADER:   }\vskip0pt}
+#+LATEX_HEADER: \setbeamertemplate{footline}[info theme]
+#+LATEX_HEADER: %%%%%%%%% End of Beamer Layout %%%%%%%%%%%%%
+#+LATEX_HEADER: \usepackage{verbments}
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LATEX_HEADER: \usepackage{color}
+#+LATEX_HEADER: \usepackage{url} \urlstyle{sf}
+
+#+LATEX_HEADER: \let\alert=\structure % to make sure the org * * works of tools
+#+BEAMER_FRAME_LEVEL: 2
+
+#+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
+
+#+LATEX_HEADER: %\usepackage{biblatex}
+# #+LATEX_HEADER: \bibliography{../../biblio.bib}
+# #+LATEX_HEADER: \usepackage{cite}
+
+* Quick reminder
+*** Laplacian
+- Parameters:
+  - x_component_number [1,2,4,8,16]
+  - vector_length [1,2,4,8,16]
+  - y_component_number [1,2,3,4]
+  - temporary_size [2,4]
+  - vector_recompute [true,false]
+  - load_overlap [true,false]
+- 800 combinations
+- OpenCL Nvidia implementation
+
+*** Structured problem
+- Found what are the parameters that have an impact
+- Hierarchy of parameters:
+  - x_component_number \downarrow y_component_number \uparrow vector_recompute \uparrow vector_length \downarrow
+
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.3]{../../img/ordered_1.png}
+\end{figure}
+#+END_LaTeX
+**** Notes :noexport:
+- This gives us a region to search and no complicated technics is
+  necessary
+*** A simple approach : Linear model 
+- Global optimum :
+- A simple linear regression with a very simple model allowed us to
+  find the structure of the search space \to how does it scales?
+* Optimizing ~ experimenting
+** Enriched the search space
+*** New search space
+- Local work size : [32,1], [32,2], [32,4], [32,8], [64,1] ..., [256,1] 
+- Max 256 threads per work groups
+- 2000 combinations
+*** Bigger but not more complicated
+- Vector_recompute and load_overlap : true
+- Simple linear regression to extract information of the problem
+** Extracting the informations without bruteforcing 
+*** Genetic Algorithm
+- Not tune for this size of problem
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.3]{../../img/20160311/pilipili2/pilipili2_gen_100.png}
+\end{figure}
+#+END_LaTeX
+
+*** Optimal Design
+How many points do we need?
+
+*** Genetic Algorithm again
+
+** BOAST modifications
+# Maybe in the section work in progress
+*** Constraints
+*** Checkpointing
+* Conclusion and future work
+*** Working with bigger problem
+# - Quantification if the warmup problem \to gpu performance mode to start
+- Very long \to 1 week for the brute force
+*** 1 problem many formulations
+- Finer grained formulation vs "naïve"
+- How does the search look like?
+- D-Optimal still ok?
+*** Thinner observations
+
