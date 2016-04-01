@@ -3,7 +3,7 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s)
 
-* TODO [3/7]
+* TODO [3/8]
   - [ ] Run brute force with load_overlap = [true,false],
     vector_recompute = [true,false] and different combination of
     local_work_size
@@ -13,6 +13,7 @@
   - [ ] Try to correctly tuned the Genetic algo
   - [ ] Express the search in two different ways
   - [ ] Find how many points do we need for the D-Optimal
+  - [ ] Correct the bug of nil seed in the brute force optimizer
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -2453,7 +2454,25 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
        #+begin_example
+       The following objects are masked from df (pos = 3):
+
+           load_overlap, local_work_size, temporary_size, time_per_pixel,
+           vector_length, vector_recompute, x_component_number,
+           y_component_number
+
        The following objects are masked from df (pos = 4):
+
+           load_overlap, local_work_size, temporary_size, time_per_pixel,
+           vector_length, vector_recompute, x_component_number,
+           y_component_number
+
+       The following objects are masked from df (pos = 7):
+
+           load_overlap, local_work_size, temporary_size, time_per_pixel,
+           vector_length, vector_recompute, x_component_number,
+           y_component_number
+
+       The following objects are masked from df (pos = 8):
 
            load_overlap, local_work_size, temporary_size, time_per_pixel,
            vector_length, vector_recompute, x_component_number,
@@ -2476,16 +2495,23 @@ Entered on [2015-11-19 jeu. 20:56]
                                       (Other)    :10
 #+end_example
 
-       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_gen_100.png :exports both :width 600 :height 600 :session       
-         default <- par()
-         count <- table(df$time_per_pixel)
-         par(mar=c(11.1,5.1,2.1,2.1))
-         barplot(count, xlab="time_per_pixel", ylab="frequency", space=1, las=2)
-         par(default)
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_gen_100.png :exports both :width 700 :height 500 :session       
+         # default <- par()
+         # count <- table(df$time_per_pixel)
+         # par(mar=c(11.1,5.1,2.1,2.1))
+         # barplot(count, xlab="time_per_pixel", ylab="frequency", space=1, las=2)
+         # par(default)
+
+         ggplot(df) +
+             aes(factor(time_per_pixel)) +
+             geom_bar() +
+             ggtitle("Optimal found by the genetic algorithm on 100 runs") +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12))
        #+end_src
 
        #+RESULTS:
        [[file:img/20160311/pilipili2/pilipili2_gen_100.png]]
+
 
        On this 100 runs the global optimium is hit more 15% of the time.
 
@@ -3856,4 +3882,13 @@ Entered on [2015-11-19 jeu. 20:56]
        : 4: In par(default) : le paramètre graphique "cxy" ne peut être changé
        : 5: In par(default) : le paramètre graphique "din" ne peut être changé
        : 6: In par(default) : le paramètre graphique "page" ne peut être changé
+
+** 2016-04-01
+   - [ ] Have look at the too big residue error when vector recompute
+     is false. 
+
+
+
+
+
 
