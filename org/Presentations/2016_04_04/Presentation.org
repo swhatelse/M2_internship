@@ -90,9 +90,38 @@
 - Global optimum :
 - A simple linear regression with a very simple model allowed us to
   find the structure of the search space \to how does it scales?
+**** 
+    :PROPERTIES:
+    :BEAMER_act: <+->
+    :END:
+\scriptsize
+     #+begin_example
+     Call:
+     lm(formula = time_per_pixel ~ x_component_number + vector_length + 
+     y_component_number + vector_recompute, data = df)
+     
+     Residuals:
+       Min         1Q     Median         3Q        Max 
+     -3.494e-10 -1.409e-10 -3.041e-11  8.200e-11  1.627e-09 
+     
+     Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)           2.770e-10  2.622e-11  10.567   <2e-16 ***
+     x_component_number    1.364e-11  1.552e-12   8.785   <2e-16 ***
+     vector_length         2.308e-11  1.552e-12  14.870   <2e-16 ***
+     y_component_number   -6.680e-11  7.575e-12  -8.819   <2e-16 ***
+     vector_recomputetrue  2.162e-10  1.694e-11  12.763   <2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+     
+     Residual standard error: 2.395e-10 on 795 degrees of freedom
+     Multiple R-squared:  0.404,	Adjusted R-squared:  0.401 
+     F-statistic: 134.7 on 4 and 795 DF,  p-value: < 2.2e-16
+     #+end_example
+
 * Optimizing ~ experimenting
 ** Enriched the search space
-*** New search space
+*** Tuning the work size
 - Local work size : [32,1], [32,2], [32,4], [32,8], [64,1] ..., [256,1] 
 - Max 256 threads per work groups
 - 2000 combinations
@@ -101,7 +130,8 @@
 - Simple linear regression to extract information of the problem
 ** Extracting the informations without bruteforcing 
 *** Genetic Algorithm
-- Not tune for this size of problem
+- Population size: 20
+- Generation limit: 100
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
 \centering
@@ -111,13 +141,17 @@
 #+END_LaTeX
 
 *** Optimal Design
+- 60 / 2000 points
 How many points do we need?
 
 *** Genetic Algorithm again
 
-** BOAST modifications
-# Maybe in the section work in progress
+** Giving more clue to the search space
+* BOAST modifications
 *** Constraints
+- Avoid unfeasible points
+- Rules = set of boolean expressions
+- All rules must be respected
 *** Checkpointing
 * Conclusion and future work
 *** Working with bigger problem
@@ -127,5 +161,6 @@ How many points do we need?
 - Finer grained formulation vs "naïve"
 - How does the search look like?
 - D-Optimal still ok?
+*** Thinner models
 *** Thinner observations
-
+*** How does D-Optimal hold with discrete problems?
