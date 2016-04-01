@@ -31,6 +31,8 @@
    #+begin_src sh :results output :exports both
      OPTIMIZER_LOG_FILE=/tmp/test2.yaml OPTIMIZER_LOG=true ruby bench_optimizer.rb test_parameters.yaml test.yaml
    #+end_src
+  - Tmux
+    Detach : ctrl + b d
 * Installation
   Here the installation that download and install al the necessary tools.
 ** Base
@@ -1415,7 +1417,7 @@ Entered on [2015-11-19 jeu. 20:56]
      
      The laplacian filter is optimized according to 6 parameters:
      - x_component_number and y_component_number : split the image into
-       part on which the computational unit will work.
+       part on which a thread will work.
      - vector_length : Number of component that are vectorized
      - temporary_size : size of the temporary type
      - vector_recompute : As it is ARM code it prevent segfault on
@@ -1527,6 +1529,11 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
      #+begin_example
+     The following objects are masked from df (pos = 3):
+
+         load_overlap, local_work_size, temporary_size, time_per_pixel,
+         vector_length, vector_recompute, x_component_number,
+         y_component_number
       x_component_number vector_length  y_component_number temporary_size
       Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
       1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
@@ -1542,8 +1549,8 @@ Entered on [2015-11-19 jeu. 20:56]
                                     [32, 1, 1] :200    Mean   :4.410e-10  
                                     [32, 2, 1] :200    3rd Qu.:5.040e-10  
                                     [32, 4, 1] :200    Max.   :2.420e-09  
-                                    (Other)    :800 
-     #+end_example
+                                    (Other)    :800
+#+end_example
 
      #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_sg.png :exports both :width 800 :height 600 :session
        plot(df)
@@ -1689,6 +1696,19 @@ Entered on [2015-11-19 jeu. 20:56]
        F-statistic: 294.7 on 10 and 9 DF,  p-value: 4.455e-10
        #+end_example
 
+      #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_lws_impact_best_comb.png :exports both :width 600 :height 400 :session
+        library(ggplot2)
+        ggplot(df[df$x_component_number==1 & df$y_component_number==4 & df$vector_length==1,]) + 
+        aes(x=local_work_size, y=time_per_pixel) + 
+        scale_y_log10() + 
+        geom_boxplot() + 
+        geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of the local work size the performances")
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_lws_impact_best_comb.png]]
+
      - We can see the impact of the local_work_size: 
        #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_f_lws.png :exports both :width 800 :height 600 :session
          library(ggplot2)
@@ -1710,11 +1730,92 @@ Entered on [2015-11-19 jeu. 20:56]
              aes(x=local_work_size, y=time_per_pixel) + 
              scale_y_log10() + 
              geom_boxplot() + 
-             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2)
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+             ggtitle("Impact of the local work size the performances") +
+             theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=12))
        #+end_src
 
        #+RESULTS:
        [[file:img/20160311/pilipili2/pilipili2_bp_lws.png]]
+
+     - x component number impact:
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_x_comp_impact.png :exports both :width 600 :height 400 :session
+         library(ggplot2)
+         ggplot(df) + 
+         aes(x=factor(x_component_number), y=time_per_pixel) + 
+         scale_y_log10() + 
+         geom_boxplot() + 
+         geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+         ggtitle("Impact of the number of components on x-axis on the performances")
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_x_comp_impact.png]]
+
+     - y component number impact:
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_y_comp_impact.png :exports both :width 600 :height 400 :session
+         library(ggplot2)
+         ggplot(df) + 
+         aes(x=factor(y_component_number), y=time_per_pixel) + 
+         scale_y_log10() + 
+         geom_boxplot() + 
+         geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+         ggtitle("Impact of the number of components on y-axis on the performances")
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_y_comp_impact.png]]
+
+     - vector length impact:
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_v_len_impact.png :exports both :width 600 :height 400 :session
+         library(ggplot2)
+         ggplot(df) + 
+         aes(x=factor(vector_length), y=time_per_pixel) + 
+         scale_y_log10() + 
+         geom_boxplot() + 
+         geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+         ggtitle("Impact of size of vectors on the performances")
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_v_len_impact.png]]
+
+     - The 3 factors:
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_3_factors_impact.png :exports both :width 800 :height 500 :session
+      library(ggplot2)
+      library(gridExtra)
+
+      p1 <- qplot(factor(df$x_component_number), df$time_per_pixel) + 
+          scale_y_log10() + 
+          geom_boxplot() + 
+          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+          ggtitle("Impact of x component number") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      p2 <- qplot(factor(df$y_component_number), df$time_per_pixel) + 
+          scale_y_log10() + 
+          geom_boxplot() + 
+          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+          ggtitle("Impact of y components number") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      p3 <- qplot(factor(df$vector_length), df$time_per_pixel) + 
+          scale_y_log10() + 
+          geom_boxplot() + 
+          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+          ggtitle("Impact of of the vector length") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      grid.arrange(p1, p2, p3, ncol=3, top="") 
+     #+end_src
+
+       #+RESULTS:
+     [[file:img/20160311/pilipili2/pilipili2_3_factors_impact.png]]
+
 **** Genetic algo on brute force results
        #+begin_src sh :results output :exports both
          ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml

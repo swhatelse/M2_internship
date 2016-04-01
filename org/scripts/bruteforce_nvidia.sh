@@ -1,25 +1,25 @@
 #!/bin/bash
 
-help_script()
-{
-    cat << EOF
-    Usage: $0 options
+# help_script()
+# {
+#     cat << EOF
+#     Usage: $0 options
 
-    Script for running StarPU with benchmarking
+#     Script for running StarPU with benchmarking
 
-    OPTIONS:
-       -h      Show this message
-       -c      Specify the size of the checkpoint
-       -d      Detailed data file
-       -s      Specify a seed
-    EOF
-}
+#     OPTIONS:
+#        -h      Show this message
+#        -c      Specify the size of the checkpoint
+#        -d      Detailed data file
+#        -s      Specify a seed
+#     EOF
+# }
 
 DATA_FILE_DETAILED=""
 SEED=""
 CHECKPOINT_SIZE=""
 
-while getopts "d:h" opt; do
+while getopts "c:d:hs:" opt; do
     case $opt in
         c)
             CHECKPOINT_SIZE="$OPTARG"
@@ -28,7 +28,7 @@ while getopts "d:h" opt; do
             DATA_FILE_DETAILED="$OPTARG"
             ;;
         h)
-            help_script
+            # help_script
             exit 4
             ;;
         s)
@@ -36,7 +36,7 @@ while getopts "d:h" opt; do
             ;;
         \?)
             echo "Invalid option: -$OPTARG"
-            help_script
+            # help_script
             exit 3
             ;;
     esac
@@ -79,7 +79,7 @@ fi
 
 if [[ $CHECKPOINT_SIZE != "" ]] ;
 then
-    CMD="$CMD --chk-size $CHECKPOINT_SIZE"
+    CMD="$CMD --chksize $CHECKPOINT_SIZE"
 fi
 
 CMD="$CMD >> $INFO_FILE"
@@ -156,7 +156,7 @@ echo "#+END_EXAMPLE" >> $INFO_FILE
 ####### BOAST installation #######
 cd $BASE/boast
 gem build *.gemspec
-gem install --user-install *.gem
+gem install --user-install --no-rdoc --no-ri *.gem
 
 ######## Run experiment ########
 cd $BASE/boast-lig/ARMclbench

@@ -88,8 +88,10 @@
   necessary
 *** A simple approach : Linear model 
 - Global optimum :
-- A simple linear regression with a very simple model allowed us to
-  find the structure of the search space \to how does it scales?
+  | x_component_number | 1     | y_component_number | 4 |
+  | load_overlap       | false | vector_length      | 1 |
+  | vector_recompute   | false | temporary_size     | 4 |
+- A simple model allowed us to find the structure of the search space
 **** 
     :PROPERTIES:
     :BEAMER_act: <+->
@@ -119,15 +121,160 @@
      F-statistic: 134.7 on 4 and 795 DF,  p-value: < 2.2e-16
      #+end_example
 
-* Optimizing ~ experimenting
-** Enriched the search space
+* Digging the linear regression approach
+** Enriched search space
 *** Tuning the work size
-- Local work size : [32,1], [32,2], [32,4], [32,8], [64,1] ..., [256,1] 
+- Local work size : [32,1], [32,2], [32,4], [32,8], [64,1] ...,
+  [256,1] 
+- Vector_recompute and load_overlap : true
 - Max 256 threads per work groups
 - 2000 combinations
-*** Bigger but not more complicated
-- Vector_recompute and load_overlap : true
-- Simple linear regression to extract information of the problem
+- Global optimum:
+  - x_component_number: 1
+  - y_component_number: 4
+  - vector_length: 1
+  - temporary_size: 4
+  - load_overlap: true
+  - vector_recompute: true
+  - local_work_size [128,2]
+** Extracting informations
+*** Finding revelant parameters
+**** 
+:PROPERTIES:
+:BEAMER_act: <+->
+:END:
+\scriptsize
+#+BEGIN_EXAMPLE
+       Call:
+       lm(formula = time_per_pixel ~ x_component_number + y_component_number + 
+           vector_length + temporary_size + factor(local_work_size), 
+           data = df)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -4.124e-10 -1.586e-10 -5.260e-11  1.101e-10  1.413e-09 
+
+       Coefficients:
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                         4.817e-10  2.810e-11  17.145  < 2e-16 ***
+       x_component_number                 -1.027e-11  9.989e-13 -10.283  < 2e-16 ***
+       y_component_number                 -8.007e-11  4.874e-12 -16.428  < 2e-16 ***
+       vector_length                       3.376e-11  9.989e-13  33.801  < 2e-16 ***
+       temporary_size                     -8.882e-14  5.449e-12  -0.016  0.98700    
+       factor(local_work_size)[128, 2, 1]  1.118e-11  2.437e-11   0.459  0.64637    
+       factor(local_work_size)[256, 1, 1]  1.568e-11  2.437e-11   0.644  0.51993    
+       factor(local_work_size)[32, 1, 1]   7.581e-11  2.437e-11   3.111  0.00189 ** 
+       factor(local_work_size)[32, 2, 1]   2.476e-12  2.437e-11   0.102  0.91907    
+       factor(local_work_size)[32, 4, 1]  -2.783e-12  2.437e-11  -0.114  0.90910    
+       factor(local_work_size)[32, 8, 1]   7.394e-12  2.437e-11   0.303  0.76161    
+       factor(local_work_size)[64, 1, 1]   2.301e-11  2.437e-11   0.944  0.34508    
+       factor(local_work_size)[64, 2, 1]  -1.268e-12  2.437e-11  -0.052  0.95851    
+       factor(local_work_size)[64, 4, 1]   9.419e-12  2.437e-11   0.386  0.69917    
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 2.437e-10 on 1986 degrees of freedom
+       Multiple R-squared:  0.4359,	Adjusted R-squared:  0.4322 
+       F-statistic:   118 on 13 and 1986 DF,  p-value: < 2.2e-16
+
+#+END_EXAMPLE
+*** Finding revelant parameters
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.4]{../../img/20160311/pilipili2/pilipili2_3_factors_impact.png}
+\end{figure}
+#+END_LaTeX
+
+*** Finding interactions
+**** 
+:PROPERTIES:
+:BEAMER_act: <+->
+:END:
+\scriptsize
+#+BEGIN_EXAMPLE
+ Call:
+ lm(formula = time_per_pixel ~ x_component_number * y_component_number * 
+     vector_length, data = df)
+
+ Residuals:
+        Min         1Q     Median         3Q        Max 
+ -4.722e-10 -1.029e-10 -1.970e-11  9.081e-11  1.130e-09 
+
+ Coefficients:
+                                                       Estimate Std. Error t value Pr(>|t|)    
+ (Intercept)                                          2.452e-10  2.520e-11   9.730  < 2e-16 ***
+ x_component_number                                   2.071e-11  3.051e-12   6.788 1.49e-11 ***
+ y_component_number                                  -4.981e-11  9.201e-12  -5.414 6.93e-08 ***
+ vector_length                                        7.962e-11  3.051e-12  26.095  < 2e-16 ***
+ x_component_number:y_component_number               -1.123e-12  1.114e-12  -1.008    0.314    
+ x_component_number:vector_length                    -5.881e-12  3.695e-13 -15.918  < 2e-16 ***
+ y_component_number:vector_length                    -7.072e-12  1.114e-12  -6.347 2.71e-10 ***
+ x_component_number:y_component_number:vector_length  5.345e-13  1.349e-13   3.962 7.70e-05 ***
+ ---
+ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+ Residual standard error: 2.008e-10 on 1992 degrees of freedom
+ Multiple R-squared:  0.616,	Adjusted R-squared:  0.6147 
+ F-statistic: 456.5 on 7 and 1992 DF,  p-value: < 2.2e-16
+
+#+END_EXAMPLE
+*** Finding local actions
+**** 
+:PROPERTIES:
+:BEAMER_act: <+->
+:END:
+\scriptsize
+#+BEGIN_EXAMPLE
+Call:
+lm(formula = time_per_pixel ~ temporary_size + factor(local_work_size), 
+    data = df[df$x_component_number == 1 & df$y_component_number == 
+        4 & df$vector_length == 1, ])
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-3.576e-12 -1.469e-12  0.000e+00  1.469e-12  3.576e-12 
+
+Coefficients:
+                                     Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                         1.334e-10  2.612e-12  51.056 2.13e-12 ***
+temporary_size                     -1.890e-12  5.993e-13  -3.154 0.011671 *  
+factor(local_work_size)[128, 2, 1]  3.680e-13  2.680e-12   0.137 0.893822    
+factor(local_work_size)[256, 1, 1] -8.104e-13  2.680e-12  -0.302 0.769234    
+factor(local_work_size)[32, 1, 1]   1.096e-10  2.680e-12  40.903 1.55e-11 ***
+factor(local_work_size)[32, 2, 1]   1.896e-11  2.680e-12   7.073 5.84e-05 ***
+factor(local_work_size)[32, 4, 1]   1.484e-12  2.680e-12   0.554 0.593215    
+factor(local_work_size)[32, 8, 1]  -3.554e-13  2.680e-12  -0.133 0.897422    
+factor(local_work_size)[64, 1, 1]   1.716e-11  2.680e-12   6.403 0.000125 ***
+factor(local_work_size)[64, 2, 1]  -1.290e-12  2.680e-12  -0.481 0.641876    
+factor(local_work_size)[64, 4, 1]   6.897e-13  2.680e-12   0.257 0.802697    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.68e-12 on 9 degrees of freedom
+Multiple R-squared:  0.997,	Adjusted R-squared:  0.9936 
+F-statistic: 294.7 on 10 and 9 DF,  p-value: 4.455e-10
+
+#+END_EXAMPLE
+**** 
+    :PROPERTIES:
+    :BEAMER_act: <+>
+    :END:
+#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-8.8cm}\begin{block}{}
+*Problem:* the search space was not correctly expressed
+#+LaTeX: \end{block}\end{overlayarea}
+
+*** Finding local actions
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.5]{../../img/20160311/pilipili2/pilipili2_bp_lws.png}
+\end{figure}
+#+END_LaTeX
+
+
 ** Extracting the informations without bruteforcing 
 *** Genetic Algorithm
 - Population size: 20
@@ -145,14 +292,15 @@
 How many points do we need?
 
 *** Genetic Algorithm again
-
-** Giving more clue to the search space
+** Henance search space and model precision
+*** GPU optimization
+*** Coherent search space definition
 * BOAST modifications
 *** Constraints
 - Avoid unfeasible points
 - Rules = set of boolean expressions
 - All rules must be respected
-*** Checkpointing
+*** Checkpointing :noexport:
 * Conclusion and future work
 *** Working with bigger problem
 # - Quantification if the warmup problem \to gpu performance mode to start
