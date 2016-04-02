@@ -441,17 +441,36 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 #+END_EXAMPLE
 *** Checkpointing :noexport:
 * Conclusion and future work
-*** Working with bigger problem
-# - Quantification if the warmup problem \to gpu performance mode to
-# start
+*** 1 problem many formulations
+- Comparing 2 formulations:
+  - Work organization as:
+    - number of elements and number of elements on y-axis
+    - number of elements on x and y-axis
+  - Threads organization:
+    - number of threads and number of threads on y-axis
+    - number of threads on x and y-axis
+- How does the search space look like?
+- On which D-Optimal is more efficient?
+*** Bigger problem and D-Optimal
+- Bigger work space
+- Adding more informations:
+  - Performance of all run not only the min \to warmup effect
 - Applying D-optimal design
 - Validation against bruteforce \to very long
 - Comparing with genetic algorithm (known being efficient on
   large space) 
-*** 1 problem many formulations
-- Finer grained formulation vs "naïve"
-- How does the search look like?
-- D-Optimal still ok?
-*** Thinner models
-*** Thinner observations
-*** How does D-Optimal hold with discrete problems?
+
+- Does D-Optimal design work correctly with discrete space?
+
+*** Summary
+- Using a simple linear regression allowed us to extract informations
+  about the search space
+- Just few points are need with a D-optimal design (0,03% of the
+  search space)
+- The better the described the search space, the better the model \to check
+  the importance
+- Need to validate with bigger, more complexe search space, different
+  problem and architecture
+- Does D-Optimal really suited to discrete space?
+*** End
+Thank you for your attention.
