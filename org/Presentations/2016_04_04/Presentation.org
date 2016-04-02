@@ -388,18 +388,32 @@ Multiple R-squared:  0.7594,	Adjusted R-squared:  0.7419
 F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 #+END_EXAMPLE
 * Need of better formulation of the  search space
-*** GPU optimization
-**** How to map correctly the work on the GPU?
-- Keep computational units as busy as possible \to using the maximum of
+** GPU optimization
+*** How to map correctly the work on the GPU?
+**** Efficient parallelism
+- Keep computational units as busy as possible \to using enough
   threads to do the work
+- Threads are group by block and compute units can process several
+  block at a time \to grouping threads correctly is important
+**** Efficient memory use
 - Use the memory efficiently \to grouping access and using cache
   efficiently to reduce idle time.
-*** Coherent search space definition
-- The number of threads
-- The repartition of the threads
-- The size of the work
-- The shape of the work
-*** Constraints
+- Amount of work for a thread
+**** Trade-off
+- Bigger blocks \to more efficient data sharing
+- Smaller blocks \to better compute unit occupancy
+**** Notes :noexport:
+- Grouping threads by memory access, branch executions, etc...
+- If blocks are too big a compute unit can not fit more than one block
+  and remaining cores of the smx are waisted.
+*** Expressing the search space according to our goal
+- The number of threads per blocks
+- The shape of the blocks (x, y repartition)
+- The amount of work per threads
+- The shape of the work (x, y repartition)
+*** Facing ressources limitations
+
+*** Constraints mechanism
 - Avoid unfeasible points
 - Rules = set of boolean expressions
 - All rules must be respected
