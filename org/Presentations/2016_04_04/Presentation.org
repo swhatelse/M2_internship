@@ -388,7 +388,7 @@ Multiple R-squared:  0.7594,	Adjusted R-squared:  0.7419
 F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 #+END_EXAMPLE
 * Need of better formulation of the  search space
-** GPU optimization
+** Expressing GPU optimization
 *** How to map correctly the work on the GPU?
 **** Efficient parallelism
 - Keep computational units as busy as possible \to using enough
@@ -411,17 +411,43 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 - The shape of the blocks (x, y repartition)
 - The amount of work per threads
 - The shape of the work (x, y repartition)
-*** Facing ressources limitations
+** Limiting the search space
+*** Facing limitations
+**** Unfeasible points
+- Limited by the size of the kernel \to OUT_OF_RESSOURCES
+  - Number of 32-bits registers \to 65536 
+  -  Shared memory \to 48K 
+- Inaccurate combinations : E.g thread_number = 32 and lws_y = 64  
+- More advanced filtering \to Need more expressivity
 
 *** Constraints mechanism
-- Avoid unfeasible points
+- Ensure that all points respect the constraints
 - Rules = set of boolean expressions
-- All rules must be respected
+- *All* rules must be respected
+**** 
+:PROPERTIES:
+:BEAMER_act: <+->
+:END:
+\scriptsize
+#+BEGIN_EXAMPLE
+:rules => [":lws_y <= :threads_number", 
+           ":threads_number % :lws_y == 0",
+           ":elements_number >= :y_component_number",
+           ":elements_number % :y_component_number == 0", 
+           ":elements_number / :y_component_number <= 4",
+           ":elements_number * :vector_length * :temporary_size * 
+                               :threads_number <= 1024"
+          ]
+#+END_EXAMPLE
 *** Checkpointing :noexport:
 * Conclusion and future work
 *** Working with bigger problem
-# - Quantification if the warmup problem \to gpu performance mode to start
-- Very long \to 1 week for the brute force
+# - Quantification if the warmup problem \to gpu performance mode to
+# start
+- Applying D-optimal design
+- Validation against bruteforce \to very long
+- Comparing with genetic algorithm (known being efficient on
+  large space) 
 *** 1 problem many formulations
 - Finer grained formulation vs "naïve"
 - How does the search look like?
