@@ -74,7 +74,7 @@
 *** Structured problem
 - Found what are the parameters that have an impact
 - Hierarchy of parameters:
-  - x_component_number \downarrow y_component_number \uparrow vector_recompute \uparrow vector_length \downarrow
+  - x_component_number \to y_component_number \to vector_recompute \to vector_length
 
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
@@ -275,17 +275,18 @@ F-statistic: 294.7 on 10 and 9 DF,  p-value: 4.455e-10
 #+END_LaTeX
 
 * Search space exploration 
-*** Genetic Algorithm
+*** Design of experiment to sample the search space
+- Autotuning = experimenting
+- Design of experiment to sample the search
+- Extract information using less points as possible
+- Use a D-Optimal design
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
 \centering
 \vspace{-1.5mm}
-\includegraphics[scale=0.45]{../../img/20160311/pilipili2/pilipili2_gen_100.png}
+\includegraphics[scale=0.4]{../../img/20160311/pilipili2/pilipili2_OptD.png}
 \end{figure}
 #+END_LaTeX
-**** Notes :noexport:
-- Population size: 20
-- Generation limit: 100
 *** D-Optimal Design - Revelant parameters
 - 60 / 2000 points
 
@@ -378,6 +379,17 @@ Residual standard error: 2.481e-10 on 55 degrees of freedom
 Multiple R-squared:  0.7594,	Adjusted R-squared:  0.7419 
 F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 #+END_EXAMPLE
+*** Genetic Algorithm
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.45]{../../img/20160311/pilipili2/pilipili2_gen_100.png}
+\end{figure}
+#+END_LaTeX
+**** Notes :noexport:
+- Population size: 20
+- Generation limit: 100
 * Need of better formulation of the  search space
 ** GPU optimization
 *** How to map correctly the work on the GPU?
@@ -461,6 +473,7 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 - Comparing with genetic algorithm (known being efficient on
   large space) 
 
+- How to determine how many point we need with D-Optimal?
 - Does D-Optimal design work correctly with discrete space?
 
 *** Summary
