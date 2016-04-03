@@ -63,8 +63,8 @@
 *** Laplacian
 - Parameters:
   - x_component_number [1,2,4,8,16]
-  - vector_length [1,2,4,8,16]
   - y_component_number [1,2,3,4]
+  - vector_length [1,2,4,8,16]
   - temporary_size [2,4]
   - vector_recompute [true,false]
   - load_overlap [true,false]
@@ -74,7 +74,7 @@
 *** Structured problem
 - Found what are the parameters that have an impact
 - Hierarchy of parameters:
-  - x_component_number \downarrow y_component_number \uparrow vector_recompute \uparrow vector_length \downarrow
+  - x_component_number \to y_component_number \to vector_recompute \to vector_length
 
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
@@ -203,15 +203,15 @@
  -4.722e-10 -1.029e-10 -1.970e-11  9.081e-11  1.130e-09 
 
  Coefficients:
-                                                       Estimate Std. Error t value Pr(>|t|)    
- (Intercept)                                          2.452e-10  2.520e-11   9.730  < 2e-16 ***
- x_component_number                                   2.071e-11  3.051e-12   6.788 1.49e-11 ***
- y_component_number                                  -4.981e-11  9.201e-12  -5.414 6.93e-08 ***
- vector_length                                        7.962e-11  3.051e-12  26.095  < 2e-16 ***
- x_component_number:y_component_number               -1.123e-12  1.114e-12  -1.008    0.314    
- x_component_number:vector_length                    -5.881e-12  3.695e-13 -15.918  < 2e-16 ***
- y_component_number:vector_length                    -7.072e-12  1.114e-12  -6.347 2.71e-10 ***
- x_component_number:y_component_number:vector_length  5.345e-13  1.349e-13   3.962 7.70e-05 ***
+                                         Estimate Std. Error t value Pr(>|t|)    
+ (Intercept)                            2.452e-10  2.520e-11   9.730  < 2e-16 ***
+ x_component                            2.071e-11  3.051e-12   6.788 1.49e-11 ***
+ y_component                           -4.981e-11  9.201e-12  -5.414 6.93e-08 ***
+ vector_length                          7.962e-11  3.051e-12  26.095  < 2e-16 ***
+ x_component:y_component               -1.123e-12  1.114e-12  -1.008    0.314    
+ x_component:vector_length             -5.881e-12  3.695e-13 -15.918  < 2e-16 ***
+ y_component:vector_length             -7.072e-12  1.114e-12  -6.347 2.71e-10 ***
+ x_component:y_component:vector_length  5.345e-13  1.349e-13   3.962 7.70e-05 ***
  ---
  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -275,18 +275,19 @@ F-statistic: 294.7 on 10 and 9 DF,  p-value: 4.455e-10
 #+END_LaTeX
 
 * Search space exploration 
-*** Genetic Algorithm
+*** Design of experiment to sample the search space
+- Autotuning = experimenting
+- Design of experiment to sample the search
+- Extract information using less points as possible
+- Use a D-Optimal design
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
 \centering
 \vspace{-1.5mm}
-\includegraphics[scale=0.45]{../../img/20160311/pilipili2/pilipili2_gen_100.png}
+\includegraphics[scale=0.4]{../../img/20160311/pilipili2/pilipili2_OptD.png}
 \end{figure}
 #+END_LaTeX
-**** Notes :noexport:
-- Population size: 20
-- Generation limit: 100
-*** Optimal Design - Revelant parameters
+*** D-Optimal Design - Revelant parameters
 - 60 / 2000 points
 
 **** 
@@ -317,7 +318,7 @@ Multiple R-squared:  0.5265,	Adjusted R-squared:  0.5011
 F-statistic: 20.76 on 3 and 56 DF,  p-value: 3.617e-09
 #+END_EXAMPLE
 
-*** Optimal Design - Interactions
+*** D-Optimal Design - Interactions
 **** 
 :PROPERTIES:
 :BEAMER_act: <+->
@@ -333,24 +334,15 @@ Residuals:
 -5.829e-10 -7.267e-11 -1.375e-11  7.602e-11  5.229e-10 
 
 Coefficients:
-                                                            Estimate Std. Error
-(Intercept)                                          2.574e-10  1.679e-10
-x_component_number                                   2.740e-11  1.705e-11
-y_component_number                                  -4.707e-11  5.665e-11
-vector_length                                        9.656e-11  1.432e-11
-x_component_number:y_component_number               -2.337e-12  5.615e-12
-x_component_number:vector_length                    -7.727e-12  1.661e-12
-y_component_number:vector_length                    -6.872e-12  5.127e-12
-x_component_number:y_component_number:vector_length  8.645e-13  5.453e-13
-                                                    t value Pr(>|t|)    
-(Intercept)                                           1.533    0.131    
-x_component_number                                    1.607    0.114    
-y_component_number                                   -0.831    0.410    
-vector_length                                         6.743 1.27e-08 ***
-x_component_number:y_component_number                -0.416    0.679    
-x_component_number:vector_length                     -4.653 2.29e-05 ***
-y_component_number:vector_length                     -1.340    0.186    
-x_component_number:y_component_number:vector_length   1.585    0.119    
+                                        Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                            2.574e-10  1.679e-10   1.533    0.131    
+x_component                            2.740e-11  1.705e-11   1.607    0.114    
+y_component                           -4.707e-11  5.665e-11  -0.831    0.410    
+vector_length                          9.656e-11  1.432e-11   6.743 1.27e-08 ***
+x_component:y_component               -2.337e-12  5.615e-12  -0.416    0.679    
+x_component:vector_length             -7.727e-12  1.661e-12  -4.653 2.29e-05 ***
+y_component:vector_length             -6.872e-12  5.127e-12  -1.340    0.186    
+x_component:y_component:vector_length  8.645e-13  5.453e-13   1.585    0.119    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -358,7 +350,7 @@ Residual standard error: 2.448e-10 on 52 degrees of freedom
 Multiple R-squared:  0.7784,	Adjusted R-squared:  0.7486 
 F-statistic:  26.1 on 7 and 52 DF,  p-value: 6.446e-15
 #+END_EXAMPLE
-*** Optimal Design - A better model
+*** D-Optimal Design - A better model
 **** 
 :PROPERTIES:
 :BEAMER_act: <+->
@@ -387,31 +379,112 @@ Residual standard error: 2.481e-10 on 55 degrees of freedom
 Multiple R-squared:  0.7594,	Adjusted R-squared:  0.7419 
 F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 #+END_EXAMPLE
+*** Genetic Algorithm
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.45]{../../img/20160311/pilipili2/pilipili2_gen_100.png}
+\end{figure}
+#+END_LaTeX
+**** Notes :noexport:
+- Population size: 20
+- Generation limit: 100
 * Need of better formulation of the  search space
-*** GPU optimization
-**** How to map correctly the work on the GPU?
-- Keep computational units as busy as possible \to using the maximum of
+** GPU optimization
+*** How to map correctly the work on the GPU?
+   #+BEGIN_LaTeX
+   \begin{figure}[tbh]
+   \centering
+   \includegraphics[width=1.0\linewidth]{./gpu_mapping.pdf}
+   \caption{\label{fig:1}Gpu Mapping}
+   \end{figure}
+   #+END_LaTeX
+
+*** How to map correctly the work on the GPU?
+**** Efficient parallelism
+- Keep computational units as busy as possible \to using enough
   threads to do the work
+- Threads are group by block and compute units can process several
+  block at a time \to grouping threads correctly is important
+**** Efficient memory use
 - Use the memory efficiently \to grouping access and using cache
   efficiently to reduce idle time.
-*** Coherent search space definition
-- The number of threads
-- The repartition of the threads
-- The size of the work
-- The shape of the work
-*** Constraints
-- Avoid unfeasible points
+- Amount of work for a thread
+**** Trade-off
+- Bigger blocks \to more efficient data sharing
+- Smaller blocks \to better compute unit occupancy
+**** Notes :noexport:
+- Grouping threads by memory access, branch executions, etc...
+- If blocks are too big a compute unit can not fit more than one block
+  and remaining cores of the smx are waisted.
+** Expressing  the search space according to our goal
+*** Expressing the search space 
+**** Toward a more precise modelization
+- The number of threads per blocks
+- The shape of the blocks (x, y repartition)
+- The amount of work per threads
+- The shape of the work (x, y repartition)
+**** Dealing with unfeasible points
+- Limited by the size of the kernel \to OUT_OF_RESSOURCES
+  - Number of 32-bits registers \to 65536 
+  -  Shared memory \to 48K 
+- Inaccurate combinations : E.g thread_number = 32 and lws_y = 64  
+- More advanced filtering \to Need more expressivity
+
+
+*** Constraints mechanism
+- Ensure that all points respect the constraints
 - Rules = set of boolean expressions
-- All rules must be respected
+- *All* rules must be respected
+**** 
+:PROPERTIES:
+:BEAMER_act: <+->
+:END:
+\scriptsize
+#+BEGIN_EXAMPLE
+:rules => [":lws_y <= :threads_number", 
+           ":threads_number % :lws_y == 0",
+           ":elements_number >= :y_component_number",
+           ":elements_number % :y_component_number == 0", 
+           ":elements_number / :y_component_number <= 4",
+           ":elements_number * :vector_length * :temporary_size * 
+                               :threads_number <= 1024"
+          ]
+#+END_EXAMPLE
 *** Checkpointing :noexport:
 * Conclusion and future work
-*** Working with bigger problem
-# - Quantification if the warmup problem \to gpu performance mode to start
-- Very long \to 1 week for the brute force
 *** 1 problem many formulations
-- Finer grained formulation vs "naïve"
-- How does the search look like?
-- D-Optimal still ok?
-*** Thinner models
-*** Thinner observations
-*** How does D-Optimal hold with discrete problems?
+- Comparing 2 formulations:
+  - Work organization as:
+    - number of elements and number of elements on y-axis
+    - number of elements on x and y-axis
+  - Threads organization:
+    - number of threads and number of threads on y-axis
+    - number of threads on x and y-axis
+- How does the search space look like?
+- On which D-Optimal is more efficient?
+*** Bigger problem and D-Optimal
+- Bigger work space \to 19040 combinations
+- Adding more informations:
+  - Performance of all run not only the min \to warmup effect
+- Applying D-optimal design
+- Validation against bruteforce \to very long
+- Comparing with genetic algorithm (known being efficient on
+  large space) 
+
+- How to determine how many point we need with D-Optimal?
+- Does D-Optimal design work correctly with discrete space?
+
+*** Summary
+- Using a simple linear regression allowed us to extract informations
+  about the search space
+- Just few points are need with a D-optimal design (0,03% of the
+  search space)
+- The better the described the search space, the better the model \to check
+  the importance
+- Need to validate with bigger, more complexe search space, different
+  problem and architecture
+- Does D-Optimal really suited to discrete space?
+*** End
+Thank you for your attention.
