@@ -2621,54 +2621,22 @@ Entered on [2015-11-19 jeu. 20:56]
 
          #+RESULTS:
 
-         #+begin_src R :results output :session :exports both
+         #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_sp_rep.png :exports both :width 600 :height 400 :session
            df <- read.csv("/tmp/test.csv", strip.white=T,header=T)
            attach(df)
            x <- min(df$time_per_pixel)
            y <- max(df$time_per_pixel)
            b <- (y - x) / 1.2733542924771e-10
-           res <- hist(df$time_per_pixel, breaks=b, plot=FALSE)
-           res
+           library(ggplot2)
+           ggplot(df) +
+               aes(time_per_pixel) +
+               geom_histogram(bins = b) +
+               ggtitle("Repartion of combinations over the search space") +
+               theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12))
          #+end_src
 
          #+RESULTS:
-         #+begin_example
-         $breaks
-          [1] 1.0e-10 2.0e-10 3.0e-10 4.0e-10 5.0e-10 6.0e-10 7.0e-10 8.0e-10 9.0e-10
-         [10] 1.0e-09 1.1e-09 1.2e-09 1.3e-09 1.4e-09 1.5e-09 1.6e-09 1.7e-09 1.8e-09
-         [19] 1.9e-09 2.0e-09 2.1e-09 2.2e-09 2.3e-09 2.4e-09 2.5e-09
-
-         $counts
-          [1] 280 473 452 285 170  66  85  48  15   4  32  22  24   7  10   1   4   2   3
-         [20]  13   0   2   1   1
-
-         $density
-          [1] 1.400e+09 2.365e+09 2.260e+09 1.425e+09 8.500e+08 3.300e+08 4.250e+08
-          [8] 2.400e+08 7.500e+07 2.000e+07 1.600e+08 1.100e+08 1.200e+08 3.500e+07
-         [15] 5.000e+07 5.000e+06 2.000e+07 1.000e+07 1.500e+07 6.500e+07 0.000e+00
-         [22] 1.000e+07 5.000e+06 5.000e+06
-
-         $mids
-          [1] 1.50e-10 2.50e-10 3.50e-10 4.50e-10 5.50e-10 6.50e-10 7.50e-10 8.50e-10
-          [9] 9.50e-10 1.05e-09 1.15e-09 1.25e-09 1.35e-09 1.45e-09 1.55e-09 1.65e-09
-         [17] 1.75e-09 1.85e-09 1.95e-09 2.05e-09 2.15e-09 2.25e-09 2.35e-09 2.45e-09
-
-         $xname
-         [1] "df$time_per_pixel"
-
-         $equidist
-         [1] TRUE
-
-         attr(,"class")
-         [1] "histogram"
-         #+end_example
-
-         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-           plot(res)
-         #+end_src
-
-         #+RESULTS:
-         [[file:/tmp/babel-4953KxS/figure4953bnQ.png]]
+         [[file:img/20160311/pilipili2/pilipili2_sp_rep.png]]
 
 ** 2016-03-16
 *** Optimal design 
@@ -3005,7 +2973,7 @@ Entered on [2015-11-19 jeu. 20:56]
         Multiple R-squared:  0.6614,	Adjusted R-squared:  0.6227 
         F-statistic: 17.09 on 4 and 35 DF,  p-value: 7.386e-08
         #+end_example
-
+      
     - How does it compare to LHS?
         #+begin_src R :results output :session :exports both
           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)

@@ -379,7 +379,12 @@ Residual standard error: 2.481e-10 on 55 degrees of freedom
 Multiple R-squared:  0.7594,	Adjusted R-squared:  0.7419 
 F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 #+END_EXAMPLE
-*** Genetic Algorithm
+*** Quick look at the efficiency of the Genetic Algorithm?
+- BOAST Implementation
+- Population size 20
+- Generation limit 100
+- *Warning* probably not correctly tuned for this instance of problem
+*** Quick look at the efficiency of the Genetic Algorithm?
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
 \centering
@@ -390,6 +395,15 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 **** Notes :noexport:
 - Population size: 20
 - Generation limit: 100
+
+*** Repartition of good combinations
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\vspace{-1.5mm}
+\includegraphics[scale=0.5]{../../img/20160311/pilipili2/pilipili2_sp_rep.png}
+\end{figure}
+#+END_LaTeX
 * Need of better formulation of the  search space
 ** GPU optimization
 *** How to map correctly the work on the GPU?
