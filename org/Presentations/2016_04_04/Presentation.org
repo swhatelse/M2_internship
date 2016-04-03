@@ -379,7 +379,7 @@ Multiple R-squared:  0.7594,	Adjusted R-squared:  0.7419
 F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 #+END_EXAMPLE
 * Need of better formulation of the  search space
-** Expressing GPU optimization
+** GPU optimization
 *** How to map correctly the work on the GPU?
    #+BEGIN_LaTeX
    \begin{figure}[tbh]
@@ -406,19 +406,20 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 - Grouping threads by memory access, branch executions, etc...
 - If blocks are too big a compute unit can not fit more than one block
   and remaining cores of the smx are waisted.
-*** Expressing the search space according to our goal
+** Expressing  the search space according to our goal
+*** Expressing the search space 
+**** Toward a more precise modelization
 - The number of threads per blocks
 - The shape of the blocks (x, y repartition)
 - The amount of work per threads
 - The shape of the work (x, y repartition)
-** Limiting the search space
-*** Facing limitations
-**** Unfeasible points
+**** Dealing with unfeasible points
 - Limited by the size of the kernel \to OUT_OF_RESSOURCES
   - Number of 32-bits registers \to 65536 
   -  Shared memory \to 48K 
 - Inaccurate combinations : E.g thread_number = 32 and lws_y = 64  
 - More advanced filtering \to Need more expressivity
+
 
 *** Constraints mechanism
 - Ensure that all points respect the constraints
@@ -452,7 +453,7 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 - How does the search space look like?
 - On which D-Optimal is more efficient?
 *** Bigger problem and D-Optimal
-- Bigger work space
+- Bigger work space \to 19040 combinations
 - Adding more informations:
   - Performance of all run not only the min \to warmup effect
 - Applying D-optimal design
