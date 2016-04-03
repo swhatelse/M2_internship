@@ -3886,7 +3886,18 @@ Entered on [2015-11-19 jeu. 20:56]
 ** 2016-04-01
    - [ ] Have look at the too big residue error when vector recompute
      is false. 
-
+   - Config limit
+     #+BEGIN_EXAMPLE
+      opt_space = OptimizationSpace::new( :x_component_number => [53],
+                                     :vector_length      => [1],
+                                     :y_component_number => [1],
+                                     :temporary_size     => [2],
+                                     :vector_recompute   => [true],
+                                     :load_overlap       => [true],
+                                     :threads_number => [1024],
+                                     :threads_number_divider => [1]
+                                     )
+     #+END_EXAMPLE
 
 
 
