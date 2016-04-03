@@ -88,8 +88,8 @@
   necessary
 *** A simple approach : Linear model 
 - Global optimum :
-  | x_component_number | 1     | y_component_number | 4 |
-  | load_overlap       | false | vector_length      | 1 |
+  | *x_component_number* | *1*     | *y_component_number* | *4* |
+  | load_overlap       | false | *vector_length*      | *1* |
   | vector_recompute   | false | temporary_size     | 4 |
 - A simple model allowed us to find the structure of the search space
 **** 
@@ -178,6 +178,14 @@
        F-statistic:   118 on 13 and 1986 DF,  p-value: < 2.2e-16
 
 #+END_EXAMPLE
+****     
+:PROPERTIES:
+:BEAMER_act: <+>
+:END:
+#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-8.8cm}\begin{block}{}
+R-squared = 0.4359
+#+LaTeX: \end{block}\end{overlayarea}
+
 *** Finding revelant parameters
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
@@ -488,7 +496,7 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
   large space) 
 
 - How to determine how many point we need with D-Optimal?
-- Does D-Optimal design work correctly with discrete space?
+# - Does D-Optimal design work correctly with discrete space?
 
 *** Summary
 - Using a simple linear regression allowed us to extract informations
@@ -499,6 +507,6 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
   the importance
 - Need to validate with bigger, more complexe search space, different
   problem and architecture
-- Does D-Optimal really suited to discrete space?
+# - Does D-Optimal really suited to discrete space?
 *** End
 Thank you for your attention.
