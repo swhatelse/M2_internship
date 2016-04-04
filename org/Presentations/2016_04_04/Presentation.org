@@ -5,7 +5,7 @@
 #+STARTUP: indent
 #+TAGS: noexport(n)
 
-#+Title: Optimization by modelization and experiment design
+#+Title: Optimization using modelization and experiment design
 #+AUTHOR:      Steven QUINITO MASNADA
 
 #+EPRESENT_FRAME_LEVEL: 2
@@ -130,13 +130,13 @@
 - Max 256 threads per work groups
 - 2000 combinations
 - Global optimum:
-  - x_component_number: 1
-  - y_component_number: 4
-  - vector_length: 1
+  - *x_component_number: 1*
+  - *y_component_number: 4*
+  - *vector_length: 1*
   - temporary_size: 4
   - load_overlap: true
   - vector_recompute: true
-  - local_work_size [128,2]
+  - *local_work_size [128,2]*
 ** Extracting informations
 *** Finding revelant parameters
 **** 
@@ -430,8 +430,7 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 - Threads are group by block and compute units can process several
   block at a time \to grouping threads correctly is important
 **** Efficient memory use
-- Use the memory efficiently \to grouping access and using cache
-  efficiently to reduce idle time.
+- Grouping access and using cache efficiently to reduce idle time.
 - Amount of work for a thread
 **** Trade-off
 - Bigger blocks \to more efficient data sharing
@@ -471,32 +470,29 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
            ":elements_number % :y_component_number == 0", 
            ":elements_number / :y_component_number <= 4",
            ":elements_number * :vector_length * :temporary_size * 
-                               :threads_number <= 1024"
+                               :threads_number <= 1024 * 53"
           ]
 #+END_EXAMPLE
 *** Checkpointing :noexport:
 * Conclusion and future work
-*** 1 problem many formulations
+*** Search space formulation
 - Comparing 2 formulations:
-  - Work organization as:
-    - number of elements and number of elements on y-axis
-    - number of elements on x and y-axis
   - Threads organization:
-    - number of threads and number of threads on y-axis
+    - number of threads and number of threads on y-axis \to hierarchy
     - number of threads on x and y-axis
-- How does the search space look like?
-- On which D-Optimal is more efficient?
-*** Bigger problem and D-Optimal
+- Which is better to modelize \to on which D-Optimal is more efficient?
+*** More complex search space and D-Optimal
 - Bigger work space \to 19040 combinations
 - Adding more informations:
-  - Performance of all run not only the min \to warmup effect
-- Applying D-optimal design
-- Validation against bruteforce \to very long
-- Comparing with genetic algorithm (known being efficient on
-  large space) 
+  - Performance of all runs, not only the min \to warmup effect
+    - How to make good estimate of the min
+- Validation against bruteforce and comparing with genetic algorithm
+  (efficient on large space) 
 
 - How to determine how many point we need with D-Optimal?
-# - Does D-Optimal design work correctly with discrete space?
+- How to handle categorical variables in the linear model?
+- How to handle constraints, discrete and categorical variables in the
+  design of experiment? 
 
 *** Summary
 - Using a simple linear regression allowed us to extract informations
@@ -507,6 +503,6 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
   the importance
 - Need to validate with bigger, more complexe search space, different
   problem and architecture
-# - Does D-Optimal really suited to discrete space?
+- Handle constraints, discrete and categorical variables in the analysis
 *** End
 Thank you for your attention.
