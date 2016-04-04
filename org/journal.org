@@ -4020,6 +4020,7 @@ Entered on [2015-11-19 jeu. 20:56]
 ** 2016-04-01
    - [ ] Have look at the too big residue error when vector recompute
      is false. 
+*** OUT_OF_RESSOURCES constraints
    - Config limit
      #+BEGIN_EXAMPLE
       opt_space = OptimizationSpace::new( :x_component_number => [53],
@@ -4033,6 +4034,72 @@ Entered on [2015-11-19 jeu. 20:56]
                                      )
      #+END_EXAMPLE
 
+     #+begin_src R :results output :session :exports both
+       f <- function(elements_number, y_component_number=1, vector_length=1, temporary_size=2, threads_number=32) {
+           vector_number <- ceiling((elements_number / y_component_number) / vector_length)
 
+           tempload <- (vector_number * vector_length) / vector_length * vector_length
+           temp <- 3 * vector_number * (y_component_number+2) * vector_length
+           res <- vector_number * y_component_number * vector_length
+           tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+           resc <- vector_number * y_component_number * temporary_size * vector_length
 
+           tot <- (tempload + temp + res + tempc + resc) * threads_number
+       }
+
+       g <- function(x) {
+           f(elements_number = 24, y_component_number = 6, vector_length = x, temporary_size = 2, threads_number = 1024)
+       }
+
+                                               # curve(g, 1, 6)
+
+       print(f(53,1,1,2,1024)) # OK
+       # :elements_number=>6, :y_component_number=>3, :vector_length=>16, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false, :threads_number=>1024, :lws_y=>2 NOK
+       print(f(elements_number = 6, y_component_number = 3, vector_length = 16, temporary_size = 2, threads_number = 1024)) 
+
+       # :elements_number=>12, :y_component_number=>6, :vector_length=>16, :temporary_size=>4, :vector_recompute=>true, :load_overlap=>true, :threads_number=>1024, :lws_y=>512 NOK
+       print(f(elements_number = 12, y_component_number = 6, vector_length = 16, temporary_size = 4, threads_number = 1024)) # This shoud be normally filtered
+
+       # :elements_number=>3, :y_component_number=>3, :vector_length=>16, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false, :threads_number=>1024, :lws_y=>2 NOK
+       print(f(elements_number = 3, y_component_number = 3, vector_length = 16, temporary_size = 2, threads_number = 1024))
+     #+end_src
+
+     #+RESULTS:
+     : [1] 1682432
+     : [1] 901120
+     : [1] 2473984
+     : [1] 901120
+
+     - Load_overlap seems to have a bigger impact than I tought:
+     #+BEGIN_EXAMPLE
+     {:elements_number=>3, :y_component_number=>3, :vector_length=>16, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false, :threads_number=>1024, :lws_y=>512} NOK
+
+     {:elements_number=>3, :y_component_number=>3, :vector_length=>16, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>true, :threads_number=>1024, :lws_y=>512} Ok     
+     #+END_EXAMPLE
+
+     In fact it either temp either tempload depending if load_overlap
+     is true. And we also may have an additionnal cost if load_overlap
+     is false: (y_comp + 2) * 3 * vector_number * vector_length
+
+     #+begin_src R :results output :session :exports both
+       f <- function(elements_number, y_component_number=1, vector_length=1, temporary_size=2, threads_number=32) {
+           x_component_number = (elements_number / y_component_number)
+           vector_number = ceiling(x_component_number / vector_length)
+           total_x_size = vector_number * vector_length
+
+           tempload = (total_x_size / vector_length) * vector_length #+ total_x_size %/% vector_length
+           temp = 3 * vector_number * (y_component_number+2) * vector_length
+           res = vector_number * y_component_number * vector_length
+           tempc = 3 * vector_number * (y_component_number+2) * vector_length * temporary_size
+           resc = vector_number * y_component_number * vector_length * temporary_size
+           tot <- (tempload + temp + res + tempc + resc) * threads_number
+       }
+
+       print(f(53,1,1,2,1024))
+       print(f(6,3,16,2,1024))
+     #+end_src
+
+     #+RESULTS:
+     : [1] 1682432
+     : [1] 901120
 
