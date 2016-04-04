@@ -425,13 +425,13 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 
 *** How to map correctly the work on the GPU?
 **** Efficient parallelism
-- Keep computational units as busy as possible \to using enough
-  threads to do the work
-- Threads are group by block and compute units can process several
-  block at a time \to grouping threads correctly is important
+- Keep computational units busy as much as possible \to using enough
+  threads to do the work \to *quantity of work per thread*
+- Threads are grouped by block \to mapped on compute units \to *Shape and*
+  *size of the group* have an impact
 **** Efficient memory use
-- Grouping access and using cache efficiently to reduce idle time.
-- Amount of work for a thread
+- Grouping memory access and using cache efficiently to reduce idle
+  time \to *quantity of work per thread, shape and size of the group*
 **** Trade-off
 - Bigger blocks \to more efficient data sharing
 - Smaller blocks \to better compute unit occupancy
@@ -473,7 +473,6 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
                                :threads_number <= 1024 * 53"
           ]
 #+END_EXAMPLE
-*** Checkpointing :noexport:
 * Conclusion and future work
 *** Search space formulation
 - Comparing 2 formulations:
