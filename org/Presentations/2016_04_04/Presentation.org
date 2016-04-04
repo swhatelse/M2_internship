@@ -71,7 +71,7 @@
 - 800 combinations
 - OpenCL Nvidia implementation
 
-*** Structured problem
+*** A structured search space
 - Found what are the parameters that have an impact
 - Hierarchy of parameters:
   - x_component_number \to y_component_number \to vector_recompute \to vector_length
@@ -488,7 +488,7 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
 - Validation against bruteforce and comparing with genetic algorithm
   (efficient on large space) 
 
-- How to determine how many point we need with D-Optimal?
+- How to determine how many points we need with D-Optimal?
 - How to handle categorical variables in the linear model?
 - How to handle constraints, discrete and categorical variables in the
   design of experiment? 
@@ -500,8 +500,8 @@ F-statistic:  43.4 on 4 and 55 DF,  p-value: < 2.2e-16
   search space)
 - The better the described the search space, the better the model \to check
   the importance
+- Handle constraints, discrete and categorical variables in the analysis
 - Need to validate with bigger, more complexe search space, different
   problem and architecture
-- Handle constraints, discrete and categorical variables in the analysis
 *** End
 Thank you for your attention.
