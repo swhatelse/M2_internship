@@ -3080,6 +3080,172 @@ Entered on [2015-11-19 jeu. 20:56]
         Multiple R-squared:  0.6644,	Adjusted R-squared:   0.64 
         F-statistic: 27.22 on 4 and 55 DF,  p-value: 1.758e-12
         #+end_example
+      
+    - More accurate D-Optimal
+      #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+      #+end_src
+
+      #+RESULTS:
+
+      #+begin_src R :results output :session :exports both
+        library(DoE.base)
+        library(DoE.wrapper)
+        Design.1 <- lhs.design( type= "maximin" , nruns= 1000 ,nfactors= 5 ,digits= NULL ,seed=20049 , factor.names=list(log_x_component_number=c(0,4), y_component_number=c(1,4),
+                                                                                                                        log_vector_length=c(0,4), local_work_size_index=c(1,10),
+                                                                                                                        log_temporary_size=c(1,2) ) )
+        ## creator element of design.info will be different, when using the command line command!
+        # plot( Design.1 , select = c( "log_x_component_number","y_component_number",
+        #                             "log_vector_length","local_work_size_index",
+        #                             "log_temporary_size" ))
+        Design.1.rounded <- round(Design.1) # Ideally we would like to express factor(local_work_size_index) but the Dopt.design does not know how to handle it
+        Design.1.Dopt <- Dopt.design( 120 , data= Design.1.rounded , formula= 
+                                                              "~(log_x_component_number  + y_component_number  + log_vector_length  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        set <- data.frame()
+        for(i in 1:nrow(Design.1.Dopt)){
+            set <- rbind(set, df[ df$x_component_number == 2^Design.1.Dopt$log_x_component_number[i]
+                                 & df$y_component_number == Design.1.Dopt$y_component_number[i]
+                                 & df$vector_length == 2^Design.1.Dopt$log_vector_length[i]
+                                 & df$temporary_size == 2^Design.1.Dopt$log_temporary_size[i] 
+                                 & as.numeric(df$local_work_size) == Design.1.Dopt$local_work_size_index[i], ])
+
+
+        }
+
+        summary(lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length))  # + local_work_size + temporary_size
+        summary(lm(data=set, time_per_pixel ~ x_component_number * y_component_number * vector_length))  # + local_work_size + temporary_size
+        summary(lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length + x_component_number:vector_length))  # + local_work_size + temporary_size
+      #+end_src
+
+      #+RESULTS:
+
+    - D-opt without LHS
+      #+begin_src R :results output :session :exports both
+        log_x_component_number = c()
+        y_component_number = c()
+        log_vector_length = c()
+        log_temporary_size = c()
+        local_work_size_index = c()
+        for (x_comp in 0:4){
+            for(y_comp in 1:4){
+                for(vec_len in 0:4){
+                    for(temp_size in 1:2){
+                        for(lws in 1:10){
+                            log_x_component_number[length(log_x_component_number)+1] = 2^x_comp 
+                            y_component_number[length(y_component_number)+1] = y_comp 
+                            log_vector_length[length(log_vector_length)+1] = 2^vec_len 
+                            log_temporary_size[length(log_temporary_size)+1] = 2^temp_size 
+                            local_work_size_index[length(local_work_size_index)+1] = lws 
+                        }
+                    }
+                }
+            }
+        }
+
+        pts <- data.frame(log_x_component_number,y_component_number,log_vector_length,log_temporary_size,local_work_size_index)
+
+        Design.1.Dopt <- Dopt.design( 200 , data= pts , formula= 
+                                                            "~(log_x_component_number  + y_component_number  + log_vector_length  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+
+        for(i in 1:nrow(Design.1.Dopt)){
+            set <- rbind(set, df[ df$x_component_number == 2^Design.1.Dopt$log_x_component_number[i]
+                                 & df$y_component_number == Design.1.Dopt$y_component_number[i]
+                                 & df$vector_length == 2^Design.1.Dopt$log_vector_length[i]
+                                 & df$temporary_size == 2^Design.1.Dopt$log_temporary_size[i] 
+                                 & as.numeric(df$local_work_size) == Design.1.Dopt$local_work_size_index[i], ])
+
+
+        }
+
+        summary(lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length))  # + local_work_size + temporary_size
+        summary(lm(data=set, time_per_pixel ~ x_component_number * y_component_number * vector_length))  # + local_work_size + temporary_size
+        summary(lm(data=set, time_per_pixel ~ x_component_number + y_component_number + vector_length + x_component_number:vector_length))  # + local_work_size + temporary_size
+
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+
+      Call:
+      lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+          vector_length, data = set)
+
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -4.069e-10 -1.934e-10 -1.000e-10  2.042e-10  9.566e-10 
+
+      Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)    
+      (Intercept)         5.178e-10  4.189e-11  12.361  < 2e-16 ***
+      x_component_number -1.516e-11  2.664e-12  -5.691 3.10e-08 ***
+      y_component_number -6.877e-11  1.206e-11  -5.701 2.95e-08 ***
+      vector_length       4.050e-11  2.576e-12  15.718  < 2e-16 ***
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Residual standard error: 2.836e-10 on 288 degrees of freedom
+      Multiple R-squared:  0.5133,	Adjusted R-squared:  0.5082 
+      F-statistic: 101.2 on 3 and 288 DF,  p-value: < 2.2e-16
+
+      Call:
+      lm.default(formula = time_per_pixel ~ x_component_number * y_component_number * 
+          vector_length, data = set)
+
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -5.090e-10 -6.158e-11 -1.017e-11  8.704e-11  6.056e-10 
+
+      Coefficients:
+                                                            Estimate Std. Error
+      (Intercept)                                          2.464e-10  4.819e-11
+      x_component_number                                   2.292e-11  6.110e-12
+      y_component_number                                  -4.974e-11  1.685e-11
+      vector_length                                        8.592e-11  5.537e-12
+      x_component_number:y_component_number               -1.192e-12  2.108e-12
+      x_component_number:vector_length                    -5.850e-12  6.445e-13
+      y_component_number:vector_length                    -4.485e-12  1.961e-12
+      x_component_number:y_component_number:vector_length  3.173e-13  2.264e-13
+                                                          t value Pr(>|t|)    
+      (Intercept)                                           5.114 5.82e-07 ***
+      x_component_number                                    3.751 0.000213 ***
+      y_component_number                                   -2.951 0.003431 ** 
+      vector_length                                        15.519  < 2e-16 ***
+      x_component_number:y_component_number                -0.565 0.572208    
+      x_component_number:vector_length                     -9.077  < 2e-16 ***
+      y_component_number:vector_length                     -2.287 0.022923 *  
+      x_component_number:y_component_number:vector_length   1.402 0.162029    
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Residual standard error: 1.95e-10 on 284 degrees of freedom
+      Multiple R-squared:  0.7732,	Adjusted R-squared:  0.7677 
+      F-statistic: 138.4 on 7 and 284 DF,  p-value: < 2.2e-16
+
+      Call:
+      lm.default(formula = time_per_pixel ~ x_component_number + y_component_number + 
+          vector_length + x_component_number:vector_length, data = set)
+
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -5.290e-10 -6.643e-11 -6.900e-13  8.697e-11  6.726e-10 
+
+      Coefficients:
+                                         Estimate Std. Error t value Pr(>|t|)    
+      (Intercept)                       3.029e-10  3.134e-11   9.665  < 2e-16 ***
+      x_component_number                2.001e-11  2.699e-12   7.414 1.38e-12 ***
+      y_component_number               -7.267e-11  8.333e-12  -8.721 2.27e-16 ***
+      vector_length                     7.478e-11  2.622e-12  28.524  < 2e-16 ***
+      x_component_number:vector_length -5.063e-12  2.844e-13 -17.805  < 2e-16 ***
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Residual standard error: 1.959e-10 on 287 degrees of freedom
+      Multiple R-squared:  0.7687,	Adjusted R-squared:  0.7655 
+      F-statistic: 238.5 on 4 and 287 DF,  p-value: < 2.2e-16
+#+end_example
 
 ** 2016-03-21
 *** Study of Nvidia architecture and programming model
@@ -3866,7 +4032,6 @@ Entered on [2015-11-19 jeu. 20:56]
                                      :threads_number_divider => [1]
                                      )
      #+END_EXAMPLE
-
 
 
 
