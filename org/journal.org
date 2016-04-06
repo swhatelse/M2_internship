@@ -4179,6 +4179,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
          if head.empty?
            doc.first[0].each {|key, value| head.push key } 
+           head.push :image_size
            head.push :run_index
            head.push :time_per_pixel
          end
@@ -4192,8 +4193,7 @@ Entered on [2015-11-19 jeu. 20:56]
                combination.each { |option, option_value|
                  tab_temp.push option_value
                }
-               tab_temp.push size[0]
-               tab_temp.push size[1]
+               tab_temp.push size
                tab_temp.push index
                tab_temp.push runs[index]
                tab.push tab_temp
@@ -4217,3 +4217,22 @@ Entered on [2015-11-19 jeu. 20:56]
      - [[file:data/2016_04_02/pilipili2/19_38_38/Data19_38_38_parameters.yaml][Search space]]
      - [[file:data/test_space_2016_04_02_2.yaml][Results of experiments]]
 **** Observations
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data_detailed.rb data/test_space_2016_04_02_2.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       library(ggplot2)
+       ggplot(df) + 
+           aes(x=factor(lws_y), y=time_per_pixel) + 
+           geom_boxplot() + 
+           scale_y_log10() + 
+           geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+           ggtitle("Impact of the local work size the performances")
+     #+end_src
+
+     #+RESULTS:
+
