@@ -4039,7 +4039,7 @@ Entered on [2015-11-19 jeu. 20:56]
            vector_number <- ceiling((elements_number / y_component_number) / vector_length)
 
            tempload <- (vector_number * vector_length) / vector_length * vector_length
-           temp <- 3 * vector_number * (y_component_number+2) * vector_length
+           temp <-  3 * vector_number * (y_component_number+2) * vector_length
            res <- vector_number * y_component_number * vector_length
            tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
            resc <- vector_number * y_component_number * temporary_size * vector_length
@@ -4054,6 +4054,8 @@ Entered on [2015-11-19 jeu. 20:56]
                                                # curve(g, 1, 6)
 
        print(f(53,1,1,2,1024)) # OK
+       print(f(elements_number = 53, y_component_number = 1, vector_length = 1, temporary_size = 1, threads_number = 1024)) 
+
        # :elements_number=>6, :y_component_number=>3, :vector_length=>16, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false, :threads_number=>1024, :lws_y=>2 NOK
        print(f(elements_number = 6, y_component_number = 3, vector_length = 16, temporary_size = 2, threads_number = 1024)) 
 
@@ -4066,6 +4068,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
      : [1] 1682432
+     : [1] 1139712
      : [1] 901120
      : [1] 2473984
      : [1] 901120
@@ -4081,25 +4084,132 @@ Entered on [2015-11-19 jeu. 20:56]
      is true. And we also may have an additionnal cost if load_overlap
      is false: (y_comp + 2) * 3 * vector_number * vector_length
 
-     #+begin_src R :results output :session :exports both
-       f <- function(elements_number, y_component_number=1, vector_length=1, temporary_size=2, threads_number=32) {
-           x_component_number = (elements_number / y_component_number)
-           vector_number = ceiling(x_component_number / vector_length)
-           total_x_size = vector_number * vector_length
+     
+     And the casting also have a big impact, we need to take it into account:
+        #+begin_src R :results output :session :exports both
+          f <- function(elements_number, y_component_number=1, vector_length=1, temporary_size=2, load_overlap=0, threads_number=32) {
+              vector_number <- ceiling((elements_number / y_component_number) / vector_length)
 
-           tempload = (total_x_size / vector_length) * vector_length #+ total_x_size %/% vector_length
-           temp = 3 * vector_number * (y_component_number+2) * vector_length
-           res = vector_number * y_component_number * vector_length
-           tempc = 3 * vector_number * (y_component_number+2) * vector_length * temporary_size
-           resc = vector_number * y_component_number * vector_length * temporary_size
-           tot <- (tempload + temp + res + tempc + resc) * threads_number
-       }
+              tempload <- (1 - load_overlap) * (vector_number * vector_length) / vector_length * vector_length
+              temp <-  load_overlap * 3 * vector_number * (y_component_number+2) * vector_length
+              res <- vector_number * y_component_number * vector_length
+              tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+              # out_vec = (1 - load_overlap) * 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+              out_vec = (1 - load_overlap) * tempc
+              resc <- vector_number * y_component_number * temporary_size * vector_length
 
-       print(f(53,1,1,2,1024))
-       print(f(6,3,16,2,1024))
+              tot <- (tempload + temp + res + tempc + out_vec + resc) * threads_number
+          }
+
+          g <- function(x) {
+              f(elements_number = 24, y_component_number = 2, vector_length = x, temporary_size = 2,threads_number = 1024)
+          }
+
+          plot(g, 1, 16)
+
+
+          print(paste("OK:",f(elements_number = 53, y_component_number = 1, vector_length = 1, temporary_size = 2, load_overlap = 1, threads_number = 1024))) #OK
+
+          # :elements_number=>6, :y_component_number=>3, :vector_length=>16, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false, :threads_number=>1024, :lws_y=>2 NOK
+          print(paste("NOK:",f(elements_number = 6, y_component_number = 3, vector_length = 16, temporary_size = 2, load_overlap = 0, threads_number = 1024)) )
+
+          # :elements_number=>3, :y_component_number=>3, :vector_length=>16, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false, :threads_number=>1024, :lws_y=>2 NOK
+          print(paste("NOK:",f(elements_number = 3, y_component_number = 3, vector_length = 16, temporary_size = 2, load_overlap = 0, threads_number = 1024)))
+          print(paste("OK:",f(elements_number = 3, y_component_number = 3, vector_length = 16, temporary_size = 2, load_overlap = 1, threads_number = 1024)))
+
+          # :elements_number=>12, :y_component_number=>3, :vector_length=>16, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false, :threads_number=>1024, :lws_y=>1
+          print(paste("NOK:",f(elements_number = 12, y_component_number = 3, vector_length = 16, temporary_size = 2, load_overlap = 0, threads_number = 1024)))
+
+          print(paste("NOK:",f(elements_number = 6, y_component_number = 6, vector_length = 8, temporary_size = 2, load_overlap = 0, threads_number = 1024)))
      #+end_src
 
+        #+RESULTS:
+        : [1] "OK: 1628160"
+        : [1] "NOK: 1146880"
+        : [1] "NOK: 1146880"
+        : [1] "OK: 884736"
+        : [1] "NOK: 1146880"
+        : [1] "NOK: 942080"
+
+     The first combination works but use more ressources than the
+     other that do not works. There is something wrong with my modelization
+
+     #+BEGIN_SRC ruby
+       def compute_kernel_size(elements_number=1, y_component_number=1, vector_length=1, temporary_size=2, load_overlap=FALSE, threads_number=32)
+         vector_number = ((elements_number / y_component_number).to_f / vector_length).ceil
+         l_o = load_overlap ? 1 : 0
+         
+         tempload = (1 - l_o) * (vector_number * vector_length) / vector_length * vector_length
+         temp =  l_o * 3 * vector_number * (y_component_number+2) * vector_length
+         res = vector_number * y_component_number * vector_length
+         tempc = 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+         out_vec = (1 - l_o) * tempc
+         resc = vector_number * y_component_number * temporary_size * vector_length
+         
+         return (tempload + temp + res + tempc + out_vec + resc) * threads_number
+       end
+
+       compute_kernel_size(53, 1, 1, 2, true, 1024)
+       # compute_kernel_size(6, 3, 16, 2, false, 1024)
+       # compute_kernel_size(6, 3, 16, 2, false, 1024)
+       # compute_kernel_size(12, 6, 16, 4, true, 1024)
+       # compute_kernel_size(3, 3, 16, 2, false, 1024)
+       compute_kernel_size(3, 3, 16, 2, true, 1024)
+       # compute_kernel_size(12, 3, 16, 2, false, 1024)
+                   
+     #+END_SRC
+
      #+RESULTS:
-     : [1] 1682432
-     : [1] 901120
+     : 884736
+
+** 2016-04-06
+*** Detailed format data :script:   
+     #+BEGIN_SRC ruby :tangle scripts/format_data_detailed.rb
+       require 'yaml'
+       require 'pp'
+       require 'csv'
+       input = ARGV[0]
+
+       tab = []
+       tab_temp = []
+       head = []
+
+       # h = YAML::load(File::open(input).read)
+       hash = YAML::load_documents(File::open(input).read){ |doc|
+
+         if head.empty?
+           doc.first[0].each {|key, value| head.push key } 
+           head.push :run_index
+           head.push :time_per_pixel
+         end
+
+         doc.each {|combination, sizes| 
+           
+
+           sizes.each{|size, runs|
+             runs.each_index{|index|
+               tab_temp = []    
+               combination.each { |option, option_value|
+                 tab_temp.push option_value
+               }
+               tab_temp.push size[0]
+               tab_temp.push size[1]
+               tab_temp.push index
+               tab_temp.push runs[index]
+               tab.push tab_temp
+             }
+           }
+         }
+       }
+
+       CSV.open("/tmp/test.csv", "w"){ |f|
+         f << head
+         tab.each{ |e|
+           f << e
+         }
+       }
+
+     #+END_SRC
+
+     #+RESULTS:
 
