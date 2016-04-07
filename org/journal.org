@@ -14,6 +14,7 @@
   - [ ] Express the search in two different ways
   - [ ] Find how many points do we need for the D-Optimal
   - [X] Correct the bug of nil seed in the brute force optimizer
+  - [ ]  A look to statistic of extreme events and minimum estimtation
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -1532,9 +1533,8 @@ Entered on [2015-11-19 jeu. 20:56]
      #+begin_example
      The following objects are masked from df (pos = 3):
 
-         load_overlap, local_work_size, temporary_size, time_per_pixel,
-         vector_length, vector_recompute, x_component_number,
-         y_component_number
+         load_overlap, temporary_size, time_per_pixel, vector_length,
+         vector_recompute, y_component_number
       x_component_number vector_length  y_component_number temporary_size
       Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
       1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
@@ -1781,14 +1781,13 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
        [[file:img/20160311/pilipili2/pilipili2_v_len_impact.png]]
-
      - The 3 factors:
        #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_3_factors_impact.png :exports both :width 800 :height 500 :session
       library(ggplot2)
       library(gridExtra)
 
       p1 <- qplot(factor(df$x_component_number), df$time_per_pixel) + 
-          scale_y_log10() + 
+          # scale_y_log10() + 
           geom_boxplot() + 
           geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
           ggtitle("Impact of x component number") +
@@ -1796,7 +1795,7 @@ Entered on [2015-11-19 jeu. 20:56]
                 axis.title=element_text(size=14,face="bold"))
 
       p2 <- qplot(factor(df$y_component_number), df$time_per_pixel) + 
-          scale_y_log10() + 
+          # scale_y_log10() + 
           geom_boxplot() + 
           geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
           ggtitle("Impact of y components number") +
@@ -1804,7 +1803,7 @@ Entered on [2015-11-19 jeu. 20:56]
                 axis.title=element_text(size=14,face="bold"))
 
       p3 <- qplot(factor(df$vector_length), df$time_per_pixel) + 
-          scale_y_log10() + 
+          # scale_y_log10() + 
           geom_boxplot() + 
           geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
           ggtitle("Impact of of the vector length") +
@@ -1815,7 +1814,7 @@ Entered on [2015-11-19 jeu. 20:56]
      #+end_src
 
        #+RESULTS:
-     [[file:img/20160311/pilipili2/pilipili2_3_factors_impact.png]]
+       [[file:img/20160311/pilipili2/pilipili2_3_factors_impact.png]]
 
 **** Genetic algo on brute force results
        #+begin_src sh :results output :exports both
@@ -4017,6 +4016,7 @@ Entered on [2015-11-19 jeu. 20:56]
        : 5: In par(default) : le paramètre graphique "din" ne peut être changé
        : 6: In par(default) : le paramètre graphique "page" ne peut être changé
 
+* Avril
 ** 2016-04-01
    - [ ] Have look at the too big residue error when vector recompute
      is false. 
@@ -4254,19 +4254,361 @@ Entered on [2015-11-19 jeu. 20:56]
        }
      #+END_SRC
 **** Observations
+***** Hierarchic
      #+begin_src sh :results output :exports both
        ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
      #+end_src
 
      #+RESULTS:
-
+      
      #+begin_src R :results output :session :exports both
        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-       attach(df)
        summary(df)
-
+       summary(lm(data=df,time_per_pixel ~ elements_number + y_component_number + vector_length + temporary_size + threads_number + lws_y))
+       summary(lm(data=df,time_per_pixel ~ elements_number + y_component_number + vector_length))
+       summary(lm(data=df,time_per_pixel ~ elements_number * y_component_number * vector_length))
+       summary(lm(data=df,time_per_pixel ~ I(1/elements_number) * y_component_number * vector_length))
+       summary(lm(data=df,time_per_pixel ~ I(1/elements_number):vector_length))
+       summary(lm(data=df,time_per_pixel ~ y_component_number + vector_length +  I(1/elements_number):y_component_number + I(1/elements_number):vector_length + y_component_number:vector_length + I(1/elements_number):y_component_number:vector_length ))
+       summary(lm(data=df,time_per_pixel ~ y_component_number + I(elements_number):y_component_number + I(1/elements_number):vector_length  + I(1/elements_number):y_component_number:vector_length ))
+       summary(lm(data=df,time_per_pixel ~ y_component_number + I(elements_number/y_component_number) + I(elements_number/vector_length) + I(1/elements_number):y_component_number:vector_length ))
      #+end_src
 
+     #+RESULTS:
+     #+begin_example
+      vector_length  y_component_number temporary_size vector_recompute load_overlap
+      Min.   : 1.0   Min.   :1.00       Min.   :2      true:2000        true:2000   
+      1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2                                   
+      Median : 4.0   Median :2.50       Median :3                                   
+      Mean   : 6.2   Mean   :2.50       Mean   :3                                   
+      3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4                                   
+      Max.   :16.0   Max.   :4.00       Max.   :4                                   
+      elements_number threads_number      lws_y     time_per_pixel     
+      Min.   : 1.0    Min.   : 32.0   Min.   :1.0   Min.   :1.247e-10  
+      1st Qu.: 4.0    1st Qu.: 64.0   1st Qu.:1.0   1st Qu.:2.308e-10  
+      Median : 8.0    Median :128.0   Median :2.0   Median :3.568e-10  
+      Mean   :15.5    Mean   :156.8   Mean   :2.6   Mean   :4.410e-10  
+      3rd Qu.:18.0    3rd Qu.:256.0   3rd Qu.:4.0   3rd Qu.:5.040e-10  
+      Max.   :64.0    Max.   :256.0   Max.   :8.0   Max.   :2.420e-09
+
+     Call:
+     lm(formula = time_per_pixel ~ elements_number + y_component_number + 
+         vector_length + temporary_size + threads_number + lws_y, 
+         data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -3.886e-10 -1.502e-10 -5.345e-11  1.087e-10  1.500e-09 
+
+     Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)         4.488e-10  2.447e-11  18.341   <2e-16 ***
+     elements_number    -3.059e-12  3.686e-13  -8.299   <2e-16 ***
+     y_component_number -6.110e-11  5.429e-12 -11.255   <2e-16 ***
+     vector_length       3.376e-11  1.009e-12  33.451   <2e-16 ***
+     temporary_size     -8.882e-14  5.506e-12  -0.016    0.987    
+     threads_number     -7.995e-14  7.288e-14  -1.097    0.273    
+     lws_y              -1.595e-12  2.988e-12  -0.534    0.594    
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 2.462e-10 on 1993 degrees of freedom
+     Multiple R-squared:  0.422,	Adjusted R-squared:  0.4202 
+     F-statistic: 242.5 on 6 and 1993 DF,  p-value: < 2.2e-16
+
+     Call:
+     lm(formula = time_per_pixel ~ elements_number + y_component_number + 
+         vector_length, data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -3.799e-10 -1.500e-10 -5.618e-11  1.140e-10  1.512e-09 
+
+     Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)         4.319e-10  1.487e-11   29.05   <2e-16 ***
+     elements_number    -3.059e-12  3.685e-13   -8.30   <2e-16 ***
+     y_component_number -6.110e-11  5.429e-12  -11.26   <2e-16 ***
+     vector_length       3.376e-11  1.009e-12   33.45   <2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 2.462e-10 on 1996 degrees of freedom
+     Multiple R-squared:  0.4212,	Adjusted R-squared:  0.4203 
+     F-statistic: 484.1 on 3 and 1996 DF,  p-value: < 2.2e-16
+
+     Call:
+     lm(formula = time_per_pixel ~ elements_number * y_component_number * 
+         vector_length, data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -4.146e-10 -1.103e-10 -1.981e-11  7.899e-11  1.175e-09 
+
+     Coefficients:
+                                                        Estimate Std. Error t value
+     (Intercept)                                       3.225e-10  2.262e-11  14.257
+     elements_number                                   1.128e-11  1.702e-12   6.626
+     y_component_number                               -7.558e-11  8.430e-12  -8.965
+     vector_length                                     6.846e-11  2.739e-12  24.993
+     elements_number:y_component_number               -1.649e-12  4.919e-13  -3.352
+     elements_number:vector_length                    -4.146e-12  2.061e-13 -20.116
+     y_component_number:vector_length                 -3.350e-12  1.021e-12  -3.282
+     elements_number:y_component_number:vector_length  8.161e-13  5.957e-14  13.700
+                                                      Pr(>|t|)    
+     (Intercept)                                       < 2e-16 ***
+     elements_number                                  4.42e-11 ***
+     y_component_number                                < 2e-16 ***
+     vector_length                                     < 2e-16 ***
+     elements_number:y_component_number               0.000817 ***
+     elements_number:vector_length                     < 2e-16 ***
+     y_component_number:vector_length                 0.001049 ** 
+     elements_number:y_component_number:vector_length  < 2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 2.015e-10 on 1992 degrees of freedom
+     Multiple R-squared:  0.6132,	Adjusted R-squared:  0.6119 
+     F-statistic: 451.2 on 7 and 1992 DF,  p-value: < 2.2e-16
+
+     Call:
+     lm(formula = time_per_pixel ~ I(1/elements_number) * y_component_number * 
+         vector_length, data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -2.352e-10 -7.928e-11 -2.335e-11  8.034e-11  5.345e-10 
+
+     Coefficients:
+                                                             Estimate Std. Error
+     (Intercept)                                            4.215e-10  1.240e-11
+     I(1/elements_number)                                   4.987e-11  3.323e-11
+     y_component_number                                    -5.210e-11  4.463e-12
+     vector_length                                         -6.876e-12  1.502e-12
+     I(1/elements_number):y_component_number               -1.797e-10  2.024e-11
+     I(1/elements_number):vector_length                     6.455e-11  4.024e-12
+     y_component_number:vector_length                       2.287e-12  5.405e-13
+     I(1/elements_number):y_component_number:vector_length  5.650e-11  2.451e-12
+                                                           t value Pr(>|t|)    
+     (Intercept)                                            33.985  < 2e-16 ***
+     I(1/elements_number)                                    1.501    0.134    
+     y_component_number                                    -11.673  < 2e-16 ***
+     vector_length                                          -4.578 4.98e-06 ***
+     I(1/elements_number):y_component_number                -8.880  < 2e-16 ***
+     I(1/elements_number):vector_length                     16.041  < 2e-16 ***
+     y_component_number:vector_length                        4.232 2.42e-05 ***
+     I(1/elements_number):y_component_number:vector_length  23.053  < 2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 1.057e-10 on 1992 degrees of freedom
+     Multiple R-squared:  0.8936,	Adjusted R-squared:  0.8932 
+     F-statistic:  2390 on 7 and 1992 DF,  p-value: < 2.2e-16
+
+     Call:
+     lm(formula = time_per_pixel ~ I(1/elements_number):vector_length, 
+         data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -3.842e-10 -9.372e-11 -3.275e-11  7.100e-11  9.773e-10 
+
+     Coefficients:
+                                         Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)                        2.768e-10  3.650e-12   75.85   <2e-16 ***
+     I(1/elements_number):vector_length 1.312e-10  1.435e-12   91.42   <2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 1.421e-10 on 1998 degrees of freedom
+     Multiple R-squared:  0.8071,	Adjusted R-squared:  0.807 
+     F-statistic:  8357 on 1 and 1998 DF,  p-value: < 2.2e-16
+
+     Call:
+     lm(formula = time_per_pixel ~ y_component_number + vector_length + 
+         I(1/elements_number):y_component_number + I(1/elements_number):vector_length + 
+         y_component_number:vector_length + I(1/elements_number):y_component_number:vector_length, 
+         data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -2.337e-10 -7.975e-11 -2.302e-11  7.945e-11  5.375e-10 
+
+     Coefficients:
+                                                             Estimate Std. Error
+     (Intercept)                                            4.332e-10  9.662e-12
+     y_component_number                                    -5.677e-11  3.200e-12
+     vector_length                                         -7.937e-12  1.325e-12
+     y_component_number:I(1/elements_number)               -1.537e-10  1.049e-11
+     vector_length:I(1/elements_number)                     6.909e-11  2.659e-12
+     y_component_number:vector_length                       2.712e-12  4.606e-13
+     y_component_number:vector_length:I(1/elements_number)  5.414e-11  1.880e-12
+                                                           t value Pr(>|t|)    
+     (Intercept)                                            44.834  < 2e-16 ***
+     y_component_number                                    -17.739  < 2e-16 ***
+     vector_length                                          -5.989 2.50e-09 ***
+     y_component_number:I(1/elements_number)               -14.650  < 2e-16 ***
+     vector_length:I(1/elements_number)                     25.981  < 2e-16 ***
+     y_component_number:vector_length                        5.887 4.59e-09 ***
+     y_component_number:vector_length:I(1/elements_number)  28.803  < 2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 1.057e-10 on 1993 degrees of freedom
+     Multiple R-squared:  0.8935,	Adjusted R-squared:  0.8932 
+     F-statistic:  2786 on 6 and 1993 DF,  p-value: < 2.2e-16
+
+     Call:
+     lm(formula = time_per_pixel ~ y_component_number + I(elements_number):y_component_number + 
+         I(1/elements_number):vector_length + I(1/elements_number):y_component_number:vector_length, 
+         data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -2.886e-10 -5.906e-11 -1.170e-11  4.083e-11  5.309e-10 
+
+     Coefficients:
+                                                             Estimate Std. Error
+     (Intercept)                                            4.073e-10  6.471e-12
+     y_component_number                                    -9.381e-11  2.881e-12
+     y_component_number:I(elements_number)                  1.282e-12  4.652e-14
+     I(1/elements_number):vector_length                     4.480e-11  2.125e-12
+     y_component_number:I(1/elements_number):vector_length  6.352e-11  1.345e-12
+                                                           t value Pr(>|t|)    
+     (Intercept)                                             62.93   <2e-16 ***
+     y_component_number                                     -32.56   <2e-16 ***
+     y_component_number:I(elements_number)                   27.56   <2e-16 ***
+     I(1/elements_number):vector_length                      21.08   <2e-16 ***
+     y_component_number:I(1/elements_number):vector_length   47.24   <2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 9.667e-11 on 1995 degrees of freedom
+     Multiple R-squared:  0.9108,	Adjusted R-squared:  0.9106 
+     F-statistic:  5094 on 4 and 1995 DF,  p-value: < 2.2e-16
+
+     Call:
+     lm(formula = time_per_pixel ~ y_component_number + I(elements_number/y_component_number) + 
+         I(elements_number/vector_length) + I(1/elements_number):y_component_number:vector_length, 
+         data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -4.098e-10 -5.348e-11 -1.112e-11  5.161e-11  6.836e-10 
+
+     Coefficients:
+                                                             Estimate Std. Error
+     (Intercept)                                            3.278e-10  6.952e-12
+     y_component_number                                    -8.504e-11  2.138e-12
+     I(elements_number/y_component_number)                  1.473e-11  5.265e-13
+     I(elements_number/vector_length)                       2.070e-12  2.837e-13
+     y_component_number:I(1/elements_number):vector_length  9.243e-11  7.289e-13
+                                                           t value Pr(>|t|)    
+     (Intercept)                                            47.152  < 2e-16 ***
+     y_component_number                                    -39.767  < 2e-16 ***
+     I(elements_number/y_component_number)                  27.973  < 2e-16 ***
+     I(elements_number/vector_length)                        7.295 4.28e-13 ***
+     y_component_number:I(1/elements_number):vector_length 126.812  < 2e-16 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 1.013e-10 on 1995 degrees of freedom
+     Multiple R-squared:  0.902,	Adjusted R-squared:  0.9018 
+     F-statistic:  4590 on 4 and 1995 DF,  p-value: < 2.2e-16
+     #+end_example
+
+     - Here is the model with the highest R² I was able to get but it
+       is not yet satisfying:
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_model_plot.png :exports both :width 800 :height 600 :session
+         model <- lm(data=df,time_per_pixel ~ y_component_number + I(elements_number/y_component_number) + I(elements_number/vector_length) + I(1/elements_number):y_component_number:vector_length )
+         default <- par()
+         par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+         plot(model)
+         par(default)
+       #+end_src
+
+       #+RESULTS:
+     [[file:img/20160311/pilipili2/pilipili2_model_plot.png]]
+
+     #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_hierarchic_impact.png :exports both :width 800 :height 500 :session
+      library(ggplot2)
+      library(gridExtra)
+
+      p1 <- qplot(factor(df$elements_number), df$time_per_pixel) + 
+          scale_y_log10() + 
+          geom_boxplot() + 
+          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+          ggtitle("Impact of elements number") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      p2 <- qplot(factor(df$y_component_number), df$time_per_pixel) + 
+          scale_y_log10() + 
+          geom_boxplot() + 
+          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+          ggtitle("Impact of y components number") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      p3 <- qplot(factor(df$vector_length), df$time_per_pixel) + 
+          scale_y_log10() + 
+          geom_boxplot() + 
+          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+          ggtitle("Impact of of the vector length") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      p4 <- qplot(factor(df$threads_number), df$time_per_pixel) + 
+          scale_y_log10() + 
+          geom_boxplot() + 
+          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+          ggtitle("Impact of of the threads number") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      p5 <- qplot(factor(df$lws_y), df$time_per_pixel) + 
+          scale_y_log10() + 
+          geom_boxplot() + 
+          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+          ggtitle("Impact of of the lws_y") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      grid.arrange(p1, p2, p3, p4, p5, ncol=3, top="") 
+     #+end_src
+
+     #+RESULTS:
+     [[file:img/20160311/pilipili2/pilipili2_hierarchic_impact.png]]
+
+     #+begin_src R :results output :session :exports both
+        library(ggplot2)
+        ggplot(df) + 
+        aes(x=factor(elements_number), y=time_per_pixel, color=factor(y_component_number)) + 
+        scale_y_log10() + 
+        geom_boxplot() + 
+        geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of the local work size the performances")
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+        library(ggplot2)
+        ggplot(df) + 
+        aes(x=factor(elements_number), y=time_per_pixel, color=factor(vector_length)) + 
+        scale_y_log10() + 
+        geom_boxplot() + 
+        geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of the local work size the performances")
+     #+end_src
+
+     #+RESULTS:
+
+
+***** Linear
+**** About linear regression
+     - Used model relationship between *scalars* predictor variables and
+       response variables \to wikipedia
 *** Bruteforce pilipili2
 **** Results
      - [[file:data/2016_04_02/pilipili2/19_13_54/Info19_38_38.org][Conditions of experiment]]
@@ -4292,3 +4634,144 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
 
+     
+** 2016-04-07
+*** Discution with Arnaud come back on the observation of x_component_number
+**** Results
+     - [[file:data/2016_03_11/pilipili2/19_13_54/Info19_13_54.org][Conditions of experiment]]
+     - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml][Search space]]
+     - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml][Results of experiments]]
+**** Observations
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+     #+end_src
+     
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       attach(df)
+       summary(df)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+     The following objects are masked from df (pos = 4):
+
+         load_overlap, local_work_size, temporary_size, time_per_pixel,
+         vector_length, vector_recompute, x_component_number,
+         y_component_number
+
+     The following objects are masked from df (pos = 5):
+
+         load_overlap, temporary_size, time_per_pixel, vector_length,
+         vector_recompute, y_component_number
+      x_component_number vector_length  y_component_number temporary_size
+      Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
+      1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
+      Median : 4.0       Median : 4.0   Median :2.50       Median :3     
+      Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3     
+      3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4     
+      Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4     
+
+      vector_recompute load_overlap    local_work_size time_per_pixel     
+      true:2000        true:2000    [128, 1, 1]:200    Min.   :1.247e-10  
+                                    [128, 2, 1]:200    1st Qu.:2.308e-10  
+                                    [256, 1, 1]:200    Median :3.568e-10  
+                                    [32, 1, 1] :200    Mean   :4.410e-10  
+                                    [32, 2, 1] :200    3rd Qu.:5.040e-10  
+                                    [32, 4, 1] :200    Max.   :2.420e-09  
+                                    (Other)    :800
+#+end_example
+
+     - Knowing what should be the value of y_component_number and
+       vector_length lets fix them and see how de result evolves
+       regarding x_component_number:
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       library(ggplot2)
+
+       ggplot(df[df$y_component_number==4 & df$vector_length==1,]) + 
+           aes(x=factor(x_component_number),color=factor(y_component_number), size = log(vector_length), y=time_per_pixel) +
+           geom_jitter() + 
+           geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+           ggtitle("Impact of x component number") +
+           theme(axis.text=element_text(size=12),
+                 axis.title=element_text(size=14,face="bold"))
+
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-4317euk/figure43178Ej.png]]
+     - Another view of the impact of x_component_number showing the
+       estimate of the mean. We can see where will pass the regression
+       line and it will tell us the best is at x_component_number
+       = 4. But it not true, what interest us is the not the value but
+       the minimum. The shape of the minimum and the mean is completly
+       different. And the linear regression would lead us to the wrong
+       direction.
+       We are not interested about the shape of the esperance.
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       library(ggplot2)
+       library(plyr)
+       df2 = ddply(df,c("x_component_number"), summarize,
+                    mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+       ggplot(df) + 
+           aes(x=factor(x_component_number), y=time_per_pixel) +
+           geom_jitter() + 
+           geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+           ggtitle("Impact of x component number") + ylim(0,NA) +
+           geom_errorbar(data=df2,aes(x=factor(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+           theme(axis.text=element_text(size=12),
+                 axis.title=element_text(size=14,face="bold"))
+
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-4317euk/figure43179TS.png]]
+     - Repartition of combination
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         library(ggplot2)
+                library(plyr)
+
+                df$x_component_number = factor(df$x_component_number)
+                df2 = ddply(df,c("x_component_number"), summarize,
+                             mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+                ggplot(df,aes(x=time_per_pixel
+                  # ,color=factor(x_component_number)
+                 )) + 
+         #           geom_density() + 
+                    geom_histogram(binwidth=.1e-10) + 
+                    # geom_vline(data=df2,aes(xintercept=mean)) +
+         #           facet_wrap(.~x_component_number) +
+                    theme(axis.text=element_text(size=12),
+                          axis.title=element_text(size=14,face="bold"))
+
+       #+end_src
+     
+       #+RESULTS:
+       [[file:/tmp/babel-4317euk/figure4317wJM.png]]
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         library(ggplot2)
+                library(plyr)
+
+                df$x_component_number = factor(df$x_component_number)
+                df2 = ddply(df,c("x_component_number"), summarize,
+                             mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+                ggplot(df,aes(x=time_per_pixel
+                  # ,color=factor(x_component_number)
+                 )) + 
+         #           geom_density() + 
+                    stat_ecdf() + 
+                    # geom_vline(data=df2,aes(xintercept=mean)) +
+         #           facet_wrap(.~x_component_number) +
+                    theme(axis.text=element_text(size=12),
+                          axis.title=element_text(size=14,face="bold"))
+
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-4317euk/figure4317Xoe.png]]
+     - Looking for the min, regression quantile
+       Estimate of the minimum try \to -exp
