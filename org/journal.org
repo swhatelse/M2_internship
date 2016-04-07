@@ -4210,7 +4210,49 @@ Entered on [2015-11-19 jeu. 20:56]
        }
 
      #+END_SRC
-
+*** Conversion data 2016_03_11
+**** Conversion to hierarchic parameters :script:
+     #+BEGIN_SRC ruby :tangle scripts/convert_to_hierarchic.rb
+        require 'yaml'
+        
+        input = ARGV[0]
+        
+        hash = YAML::load_documents(File::open(input).read){ |doc|
+          doc.each { |combination, time|
+            combination[:elements_number] = combination[:x_component_number] * combination[:y_component_number]
+            combination.delete(:x_component_number)
+        
+            combination[:threads_number] = combination[:local_work_size][0] * combination[:local_work_size][1]
+            combination[:lws_y] = combination[:local_work_size][1]
+            combination.delete(:local_work_size)
+          }
+        }
+        
+        converted_file = File.dirname(input) + "/" + File.basename(input,".yaml") + "_hierachic.yaml"
+        File.open(converted_file , "w") { |f|
+         f.write(hash.to_yaml)
+       }
+     #+END_SRC
+**** Conversion to linear_parameters :script:
+     #+BEGIN_SRC ruby :tangle scripts/convert_to_linear.rb
+        require 'yaml'
+        
+        input = ARGV[0]
+        
+        hash = YAML::load_documents(File::open(input).read){ |doc|
+          doc.each { |combination, time|
+             
+            combination[:lws_x] = combination[:local_work_size][0]
+            combination[:lws_y] = combination[:local_work_size][1]
+            combination.delete(:local_work_size)
+          }
+        }
+        
+        converted_file = File.dirname(input) + "/" + File.basename(input,".yaml") + "_linear.yaml"
+        File.open(converted_file , "w") { |f|
+         f.write(hash.to_yaml)
+       }
+     #+END_SRC
 *** Bruteforce pilipili2
 **** Results
      - [[file:data/2016_04_02/pilipili2/19_13_54/Info19_38_38.org][Conditions of experiment]]
