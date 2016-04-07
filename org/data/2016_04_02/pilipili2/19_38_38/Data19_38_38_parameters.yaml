@@ -1,0 +1,40 @@
+---
+:elements_number: !ruby/range
+  begin: 1
+  end: 4
+  excl: false
+:y_component_number: !ruby/range
+  begin: 1
+  end: 6
+  excl: false
+:vector_length:
+- 1
+- 2
+- 4
+- 8
+- 16
+:temporary_size:
+- 2
+- 4
+:vector_recompute:
+- true
+:load_overlap:
+- true
+- false
+:threads_number:
+- 32
+- 64
+- 128
+- 256
+- 512
+:lws_y:
+- 1
+- 2
+- 4
+- 8
+- 16
+- 32
+- 64
+- 128
+- 256
+- 512
