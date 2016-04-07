@@ -3,7 +3,7 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s)
 
-* TODO [3/8]
+* TODO [4/8]
   - [ ] Run brute force with load_overlap = [true,false],
     vector_recompute = [true,false] and different combination of
     local_work_size
@@ -13,7 +13,7 @@
   - [ ] Try to correctly tuned the Genetic algo
   - [ ] Express the search in two different ways
   - [ ] Find how many points do we need for the D-Optimal
-  - [ ] Correct the bug of nil seed in the brute force optimizer
+  - [X] Correct the bug of nil seed in the brute force optimizer
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -4230,7 +4230,7 @@ Entered on [2015-11-19 jeu. 20:56]
         
         converted_file = File.dirname(input) + "/" + File.basename(input,".yaml") + "_hierachic.yaml"
         File.open(converted_file , "w") { |f|
-         f.write(hash.to_yaml)
+         f.write(hash.first.to_yaml)
        }
      #+END_SRC
 **** Conversion to linear_parameters :script:
@@ -4250,7 +4250,7 @@ Entered on [2015-11-19 jeu. 20:56]
         
         converted_file = File.dirname(input) + "/" + File.basename(input,".yaml") + "_linear.yaml"
         File.open(converted_file , "w") { |f|
-         f.write(hash.to_yaml)
+         f.write(hash.first.to_yaml)
        }
      #+END_SRC
 **** Observations
