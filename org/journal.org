@@ -4253,6 +4253,20 @@ Entered on [2015-11-19 jeu. 20:56]
          f.write(hash.to_yaml)
        }
      #+END_SRC
+**** Observations
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       attach(df)
+       summary(df)
+
+     #+end_src
+
 *** Bruteforce pilipili2
 **** Results
      - [[file:data/2016_04_02/pilipili2/19_13_54/Info19_38_38.org][Conditions of experiment]]
