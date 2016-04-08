@@ -4260,7 +4260,7 @@ Entered on [2015-11-19 jeu. 20:56]
      #+end_src
 
      #+RESULTS:
-      
+==      
      #+begin_src R :results output :session :exports both
        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
        summary(df)
@@ -4515,7 +4515,7 @@ Entered on [2015-11-19 jeu. 20:56]
      Residual standard error: 1.013e-10 on 1995 degrees of freedom
      Multiple R-squared:  0.902,	Adjusted R-squared:  0.9018 
      F-statistic:  4590 on 4 and 1995 DF,  p-value: < 2.2e-16
-     #+end_example
+#+end_example
 
      - Here is the model with the highest R² I was able to get but it
        is not yet satisfying:
@@ -4633,6 +4633,7 @@ Entered on [2015-11-19 jeu. 20:56]
      #+end_src
 
      #+RESULTS:
+     :  Error in factor(lws_y) : objet 'lws_y' introuvable
 
      
 ** 2016-04-07
@@ -4642,6 +4643,7 @@ Entered on [2015-11-19 jeu. 20:56]
      - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml][Search space]]
      - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml][Results of experiments]]
 **** Observations
+***** Evolution of the mean is different from the one the extreme values
      #+begin_src sh :results output :exports both
        ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
      #+end_src
@@ -4656,16 +4658,6 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
      #+begin_example
-     The following objects are masked from df (pos = 4):
-
-         load_overlap, local_work_size, temporary_size, time_per_pixel,
-         vector_length, vector_recompute, x_component_number,
-         y_component_number
-
-     The following objects are masked from df (pos = 5):
-
-         load_overlap, temporary_size, time_per_pixel, vector_length,
-         vector_recompute, y_component_number
       x_component_number vector_length  y_component_number temporary_size
       Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
       1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
@@ -4701,7 +4693,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-4317euk/figure43178Ej.png]]
+       [[file:/tmp/babel-5932xE4/figure5932y-K.png]]
      - Another view of the impact of x_component_number showing the
        estimate of the mean. We can see where will pass the regression
        line and it will tell us the best is at x_component_number
@@ -4727,7 +4719,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-4317euk/figure43179TS.png]]
+       [[file:/tmp/babel-5932xE4/figure5932w1I.png]]
      - Repartition of combination
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -4750,7 +4742,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
      
        #+RESULTS:
-       [[file:/tmp/babel-4317euk/figure4317wJM.png]]
+       [[file:/tmp/babel-5932xE4/figure5932_IR.png]]
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          library(ggplot2)
@@ -4772,6 +4764,76 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-4317euk/figure4317Xoe.png]]
+       [[file:/tmp/babel-5932xE4/figure5932MTX.png]]
      - Looking for the min, regression quantile
        Estimate of the minimum try \to -exp
+       
+***** Weighted regression
+     - The exp function is not suited for very small number:
+         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+           f <- function(x){ (1/2)^x }
+           curve(f, 2.81e-10, 2.81e-9)
+         #+end_src
+
+         #+RESULTS:
+         [[file:/tmp/babel-5932xE4/figure5932Zdd.png]]
+     - Maybe the inverse function will do the trick:
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         g <- function(x){ 1/x^2 }
+         curve(g, 2.81e-10, 2.81e-9)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-5932xE4/figure5932c6Y.png]]
+*****  Quantiles regression
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+       #+end_src
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       library(ggplot2)
+       library(plyr)
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+       df2 = ddply(df,c("x_component_number"), summarize,
+       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+       ggplot(df) + 
+       aes(x=x_component_number, y=time_per_pixel ) +
+       geom_point(alpha=0.2) +
+       geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+       geom_errorbar(data=df2,aes(x=(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+       geom_smooth(method="lm", formula = y ~ x + I(1/x) ) +
+       stat_quantile(quantiles=0.1, colour="green")
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-5932xE4/figure5932ZWp.png]]
+
+       - Let's try with a more complex case
+          #+begin_src sh :results output :exports both
+            ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
+          #+end_src
+
+          #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+            library(ggplot2)
+            library(plyr)
+            df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+            df2 = ddply(df,c("elements_number"), summarize,
+                        mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+            ggplot(df) + 
+                aes(x=elements_number, y=time_per_pixel ) +
+                geom_point() +
+                geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+                geom_errorbar(data=df2,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+                geom_smooth(method="lm", formula = y ~ I(1/x) ) +
+                stat_quantile(quantiles=0.1, formula = y ~ x + I(1/x), colour="green")
+          #+end_src
+
+          #+RESULTS:
+          [[file:/tmp/babel-5932xE4/figure5932MFv.png]]
+
+     
+
