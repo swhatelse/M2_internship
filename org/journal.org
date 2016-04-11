@@ -4634,7 +4634,6 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
      :  Error in factor(lws_y) : objet 'lws_y' introuvable
-
      
 ** 2016-04-07
 *** Discution with Arnaud come back on the observation of x_component_number
@@ -4785,35 +4784,54 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
        [[file:/tmp/babel-5932xE4/figure5932c6Y.png]]
-*****  Quantiles regression
+***** Quantiles regression
        #+begin_src sh :results output :exports both
          ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
        #+end_src
 
-       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-       library(ggplot2)
-       library(plyr)
-       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-
-       df2 = ddply(df,c("x_component_number"), summarize,
-       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-
-       ggplot(df) + 
-       aes(x=x_component_number, y=time_per_pixel ) +
-       geom_point(alpha=0.2) +
-       geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-       geom_errorbar(data=df2,aes(x=(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
-       geom_smooth(method="lm", formula = y ~ x + I(1/x) ) +
-       stat_quantile(quantiles=0.1, colour="green")
-       #+end_src
-
        #+RESULTS:
-       [[file:/tmp/babel-5932xE4/figure5932ZWp.png]]
+==      
+       - 5-percentiles ~ minium \to Jain's book
+         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+           library(ggplot2)
+           library(plyr)
+           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+           df2 = ddply(df,c("x_component_number"), summarize,
+                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+           ggplot(df) + 
+               aes(x=x_component_number, y=time_per_pixel ) +
+               geom_point(alpha=0.2) +
+               geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+               geom_errorbar(data=df2,aes(x=(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+               geom_smooth(method="lm", formula = y ~ x + I(1/x) ) +
+               stat_quantile(quantiles=0.05, colour="green")
+          #+end_src
+
+         #+RESULTS:
+         [[file:/tmp/babel-6851fTT/figure6851vss.png]]
+
+         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 900 :height 400 :session
+           library(ggplot2)
+           library(plyr)
+           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+           ggplot(df) + 
+               aes(x=time_per_pixel) +
+               geom_density() + 
+               facet_grid(. ~ x_component_number)
+         #+end_src
+
+         #+RESULTS:
+         [[file:/tmp/babel-6851fTT/figure6851vBJ.png]]
 
        - Let's try with a more complex case
           #+begin_src sh :results output :exports both
             ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
           #+end_src
+
+          #+RESULTS:
 
           #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
             library(ggplot2)
@@ -4829,11 +4847,157 @@ Entered on [2015-11-19 jeu. 20:56]
                 geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
                 geom_errorbar(data=df2,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err)) +
                 geom_smooth(method="lm", formula = y ~ I(1/x) ) +
-                stat_quantile(quantiles=0.1, formula = y ~ x + I(1/x), colour="green")
+                stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), colour="green")
           #+end_src
 
           #+RESULTS:
-          [[file:/tmp/babel-5932xE4/figure5932MFv.png]]
-
+          [[file:/tmp/babel-4402ze1/figure44023Kg.png]]
      
+          #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+           library(ggplot2)
+           library(plyr)
+
+           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+           df$elements_number = factor(df$elements_number)
+           df2 = ddply(df,c("elements_number"), summarize,
+                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+           ggplot(df,aes(x=time_per_pixel
+                         )) + 
+               stat_ecdf() + 
+               theme(axis.text=element_text(size=12),
+                     axis.title=element_text(size=14,face="bold"))
+         #+end_src
+
+          #+RESULTS:
+         [[file:/tmp/babel-5932xE4/figure5932aXw.png]]
+
+***** D-optimal
+****** Testing x_component_number
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+       #+end_src
+
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        library(DoE.base)
+        library(DoE.wrapper)
+        Design.1 <- lhs.design( type= "maximin" , nruns= 500 ,nfactors= 5 ,digits= NULL ,seed=20049 , factor.names=list(log_x_component_number=c(0,4), y_component_number=c(1,4),
+                                                                                                                        log_vector_length=c(0,4), local_work_size_index=c(1,10),
+                                                                                                                        log_temporary_size=c(1,2) ) )
+
+        Design.1.rounded <- round(Design.1) # Ideally we would like to express factor(local_work_size_index) but the Dopt.design does not know how to handle it
+        Design.1.Dopt <- Dopt.design( 60 , data= Design.1.rounded , formula= 
+                                                                        "~(log_x_component_number  + y_component_number  + log_vector_length  + local_work_size_index  + log_temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        set <- data.frame()
+        for(i in 1:nrow(Design.1.Dopt)){
+            set <- rbind(set, df[ df$x_component_number == 2^Design.1.Dopt$log_x_component_number[i]
+                                 & df$y_component_number == Design.1.Dopt$y_component_number[i]
+                                 & df$vector_length == 2^Design.1.Dopt$log_vector_length[i]
+                                 & df$temporary_size == 2^Design.1.Dopt$log_temporary_size[i] 
+                                 & as.numeric(df$local_work_size) == Design.1.Dopt$local_work_size_index[i], ])
+
+
+        }
+
+        library(ggplot2)
+        library(plyr)
+
+        df2 = ddply(set,c("x_component_number"), summarize,
+                    mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+        ggplot(set) + 
+            aes(x=x_component_number, y=time_per_pixel ) +
+            geom_point(alpha=0.2) +
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=df2,aes(x=(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+            geom_smooth(method="lm", formula = y ~ x + I(1/x) ) +
+            stat_quantile(quantiles=0.05, colour="green")
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-6851fTT/figure6851WnP.png]]
+
+****** Hierarchic
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
+       #+end_src
+
+       #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      library(DoE.base)
+      library(DoE.wrapper)
+
+      y_component_number_values <- c(1,2,3,4)
+      vector_length_values <- c(1,2,4,8,16)
+      lws_y_values <- c(1,2,4,8)
+      temporary_sizes_values <- c(2,4)
+      x_component_values <- c(1,2,4,8,16)
+      lws_values <-list(c(32,1), c(32,2), c(32,4), c(32,8), c(64,1), c(64,2), c(64,4), c(128,1) , c(128,2) ,c(256,1))
+
+      elements_number <- c()
+      y_component_number <- c()
+      vector_length <- c()
+      threads_number <- c()
+      lws_y <- c()
+      temporary_size <- c()
+
+      for(x in x_component_values){
+          for(y in y_component_number_values){
+              for(v in vector_length_values){
+                  for(l in lws_values) {
+                      for(s in temporary_sizes_values){
+                          elements_number[length(elements_number)+1] <- y * x
+                          y_component_number[length(y_component_number)+1] <- y
+                          vector_length[length(vector_length)+1] <- v
+                          threads_number[length(threads_number)+1] <- l[1] * l[2]
+                          lws_y[length(lws_y)+1] <- l[2]
+                          temporary_size[length(temporary_size)+1] <- s
+                      }
+                  }
+              }
+          }
+      }
+
+      complete_set <- data.frame(elements_number, y_component_number, vector_length, threads_number, lws_y, temporary_size)
+
+
+      Dopt <- Dopt.design( 60 , data=complete_set, formula= 
+                                                                "~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+      set <- data.frame()
+      for(i in 1:nrow(Dopt)){
+          set <- rbind(set, df[ df$elements_number == Dopt$elements_number[i]
+                               & df$y_component_number == Dopt$y_component_number[i]
+                               & df$vector_length == Dopt$vector_length[i]
+                               & df$temporary_size == Dopt$temporary_size[i] 
+                               & df$threads_number == Dopt$threads_number[i]
+                               & df$lws_y == Dopt$lws_y[i], ])
+
+
+      }
+
+       library(ggplot2)
+       library(plyr)
+
+       df2 = ddply(set,c("x_component_number"), summarize,
+                   mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+       ggplot(set) + 
+           aes(x=elements_number, y=time_per_pixel ) +
+           geom_point(alpha=0.2) +
+           geom_hline(yintercept=min(set$time_per_pixel), color="red", linetype=2) +
+           geom_errorbar(data=df2,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+           geom_smooth(method="lm", formula = y ~ x + I(1/x ) +
+           stat_quantile(quantiles=0.05, colour="green")
+      #+end_src
+
+    #+RESULTS:
+    :  Error in eval(expr, envir, enclos) : 
+    :   objet 'x_component_number' introuvable
+    :  Smoothing formula not specified. Using: y ~ x
+
+
 
