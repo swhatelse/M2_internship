@@ -3,18 +3,17 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s)
 
-* TODO [4/8]
-  - [ ] Run brute force with load_overlap = [true,false],
-    vector_recompute = [true,false] and different combination of
-    local_work_size
+* TODO [6/9]
+  - [X] Run brute force with load_overlap = [true,false]
+    and different combination of local_work_size
   - [X] Try D-Optimal design if we can get enough information
   - [X] Add checkpointing mechanism
   - [X] Add Constraint mechanism
-  - [ ] Try to correctly tuned the Genetic algo
-  - [ ] Express the search in two different ways
+  - [ ] Correctly tune the Genetic algo
+  - [X] Express the search in two different ways
   - [ ] Find how many points do we need for the D-Optimal
   - [X] Correct the bug of nil seed in the brute force optimizer
-  - [ ]  A look to statistic of extreme events and minimum estimtation
+  - [ ] Take a look to statistic of extreme events and minimum estimtation
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -4657,6 +4656,10 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
      #+begin_example
+     The following objects are masked _by_ .GlobalEnv:
+
+         temporary_size, vector_length, x_component_number,
+         y_component_number
       x_component_number vector_length  y_component_number temporary_size
       Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
       1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
@@ -4692,7 +4695,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-5932xE4/figure5932y-K.png]]
+       [[file:/tmp/babel-6757t23/figure6757_tv.png]]
      - Another view of the impact of x_component_number showing the
        estimate of the mean. We can see where will pass the regression
        line and it will tell us the best is at x_component_number
@@ -4718,7 +4721,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-5932xE4/figure5932w1I.png]]
+       [[file:/tmp/babel-6757t23/figure6757M41.png]]
      - Repartition of combination
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -4770,12 +4773,11 @@ Entered on [2015-11-19 jeu. 20:56]
 ***** Weighted regression
      - The exp function is not suited for very small number:
          #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-           f <- function(x){ (1/2)^x }
-           curve(f, 2.81e-10, 2.81e-9)
+           f <- function(x){ (1/2)^x } curve(f, 2.81e-10, 2.81e-9)
          #+end_src
 
          #+RESULTS:
-         [[file:/tmp/babel-5932xE4/figure5932Zdd.png]]
+         [[file:/tmp/babel-6757t23/figure6757YB1.png]]
      - Maybe the inverse function will do the trick:
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          g <- function(x){ 1/x^2 }
@@ -4783,16 +4785,71 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-5932xE4/figure5932c6Y.png]]
-***** Quantiles regression
+       [[file:/tmp/babel-6757t23/figure6757KLE.png]]
+     - 
+         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+           f <- function(x){ exp(-x*1e10) } 
+           curve(f, 1.2e-10, 2.81e-9)
+         #+end_src
+
+         #+RESULTS:
+         [[file:/tmp/babel-6757t23/figure6757M_p.png]]
+
+
+
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+       #+end_src
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         library(plyr)
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+         df2 = ddply(df,c("x_component_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         ggplot(df) + 
+             aes(x=x_component_number, y=time_per_pixel ) +
+             geom_point(alpha=0.2) +
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+             geom_errorbar(data=df2,aes(x=(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+             geom_smooth(method="lm", formula = y ~ x + I(1/x) ) +
+             geom_smooth(method="lm", formula = y ~ I(1/x) , colour="green")                  
        #+end_src
 
        #+RESULTS:
-==      
-       - 5-percentiles ~ minium \to Jain's book
-         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       [[file:/tmp/babel-6757t23/figure6757LFX.png]]
+
+***** Quantiles regression
+****** Brute force
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_linear_rg.png :exports both :width 600 :height 400 :session
+           library(ggplot2)
+           library(plyr)
+           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+           df2 = ddply(df,c("x_component_number"), summarize,
+                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+           ggplot(df) + 
+               aes(x=x_component_number, y=time_per_pixel ) +
+               geom_point(alpha=0.2) +
+               geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+               geom_errorbar(data=df2,aes(x=(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+               geom_smooth(method="lm", formula = y ~ x + I(1/x) )
+          #+end_src
+
+       #+RESULTS:
+         [[file:img/20160311/pilipili2/pilipili2_linear_rg.png]]
+         
+
+       - 5-percentiles ~ minimum \to Jain's book
+         #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_linear_qr.png :exports both :width 600 :height 400 :session
            library(ggplot2)
            library(plyr)
            df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -4810,21 +4867,71 @@ Entered on [2015-11-19 jeu. 20:56]
           #+end_src
 
          #+RESULTS:
-         [[file:/tmp/babel-6851fTT/figure6851vss.png]]
+         [[file:img/20160311/pilipili2/pilipili2_linear_qr.png]]
 
-         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 900 :height 400 :session
+         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 700 :session
            library(ggplot2)
            library(plyr)
            df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
            ggplot(df) + 
                aes(x=time_per_pixel) +
-               geom_density() + 
-               facet_grid(. ~ x_component_number)
+               geom_histogram() + 
+               facet_grid( x_component_number ~ .)
          #+end_src
 
          #+RESULTS:
-         [[file:/tmp/babel-6851fTT/figure6851vBJ.png]]
+         [[file:/tmp/babel-6757t23/figure6757afT.png]]
+         
+         - How do we know the regression is correct?
+           #+begin_src R :results output :session :exports both
+             library("quantreg")
+             df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+             regq = rq(data=df, formula = time_per_pixel ~ x_component_number + I(1/x_component_number), tau=.05)
+             regq;
+             summary(regq)
+           #+end_src
+
+           #+RESULTS:
+           #+begin_example
+           Call:
+           rq(formula = time_per_pixel ~ x_component_number, tau = 0.05, 
+               data = df)
+
+           Coefficients:
+                  (Intercept) x_component_number 
+                 1.138749e-10       1.210435e-11 
+
+           Degrees of freedom: 2000 total; 1998 residual
+           Error in base::backsolve(r, x, k = k, upper.tri = upper.tri, transpose = transpose,  : 
+             matrice singulière dans 'backsolve'. Premier zéro sur la diagonale [1]
+           De plus : Warning message:
+           In summary.rq(regq) : 400 non-positive fis
+#+end_example
+
+          #+begin_src R :results output :session :exports both
+             df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+             regmin = lm(data=df, formula = exp(-time_per_pixel*1e10) ~ x_component_number)
+             summary(regmin);
+           #+end_src
+           
+
+           #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+             ggplot(data=df) + aes(x=x_component_number,y=time_per_pixel) +
+                 geom_jitter(alpha=.2) + geom_smooth(method="lm",formula = y ~ x+I(1/x))
+           #+end_src
+
+           #+RESULTS:
+           [[file:/tmp/babel-6757t23/figure6757_JA.png]]
+
+           #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+             ggplot(data=df) + aes(x=x_component_number,y=log(time_per_pixel*1e10)) +
+                 geom_jitter(alpha=.2) + geom_smooth(method="lm")
+           #+end_src
+
+           #+RESULTS:
+           [[file:/tmp/babel-6757t23/figure6757A9e.png]]
+
 
        - Let's try with a more complex case
           #+begin_src sh :results output :exports both
@@ -4833,7 +4940,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
           #+RESULTS:
 
-          #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_Dopt_hierarchic_qr.png :exports both :width 600 :height 400 :session
             library(ggplot2)
             library(plyr)
             df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -4843,15 +4950,16 @@ Entered on [2015-11-19 jeu. 20:56]
 
             ggplot(df) + 
                 aes(x=elements_number, y=time_per_pixel ) +
-                geom_point() +
+                geom_point(alpha=.2) +
                 geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
                 geom_errorbar(data=df2,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err)) +
-                geom_smooth(method="lm", formula = y ~ I(1/x) ) +
-                stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), colour="green")
+                geom_smooth(method="lm", formula = y ~ I(1/x) ) + xlim(0,NA) +
+#                geom_smooth(method="rq", formula = y ~ I(1/x) )  + 
+                geom_quantile(quantiles=0.1, formula = y ~ x + I(1/x), colour="green")
           #+end_src
 
           #+RESULTS:
-          [[file:/tmp/babel-4402ze1/figure44023Kg.png]]
+          [[file:img/20160311/pilipili2/pilipili2_Dopt_hierarchic_qr.png]]
      
           #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
            library(ggplot2)
@@ -4869,13 +4977,15 @@ Entered on [2015-11-19 jeu. 20:56]
          #+end_src
 
           #+RESULTS:
-         [[file:/tmp/babel-5932xE4/figure5932aXw.png]]
+          [[file:/tmp/babel-6757t23/figure6757AET.png]]
 
-***** D-optimal
-****** Testing x_component_number
+****** D-optimal
+******* Testing x_component_number
        #+begin_src sh :results output :exports both
          ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
        #+end_src
+
+       #+RESULTS:
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
         library(DoE.base)
@@ -4916,88 +5026,166 @@ Entered on [2015-11-19 jeu. 20:56]
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-6851fTT/figure6851WnP.png]]
+      [[file:/tmp/babel-6757t23/figure6757VMI.png]]
 
-****** Hierarchic
+******* Linear
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+       #+end_src
+
+       #+RESULTS:
+
+
+
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_Dopt_linear_x_comp.png :exports both :width 600 :height 400 :session
+         library(DoE.base)
+         library(DoE.wrapper)
+
+         x_component_values <- c(1,2,4,8,16)
+         y_component_number_values <- c(1,2,3,4)
+         vector_length_values <- c(1,2,4,8,16)
+         temporary_sizes_values <- c(2,4)
+         lws_values <-list(c(32,1), c(32,2), c(32,4), c(32,8), c(64,1), c(64,2), c(64,4), c(128,1) , c(128,2) ,c(256,1))
+
+         x_component_number <- c()    
+         y_component_number <- c()
+         vector_length <- c()
+         lws_x <- c()
+         lws_y <- c()
+         temporary_size <- c()
+
+         for(x in x_component_values){
+             for(y in y_component_number_values){
+                 for(v in vector_length_values){
+                     for(l in lws_values) {
+                         for(s in temporary_sizes_values){
+                             x_component_number[length(x_component_number)+1] <- y * x
+                             y_component_number[length(y_component_number)+1] <- y
+                             vector_length[length(vector_length)+1] <- v
+                             lws_x[length(lws_x)+1] <- l[1]
+                             lws_y[length(lws_y)+1] <- l[2]
+                             temporary_size[length(temporary_size)+1] <- s
+                         }
+                     }
+                 }
+             }
+         }
+
+         complete_set <- data.frame(x_component_number, y_component_number, vector_length, lws_x, lws_y, temporary_size)
+
+         Dopt <- Dopt.design( 60 , data=complete_set, formula= 
+                                                          "~(x_component_number  + y_component_number  + vector_length  + lws_x + lws_y  + temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         set <- data.frame()
+         for(i in 1:nrow(Dopt)){
+             set <- rbind(set, df[ df$x_component_number == Dopt$x_component_number[i]
+                                  & df$y_component_number == Dopt$y_component_number[i]
+                                  & df$vector_length == Dopt$vector_length[i]
+                                  & df$temporary_size == Dopt$temporary_size[i] 
+                                  & df$lws_x == Dopt$lws_x[i]
+                                  & df$lws_y == Dopt$lws_y[i], ])
+
+
+         }
+
+         library(ggplot2)
+         library(plyr)
+
+         df2 = ddply(set,c("x_component_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         ggplot(set) + 
+             aes(x=x_component_number, y=time_per_pixel ) +
+             geom_point(alpha=0.2) +
+             geom_hline(yintercept=min(set$time_per_pixel), color="red", linetype=2) +
+             geom_errorbar(data=df2,aes(x=(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+             geom_smooth(method="lm", formula = y ~ x + I(1/x)) +
+             stat_quantile(quantiles=0.05, colour="green")
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_Dopt_linear_x_comp.png]]
+
+******* Hierarchic
        #+begin_src sh :results output :exports both
          ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
        #+end_src
 
        #+RESULTS:
 
-    #+begin_src R :results output :session :exports both
-      library(DoE.base)
-      library(DoE.wrapper)
+       #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_Dopt_hierarchic_x_comp.png :exports both :width 600 :height 400 :session
+         library(DoE.base)
+         library(DoE.wrapper)
 
-      y_component_number_values <- c(1,2,3,4)
-      vector_length_values <- c(1,2,4,8,16)
-      lws_y_values <- c(1,2,4,8)
-      temporary_sizes_values <- c(2,4)
-      x_component_values <- c(1,2,4,8,16)
-      lws_values <-list(c(32,1), c(32,2), c(32,4), c(32,8), c(64,1), c(64,2), c(64,4), c(128,1) , c(128,2) ,c(256,1))
+         y_component_number_values <- c(1,2,3,4)
+         vector_length_values <- c(1,2,4,8,16)
+         lws_y_values <- c(1,2,4,8)
+         temporary_sizes_values <- c(2,4)
+         x_component_values <- c(1,2,4,8,16)
+         lws_values <-list(c(32,1), c(32,2), c(32,4), c(32,8), c(64,1), c(64,2), c(64,4), c(128,1) , c(128,2) ,c(256,1))
 
-      elements_number <- c()
-      y_component_number <- c()
-      vector_length <- c()
-      threads_number <- c()
-      lws_y <- c()
-      temporary_size <- c()
+         elements_number <- c()
+         y_component_number <- c()
+         vector_length <- c()
+         threads_number <- c()
+         lws_y <- c()
+         temporary_size <- c()
 
-      for(x in x_component_values){
-          for(y in y_component_number_values){
-              for(v in vector_length_values){
-                  for(l in lws_values) {
-                      for(s in temporary_sizes_values){
-                          elements_number[length(elements_number)+1] <- y * x
-                          y_component_number[length(y_component_number)+1] <- y
-                          vector_length[length(vector_length)+1] <- v
-                          threads_number[length(threads_number)+1] <- l[1] * l[2]
-                          lws_y[length(lws_y)+1] <- l[2]
-                          temporary_size[length(temporary_size)+1] <- s
-                      }
-                  }
-              }
-          }
-      }
+         for(x in x_component_values){
+             for(y in y_component_number_values){
+                 for(v in vector_length_values){
+                     for(l in lws_values) {
+                         for(s in temporary_sizes_values){
+                             elements_number[length(elements_number)+1] <- y * x
+                             y_component_number[length(y_component_number)+1] <- y
+                             vector_length[length(vector_length)+1] <- v
+                             threads_number[length(threads_number)+1] <- l[1] * l[2]
+                             lws_y[length(lws_y)+1] <- l[2]
+                             temporary_size[length(temporary_size)+1] <- s
+                         }
+                     }
+                 }
+             }
+         }
 
-      complete_set <- data.frame(elements_number, y_component_number, vector_length, threads_number, lws_y, temporary_size)
-
-
-      Dopt <- Dopt.design( 60 , data=complete_set, formula= 
-                                                                "~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
-
-      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-      set <- data.frame()
-      for(i in 1:nrow(Dopt)){
-          set <- rbind(set, df[ df$elements_number == Dopt$elements_number[i]
-                               & df$y_component_number == Dopt$y_component_number[i]
-                               & df$vector_length == Dopt$vector_length[i]
-                               & df$temporary_size == Dopt$temporary_size[i] 
-                               & df$threads_number == Dopt$threads_number[i]
-                               & df$lws_y == Dopt$lws_y[i], ])
+         complete_set <- data.frame(elements_number, y_component_number, vector_length, threads_number, lws_y, temporary_size)
 
 
-      }
+         Dopt <- Dopt.design( 60 , data=complete_set, formula= 
+                                                          "~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
 
-       library(ggplot2)
-       library(plyr)
+         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         set <- data.frame()
+         for(i in 1:nrow(Dopt)){
+             set <- rbind(set, df[ df$elements_number == Dopt$elements_number[i]
+                                  & df$y_component_number == Dopt$y_component_number[i]
+                                  & df$vector_length == Dopt$vector_length[i]
+                                  & df$temporary_size == Dopt$temporary_size[i] 
+                                  & df$threads_number == Dopt$threads_number[i]
+                                  & df$lws_y == Dopt$lws_y[i], ])
 
-       df2 = ddply(set,c("x_component_number"), summarize,
-                   mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
 
-       ggplot(set) + 
-           aes(x=elements_number, y=time_per_pixel ) +
-           geom_point(alpha=0.2) +
-           geom_hline(yintercept=min(set$time_per_pixel), color="red", linetype=2) +
-           geom_errorbar(data=df2,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err)) +
-           geom_smooth(method="lm", formula = y ~ x + I(1/x ) +
-           stat_quantile(quantiles=0.05, colour="green")
+         }
+
+         library(ggplot2)
+         library(plyr)
+
+         df2 = ddply(set,c("elements_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         ggplot(set) + 
+             aes(x=elements_number, y=time_per_pixel ) +
+             geom_point(alpha=0.2) +
+             geom_hline(yintercept=min(set$time_per_pixel), color="red", linetype=2) +
+             geom_errorbar(data=df2,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+             geom_smooth(method="lm", formula = y ~ x + I(1/x) + I(x^2)) +
+             stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), colour="green")
       #+end_src
 
-    #+RESULTS:
-    :  Error in eval(expr, envir, enclos) : 
-    :   objet 'x_component_number' introuvable
-    :  Smoothing formula not specified. Using: y ~ x
+       #+RESULTS:
+       [[file:img/20160311/pilipili2/pilipili2_Dopt_hierarchic_x_comp.png]]
 
 
 
+       
