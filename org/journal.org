@@ -4643,7 +4643,7 @@ Entered on [2015-11-19 jeu. 20:56]
 **** Observations
 ***** Evolution of the mean is different from the one the extreme values
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
      #+end_src
      
      #+RESULTS:
@@ -4656,10 +4656,10 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
      #+begin_example
-     The following objects are masked _by_ .GlobalEnv:
+     The following objects are masked from df (pos = 4):
 
-         temporary_size, vector_length, x_component_number,
-         y_component_number
+         load_overlap, temporary_size, time_per_pixel, vector_length,
+         vector_recompute, x_component_number, y_component_number
       x_component_number vector_length  y_component_number temporary_size
       Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
       1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
@@ -4667,15 +4667,20 @@ Entered on [2015-11-19 jeu. 20:56]
       Mean   : 6.2       Mean   : 6.2   Mean   :2.50       Mean   :3     
       3rd Qu.: 8.0       3rd Qu.: 8.0   3rd Qu.:3.25       3rd Qu.:4     
       Max.   :16.0       Max.   :16.0   Max.   :4.00       Max.   :4     
-
-      vector_recompute load_overlap    local_work_size time_per_pixel     
-      true:2000        true:2000    [128, 1, 1]:200    Min.   :1.247e-10  
-                                    [128, 2, 1]:200    1st Qu.:2.308e-10  
-                                    [256, 1, 1]:200    Median :3.568e-10  
-                                    [32, 1, 1] :200    Mean   :4.410e-10  
-                                    [32, 2, 1] :200    3rd Qu.:5.040e-10  
-                                    [32, 4, 1] :200    Max.   :2.420e-09  
-                                    (Other)    :800
+      vector_recompute load_overlap     lws_x           lws_y    
+      true:2000        true:2000    Min.   : 32.0   Min.   :1.0  
+                                    1st Qu.: 32.0   1st Qu.:1.0  
+                                    Median : 64.0   Median :2.0  
+                                    Mean   : 83.2   Mean   :2.6  
+                                    3rd Qu.:128.0   3rd Qu.:4.0  
+                                    Max.   :256.0   Max.   :8.0  
+      time_per_pixel     
+      Min.   :1.247e-10  
+      1st Qu.:2.308e-10  
+      Median :3.568e-10  
+      Mean   :4.410e-10  
+      3rd Qu.:5.040e-10  
+      Max.   :2.420e-09
 #+end_example
 
      - Knowing what should be the value of y_component_number and
@@ -4695,7 +4700,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-6757t23/figure6757_tv.png]]
+       [[file:/tmp/babel-3660fge/figure3660GDQ.png]]
      - Another view of the impact of x_component_number showing the
        estimate of the mean. We can see where will pass the regression
        line and it will tell us the best is at x_component_number
@@ -4721,7 +4726,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-6757t23/figure6757M41.png]]
+       [[file:/tmp/babel-3660fge/figure3660TNW.png]]
      - Repartition of combination
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -4744,7 +4749,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
      
        #+RESULTS:
-       [[file:/tmp/babel-5932xE4/figure5932_IR.png]]
+       [[file:/tmp/babel-3660fge/figure3660gXc.png]]
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          library(ggplot2)
@@ -4766,7 +4771,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-5932xE4/figure5932MTX.png]]
+       [[file:/tmp/babel-3660fge/figure3660thi.png]]
      - Looking for the min, regression quantile
        Estimate of the minimum try \to -exp
        
@@ -4786,22 +4791,24 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
        [[file:/tmp/babel-6757t23/figure6757KLE.png]]
-     - 
+     - With scaling
          #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
            f <- function(x){ exp(-x*1e10) } 
            curve(f, 1.2e-10, 2.81e-9)
          #+end_src
 
          #+RESULTS:
-         [[file:/tmp/babel-6757t23/figure6757M_p.png]]
-
-
+         [[file:/tmp/babel-3819QKK/figure3819Sty.png]]
+     - But I am not doing it right
 
        #+begin_src sh :results output :exports both
          ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
        #+end_src
 
+       #+RESULTS:
+
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         library(ggplot2)
          library(plyr)
          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
@@ -4818,10 +4825,10 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-6757t23/figure6757LFX.png]]
-
+       [[file:/tmp/babel-3819QKK/figure3819Fjs.png]]
 ***** Quantiles regression
 ****** Brute force
+******* Linear
        #+begin_src sh :results output :exports both
          ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
        #+end_src
@@ -4869,31 +4876,38 @@ Entered on [2015-11-19 jeu. 20:56]
          #+RESULTS:
          [[file:img/20160311/pilipili2/pilipili2_linear_qr.png]]
 
-         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 700 :session
+         #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_linear_facet_distrib.png :exports both :width 600 :height 400 :session
            library(ggplot2)
-           library(plyr)
            df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
            ggplot(df) + 
                aes(x=time_per_pixel) +
                geom_histogram() + 
+               ggtitle("Distributions of the performance of the combinations against the value of x_component_number") +
                facet_grid( x_component_number ~ .)
          #+end_src
 
          #+RESULTS:
-         [[file:/tmp/babel-6757t23/figure6757afT.png]]
+         [[file:img/20160311/pilipili2/pilipili2_linear_facet_distrib.png]]
          
          - How do we know the regression is correct?
            #+begin_src R :results output :session :exports both
              library("quantreg")
              df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-             regq = rq(data=df, formula = time_per_pixel ~ x_component_number + I(1/x_component_number), tau=.05)
+             regq = rq(data=df, formula = time_per_pixel ~ x_component_number, tau=.05)
              regq;
              summary(regq)
            #+end_src
 
            #+RESULTS:
            #+begin_example
+           Le chargement a nécessité le package : SparseM
+
+           Attachement du package : ‘SparseM’
+
+           The following object is masked from ‘package:base’:
+
+               backsolve
            Call:
            rq(formula = time_per_pixel ~ x_component_number, tau = 0.05, 
                data = df)
@@ -4907,7 +4921,7 @@ Entered on [2015-11-19 jeu. 20:56]
              matrice singulière dans 'backsolve'. Premier zéro sur la diagonale [1]
            De plus : Warning message:
            In summary.rq(regq) : 400 non-positive fis
-#+end_example
+           #+end_example
 
           #+begin_src R :results output :session :exports both
              df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -4915,14 +4929,13 @@ Entered on [2015-11-19 jeu. 20:56]
              summary(regmin);
            #+end_src
            
-
            #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
              ggplot(data=df) + aes(x=x_component_number,y=time_per_pixel) +
                  geom_jitter(alpha=.2) + geom_smooth(method="lm",formula = y ~ x+I(1/x))
            #+end_src
 
            #+RESULTS:
-           [[file:/tmp/babel-6757t23/figure6757_JA.png]]
+           [[file:/tmp/babel-3660fge/figure3660geQ.png]]
 
            #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
              ggplot(data=df) + aes(x=x_component_number,y=log(time_per_pixel*1e10)) +
@@ -4930,9 +4943,9 @@ Entered on [2015-11-19 jeu. 20:56]
            #+end_src
 
            #+RESULTS:
-           [[file:/tmp/babel-6757t23/figure6757A9e.png]]
+           [[file:/tmp/babel-3660fge/figure3660toW.png]]
 
-
+******* Hierarchic
        - Let's try with a more complex case
           #+begin_src sh :results output :exports both
             ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
@@ -5035,8 +5048,6 @@ Entered on [2015-11-19 jeu. 20:56]
 
        #+RESULTS:
 
-
-
        #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_Dopt_linear_x_comp.png :exports both :width 600 :height 400 :session
          library(DoE.base)
          library(DoE.wrapper)
@@ -5059,7 +5070,7 @@ Entered on [2015-11-19 jeu. 20:56]
                  for(v in vector_length_values){
                      for(l in lws_values) {
                          for(s in temporary_sizes_values){
-                             x_component_number[length(x_component_number)+1] <- y * x
+                             x_component_number[length(x_component_number)+1] <- x
                              y_component_number[length(y_component_number)+1] <- y
                              vector_length[length(vector_length)+1] <- v
                              lws_x[length(lws_x)+1] <- l[1]
@@ -5073,8 +5084,8 @@ Entered on [2015-11-19 jeu. 20:56]
 
          complete_set <- data.frame(x_component_number, y_component_number, vector_length, lws_x, lws_y, temporary_size)
 
-         Dopt <- Dopt.design( 60 , data=complete_set, formula= 
-                                                          "~(x_component_number  + y_component_number  + vector_length  + lws_x + lws_y  + temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+         Dopt <- Dopt.design( 100 , data=complete_set, formula= 
+                                                          "~(x_component_number + y_component_number  + vector_length  + lws_x + lws_y  + temporary_size )^2" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
 
          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
          set <- data.frame()
@@ -5098,14 +5109,27 @@ Entered on [2015-11-19 jeu. 20:56]
          ggplot(set) + 
              aes(x=x_component_number, y=time_per_pixel ) +
              geom_point(alpha=0.2) +
-             geom_hline(yintercept=min(set$time_per_pixel), color="red", linetype=2) +
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
              geom_errorbar(data=df2,aes(x=(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
              geom_smooth(method="lm", formula = y ~ x + I(1/x)) +
-             stat_quantile(quantiles=0.05, colour="green")
+             ggtitle("D-Optimal design using 100 points focusing on the impact of x_component_number") +
+             stat_quantile(quantiles=0.05, colour="green", formula = y ~ x)
        #+end_src
 
        #+RESULTS:
        [[file:img/20160311/pilipili2/pilipili2_Dopt_linear_x_comp.png]]
+
+       - How does the distribution looks?
+         #+begin_src R :results output graphics :file img/20160311/pilipili2/pilipili2_Dopt_linear_x_comp_distrib.png :exports both :width 600 :height 400 :session
+           ggplot(set) + 
+               aes(x=time_per_pixel) +
+               geom_histogram() + 
+               ggtitle("Distributions of the performance of the combinations against the value of x_component_number") +
+               facet_grid( x_component_number ~ .)
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160311/pilipili2/pilipili2_Dopt_linear_x_comp_distrib.png]]
 
 ******* Hierarchic
        #+begin_src sh :results output :exports both
@@ -5187,5 +5211,92 @@ Entered on [2015-11-19 jeu. 20:56]
        [[file:img/20160311/pilipili2/pilipili2_Dopt_hierarchic_x_comp.png]]
 
 
-
        
+** 2016-04-12
+*** Backsolve error
+    - With Angelika we found that the problem came from the fact the
+      time_per_pixel data are not linear
+       #+begin_src sh :results output :exports both
+         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+       #+end_src
+
+      #+begin_src R :results output :session :exports both
+        library("quantreg")
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        df$linear_time_per_pix <- log(df$time_per_pixel)
+
+        regq = rq(data=df, formula = linear_time_per_pix ~ x_component_number, tau=.05, method="fn")
+        regq;
+        summary(regq,se="nid")
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+      Call:
+      rq(formula = linear_time_per_pix ~ x_component_number, tau = 0.05, 
+          data = df, method = "fn")
+
+      Coefficients:
+             (Intercept) x_component_number 
+            -22.77915500         0.05976172 
+
+      Degrees of freedom: 2000 total; 1998 residual
+
+      Call: rq(formula = linear_time_per_pix ~ x_component_number, tau = 0.05, 
+          data = df, method = "fn")
+
+      tau: [1] 0.05
+
+      Coefficients:
+                         Value       Std. Error  t value     Pr(>|t|)   
+      (Intercept)          -22.77916     0.00564 -4035.90819     0.00000
+      x_component_number     0.05976     0.00042   141.16702     0.00000
+#+end_example
+
+      #+begin_src R :results output :session :exports both
+                plot(df$x_component_number,df$linear_time_per_pix)
+        str(regq)
+                abline(regq, col=2)
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+       ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+       $ terms        :Classes 'terms', 'formula' length 3 linear_time_per_pix ~ x_component_number
+        .. ..- attr(*, "variables")= language list(linear_time_per_pix, x_component_number)
+        .. ..- attr(*, "factors")= int [1:2, 1] 0 1
+        .. .. ..- attr(*, "dimnames")=List of 2
+        .. .. .. ..$ : chr [1:2] "linear_time_per_pix" "x_component_number"
+        .. .. .. ..$ : chr "x_component_number"
+        .. ..- attr(*, "term.labels")= chr "x_component_number"
+        .. ..- attr(*, "order")= int 1
+        .. ..- attr(*, "intercept")= int 1
+        .. ..- attr(*, "response")= int 1
+        .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+        .. ..- attr(*, "predvars")= language list(linear_time_per_pix, x_component_number)
+        .. ..- attr(*, "dataClasses")= Named chr [1:2] "numeric" "numeric"
+        .. .. ..- attr(*, "names")= chr [1:2] "linear_time_per_pix" "x_component_number"
+       $ xlevels      : Named list()
+       $ call         : language rq(formula = linear_time_per_pix ~ x_component_number, tau = 0.05, data = df,      method = "fn")
+       $ rho          : num 70.1
+       $ method       : chr "fn"
+       $ model        :'data.frame':	2000 obs. of  2 variables:
+        ..$ linear_time_per_pix: num [1:2000] -21.6 -21.7 -22.5 -21.6 -21.7 ...
+        ..$ x_component_number : int [1:2000] 8 8 4 16 8 2 4 4 4 1 ...
+        ..- attr(*, "terms")=Classes 'terms', 'formula' length 3 linear_time_per_pix ~ x_component_number
+        .. .. ..- attr(*, "variables")= language list(linear_time_per_pix, x_component_number)
+        .. .. ..- attr(*, "factors")= int [1:2, 1] 0 1
+        .. .. .. ..- attr(*, "dimnames")=List of 2
+        .. .. .. .. ..$ : chr [1:2] "linear_time_per_pix" "x_component_number"
+        .. .. .. .. ..$ : chr "x_component_number"
+        .. .. ..- attr(*, "term.labels")= chr "x_component_number"
+        .. .. ..- attr(*, "order")= int 1
+        .. .. ..- attr(*, "intercept")= int 1
+        .. .. ..- attr(*, "response")= int 1
+        .. .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+        .. .. ..- attr(*, "predvars")= language list(linear_time_per_pix, x_component_number)
+        .. .. ..- attr(*, "dataClasses")= Named chr [1:2] "numeric" "numeric"
+        .. .. .. ..- attr(*, "names")= chr [1:2] "linear_time_per_pix" "x_component_number"
+       - attr(*, "class")= chr "rq"
+#+end_example
+
