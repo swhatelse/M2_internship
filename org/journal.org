@@ -12825,6 +12825,47 @@ Entered on [2015-11-19 jeu. 20:56]
 **** TODO Take a look at task scheduling
 **** TODO Take a look at Luka's paper
 *** TODO Study if there is any warmup effect
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data_detailed.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+     #+end_src
+
+     #+RESULTS:
+    
+    By fixing some parameters we can see that we have a warm up
+    effect. It is interesting to see that the warm up effect as the
+    most impact on the image of size 768 x 432 which is the first
+    image_size being tested after the kernel is compiled. 
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+       library(ggplot2)
+
+       df = read.csv("/tmp/test.csv",strip.white=T,header=T)
+       # d <- df[df$temporary_size == 2 & df$vector_length == 1 & df$threads_number == 32 & df$lws_y == 1 & df$y_component_number == 1 & df$elements_number == 1 & df$image_size == "[2048, 2048]" & df$load_overlap == "false",]
+       d <- df[df$vector_length == 1 & df$threads_number == 32 & df$lws_y == 2 & df$elements_number == 1,]
+       ggplot(d) +
+           aes(x=factor(run_index), y=time_per_pixel) +
+           facet_grid(. ~ image_size) +
+           geom_hline(yintercept=min(d$time_per_pixel), color="red", linetype=2) +
+           geom_boxplot()
+       #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-5981SI6/figure5981gXm.png]]
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      library(plyr)
+      df2 = ddply(d,c("run_index"), summarize,
+                  mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+      ggplot(d) +
+          aes(x=run_index, y=time_per_pixel) +
+          geom_point(alpha=0.5) +
+          geom_hline(yintercept=min(d$time_per_pixel), color="red", linetype=2) +
+          geom_errorbar(data=df2,aes(x=(run_index),y=mean, ymin=mean-err, ymax=mean+err))
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-5981SI6/figure5981snZ.png]]
+
 *** Discussion with Arnaud                                           :Arnaud:
     We can not expent that the minimum follow the progression of the
     mean because we don't anything about the noise. Which would work
