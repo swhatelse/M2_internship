@@ -12824,47 +12824,115 @@ Entered on [2015-11-19 jeu. 20:56]
 *** Org-mode
 **** TODO Take a look at task scheduling
 **** TODO Take a look at Luka's paper
+*** format_data_detailed.rb V2                                         :Script:
+    New version of this script because we don't care about exactly
+    what is the size of the image what we just need is an order:
+     #+BEGIN_SRC ruby :tangle scripts/format_data_detailed_v2.rb
+       require 'yaml'
+       require 'pp'
+       require 'csv'
+       input = ARGV[0]
+
+       tab = []
+       tab_temp = []
+       head = []
+
+       # h = YAML::load(File::open(input).read)
+       hash = YAML::load_documents(File::open(input).read){ |doc|
+
+         if head.empty?
+           doc.first[0].each {|key, value| head.push key } 
+           head.push :image_size_index
+           head.push :run_index
+           head.push :time_per_pixel
+         end
+
+         doc.each {|combination, sizes| 
+           size_index = 0
+           sizes.each{|size, runs|
+             runs.each_index{|index|
+               tab_temp = []    
+               combination.each { |option, option_value|
+                 tab_temp.push option_value
+               }
+               tab_temp.push size_index
+               tab_temp.push index
+               tab_temp.push runs[index]
+               tab.push tab_temp
+             }
+             size_index += 1
+           }
+         }
+       }
+
+       CSV.open("/tmp/test.csv", "w"){ |f|
+         f << head
+         tab.each{ |e|
+           f << e
+         }
+       }
+
+     #+END_SRC
 *** TODO Study if there is any warmup effect
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data_detailed.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+       ruby scripts/format_data_detailed_v2.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
      #+end_src
 
      #+RESULTS:
-    
+
     By fixing some parameters we can see that we have a warm up
-    effect. It is interesting to see that the warm up effect as the
-    most impact on the image of size 768 x 432 which is the first
-    image_size being tested after the kernel is compiled. 
-    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+    effect. More precisely we clearly see it with images of size 768 x
+    432 which is the first image_size being tested after the kernel is
+    compiled.
+    #+begin_src R :results output graphics :file img/20160402/pilipili2/bp_run_index.png :exports both :width 800 :height 600 :session
        library(ggplot2)
 
        df = read.csv("/tmp/test.csv",strip.white=T,header=T)
-       # d <- df[df$temporary_size == 2 & df$vector_length == 1 & df$threads_number == 32 & df$lws_y == 1 & df$y_component_number == 1 & df$elements_number == 1 & df$image_size == "[2048, 2048]" & df$load_overlap == "false",]
        d <- df[df$vector_length == 1 & df$threads_number == 32 & df$lws_y == 2 & df$elements_number == 1,]
        ggplot(d) +
            aes(x=factor(run_index), y=time_per_pixel) +
-           facet_grid(. ~ image_size) +
+           facet_grid(. ~ image_size_index) +
            geom_hline(yintercept=min(d$time_per_pixel), color="red", linetype=2) +
            geom_boxplot()
-       #+end_src
-
-    #+RESULTS:
-    [[file:/tmp/babel-5981SI6/figure5981gXm.png]]
-
-    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-      library(plyr)
-      df2 = ddply(d,c("run_index"), summarize,
-                  mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-
-      ggplot(d) +
-          aes(x=run_index, y=time_per_pixel) +
-          geom_point(alpha=0.5) +
-          geom_hline(yintercept=min(d$time_per_pixel), color="red", linetype=2) +
-          geom_errorbar(data=df2,aes(x=(run_index),y=mean, ymin=mean-err, ymax=mean+err))
     #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-5981SI6/figure5981snZ.png]]
+    [[file:img/20160402/pilipili2/bp_run_index.png]]
+    
+    From a more global view we still see the impact of the warm
+    up:
+    #+begin_src R :results output graphics :file img/20160402/pilipili2/points_run_index.png :exports both :width 800 :height 600 :session
+      library(plyr)
+      d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$threads_number == 32,]
+
+      df2 = ddply(d2,.(run_index,vector_length,image_size_index), summarize, 
+                  mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+
+      ggplot(d2) +
+          geom_jitter(aes(x=factor(run_index), y=time_per_pixel, color=factor(load_overlap), shape=factor(temporary_size))) + 
+          geom_errorbar(data=df2,aes(x=factor(run_index),y=mean, ymin=mean-err, ymax=mean+err)) +
+          facet_grid(vector_length ~ image_size_index, scales="free_y", labeller=label_both) 
+    #+end_src
+
+    #+RESULTS:
+    [[file:img/20160402/pilipili2/points_run_index.png]]
+
+    Let's focus on the first image size and try to quantify this effect:
+    #+begin_src R :results output :session :exports both
+      library(plyr)
+      d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$image_size_index == 0,]
+
+      df2 = ddply(d2,.(run_index, vector_length, threads_number), summarize, 
+                  mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+      ggplot(d2) +
+          geom_jitter(aes(x=factor(run_index), y=time_per_pixel, color=factor(load_overlap), shape=factor(temporary_size))) + 
+          geom_errorbar(data=df2,aes(x=factor(run_index),y=mean, ymin=mean-err, ymax=mean+err)) +
+          facet_grid(vector_length ~ threads_number, scales="free_y", labeller=label_both) 
+    #+end_src
+
+    #+RESULTS:
 
 *** Discussion with Arnaud                                           :Arnaud:
     We can not expent that the minimum follow the progression of the
