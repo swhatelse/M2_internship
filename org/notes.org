@@ -598,10 +598,19 @@
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/nitro_ipdps2014.pdf][nitro_ipdps2014]] ] Nitro: A Framework for Adaptive Code Variant Tuning
 *** Link
     [[http://www.cs.utah.edu/~sauravm/docs/nitro_ipdps2014.pdf]]
-* Memo
+* Mathematical notions
 ** Non-smooth
    Discontinous and non differentiable functions. 
    Abrupt bends.
+** Convexe sets
+   A convexe set is a where we can take any pair of point of the set
+   drawing a segment between them and any point of the segment is in
+   the set.
+   Exemple of convexe set:
+     - affine set
+     - cone
+     - polyhedra
+     - norm ball and and cones
 * Questions
 ** Autotuning is an optimization problem but what are its specificities if it had some? 
    Because if there are some specificities, we can then modelize and
