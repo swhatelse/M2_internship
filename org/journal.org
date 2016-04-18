@@ -12961,13 +12961,20 @@ Entered on [2015-11-19 jeu. 20:56]
     if the noise was gaussian. That's why tyhe mean is not a correct
     indicator. 
 ** 2016-04-18
-*** Data cleaning                                                    :Script:
+*** Working on full space pilipili2 GPU 
+**** Data cleaning                                                   :Script:
     This script remove informations such the image size and the
     differents runs
     #+BEGIN_SRC ruby :tangle scripts/clean_data.rb
       require 'yaml'
       input = ARGV[0]
-
+      
+      cleaned_file = File.dirname(input) + "/" + File.basename(input,".yaml") + "_cleaned.yaml"
+      if File.exist?(cleaned_file) then
+        puts("#{input} already cleaned, nothing to be done") 
+        exit
+      end
+      
       hash = YAML::load_documents(File::open(input).read){ |doc|
         doc.each {|combination, sizes| 
           results = []
@@ -12978,13 +12985,23 @@ Entered on [2015-11-19 jeu. 20:56]
           doc[combination] = results.reduce(:+) / results.length
         }
       }
-
-      cleaned_file = File.dirname(input) + "/" + File.basename(input,".yaml") + "_cleaned.yaml"
+      
       File.open(cleaned_file , "w") { |f|
         f.write(hash.first.to_yaml)
       }
     #+END_SRC
-*** TODO A random exploration
+
+    #+RESULTS:
+
+**** TODO A random exploration
+     Generate clean data if note already done:
+     #+begin_src sh :results output :exports both
+       ruby scripts/clean_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+     #+end_src
+
+     #+RESULTS:
+     : data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml already cleaned, nothing to be done
+
     #+begin_src sh :results output :exports both
       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
     #+end_src
@@ -13011,6 +13028,7 @@ Entered on [2015-11-19 jeu. 20:56]
     #+RESULTS:
     [[file:img/20160402/pilipili2/random_1000.png]]
 
+    Here is the repartition of the combinations over the entire search space:
     #+begin_src R :results output :session :exports both
       ggplot(df) +
           aes(time_per_pixel) +
@@ -13019,4 +13037,6 @@ Entered on [2015-11-19 jeu. 20:56]
     #+end_src
 
     #+RESULTS:
-
+**** TODO Gradian descent
+**** TODO Genetic Algorithm
+**** TODO Quantile regression
