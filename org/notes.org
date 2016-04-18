@@ -94,7 +94,7 @@
          fits the region is expanded(increases the size) else
          contracted(decreases the size).
 * Biblio
-** A comparison of Search Heuristics for Empirical Code Optimization
+** TODO A comparison of Search Heuristics for Empirical Code Optimization
 *** Summary
     - Comparing:
       - Random \to simple and effective
@@ -120,7 +120,7 @@
 	author = {Keith Seymour and Haihang You and Jack Dongarra}
     }
     #+END_SRC
-** Can Search algorithms save large-scale automatic performance tuning?
+** DONE Can Search algorithms save large-scale automatic performance tuning?
 *** Summary
     - Discrete derivative-free constraint nonconvex optimization
     - *Formulation* of the autotuning search problem *as mathematical*
@@ -159,7 +159,7 @@
         doi = "10.1016/j.procs.2011.04.234"
     }
     #+END_SRC
-** An Experimental Study of Global and Local Search Algoritms in Empirical Perfomance Tuning
+** DONE An Experimental Study of Global and Local Search Algoritms in Empirical Perfomance Tuning
 *** Summary
     - Study the comparison between global and local search
       - Random
@@ -213,13 +213,13 @@
 ** A Batch, Derivative-Free Algorithm for Finding Multiple Local Minima
 *** Link
     http://www.mcs.anl.gov/papers/P5228-1114.pdf
-** A Taxonomy of Constraints in Simulation-Based Optimization
+** TODO A Taxonomy of Constraints in Simulation-Based Optimization
 *** Link
     http://arxiv.org/pdf/1505.07881.pdf
-** Empirical Performance modeling of GPU kernels using active learning
+** TODO Empirical Performance modeling of GPU kernels using active learning
 *** Link
     http://www.mcs.anl.gov/papers/P4097-0713_1.pdf
-** Empirical Performance Tuning of Dense Linear Algebra Sofware
+** TODO Empirical Performance Tuning of Dense Linear Algebra Sofware
 *** Summary
 *** Link
     http://www.netlib.org/utk/people/JackDongarra/PAPERS/master.pdf
@@ -227,7 +227,7 @@
    #+BEGIN_SRC 
    
    #+END_SRC
-** Deconstructing Iterative optimization
+** TODO Deconstructing Iterative optimization
 *** Summary
     - Compiler flags optimizations only
     - It is possible to learn a combination of optimization from data
@@ -373,7 +373,7 @@
     pages = {2006}
     }
     #+END_SRC
-** Crowdtuning: Systematizing auto-tuning using predictive modeling and crowdsourcing
+** DONE Crowdtuning: Systematizing auto-tuning using predictive modeling and crowdsourcing
 *** Summary
     - Combine machine learning and statistical analysis
       The idea is that some problems have similarities and require
@@ -401,7 +401,7 @@
       HAL_VERSION = {v1},
       }
     #+END_SRC
-** Milepost GCC: machine learning enabled self-tuning
+** DONE Milepost GCC: machine learning enabled self-tuning
 *** Summary
     - Learning over iterative optimization
     - Can target multi-objective optimization
@@ -452,7 +452,7 @@
       HAL_VERSION = {v1},
       }
     #+END_SRC
-** Exploiting Performance Portability in Search Algorithms for Autotuning
+** DONE Exploiting Performance Portability in Search Algorithms for Autotuning
 *** Summary
     - Correlation between peformance and *code optimization across*
       *platforms* with different kernels
@@ -498,11 +498,11 @@
     year = {2015}
     }
     #+END_SRC
-** Solving Derivative-Free Nonlinear Least Squares Problems with POUNDERS
+** TODO Solving Derivative-Free Nonlinear Least Squares Problems with POUNDERS
 *** Link
     http://www.mcs.anl.gov/papers/P5120-0414.pdf
-** Multi-Objective Optimization of HPC Kernels for Performance, Power, and Energy
-** The Speedup Test
+** TODO Multi-Objective Optimization of HPC Kernels for Performance, Power, and Energy
+** TODO The Speedup Test
 *** Summary
 *** Remarks/Questions
 *** Link
@@ -527,7 +527,7 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
-** OpenTuner: An Extensible Framework for Program Autotuning
+** TODO OpenTuner: An Extensible Framework for Program Autotuning
 *** Summary
     - Adapting the search method to particularities of the search
       space.
@@ -558,7 +558,7 @@
       keywords = {autotuner, optimization},
       } 
     #+END_SRC
-** ASK: Adaptative sampling Kit for Performance Characterization
+** TODO ASK: Adaptative sampling Kit for Performance Characterization
 *** Summary
     - Empirical, blackbox function
     - Excessive pruning \to missing optimal solutions.
@@ -587,17 +587,38 @@
         HAL_VERSION = {v1},
       }
     #+END_SRC
-** Annotation-Based Empirical Performance Tuning Using Orio
+** TODO Annotation-Based Empirical Performance Tuning Using Orio
 *** Summary
     - Only use random search, Nelder Mead Simplex and simulated
       annealing for the moment
-** Precimonious: Tuning Assistant for Floating-Point Precision
+** TODO Precimonious: Tuning Assistant for Floating-Point Precision
 *** Summary
     - Tuning the level of precision of floating point variables
     - Use of delta debugging search
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/nitro_ipdps2014.pdf][nitro_ipdps2014]] ] Nitro: A Framework for Adaptive Code Variant Tuning
 *** Link
     [[http://www.cs.utah.edu/~sauravm/docs/nitro_ipdps2014.pdf]]
+** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/SIGOPS_paper.pdf][SIGOPS_paper]] ] An Effective Git And Org-Mode Based Workflow For Reproducible Research
+*** Link
+    https://hal.inria.fr/hal-01112795/file/SIGOPS_paper.pdf
+*** Bibtex
+    #+BEGIN_SRC bibtex
+      @article{stanisic:hal-01112795,
+        TITLE = {{An Effective Git And Org-Mode Based Workflow For Reproducible Research}},
+        AUTHOR = {Stanisic, Luka and Legrand, Arnaud and Danjean, Vincent},
+        URL = {https://hal.inria.fr/hal-01112795},
+        JOURNAL = {{Operating Systems Review}},
+        PUBLISHER = {{Association for Computing Machinery}},
+        VOLUME = {49},
+        PAGES = {61 - 70},
+        YEAR = {2015},
+        DOI = {10.1145/2723872.2723881},
+        KEYWORDS = {Org-mode ; Git ; Reproducible Research ; Starpu-simgrid},
+        PDF = {https://hal.inria.fr/hal-01112795/file/SIGOPS_paper.pdf},
+        HAL_ID = {hal-01112795},
+        HAL_VERSION = {v1},
+      }
+    #+END_SRC
 * Memo
 ** Non-smooth
    Discontinous and non differentiable functions. 
