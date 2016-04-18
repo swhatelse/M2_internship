@@ -4214,7 +4214,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+END_SRC
 *** Conversion data 2016_03_11
-**** Conversion to hierarchic parameters :script:
+**** Conversion to hierarchic parameters                             :Script:
      #+BEGIN_SRC ruby :tangle scripts/convert_to_hierarchic.rb
         require 'yaml'
         
@@ -4236,7 +4236,7 @@ Entered on [2015-11-19 jeu. 20:56]
          f.write(hash.first.to_yaml)
        }
      #+END_SRC
-**** Conversion to linear_parameters :script:
+**** Conversion to linear_parameters                                  :Script:
      #+BEGIN_SRC ruby :tangle scripts/convert_to_linear.rb
         require 'yaml'
         
@@ -12934,8 +12934,89 @@ Entered on [2015-11-19 jeu. 20:56]
 
     #+RESULTS:
 
+    We can see that the majority speedup due to the warmup effect is
+    almost insignificant:
+    #+begin_src R :results output graphics :file img/20160402/pilipili2/run_index_speedup.png :exports both :width 600 :height 400 :session
+      # d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$image_size_index == 0,]
+      d2 <- df[df$image_size_index == 0,]
+      warmup <- c()
+      for(row in 1:nrow(d2)){
+            warmup[row] <- d2[row - (row-1) %% 4,]$time_per_pixel / d2[row,]$time_per_pixel
+      }
+
+      d2$warmup <- warmup
+
+      ggplot(d2[d2$run_index > 0 ,]) +
+          aes(x=factor(run_index), y=warmup) +
+          ggtitle("Speed up brought by the warmup effect on the first tested size of images") +
+          geom_boxplot()
+    #+end_src
+
+    #+RESULTS:
+    [[file:img/20160402/pilipili2/run_index_speedup.png]]
+
 *** Discussion with Arnaud                                           :Arnaud:
     We can not expent that the minimum follow the progression of the
     mean because we don't anything about the noise. Which would work
     if the noise was gaussian. That's why tyhe mean is not a correct
     indicator. 
+** 2016-04-18
+*** Data cleaning                                                    :Script:
+    This script remove informations such the image size and the
+    differents runs
+    #+BEGIN_SRC ruby :tangle scripts/clean_data.rb
+      require 'yaml'
+      input = ARGV[0]
+
+      hash = YAML::load_documents(File::open(input).read){ |doc|
+        doc.each {|combination, sizes| 
+          results = []
+          sizes.each{|size, runs|
+            results.push(runs.min)
+            doc[combination].delete size
+          }
+          doc[combination] = results.reduce(:+) / results.length
+        }
+      }
+
+      cleaned_file = File.dirname(input) + "/" + File.basename(input,".yaml") + "_cleaned.yaml"
+      File.open(cleaned_file , "w") { |f|
+        f.write(hash.first.to_yaml)
+      }
+    #+END_SRC
+*** TODO A random exploration
+    #+begin_src sh :results output :exports both
+      ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+    #+end_src
+
+    #+RESULTS:
+    
+    Lets run a random search a 1000 times to see how it performs:
+    #+begin_src R :results output graphics :file img/20160402/pilipili2/random_1000.png :exports both :width 700 :height 400 :session
+      library(ggplot2)
+      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+      time_per_pixel <- c()
+      for (i in 1:1000){
+          s <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+          time_per_pixel[i] <- min(s$time_per_pixel)
+      }
+      data <- data.frame(time_per_pixel)
+      ggplot(data) +
+          aes(time_per_pixel) +
+          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+          geom_vline(xintercept = min(df$time_per_pixel), color="red", linetype=2) +
+          geom_histogram(binwidth=1e-12, color="white", fill="gray0")
+    #+end_src
+
+    #+RESULTS:
+    [[file:img/20160402/pilipili2/random_1000.png]]
+
+    #+begin_src R :results output :session :exports both
+      ggplot(df) +
+          aes(time_per_pixel) +
+          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+          geom_histogram(binwidth=5e-10, color="white", fill="gray0")
+    #+end_src
+
+    #+RESULTS:
+

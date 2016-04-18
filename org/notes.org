@@ -598,6 +598,18 @@
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/nitro_ipdps2014.pdf][nitro_ipdps2014]] ] Nitro: A Framework for Adaptive Code Variant Tuning
 *** Link
     [[http://www.cs.utah.edu/~sauravm/docs/nitro_ipdps2014.pdf]]
+*** Summary
+    The solution proposed on this paper is an framework for
+    applications for which the characteristics of the input have a
+    strong influence on the choice of the code variants. They use
+    machine learning technics to build models that estimate the best
+    version that suits the data. 
+    They emphasize on the expression of the code variant and the
+    meta-informations about the characteristics of the data.
+    Hence, expressing them correctly is important in order to build an
+    accurate model that will map the data to best estimated variant.
+    There is to step, determining the characteristics of the data and
+    them find the best variants.
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/SIGOPS_paper.pdf][SIGOPS_paper]] ] An Effective Git And Org-Mode Based Workflow For Reproducible Research
 *** Link
     https://hal.inria.fr/hal-01112795/file/SIGOPS_paper.pdf
@@ -619,10 +631,19 @@
         HAL_VERSION = {v1},
       }
     #+END_SRC
-* Memo
+* Mathematical notions
 ** Non-smooth
    Discontinous and non differentiable functions. 
    Abrupt bends.
+** Convexe sets
+   A convexe set is a where we can take any pair of point of the set
+   drawing a segment between them and any point of the segment is in
+   the set.
+   Exemple of convexe set:
+     - affine set
+     - cone
+     - polyhedra
+     - norm ball and and cones
 * Questions
 ** Autotuning is an optimization problem but what are its specificities if it had some? 
    Because if there are some specificities, we can then modelize and
