@@ -610,6 +610,10 @@
     accurate model that will map the data to best estimated variant.
     There is to step, determining the characteristics of the data and
     them find the best variants.
+    To build the model, supervised learning is used in the training
+    phase using support vector machines.
+    They distribute the overhead of the training using incremental
+    learning technics.
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/SIGOPS_paper.pdf][SIGOPS_paper]] ] An Effective Git And Org-Mode Based Workflow For Reproducible Research
 *** Link
     https://hal.inria.fr/hal-01112795/file/SIGOPS_paper.pdf
