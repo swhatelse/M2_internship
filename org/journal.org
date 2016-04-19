@@ -13085,16 +13085,18 @@ Entered on [2015-11-19 jeu. 20:56]
           speedup[i] <- min(df$time_per_pixel) / df[i,]$time_per_pixel      
       }
       
+      df$speedup <- speedup
+      
       ggplot(df) +
           aes(speedup) +
           theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
           geom_vline(xintercept = median(df$speedup), color="darkgreen", linetype=2) +
-          geom_histogram()
+          geom_histogram(binwidth=.05, aes(y=..density.. * 0.05), color="white", fill="gray0")
     #+end_src
 
     #+RESULTS:
     [[file:img/20160402/pilipili2/combinations_speedup.png]]
-
+    
 
     From a speedup point of view for more than 50% of the time, 90% of the
     maximal performances are reach.
@@ -13162,7 +13164,7 @@ Entered on [2015-11-19 jeu. 20:56]
           aes(speedup) +
           theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
           geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
-          geom_histogram(color="white", fill="gray0")
+          geom_histogram(color="white", fill="gray0", binwidth=.05, aes(y=..density.. * 0.05))
     #+end_src
 
     #+RESULTS:
