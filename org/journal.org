@@ -12996,8 +12996,7 @@ Entered on [2015-11-19 jeu. 20:56]
     #+END_SRC
 
     #+RESULTS:
-
-**** TODO A random exploration
+**** TODO Search space characteristics                             :Analysis:
      Generate clean data if note already done:
      #+begin_src sh :results output :exports both
        ruby scripts/clean_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
@@ -13006,6 +13005,102 @@ Entered on [2015-11-19 jeu. 20:56]
      #+RESULTS:
      : data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml already cleaned, nothing to be done
 
+     Generate csv:
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     Size of the search space:
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       nrow(df)
+       summary(df)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+     [1] 23120
+      elements_number  y_component_number vector_length   temporary_size 
+      Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+      1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+      Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+      Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+      3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+      Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+      vector_recompute load_overlap  threads_number       lws_y        
+      true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                       true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                     Median : 256.0   Median :  16.00  
+                                     Mean   : 368.1   Mean   :  73.58  
+                                     3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                     Max.   :1024.0   Max.   :1024.00  
+      time_per_pixel     
+      Min.   :1.165e-10  
+      1st Qu.:3.028e-10  
+      Median :7.125e-10  
+      Mean   :2.013e-09  
+      3rd Qu.:2.001e-09  
+      Max.   :4.452e-08
+     #+end_example
+
+     When looking at repartions of the combinations with an histogram
+     we see there are a lot of good combinations and very few bad
+     ones. The dotted red line represents the median and the blue one
+     the 1st and third quartile. 50% of the combinations are below
+     7.125e-10. More over there also high probability to fall on
+     combinations under 2e-10. So with a such search space it seems
+     easy to find good combinations because they are alomst
+     everywhere. 
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/combinations_repartion.png :exports both :width 800 :height 600 :session
+       library(ggplot2)
+       ggplot(df) +
+           aes(time_per_pixel) +
+           theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+           geom_vline(xintercept = median(df$time_per_pixel), color="red", linetype=2) +
+           geom_vline(xintercept = quantile(df$time_per_pixel, prob=c(0.25,0.75)), color="blue", linetype=2) +
+           geom_histogram(binwidth=1e-10, aes(y=..density.. * 1e-10))
+     #+end_src
+
+     #+RESULTS:
+     [[file:img/20160402/pilipili2/combinations_repartion.png]]
+
+    Now lets see the search space in a more qualitative way by
+    examinating how far are the different combinations from the global
+    minimum. This will tell us how much a combination is good. To do
+    so, we make the ratio of the time per pixel over the global minium
+    this gives us the amount of speedup achieved compared to the best
+    combination. By looking the previous histogram it seems that we
+    had a lot of interesting combinations but in fact we figure out
+    that most of them are not good because as we can see below the
+    majority only achieves less than 25% of the maximal
+    performances. And 75% does not even reach 50% of the maximal
+    performances: 
+    #+begin_src R :results output graphics :file img/20160402/pilipili2/combinations_speedup.png :exports both :width 600 :height 400 :session
+      speedup <- c()
+      for(i in 1:nrow(df)){
+          speedup[i] <- min(df$time_per_pixel) / df[i,]$time_per_pixel      
+      }
+      
+      df$speedup <- speedup
+      
+      ggplot(df) +
+          aes(speedup) +
+          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+          geom_vline(xintercept = median(df$speedup), color="darkgreen", linetype=2) +
+          geom_vline(xintercept = quantile(df$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
+          geom_histogram(binwidth=.05, aes(y=..density.. * 0.05), color="white", fill="gray0")
+    #+end_src
+
+    #+RESULTS:
+    [[file:img/20160402/pilipili2/combinations_speedup.png]]
+    
+    The search more complicated than at first sight because in fact we
+    have only few combinations that are really good and the others are
+    pretty far from the global optimum.
+
+**** TODO A random exploration                                     :Analysis:
     #+begin_src sh :results output :exports both
       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
     #+end_src
@@ -13053,49 +13148,7 @@ Entered on [2015-11-19 jeu. 20:56]
     : [1] 1.165013e-10
     : [1] 4.452312e-08
 
-    Here is the repartition of the combinations over the entire search
-    space. The reason why the random search perform well is most of
-    the combinations are good and a big proportions are under
-    2e-10. So the random search have a big probability to fall on
-    values under 2e-10.
-    #+begin_src R :results output graphics :file img/20160402/pilipili2/combinations_repartion.png :exports both :width 800 :height 600 :session
-    library(ggplot2)
-      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-      ggplot(df) +
-          aes(time_per_pixel) +
-          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-          geom_histogram(binwidth=2e-10)
-    #+end_src
 
-    #+RESULTS:
-    [[file:img/20160402/pilipili2/combinations_repartion.png]]
-    
-    Now lets see the search space in a more qualitative way by
-    examinating how are far the different combinations from the global
-    minimum. To do so, we make the ratio of the time per pixel over
-    the global minium this gives us the amount of speedup achieved
-    compared to the best combination. By looking the previous
-    histogram it seems that we have a lot of interesting combination
-    but in fact we figure out that most of them are not good because
-    as we can see below the majority achieves less than 25% of the
-    maximal performances:
-    #+begin_src R :results output graphics :file img/20160402/pilipili2/combinations_speedup.png :exports both :width 600 :height 400 :session
-      speedup <- c()
-      for(i in 1:nrow(df)){
-          speedup[i] <- min(df$time_per_pixel) / df[i,]$time_per_pixel      
-      }
-      
-      df$speedup <- speedup
-      
-      ggplot(df) +
-          aes(speedup) +
-          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-          geom_vline(xintercept = median(df$speedup), color="darkgreen", linetype=2) +
-          geom_histogram(binwidth=.05, aes(y=..density.. * 0.05), color="white", fill="gray0")
-    #+end_src
-
-    #+RESULTS:
-    [[file:img/20160402/pilipili2/combinations_speedup.png]]
     
 
     From a speedup point of view for more than 50% of the time, 90% of the
