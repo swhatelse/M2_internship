@@ -11,7 +11,7 @@ help_script()
        -h      Show this message
        -c      Specify the size of the checkpoint
        -d      Detailed data file
-       -i      Specify the OpenCL implementation to use
+       -i      Specify the OpenCL implementation to use (NVIDIA, Intel)
        -s      Specify a seed
     EOF
 }
@@ -65,7 +65,7 @@ DATA_FILE="Data"
 INFO_FILE="$DATA_FOLD_TIME/$INFO_NAME${BKUP}.org"
 DATA_FILE="$DATA_FILE${BKUP}"
 
-if [[ $IMPLEM == "NVIDIA" ] || [ $IMPLEM == "CUDA" ]];
+if [[ $IMPLEM == "NVIDIA" ]];
 then
     CMD="CLPLATFORM=NVIDIA"
 elif[[$IMPLEM == "INTEL"]];
