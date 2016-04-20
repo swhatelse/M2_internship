@@ -63,6 +63,19 @@
       gksudo "apt-get install -y gfortran"
     #+end_src
 *** Install Opencl
+    Download from here http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/
+    #+begin_src sh :results output :exports both
+      VENDOR=`cat /proc/cpuinfo | grep -m 1 'vendor_id' | cut -d: -f2 | awk '{print $1}'`
+      mkdir -p $TOOLS_DIR
+      if [ "$VENDOR" = "AuthenticAMD" ] ; then
+          cd $TOOLS_DIR
+          
+      fi
+    #+end_src
+
+    #+RESULTS:
+    : AuthenticAMD
+
    #+begin_src sh :results output :exports both :tangle ../setup.sh
      echo "=========== Install OpenCL ============="
      gksudo "apt-get install -y ocl-icd-libopencl1 ocl-icd-opencl-dev"
@@ -79,7 +92,7 @@
          gksudo "mkdir -p /etc/OpenCL/vendors"
          gksudo "cp /opt/intel/opencl-1.2-4.5.0.8/etc/intel64.icd /etc/OpenCL/vendors/"
      else
-         gksudo "apt-get install -y nvidia-opencl-icd-340"
+         gksudo "apt-get install -y nvidia-opencl-icd-352 nvidia-libopencl1-352"
      fi
    #+end_src
 
@@ -13066,70 +13079,74 @@ Entered on [2015-11-19 jeu. 20:56]
      #+RESULTS:
      [[file:img/20160402/pilipili2/combinations_repartion.png]]
 
-    Now lets see the search space in a more qualitative way by
-    examinating how far are the different combinations from the global
-    minimum. This will tell us how much a combination is good. To do
-    so, we make the ratio of the time per pixel over the global minium
-    this gives us the amount of speedup achieved compared to the best
-    combination. By looking the previous histogram it seems that we
-    had a lot of interesting combinations but in fact we figure out
-    that most of them are not good because as we can see below the
-    majority only achieves less than 25% of the maximal
-    performances. And 75% does not even reach 50% of the maximal
-    performances: 
-    #+begin_src R :results output graphics :file img/20160402/pilipili2/combinations_speedup.png :exports both :width 600 :height 400 :session
-      speedup <- c()
-      for(i in 1:nrow(df)){
-          speedup[i] <- min(df$time_per_pixel) / df[i,]$time_per_pixel      
-      }
-      
-      df$speedup <- speedup
-      
-      ggplot(df) +
-          aes(speedup) +
-          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-          geom_vline(xintercept = median(df$speedup), color="darkgreen", linetype=2) +
-          geom_vline(xintercept = quantile(df$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
-          geom_histogram(binwidth=.05, aes(y=..density.. * 0.05), color="white", fill="gray0")
-    #+end_src
+     Now lets see the search space in a more qualitative way by
+     examinating how far are the different combinations from the global
+     minimum. This will tell us how much a combination is good. To do
+     so, we make the ratio of the time per pixel over the global minium
+     this gives us the amount of speedup achieved compared to the best
+     combination. By looking the previous histogram it seems that we
+     had a lot of interesting combinations but in fact we figure out
+     that most of them are not good because as we can see below the
+     majority only achieves less than 25% of the maximal
+     performances. And 75% does not even reach 50% of the maximal
+     performances: 
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/combinations_speedup.png :exports both :width 600 :height 400 :session
+       speedup <- c()
+       for(i in 1:nrow(df)){
+           speedup[i] <- min(df$time_per_pixel) / df[i,]$time_per_pixel      
+       }
+       
+       df$speedup <- speedup
+       
+       ggplot(df) +
+           aes(speedup) +
+           theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+           geom_vline(xintercept = median(df$speedup), color="darkgreen", linetype=2) +
+           geom_vline(xintercept = quantile(df$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
+           geom_histogram(binwidth=.05, aes(y=..density.. * 0.05), color="white", fill="gray0")
+     #+end_src
 
-    #+RESULTS:
-    [[file:img/20160402/pilipili2/combinations_speedup.png]]
+     #+RESULTS:
+     [[file:img/20160402/pilipili2/combinations_speedup.png]]
     
-    The search more complicated than at first sight because in fact we
-    have only few combinations that are really good and the others are
-    pretty far from the global optimum.
+     The search more complicated than at first sight because in fact we
+     have only few combinations that are really good and the others are
+     pretty far from the global optimum.
 
 **** TODO A random exploration                                     :Analysis:
-    #+begin_src sh :results output :exports both
-      ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
-    #+end_src
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+     
+     It is interesting to look how a random search performs by
+     comparison. Lets implement a stupid and simple random search that
+     pick a sample of the search space with equiprobability of
+     selecting any combination and run it 1000 times to see how it
+     performs: 
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/random_1000.png :exports both :width 700 :height 400 :session
+       library(ggplot2)
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       time_per_pixel <- c()
+       for (i in 1:1000){
+           s <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+           time_per_pixel[i] <- min(s$time_per_pixel)
+       }
+       data <- data.frame(time_per_pixel)
+       ggplot(data) +
+           aes(time_per_pixel) +
+           theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+           geom_vline(xintercept = min(df$time_per_pixel), color="red", linetype=2) +
+           geom_vline(xintercept = median(data$time_per_pixel), color="darkgreen", linetype=2) +
+           geom_histogram(binwidth=1e-12, color="white", fill="gray0", aes(y=..density.. * 1e-12))
+     #+end_src
 
-    Lets run a random search a 1000 times to see how it performs:
-    #+begin_src R :results output graphics :file img/20160402/pilipili2/random_1000.png :exports both :width 700 :height 400 :session
-      library(ggplot2)
-      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-      time_per_pixel <- c()
-      for (i in 1:1000){
-          s <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
-          time_per_pixel[i] <- min(s$time_per_pixel)
-      }
-      data <- data.frame(time_per_pixel)
-      ggplot(data) +
-          aes(time_per_pixel) +
-          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-          geom_vline(xintercept = min(df$time_per_pixel), color="red", linetype=2) +
-          geom_vline(xintercept = median(data$time_per_pixel), color="darkgreen", linetype=2) +
-          geom_histogram(binwidth=1e-12, color="white", fill="gray0")
-    #+end_src
-
-    #+RESULTS:
-    [[file:img/20160402/pilipili2/random_1000.png]]
+     #+RESULTS:
+     [[file:img/20160402/pilipili2/random_1000.png]]
 
     Values returned by a random search are generally below 1.8e-10 and
     half of the value are below 1.28e-10. In this case the random
-    search is not that bad and 50% of the time we are very close to
-    the global optimum.  
+    search is not that bad and 50% of the time it seems we are not
+    very far from the global optimum.  
 
     #+begin_src R :results output :session :exports both
       summary(data)
@@ -13140,19 +13157,16 @@ Entered on [2015-11-19 jeu. 20:56]
     #+RESULTS:
     :  time_per_pixel     
     :  Min.   :1.165e-10  
-    :  1st Qu.:1.176e-10  
-    :  Median :1.179e-10  
-    :  Mean   :1.178e-10  
-    :  3rd Qu.:1.182e-10  
-    :  Max.   :1.209e-10
+    :  1st Qu.:1.205e-10  
+    :  Median :1.278e-10  
+    :  Mean   :1.307e-10  
+    :  3rd Qu.:1.392e-10  
+    :  Max.   :1.954e-10
     : [1] 1.165013e-10
     : [1] 4.452312e-08
 
-
-    
-
     From a speedup point of view for more than 50% of the time, 90% of the
-    maximal performances are reach.
+    maximal performances are reached we never get less than 70%.
     #+begin_src R :results output graphics :file img/20160402/pilipili2/random_100_speedup.png :exports both :width 600 :height 400 :session
       library(ggplot2)
       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -13172,18 +13186,12 @@ Entered on [2015-11-19 jeu. 20:56]
     #+RESULTS:
     [[file:img/20160402/pilipili2/random_100_speedup.png]]
 
-    The size of the search space is:
-    #+begin_src R :results output :session :exports both
-      nrow(df)
-    #+end_src
-
-    #+RESULTS:
-    : [1] 23120
-
-    And for example using a random sample of size 10 (0.4% of the
+    And for example using a random sample of size 10 (0.04% of the
     search space), the majority falls under 2e-10:
-    #+begin_src R :results output graphics :file img/20160402/pilipili2/random_10_repartition.png :exports both :width 600 :height 400 :session
+    #+begin_src R :results output graphics :file img/20160402/pilipili2/random_10_repartition.png :exports both :width 800 :height 600 :session
       library(ggplot2)
+      library(plyr)
+      
       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
       time_per_pixel <- c()
       for (i in 1:1000){
@@ -13191,6 +13199,7 @@ Entered on [2015-11-19 jeu. 20:56]
           time_per_pixel[i] <- min(s$time_per_pixel)
       }
       data <- data.frame(time_per_pixel)
+      
       ggplot(data) +
           aes(time_per_pixel) +
           theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
@@ -13201,6 +13210,24 @@ Entered on [2015-11-19 jeu. 20:56]
 
     #+RESULTS:
     [[file:img/20160402/pilipili2/random_10_repartition.png]]
+
+    Trying plot CI:
+    #+begin_src R :results output :session :exports both
+      data.hist <- hist(data$time_per_pixel, breaks= seq(min(data$time_per_pixel), max(time_per_pixel) + 5e-12, 5e-12), plot=FALSE)
+      histogram <- data.frame(density = data.hist$density*5e-12, 
+                              time_per_pixel = data.hist$breaks,
+                              mean = tapply(data.hist$density*5e-12, data.hist$breaks, mean))
+      summary(histogram$mean)
+      
+      2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+    #+end_src
+
+    #+RESULTS:
+    :  Error in tapply(data.hist$density * 5e-12, data.hist$breaks, mean) : 
+    :   arguments must have same length
+    : Length  Class   Mode 
+    :      0   NULL   NULL
+
 
     With a sample of size 10 50% of the time we achieve a little less
     than 75% of the maximum performances.
@@ -13227,5 +13254,8 @@ Entered on [2015-11-19 jeu. 20:56]
     with 100 conbinations it starts being interesting and it can
     achieve good performances half of the time. 
 **** TODO Gradian descent
+     Still as comparison lets implement local search with a gradient
+     descent.
+
 **** TODO Genetic Algorithm
 **** TODO Quantile regression
