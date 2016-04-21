@@ -1,0 +1,88 @@
+#+TITLE: Optimization of the Auto-Tuning of HPC Application Computing Kernels
+#+Author:
+#+LaTeX_CLASS: memoir
+#+LaTeX_CLASS_OPTIONS: [12pt, a4paper]
+#+OPTIONS: H:5 title:nil author:nil email:nil creator:nil timestamp:nil skip:nil toc:nil ^:nil
+
+#+LATEX_HEADER:\usepackage[french,english]{babel}
+#+LATEX_HEADER:\usepackage [vscale=0.76,includehead]{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+# #+LATEX_HEADER:\geometry{a4paper}                   % ... or a4paper or a5paper or ... 
+# #+LATEX_HEADER:\geometry{landscape}                % Activate for for rotated page geometry
+# #+LATEX_HEADER:\OnehalfSpacing
+# #+LATEX_HEADER: \setSingleSpace{1.05}
+# #+LATEX_HEADER:\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+#+LATEX_HEADER:\usepackage{amsmath}
+#+LATEX_HEADER:\usepackage{fullpage}
+#+LATEX_HEADER:\usepackage{mathptmx} % font = times
+#+LATEX_HEADER:\usepackage{helvet} % font sf = helvetica
+#+LATEX_HEADER:\usepackage[latin1]{inputenc}
+#+LATEX_HEADER:\usepackage{relsize}
+
+#+BEGIN_LaTeX
+%Style des têtes de section, headings, chapitre
+\headstyles{komalike}
+\nouppercaseheads
+\chapterstyle{dash}
+\makeevenhead{headings}{\sffamily\thepage}{}{\sffamily\leftmark} 
+\makeoddhead{headings}{\sffamily\rightmark}{}{\sffamily\thepage}
+\makeoddfoot{plain}{}{}{} % Pages chapitre. 
+\makeheadrule{headings}{\textwidth}{\normalrulethickness}
+%\renewcommand{\leftmark}{\thechapter ---}
+\renewcommand{\chaptername}{\relax}
+\renewcommand{\chaptitlefont}{ \sffamily\bfseries \LARGE}
+\renewcommand{\chapnumfont}{ \sffamily\bfseries \LARGE}
+\setsecnumdepth{subsection}
+
+
+% Title page formatting -- do not change!
+\pretitle{\HUGE\sffamily \bfseries\begin{center}} 
+\posttitle{\end{center}}
+\preauthor{\LARGE  \sffamily \bfseries\begin{center}}
+\postauthor{\par\end{center}}
+
+\newcommand{\jury}[1]{% 
+\gdef\juryB{#1}} 
+\newcommand{\juryB}{} 
+\newcommand{\session}[1]{% 
+\gdef\sessionB{#1}} 
+\newcommand{\sessionB}{} 
+\newcommand{\option}[1]{% 
+\gdef\optionB{#1}} 
+\newcommand{\optionB}{} 
+
+\renewcommand{\maketitlehookd}{% 
+\vfill{}  \large\par\noindent  
+\begin{center}\juryB \bigskip\sessionB\end{center}
+\vspace{-1.5cm}}
+\renewcommand{\maketitlehooka}{% 
+\vspace{-1.5cm}\noindent\includegraphics[height=14ex]{logoINP.png}\hfill\raisebox{2ex}{\includegraphics[height=7ex]{logoUJF.jpg}}\\
+\bigskip
+\begin{center} \large
+Master of Science in Informatics at Grenoble \\
+Master Math\'ematiques Informatique - sp\'ecialit\'e Informatique \\ 
+option \optionB  \end{center}\vfill}
+% End of title page formatting
+
+\option{$<$option-name$>$}
+%\title{ Project Title }%\\\vspace{-1ex}\rule{10ex}{0.5pt} \\sub-title} 
+\author{Author Name}
+\date{ $<$Defense Date$>$} % Delete this line to display the current date
+\jury{
+Research project performed at $<$lab-name$>$ \\\medskip
+Under the supervision of:\\
+$<$supervisor's first-name and last-name, supervisor's institution$>$\\\medskip
+Defended before a jury composed of:\\
+$[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
+$[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
+$[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
+$[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
+}
+\session{$[$June/September$]$\hfill year}
+#+END_LaTeX
+
+#+BEGIN_abstract
+  Blablabla
+  \newpage
+#+END_abstract
+
+* Introduction
