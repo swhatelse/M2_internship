@@ -3,7 +3,7 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s) Analysis R(r)
 
-* TODO [7/13]
+* TODO [7/14]
   - [X] Run brute force with load_overlap = [true,false]
     and different combination of local_work_size
   - [X] Try D-Optimal design if we can get enough information
@@ -19,6 +19,7 @@
   - [ ] Testing simple method like a gradian descent
   - [ ] Run brute force on another plate form 
   - [ ] Constraints for genetic algorithm
+  - [ ] Bug in optimizer benchmark with the constraints
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -13259,13 +13260,21 @@ Entered on [2015-11-19 jeu. 20:56]
      descent.
 
 **** TODO Genetic Algorithm
+***** TODO Adding Constraint mechanism
+      Gene = An option
+      Genotype = Organism = A combination of genes
+      Population = Set of organism
+      The genetic algorithm generates a set of points by creating a
+      population. A population is composed of members that express
+      genes instances. The population evolves at each generation.
+      The value that can take a gene can be restricted to some values
+      in an individual manner, one cannot not restrict the value of a
+      gene with regard to the value of the other genes of the organism.
+      Maybe the most logical idea would be to check this constraint at
+      the organism level.
+***** TODO Experiment
      - Generation limit 6, population size 10
        #+begin_src sh :results output :exports both
-         DATE=`date +%Y_%m_%d`
-         HOUR=`date +%H_%M_%S`
-         mkdir -p data/$DATE
-         mkdir -p data/$DATE/pilipili2/
-         mkdir -p data/$DATE/pilipili2/$HOUR
          for i in `seq 1 100`; do
              ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters.yaml data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml -r data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen.yaml
          done
