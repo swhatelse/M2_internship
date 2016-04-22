@@ -13011,6 +13011,28 @@ Entered on [2015-11-19 jeu. 20:56]
     #+END_SRC
 
     #+RESULTS:
+**** Hierarchic to linear                                            :Script:
+     #+BEGIN_SRC ruby :tangle scripts/convert_hierarchic_to_linear.rb
+       require 'yaml'
+               
+       input = ARGV[0]
+
+       hash = YAML::load_documents(File::open(input).read){ |doc|
+         doc.each { |combination, time|
+           
+           combination[:lws_x] = combination[:threads_number]/combination[:lws_y]
+           combination.delete(:threads_number)
+           combination[:x_component_number] = combination[:elements_number]/combination[:y_component_number]
+           combination.delete(:elements_number)
+         }
+       }
+
+       converted_file = File.dirname(input) + "/" + File.basename(input,".yaml") + "_linear.yaml"
+       File.open(converted_file , "w") { |f|
+         f.write(hash.first.to_yaml)
+       }
+     #+END_SRC
+
 **** TODO Search space characteristics                             :Analysis:
      Generate clean data if note already done:
      #+begin_src sh :results output :exports both
@@ -13298,6 +13320,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
 **** TODO Quantile regression                                      :Analysis:
 ***** Hierarchic data
+****** Linear regression
      #+begin_src sh :results output :exports both
        ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
@@ -13767,4 +13790,137 @@ Entered on [2015-11-19 jeu. 20:56]
       F-statistic:  1747 on 31 and 23088 DF,  p-value: < 2.2e-16
 #+end_example
 
+      But I don't see how to know what the revelant interaction, we
+      only see correlations.
 ***** Linear data
+****** Linear regression
+      Convert to linear if not already done:
+      #+begin_src sh :results output :exports both
+        ruby scripts/convert_hierarchic_to_linear.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+      #+end_src
+
+      #+RESULTS:
+
+      Convert to csv:
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned_linear.yaml
+     #+end_src
+
+     #+RESULTS:
+
+
+      #+begin_src R :results output :session :exports both
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        summary(df)
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+       y_component_number vector_length   temporary_size  vector_recompute
+       Min.   :1.000      Min.   : 1.00   Min.   :2.000   true:23120      
+       1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000                   
+       Median :3.000      Median : 4.00   Median :2.000                   
+       Mean   :3.441      Mean   : 5.73   Mean   :2.975                   
+       3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000                   
+       Max.   :6.000      Max.   :16.00   Max.   :4.000                   
+       load_overlap      lws_y             lws_x         x_component_number
+       false:11400   Min.   :   1.00   Min.   :   1.00   Min.   :1.000     
+       true :11720   1st Qu.:   4.00   1st Qu.:   4.00   1st Qu.:1.000     
+                     Median :  16.00   Median :  16.00   Median :2.000     
+                     Mean   :  73.58   Mean   :  73.58   Mean   :2.499     
+                     3rd Qu.:  64.00   3rd Qu.:  64.00   3rd Qu.:3.000     
+                     Max.   :1024.00   Max.   :1024.00   Max.   :4.000     
+       time_per_pixel     
+       Min.   :1.165e-10  
+       1st Qu.:3.028e-10  
+       Median :7.125e-10  
+       Mean   :2.013e-09  
+       3rd Qu.:2.001e-09  
+       Max.   :4.452e-08
+#+end_example
+
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+        library(ggplot2)
+        library(grid)
+        library(gridExtra)
+
+        p1 <- qplot(factor(df$x_component_number), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of x component number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p2 <- qplot(factor(df$y_component_number), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of y components number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p3 <- qplot(factor(df$lws_x), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of lws x") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p4 <- qplot(factor(df$lws_y), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of lws y") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        grid.arrange(p1, p2, p3, p4, ncol=2, top=textGrob("Impact of factors in log scale")) 
+
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-7449mze/figure7449ZPR.png]]
+
+      #+begin_src R :results output :session :exports both
+        df[df$time_per_pixel == min(df$time_per_pixel),]
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+            y_component_number vector_length temporary_size vector_recompute
+      13752                  6             1              2             true
+            load_overlap lws_y lws_x x_component_number time_per_pixel
+      13752         true     2   512                  1   1.165013e-10
+       y_component_number vector_length temporary_size vector_recompute load_overlap
+       Min.   :6          Min.   :1     Min.   :2      true:16          false:8     
+       1st Qu.:6          1st Qu.:1     1st Qu.:2                       true :8     
+       Median :6          Median :1     Median :3                                   
+       Mean   :6          Mean   :1     Mean   :3                                   
+       3rd Qu.:6          3rd Qu.:1     3rd Qu.:4                                   
+       Max.   :6          Max.   :1     Max.   :4                                   
+           lws_y       lws_x     x_component_number time_per_pixel     
+       Min.   :2   Min.   :512   Min.   :1.00       Min.   :1.165e-10  
+       1st Qu.:2   1st Qu.:512   1st Qu.:1.75       1st Qu.:1.444e-10  
+       Median :2   Median :512   Median :2.50       Median :1.752e-10  
+       Mean   :2   Mean   :512   Mean   :2.50       Mean   :1.678e-10  
+       3rd Qu.:2   3rd Qu.:512   3rd Qu.:3.25       3rd Qu.:1.967e-10  
+       Max.   :2   Max.   :512   Max.   :4.00       Max.   :2.057e-10
+       #+end_example
+
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        df2 <- df[df$y_component_number == 6 & df$vector_length == 1 & df$lws_x == 512 & df$lws_y == 2,]
+        ggplot(df2, aes(x=factor(x_component_number), y=time_per_pixel)) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of x component number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-7449mze/figure7449N4p.png]]
+
+      For now we have exactly the same observation as with hierarchic factors.
