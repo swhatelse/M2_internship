@@ -13330,8 +13330,13 @@ Entered on [2015-11-19 jeu. 20:56]
        Mean   :2.013e-09  
        3rd Qu.:2.001e-09  
        Max.   :4.452e-08
-#+end_example
+       #+end_example
 
+      We can observe the impact of each parameters on the median and
+      mean values, they follow te same evolution. Generally extreme
+      values also tend to follow the same evolution except for the
+      elements number. But its behavior is not erratic and the trend
+      the time per pixel decrease with increasing the elements number.
       #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_factors_bp.png :exports both :width 800 :height 600 :session
         library(ggplot2)
         library(grid)
@@ -13449,11 +13454,317 @@ Entered on [2015-11-19 jeu. 20:56]
             theme(axis.text=element_text(size=12),
                   axis.title=element_text(size=14,face="bold"))
 
-        grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors in log scale")) 
+        grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors")) 
 
       #+end_src
 
       #+RESULTS:
       [[file:img/20160402/pilipili2/hierarchic_factors_p.png]]
+
+      #+begin_src R :results output :session :exports both
+        df[df$time_per_pixel == min(df$time_per_pixel),]
+      #+end_src
+
+      #+RESULTS:
+      :       elements_number y_component_number vector_length temporary_size
+      : 13752               6                  6             1              2
+      :       vector_recompute load_overlap threads_number lws_y time_per_pixel
+      : 13752             true         true           1024     2   1.165013e-10
+
+      Assuming that we know at which value to set the other parameters
+      can we see a different trend for the elements numbers? 
+      Yes we do, that the best value for elements number is 6. We have
+      a noise which does not follows the mean / median trend but the
+      behavior of elements number is not erratic and the noise is
+      caused by interraction with other parameters. We can
+      retrieve the best value for elements number by considering
+      interraction and fixing parameters. In this case quantile
+      regression is not necessary. But maybe this case is too simple
+      and it does not work with more complex one.
+      #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_elem_numb_other_fixed_bp.png :exports both :width 600 :height 400 :session
+        df2 <- df[df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws == 2,]
+        ggplot(df2, aes(x=factor(elements_number), y=time_per_pixel)) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of elements number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+      #+end_src
+
+      #+RESULTS:
+      [[file:img/20160402/pilipili2/hierarchic_elem_numb_other_fixed_bp.png]]
+
+      The idea would be to fix parameters that have an obvious
+      influence first and then fix the other according to the
+      interaction. But what if all parameters have complex interaction 
+      and we don't know to which value fix them?
+
+      Visual interpretation is easy but can we achieve the same
+      conclusion in a more analytic way? Lets try what we did earlier
+      with linear regression.
+      #+begin_src R :results output :session :exports both
+        summary( lm(data=df, formula = time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + temporary_size + load_overlap) )
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+
+      Call:
+      lm(formula = time_per_pixel ~ elements_number + y_component_number + 
+          vector_length + threads_number + lws_y + temporary_size + 
+          load_overlap, data = df)
+
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -7.450e-09 -1.290e-09 -4.220e-10  6.550e-10  3.781e-08 
+
+      Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)    
+      (Intercept)         1.392e-09  8.478e-11  16.419   <2e-16 ***
+      elements_number    -1.618e-10  4.555e-12 -35.523   <2e-16 ***
+      y_component_number  2.221e-10  1.619e-11  13.724   <2e-16 ***
+      vector_length       2.220e-10  3.822e-12  58.075   <2e-16 ***
+      threads_number     -2.350e-12  6.121e-14 -38.403   <2e-16 ***
+      lws_y               1.130e-11  1.287e-13  87.823   <2e-16 ***
+      temporary_size      4.209e-12  1.960e-11   0.215     0.83    
+      load_overlaptrue   -6.391e-12  3.915e-11  -0.163     0.87    
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Residual standard error: 2.975e-09 on 23112 degrees of freedom
+      Multiple R-squared:  0.3588,	Adjusted R-squared:  0.3587 
+      F-statistic:  1848 on 7 and 23112 DF,  p-value: < 2.2e-16
+#+end_example
+
+      #+begin_src R :results output :session :exports both
+        summary(lm( data=df, formula = time_per_pixel ~ (elements_number + y_component_number + vector_length + threads_number + lws_y)^2 ))
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+
+      Call:
+      lm(formula = time_per_pixel ~ (elements_number + y_component_number + 
+          vector_length + threads_number + lws_y)^2, data = df)
+
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -1.357e-08 -8.730e-10 -1.790e-10  4.650e-10  3.565e-08 
+
+      Coefficients:
+                                           Estimate Std. Error t value Pr(>|t|)    
+      (Intercept)                         1.712e-09  8.592e-11  19.928  < 2e-16 ***
+      elements_number                    -2.454e-10  1.169e-11 -20.984  < 2e-16 ***
+      y_component_number                 -3.947e-10  2.710e-11 -14.568  < 2e-16 ***
+      vector_length                       2.855e-10  7.904e-12  36.128  < 2e-16 ***
+      threads_number                     -1.541e-13  1.290e-13  -1.195    0.232    
+      lws_y                               2.196e-11  4.300e-13  51.062  < 2e-16 ***
+      elements_number:y_component_number  5.011e-11  1.888e-12  26.539  < 2e-16 ***
+      elements_number:vector_length      -2.754e-11  7.263e-13 -37.924  < 2e-16 ***
+      elements_number:threads_number      1.782e-13  1.162e-14  15.340  < 2e-16 ***
+      elements_number:lws_y              -9.634e-13  2.440e-14 -39.487  < 2e-16 ***
+      y_component_number:vector_length    5.302e-11  2.566e-12  20.661  < 2e-16 ***
+      y_component_number:threads_number  -3.100e-13  4.104e-14  -7.553 4.39e-14 ***
+      y_component_number:lws_y            2.181e-12  8.631e-14  25.273  < 2e-16 ***
+      vector_length:threads_number       -3.879e-13  1.129e-14 -34.362  < 2e-16 ***
+      vector_length:lws_y                 1.664e-12  2.419e-14  68.791  < 2e-16 ***
+      threads_number:lws_y               -2.048e-14  3.520e-16 -58.196  < 2e-16 ***
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Residual standard error: 2.351e-09 on 23104 degrees of freedom
+      Multiple R-squared:  0.5996,	Adjusted R-squared:  0.5994 
+      F-statistic:  2307 on 15 and 23104 DF,  p-value: < 2.2e-16
+      #+end_example
+
+      #+begin_src R :results output :session :exports both
+        summary(lm( data=df, formula = time_per_pixel ~ elements_number * y_component_number * vector_length * threads_number * lws_y))
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+
+      Call:
+      lm(formula = time_per_pixel ~ elements_number * y_component_number * 
+          vector_length * threads_number * lws_y, data = df)
+
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -1.493e-08 -6.770e-10 -2.460e-10  2.660e-10  3.463e-08 
+
+      Coefficients:
+                                                                              Estimate
+      (Intercept)                                                            1.061e-09
+      elements_number                                                       -5.919e-11
+      y_component_number                                                    -1.202e-10
+      vector_length                                                          3.124e-10
+      threads_number                                                        -1.257e-12
+      lws_y                                                                  2.224e-11
+      elements_number:y_component_number                                     1.046e-11
+      elements_number:vector_length                                         -3.993e-11
+      y_component_number:vector_length                                       5.268e-12
+      elements_number:threads_number                                         4.025e-14
+      y_component_number:threads_number                                      3.261e-13
+      vector_length:threads_number                                          -3.027e-13
+      elements_number:lws_y                                                 -1.025e-12
+      y_component_number:lws_y                                              -3.595e-12
+      vector_length:lws_y                                                    5.371e-12
+      threads_number:lws_y                                                  -1.741e-14
+      elements_number:y_component_number:vector_length                       4.580e-12
+      elements_number:y_component_number:threads_number                     -1.359e-14
+      elements_number:vector_length:threads_number                           6.208e-14
+      y_component_number:vector_length:threads_number                       -9.385e-14
+      elements_number:y_component_number:lws_y                               2.095e-13
+      elements_number:vector_length:lws_y                                   -9.349e-13
+      y_component_number:vector_length:lws_y                                 9.122e-13
+      elements_number:threads_number:lws_y                                   1.007e-15
+      y_component_number:threads_number:lws_y                                3.047e-15
+      vector_length:threads_number:lws_y                                    -3.598e-15
+      elements_number:y_component_number:vector_length:threads_number       -5.182e-15
+      elements_number:y_component_number:vector_length:lws_y                 9.334e-14
+      elements_number:y_component_number:threads_number:lws_y               -1.959e-16
+      elements_number:vector_length:threads_number:lws_y                     5.780e-16
+      y_component_number:vector_length:threads_number:lws_y                 -6.379e-16
+      elements_number:y_component_number:vector_length:threads_number:lws_y -5.546e-17
+                                                                            Std. Error
+      (Intercept)                                                            1.180e-10
+      elements_number                                                        2.055e-11
+      y_component_number                                                     3.415e-11
+      vector_length                                                          1.452e-11
+      threads_number                                                         2.274e-13
+      lws_y                                                                  1.479e-12
+      elements_number:y_component_number                                     3.955e-12
+      elements_number:vector_length                                          2.568e-12
+      y_component_number:vector_length                                       4.325e-12
+      elements_number:threads_number                                         4.046e-14
+      y_component_number:threads_number                                      6.842e-14
+      vector_length:threads_number                                           3.181e-14
+      elements_number:lws_y                                                  2.584e-13
+      y_component_number:lws_y                                               4.311e-13
+      vector_length:lws_y                                                    1.850e-13
+      threads_number:lws_y                                                   1.609e-15
+      elements_number:y_component_number:vector_length                       4.979e-13
+      elements_number:y_component_number:threads_number                      7.862e-15
+      elements_number:vector_length:threads_number                           6.262e-15
+      y_component_number:vector_length:threads_number                        1.158e-14
+      elements_number:y_component_number:lws_y                               4.987e-14
+      elements_number:vector_length:lws_y                                    3.338e-14
+      y_component_number:vector_length:lws_y                                 5.761e-14
+      elements_number:threads_number:lws_y                                   2.830e-16
+      y_component_number:threads_number:lws_y                                4.762e-16
+      vector_length:threads_number:lws_y                                     2.104e-16
+      elements_number:y_component_number:vector_length:threads_number        1.288e-15
+      elements_number:y_component_number:vector_length:lws_y                 6.587e-15
+      elements_number:y_component_number:threads_number:lws_y                5.480e-17
+      elements_number:vector_length:threads_number:lws_y                     3.955e-17
+      y_component_number:vector_length:threads_number:lws_y                  7.231e-17
+      elements_number:y_component_number:vector_length:threads_number:lws_y  8.043e-18
+                                                                            t value
+      (Intercept)                                                             8.990
+      elements_number                                                        -2.880
+      y_component_number                                                     -3.520
+      vector_length                                                          21.516
+      threads_number                                                         -5.527
+      lws_y                                                                  15.043
+      elements_number:y_component_number                                      2.644
+      elements_number:vector_length                                         -15.548
+      y_component_number:vector_length                                        1.218
+      elements_number:threads_number                                          0.995
+      y_component_number:threads_number                                       4.766
+      vector_length:threads_number                                           -9.515
+      elements_number:lws_y                                                  -3.966
+      y_component_number:lws_y                                               -8.339
+      vector_length:lws_y                                                    29.037
+      threads_number:lws_y                                                  -10.822
+      elements_number:y_component_number:vector_length                        9.198
+      elements_number:y_component_number:threads_number                      -1.728
+      elements_number:vector_length:threads_number                            9.914
+      y_component_number:vector_length:threads_number                        -8.102
+      elements_number:y_component_number:lws_y                                4.202
+      elements_number:vector_length:lws_y                                   -28.010
+      y_component_number:vector_length:lws_y                                 15.835
+      elements_number:threads_number:lws_y                                    3.556
+      y_component_number:threads_number:lws_y                                 6.398
+      vector_length:threads_number:lws_y                                    -17.100
+      elements_number:y_component_number:vector_length:threads_number        -4.023
+      elements_number:y_component_number:vector_length:lws_y                 14.170
+      elements_number:y_component_number:threads_number:lws_y                -3.575
+      elements_number:vector_length:threads_number:lws_y                     14.615
+      y_component_number:vector_length:threads_number:lws_y                  -8.821
+      elements_number:y_component_number:vector_length:threads_number:lws_y  -6.895
+                                                                            Pr(>|t|)
+      (Intercept)                                                            < 2e-16
+      elements_number                                                       0.003983
+      y_component_number                                                    0.000432
+      vector_length                                                          < 2e-16
+      threads_number                                                        3.30e-08
+      lws_y                                                                  < 2e-16
+      elements_number:y_component_number                                    0.008199
+      elements_number:vector_length                                          < 2e-16
+      y_component_number:vector_length                                      0.223198
+      elements_number:threads_number                                        0.319865
+      y_component_number:threads_number                                     1.89e-06
+      vector_length:threads_number                                           < 2e-16
+      elements_number:lws_y                                                 7.34e-05
+      y_component_number:lws_y                                               < 2e-16
+      vector_length:lws_y                                                    < 2e-16
+      threads_number:lws_y                                                   < 2e-16
+      elements_number:y_component_number:vector_length                       < 2e-16
+      elements_number:y_component_number:threads_number                     0.083990
+      elements_number:vector_length:threads_number                           < 2e-16
+      y_component_number:vector_length:threads_number                       5.69e-16
+      elements_number:y_component_number:lws_y                              2.66e-05
+      elements_number:vector_length:lws_y                                    < 2e-16
+      y_component_number:vector_length:lws_y                                 < 2e-16
+      elements_number:threads_number:lws_y                                  0.000377
+      y_component_number:threads_number:lws_y                               1.61e-10
+      vector_length:threads_number:lws_y                                     < 2e-16
+      elements_number:y_component_number:vector_length:threads_number       5.77e-05
+      elements_number:y_component_number:vector_length:lws_y                 < 2e-16
+      elements_number:y_component_number:threads_number:lws_y               0.000351
+      elements_number:vector_length:threads_number:lws_y                     < 2e-16
+      y_component_number:vector_length:threads_number:lws_y                  < 2e-16
+      elements_number:y_component_number:vector_length:threads_number:lws_y 5.54e-12
+
+      (Intercept)                                                           ***
+      elements_number                                                       ** 
+      y_component_number                                                    ***
+      vector_length                                                         ***
+      threads_number                                                        ***
+      lws_y                                                                 ***
+      elements_number:y_component_number                                    ** 
+      elements_number:vector_length                                         ***
+      y_component_number:vector_length                                         
+      elements_number:threads_number                                           
+      y_component_number:threads_number                                     ***
+      vector_length:threads_number                                          ***
+      elements_number:lws_y                                                 ***
+      y_component_number:lws_y                                              ***
+      vector_length:lws_y                                                   ***
+      threads_number:lws_y                                                  ***
+      elements_number:y_component_number:vector_length                      ***
+      elements_number:y_component_number:threads_number                     .  
+      elements_number:vector_length:threads_number                          ***
+      y_component_number:vector_length:threads_number                       ***
+      elements_number:y_component_number:lws_y                              ***
+      elements_number:vector_length:lws_y                                   ***
+      y_component_number:vector_length:lws_y                                ***
+      elements_number:threads_number:lws_y                                  ***
+      y_component_number:threads_number:lws_y                               ***
+      vector_length:threads_number:lws_y                                    ***
+      elements_number:y_component_number:vector_length:threads_number       ***
+      elements_number:y_component_number:vector_length:lws_y                ***
+      elements_number:y_component_number:threads_number:lws_y               ***
+      elements_number:vector_length:threads_number:lws_y                    ***
+      y_component_number:vector_length:threads_number:lws_y                 ***
+      elements_number:y_component_number:vector_length:threads_number:lws_y ***
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Residual standard error: 2.033e-09 on 23088 degrees of freedom
+      Multiple R-squared:  0.701,	Adjusted R-squared:  0.7006 
+      F-statistic:  1747 on 31 and 23088 DF,  p-value: < 2.2e-16
+#+end_example
 
 ***** Linear data
