@@ -13270,7 +13270,7 @@ Entered on [2015-11-19 jeu. 20:56]
       The value that can take a gene can be restricted to some values
       in an individual manner, one cannot not restrict the value of a
       gene with regard to the value of the other genes of the organism.
-      Maybe the most logical idea would be to check this constraint at
+      Maybe the most logical idea would be to check the constraints at
       the organism level.
 ***** TODO Experiment
      - Generation limit 6, population size 10
@@ -13296,4 +13296,164 @@ Entered on [2015-11-19 jeu. 20:56]
          par(default)
        #+end_src
 
-**** TODO Quantile regression
+**** TODO Quantile regression                                      :Analysis:
+***** Hierarchic data
+     #+begin_src sh :results output :exports both
+       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+
+      #+begin_src R :results output :session :exports both
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        summary(df)
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+       elements_number  y_component_number vector_length   temporary_size 
+       Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+       1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+       Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+       Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+       3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+       Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+       vector_recompute load_overlap  threads_number       lws_y        
+       true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                        true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                      Median : 256.0   Median :  16.00  
+                                      Mean   : 368.1   Mean   :  73.58  
+                                      3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                      Max.   :1024.0   Max.   :1024.00  
+       time_per_pixel     
+       Min.   :1.165e-10  
+       1st Qu.:3.028e-10  
+       Median :7.125e-10  
+       Mean   :2.013e-09  
+       3rd Qu.:2.001e-09  
+       Max.   :4.452e-08
+#+end_example
+
+      #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_factors_bp.png :exports both :width 800 :height 600 :session
+        library(ggplot2)
+        library(grid)
+        library(gridExtra)
+
+        p1 <- qplot(factor(df$elements_number), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of elements number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p2 <- qplot(factor(df$y_component_number), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of y components number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p3 <- qplot(factor(df$vector_length), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of of the vector length") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p4 <- qplot(factor(df$threads_number), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of of the threads number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p5 <- qplot(factor(df$lws_y), df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_boxplot() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            ggtitle("Impact of of the lws_y") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors in log scale")) 
+      #+end_src
+
+      #+RESULTS:
+      [[file:img/20160402/pilipili2/hierarchic_factors_bp.png]]
+
+      #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_factors_p.png :exports both :width 800 :height 600 :session
+        library(ggplot2)
+        library(grid)
+        library(gridExtra)
+        library(plyr)
+
+         elem_err = ddply(df,c("elements_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         y_err = ddply(df,c("y_component_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         vec_err = ddply(df,c("vector_length"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         t_err = ddply(df,c("threads_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         l_err = ddply(df,c("lws_y"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+        p1 <- qplot(df$elements_number, df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of elements number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p2 <- qplot(df$y_component_number, df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of y components number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p3 <- qplot(df$vector_length, df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the vector length") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p4 <- qplot(df$threads_number, df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the threads number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p5 <- qplot(df$lws_y, df$time_per_pixel) + 
+            scale_y_log10() + 
+            geom_point() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=l_err,aes(x=(lws_y),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the lws_y") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors in log scale")) 
+
+      #+end_src
+
+      #+RESULTS:
+      [[file:img/20160402/pilipili2/hierarchic_factors_p.png]]
+
+***** Linear data
