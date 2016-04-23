@@ -86,3 +86,26 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 #+END_abstract
 
 * Introduction
+** Notes                                                           :noexport:
+   - In HPC code optimization crucial to exploit hardware.
+     Cannot wait for the next generation to bring speedup because it
+     does not (Frequency not higher but more cores and henanced ISA). 
+   - HPC plaforms \ne hardware \to optimization not portable.
+     Porting application to another platform is time consumming and
+     can be very tricky. Automatize the porting using tools \to
+     autotuner.
+   - BOAST framework ruby generating portable code in C, Fortran,
+     OpenCL. DSL
+
+* Problem analysis
+** Notes                                                           :noexport:
+   - Huge search space \to need to explore only part of it \to
+     optimization problem.
+   - Non-smooth and empirical objective function
+   - Combination of discrete and continuous parameters
+* State of the art
+** Notes                                                         :noexport:
+   - Atlas \to small search space \to exhaustive search
+* Contribution
+* Experiments
+* Conclusion
