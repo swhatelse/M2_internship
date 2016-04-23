@@ -13280,6 +13280,12 @@ Entered on [2015-11-19 jeu. 20:56]
 **** TODO Gradian descent
      Still as comparison lets implement local search with a gradient
      descent.
+***** Algorithm
+      Starting at a point p, knowing the value of the objective
+      function f(p):
+        - explore from p a set of directions respecting constraints
+        - keep the best one
+        - repeat until no improvment
 
 **** TODO Genetic Algorithm
 ***** TODO Adding Constraint mechanism
