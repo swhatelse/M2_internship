@@ -13141,6 +13141,9 @@ Entered on [2015-11-19 jeu. 20:56]
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
+
+     #+RESULTS:
+
      
      It is interesting to look how a random search performs by
      comparison. Lets implement a stupid and simple random search that
@@ -13283,8 +13286,8 @@ Entered on [2015-11-19 jeu. 20:56]
      differentiable and discrete. But I can use method which looks
      like gradient descent.
 ***** Algorithm
-      Starting at a point p, knowing the value of the objective
-      function f(p):
+      Starting at a point p randomly chosen, knowing the value of the
+      objective function f(p):
         - explore from the point p an area around p defined by set of
           directions respecting constraints. 
         - keep the best one
@@ -13329,42 +13332,61 @@ Entered on [2015-11-19 jeu. 20:56]
 #+end_example
 
       #+begin_src R :results output :session :exports both
-        library(rootSolve)
+        check_constraint <- function(elements_number, y_component_number=1, vector_length=1, temporary_size=2, load_overlap=0, threads_number=32) {
+            vector_number <- ceiling((elements_number / y_component_number) / vector_length)
+            
+            tempload <- (1 - load_overlap) * (vector_number * vector_length) / vector_length * vector_length
+            temp <-  load_overlap * 3 * vector_number * (y_component_number+2) * vector_length
+            res <- vector_number * y_component_number * vector_length
+            tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+                                                # out_vec = (1 - load_overlap) * 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+            out_vec = (1 - load_overlap) * tempc
+            resc <- vector_number * y_component_number * temporary_size * vector_length
 
-        f <- function(x){
-            if (x[5] == 1){
-                x[5] <- "true"
-            }
-            else{
-                x[5] <- "false"
-            }
-            res <- df[df$elements_number == x[1] & df$y_component_number == x[2] & df$vector_length == x[3] & 
-                     df$temporary_size == x[4] & df$load_overlap == x[5] & df$threads_number == x[6] & df$lws_y == x[7], ]$time_per_pixel
-            if (length(res) == 0){
-                res <- NA
-            }
-            res
+            tot <- (tempload + temp + res + tempc + out_vec + resc) * threads_number
         }
 
-        g <- function(x){
-            res <- df[df$elements_number == x & df$y_component_number == 1 & df$vector_length == 1 & 
-                     df$temporary_size == 2 & df$load_overlap == "true" & df$threads_number == 32 & df$lws_y == 1, ]$time_per_pixel
-            if (length(res) == 0){
-                res <- NA
+                                                # "compute_kernel_size(:elements_number, :y_component_number, :vector_length, :temporary_size, :load_overlap, :threads_number) < compute_kernel_size(6,6,8,2,false,1024)"
+        gradient_descent <- function(point){
+            elements_number    <- c(1,0,0,0,0,0,0)
+            y_component_number <- c(0,1,0,0,0,0,0)
+            vector_length      <- c(0,0,1,0,0,0,0)
+            temporary_size     <- c(0,0,0,1,0,0,0)
+            load_overlap       <- c(0,0,0,0,1,0,0)
+            threads_number     <- c(0,0,0,0,0,1,0)
+            lws_y              <- c(0,0,0,0,0,0,1)
+
+            directions <- data.frame(elements_number, y_component_number, vector_length, temporary_size, load_overlap, threads_number, lws_y)
+
+            points$load_overlap <- if (points$load_overlap == "true") 1 else 0
+
+            best <- Inf
+            for(d in directions){
+                                                # if check_constraint() < check_constraint(6,6,8,2,0,1024)){
+                
+                                                # }
+                                                # else{
+
+                                                # }
             }
-            res
         }
-        
-        # f(c(2,2,4,2,1,64,2))
-        res <- deriv(expression(g(x)), "x")
-        x <- 8
-        res
+
+        row_to_coordinate <- function(row){
+            c(row$elements_number, row$y_component_number, row$vector_length, row$temporary_size, row$load_overlap, row$threads_number)
+        }
+
+        p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
+p
+                gradient_descent(p)
+                # c(t(p))
       #+end_src
 
       #+RESULTS:
-      : Error in deriv.default(expression(g(x)), "x") : 
-      :   La fonction 'g' n'est pas dans la table des dérivées
-      : [1] 0
+      :      elements_number y_component_number vector_length temporary_size
+      : 8025              15                  5             1              2
+      :      vector_recompute load_overlap threads_number lws_y time_per_pixel
+      : 8025             true         true             64     8   4.153229e-10
+      : Error in points$load_overlap (from #12) : objet de type 'closure' non indiçable
 
 **** TODO Genetic Algorithm
 ***** TODO Adding Constraint mechanism
@@ -13379,6 +13401,7 @@ Entered on [2015-11-19 jeu. 20:56]
       gene with regard to the value of the other genes of the organism.
       Maybe the most logical idea would be to check the constraints at
       the organism level.
+      Need to add valid? method in population.rb
 ***** TODO Experiment
      - Generation limit 6, population size 10
        #+begin_src sh :results output :exports both
@@ -13972,7 +13995,7 @@ Entered on [2015-11-19 jeu. 20:56]
        Mean   :2.013e-09  
        3rd Qu.:2.001e-09  
        Max.   :4.452e-08
-#+end_example
+      #+end_example
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
         library(ggplot2)
@@ -14016,7 +14039,7 @@ Entered on [2015-11-19 jeu. 20:56]
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-7449mze/figure7449ZPR.png]]
+      [[file:/tmp/babel-4542_tc/figure4542tEs.png]]
 
       #+begin_src R :results output :session :exports both
         df[df$time_per_pixel == min(df$time_per_pixel),]
