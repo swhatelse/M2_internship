@@ -210,7 +210,7 @@ https://en.wikipedia.org/wiki/Genetic_algorithm#Limitations
 :END:      
     
 Formatting of the data to use it with R:
-#+BEGIN_SRC ruby :results output :exports both :var output = "/tmp/file.csv" input="data/f8/f8e899-bef1-40b7-add3-788636a18c68/res_arnaud.txt"
+#+BEGIN_SRC ruby :results output :exports both :var output = "/tmp/file.csv" input="../data/f8/f8e899-bef1-40b7-add3-788636a18c68/res_arnaud.txt"
   require 'yaml'
   require 'pp'
 
@@ -676,7 +676,7 @@ Entered on [2015-11-19 jeu. 20:56]
      compare it with Brice's results. Let's also run the experiment
      several time to see how is the variability. 
    - Send to grenoble:
-     #+begin_src sh :results output :exports both :tangle scripts/send_to_grenoble.sh
+     #+begin_src sh :results output :exports both :tangle ../scripts/send_to_grenoble.sh
        BASE="$PWD/../.."
        ssh squinitomasnada@access.grid5000.fr 'mkdir -p ~/grenoble/boast'
        rsync -avzP --exclude '.git' $BASE/boast squinitomasnada@access.grid5000.fr:~/grenoble/boast
@@ -684,7 +684,7 @@ Entered on [2015-11-19 jeu. 20:56]
        rsync -avzP --exclude '.git' $BASE/org/scripts squinitomasnada@access.grid5000.fr:~/grenoble/boast
      #+end_src
    - Send to nodes:
-     #+begin_src sh :results output :exports both :tangle scripts/send_to_nodes.sh
+     #+begin_src sh :results output :exports both :tangle ../scripts/send_to_nodes.sh
        #!/bin/bash
        BASE="$PWD/.."
        PREV_NODE=''
@@ -724,32 +724,32 @@ Entered on [2015-11-19 jeu. 20:56]
 
        Here are the best configurations found:
      - Adonis-5 15:32:21
-       - [[file:data/2016_02_19/15_32_21_adonis-5/Info15_32_21.org][Infos-Adonis-5]] 
-       - [[file:data/2016_02_19/15_32_21_adonis-5/Data15_32_21.yaml][Results-Adonis-5]] 
+       - [[file:../data/2016_02_19/15_32_21_adonis-5/Info15_32_21.org][Infos-Adonis-5]] 
+       - [[file:../data/2016_02_19/15_32_21_adonis-5/Data15_32_21.yaml][Results-Adonis-5]] 
        - Best candidate:
          #+BEGIN_SRC 
          {:x_component_number=>1, :vector_length=>8, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>false, :load_overlap=>false}
          6.381553113495854e-10
          #+END_SRC
      - Adonis-9 15:23:23
-       - [[file:data/2016_02_19/15_23_23_adonis-9/Info15_23_23.org][Infos-Adonis-9]] 
-       - [[file:data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml][Results-Adonis-9]] 
+       - [[file:../data/2016_02_19/15_23_23_adonis-9/Info15_23_23.org][Infos-Adonis-9]] 
+       - [[file:../data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml][Results-Adonis-9]] 
        - Best candidate:
          #+BEGIN_SRC 
          {:x_component_number=>1, :vector_length=>16, :y_component_number=>4, :temporary_size=>4, :vector_recompute=>false, :load_overlap=>false}
          6.379672182710354e-10
          #+END_SRC
      - Adonis-6 15:42:14
-       - [[file:data/2016_02_19/15_42_14_adonis-6/Info15_42_14.org][Infos-Adonis-6]] 
-       - [[file:data/2016_02_19/15_42_14_adonis-6/Data15_42_14.yaml][Results-Adonis-6]] 
+       - [[file:../data/2016_02_19/15_42_14_adonis-6/Info15_42_14.org][Infos-Adonis-6]] 
+       - [[file:../data/2016_02_19/15_42_14_adonis-6/Data15_42_14.yaml][Results-Adonis-6]] 
        - Best candidate:
          #+BEGIN_SRC 
          {:x_component_number=>8, :vector_length=>8, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>true, :load_overlap=>false}
          1.7839996605890094e-09
          #+END_SRC
      - Adonis-2 15:51:36
-       - [[file:data/2016_02_19/15_51_36_adonis-2/Info15_51_36.org][Infos-Adonis-2]] 
-       - [[file:data/2016_02_19/15_51_36_adonis-2/Data15_51_36.yaml][Results-Adonis-2]] 
+       - [[file:../data/2016_02_19/15_51_36_adonis-2/Info15_51_36.org][Infos-Adonis-2]] 
+       - [[file:../data/2016_02_19/15_51_36_adonis-2/Data15_51_36.yaml][Results-Adonis-2]] 
        - Best candidate:
          #+BEGIN_SRC 
          {:x_component_number=>8, :vector_length=>8, :y_component_number=>3, :temporary_size=>2, :vector_recompute=>false, :load_overlap=>false}
@@ -795,7 +795,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+END_SRC
      - Adonis-5 15:32:21
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_19/15_32_21_adonis-5/Data15_32_21.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_19/15_32_21_adonis-5/Data15_32_21.yaml
        #+end_src
 
        #+RESULTS:
@@ -814,7 +814,7 @@ Entered on [2015-11-19 jeu. 20:56]
        [[file:/tmp/babel-13311ddc/figure133112eT.png]]
      - Adonis-9 15:23:23:
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_19/15_23_23_adonis-9/Data15_23_23.yaml
        #+end_src
 
        #+begin_src R :results output :session :exports both
@@ -841,7 +841,7 @@ Entered on [2015-11-19 jeu. 20:56]
        [[file:/tmp/babel-12889xAc/figure12889LDa.png]]
      - Adonis-6 15:42:14
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_19/15_42_14_adonis-6/Data15_42_14.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_19/15_42_14_adonis-6/Data15_42_14.yaml
        #+end_src
 
        #+RESULTS:
@@ -873,7 +873,7 @@ Entered on [2015-11-19 jeu. 20:56]
        [[file:/tmp/babel-13311ddc/figure13311pbB.png]]
      - Adonis-2 15:51:36
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_19/15_51_36_adonis-2/Data15_51_36.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_19/15_51_36_adonis-2/Data15_51_36.yaml
        #+end_src
 
        #+RESULTS:
@@ -908,7 +908,7 @@ Entered on [2015-11-19 jeu. 20:56]
        related to a big variablity but to other things.
      - Lets have a look on Adonis-6 with another test:
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_22/15_14_33_adonis-6.grenoble.grid5000.fr/Data15_14_33.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_22/15_14_33_adonis-6.grenoble.grid5000.fr/Data15_14_33.yaml
        #+end_src
 
        #+RESULTS:
@@ -958,7 +958,7 @@ Entered on [2015-11-19 jeu. 20:56]
    - Results adonis-6
      - 14:15:35
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_29/adonis-6.grenoble.grid5000.fr/14_15_35/Data14_15_35.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_29/adonis-6.grenoble.grid5000.fr/14_15_35/Data14_15_35.yaml
        #+end_src
 
        #+RESULTS:
@@ -980,7 +980,7 @@ Entered on [2015-11-19 jeu. 20:56]
       
      - 15:12:51
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_29/adonis-6.grenoble.grid5000.fr/15_12_51/Data15_12_51.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_29/adonis-6.grenoble.grid5000.fr/15_12_51/Data15_12_51.yaml
        #+end_src
 
        #+RESULTS:
@@ -1006,7 +1006,7 @@ Entered on [2015-11-19 jeu. 20:56]
    - Results adonis-9
      - 14:08:07
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_29/adonis-9.grenoble.grid5000.fr/14_08_07/Data14_08_07.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_29/adonis-9.grenoble.grid5000.fr/14_08_07/Data14_08_07.yaml
        #+end_src
 
        #+RESULTS:
@@ -1036,7 +1036,7 @@ Entered on [2015-11-19 jeu. 20:56]
        [[file:/tmp/babel-9562LHG/figure9562K7k.png]]
      - 15:05:38
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_02_29/adonis-9.grenoble.grid5000.fr/15_05_38/Data15_05_38.yaml
+         ruby ../scripts/format_data.rb ../data/2016_02_29/adonis-9.grenoble.grid5000.fr/15_05_38/Data15_05_38.yaml
        #+end_src
 
        #+RESULTS:
@@ -1070,12 +1070,12 @@ Entered on [2015-11-19 jeu. 20:56]
 * Mars
 ** 2016-03-01
  - Result on a machine with a GPU Nvidia GTX960 
-   - [[file:data/2016_03_01/pantheon/22_11_09/Info22_11_09.org][Conditions of experiment]]
-   - [[file:data/2016_03_01/pantheon/22_11_09/Data22_11_09_parameters.yaml][Search space]]
-   - [[file:data/2016_03_01/pantheon/22_11_09/Data22_11_09.yaml][Results of experiment]]
+   - [[file:../data/2016_03_01/pantheon/22_11_09/Info22_11_09.org][Conditions of experiment]]
+   - [[file:../data/2016_03_01/pantheon/22_11_09/Data22_11_09_parameters.yaml][Search space]]
+   - [[file:../data/2016_03_01/pantheon/22_11_09/Data22_11_09.yaml][Results of experiment]]
  - Observations:    
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_01/pantheon/22_11_09/Data22_11_09.yaml
+         ruby ../scripts/format_data.rb ../data/2016_03_01/pantheon/22_11_09/Data22_11_09.yaml
        #+end_src
 
        #+RESULTS:
@@ -1266,12 +1266,12 @@ Entered on [2015-11-19 jeu. 20:56]
 ** 2016-03-07
 *** Bruteforce on Pilipili2
 **** Results
-     - [[file:data/2016_03_07/pilipili2/10_19_36/Info10_19_36.org][Conditions of experiment]]
-     - [[file:data/2016_03_07/pilipili2/10_19_36/Data10_19_36_parameters.yaml][Search space]]
-     - [[file:data/2016_03_07/pilipili2/10_19_36/Data10_19_36.yaml][Results of experiment]]
+     - [[file:../data/2016_03_07/pilipili2/10_19_36/Info10_19_36.org][Conditions of experiment]]
+     - [[file:../data/2016_03_07/pilipili2/10_19_36/Data10_19_36_parameters.yaml][Search space]]
+     - [[file:../data/2016_03_07/pilipili2/10_19_36/Data10_19_36.yaml][Results of experiment]]
 **** Observations
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_03_07/pilipili2/10_19_36/Data10_19_36.yaml
+       ruby ../scripts/format_data.rb ../data/2016_03_07/pilipili2/10_19_36/Data10_19_36.yaml
      #+end_src
 
      #+RESULTS:
@@ -1460,9 +1460,9 @@ Entered on [2015-11-19 jeu. 20:56]
         group.
 *** Bruteforce on pilipili2
 **** Results
-     - [[file:data/2016_03_11/pilipili2/19_13_54/Info19_13_54.org][Conditions of experiment]]
-     - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml][Search space]]
-     - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml][Results of experiments]]
+     - [[file:../data/2016_03_11/pilipili2/19_13_54/Info19_13_54.org][Conditions of experiment]]
+     - [[file:../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml][Search space]]
+     - [[file:../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml][Results of experiments]]
 **** Formatting data script :Script:
        #+BEGIN_SRC ruby
          require 'yaml'
@@ -1497,7 +1497,7 @@ Entered on [2015-11-19 jeu. 20:56]
          }                  
        #+END_SRC
 **** Formatting data 2 :Script:
-     #+BEGIN_SRC ruby :tangle scripts/format_data.rb
+     #+BEGIN_SRC ruby :tangle ../scripts/format_data.rb
        require 'yaml'
        require 'pp'
        require 'csv'
@@ -1536,7 +1536,7 @@ Entered on [2015-11-19 jeu. 20:56]
      #+END_SRC
 **** Observations
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+       ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
      #+end_src
      
      #+RESULTS:
@@ -1836,7 +1836,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
 **** Genetic algo on brute force results
        #+begin_src sh :results output :exports both
-         ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+         ruby ../boast/optimizer_benchmarks/bench_optimizer.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
        #+end_src
 
        #+RESULTS:
@@ -1849,7 +1849,7 @@ Entered on [2015-11-19 jeu. 20:56]
      - How frequently the genetic algo can hit the best value:
        #+begin_src sh :results output :exports both
          for i in `seq 1 100`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml -r data/2016_03_11/pilipili2/19_13_54/GenData19_13_54.yaml
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml -r ../data/2016_03_11/pilipili2/19_13_54/GenData19_13_54.yaml
          done
        #+end_src
 
@@ -2458,7 +2458,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_example
 
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/GenData19_13_54.yaml
+         ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/GenData19_13_54.yaml
        #+end_src
 
        #+RESULTS:
@@ -2633,7 +2633,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
        - Do we have lots of good combinations?
          #+begin_src sh :results output :exports both
-           ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+           ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
          #+END_SRC
 
          #+RESULTS:
@@ -2737,7 +2737,7 @@ Entered on [2015-11-19 jeu. 20:56]
       #+end_example
     - Building and applying D-Optimal design
       #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+       ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
       #+end_src
 
       #+RESULTS:
@@ -3100,7 +3100,7 @@ Entered on [2015-11-19 jeu. 20:56]
       
     - More accurate D-Optimal
       #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+       ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
       #+end_src
 
       #+RESULTS:
@@ -3397,11 +3397,11 @@ Entered on [2015-11-19 jeu. 20:56]
        #+begin_src sh :results output :exports both
          DATE=`date +%Y_%m_%d`
          HOUR=`date +%H_%M_%S`
-         mkdir -p data/$DATE
-         mkdir -p data/$DATE/pilipili2/
-         mkdir -p data/$DATE/pilipili2/$HOUR
+         mkdir -p ../data/$DATE
+         mkdir -p ../data/$DATE/pilipili2/
+         mkdir -p ../data/$DATE/pilipili2/$HOUR
          for i in `seq 1 100`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml -r data/$DATE/pilipili2/$HOUR/Gen.yaml
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml -r ../data/$DATE/pilipili2/$HOUR/Gen.yaml
          done
        #+end_src
 
@@ -4010,7 +4010,7 @@ Entered on [2015-11-19 jeu. 20:56]
 #+end_example
 
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_30/pilipili2/18_16_33/Gen.yaml 
+         ruby ../scripts/format_data.rb ../data/2016_03_30/pilipili2/18_16_33/Gen.yaml 
        #+end_src
 
        #+RESULTS:
@@ -4182,7 +4182,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
 ** 2016-04-06
 *** Detailed format data :script:   
-     #+BEGIN_SRC ruby :tangle scripts/format_data_detailed.rb
+     #+BEGIN_SRC ruby :tangle ../scripts/format_data_detailed.rb
        require 'yaml'
        require 'pp'
        require 'csv'
@@ -4230,7 +4230,7 @@ Entered on [2015-11-19 jeu. 20:56]
      #+END_SRC
 *** Conversion data 2016_03_11
 **** Conversion to hierarchic parameters                             :Script:
-     #+BEGIN_SRC ruby :tangle scripts/convert_to_hierarchic.rb
+     #+BEGIN_SRC ruby :tangle ../scripts/convert_to_hierarchic.rb
         require 'yaml'
         
         input = ARGV[0]
@@ -4252,7 +4252,7 @@ Entered on [2015-11-19 jeu. 20:56]
        }
      #+END_SRC
 **** Conversion to linear_parameters                                  :Script:
-     #+BEGIN_SRC ruby :tangle scripts/convert_to_linear.rb
+     #+BEGIN_SRC ruby :tangle ../scripts/convert_to_linear.rb
         require 'yaml'
         
         input = ARGV[0]
@@ -4274,7 +4274,7 @@ Entered on [2015-11-19 jeu. 20:56]
 **** Observations
 ***** Hierarchic
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
+       ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
      #+end_src
 
      #+RESULTS:
@@ -4629,12 +4629,12 @@ Entered on [2015-11-19 jeu. 20:56]
        response variables \to wikipedia
 *** Bruteforce pilipili2
 **** Results
-     - [[file:data/2016_04_02/pilipili2/19_13_54/Info19_38_38.org][Conditions of experiment]]
-     - [[file:data/2016_04_02/pilipili2/19_38_38/Data19_38_38_parameters.yaml][Search space]]
-     - [[file:data/test_space_2016_04_02_2.yaml][Results of experiments]]
+     - [[file:../data/2016_04_02/pilipili2/19_13_54/Info19_38_38.org][Conditions of experiment]]
+     - [[file:../data/2016_04_02/pilipili2/19_38_38/Data19_38_38_parameters.yaml][Search space]]
+     - [[file:../data/test_space_2016_04_02_2.yaml][Results of experiments]]
 **** Observations                                                  :Analysis:
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data_detailed.rb data/test_space_2016_04_02_2.yaml
+       ruby ../scripts/format_data_detailed.rb ../data/test_space_2016_04_02_2.yaml
      #+end_src
 
      #+RESULTS:
@@ -4656,13 +4656,13 @@ Entered on [2015-11-19 jeu. 20:56]
 ** 2016-04-07
 *** Discution with Arnaud come back on the observation of x_component_number
 **** Results
-     - [[file:data/2016_03_11/pilipili2/19_13_54/Info19_13_54.org][Conditions of experiment]]
-     - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml][Search space]]
-     - [[file:data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml][Results of experiments]]
+     - [[file:../data/2016_03_11/pilipili2/19_13_54/Info19_13_54.org][Conditions of experiment]]
+     - [[file:../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_parameters.yaml][Search space]]
+     - [[file:../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml][Results of experiments]]
 **** Observations                                                  :Analysis:
 ***** Evolution of the mean is different from the one the extreme values
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+       ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
      #+end_src
      
      #+RESULTS:
@@ -4821,7 +4821,7 @@ Entered on [2015-11-19 jeu. 20:56]
      - But I am not doing it right
 
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+         ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
        #+end_src
 
        #+RESULTS:
@@ -4849,7 +4849,7 @@ Entered on [2015-11-19 jeu. 20:56]
 ****** Brute force
 ******* Linear
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+         ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
        #+end_src
 
        #+RESULTS:
@@ -4967,7 +4967,7 @@ Entered on [2015-11-19 jeu. 20:56]
 ******* Hierarchic
        - Let's try with a more complex case
           #+begin_src sh :results output :exports both
-            ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
+            ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
           #+end_src
 
           #+RESULTS:
@@ -5014,7 +5014,7 @@ Entered on [2015-11-19 jeu. 20:56]
 ****** D-optimal
 ******* Testing x_component_number
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
+         ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54.yaml
        #+end_src
 
        #+RESULTS:
@@ -5062,7 +5062,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
 ******* Linear
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+         ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
        #+end_src
 
        #+RESULTS:
@@ -5152,7 +5152,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
 ******* Hierarchic
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
+         ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
        #+end_src
 
        #+RESULTS:
@@ -5236,7 +5236,7 @@ Entered on [2015-11-19 jeu. 20:56]
       time_per_pixel data are not linear and heteroscedastics. By scaling the data with a log
       we have no more error:
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+         ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
        #+end_src
 
        #+RESULTS:
@@ -6240,7 +6240,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
 ***** Brute force data
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+       ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
      #+end_src
 
      #+begin_src R :results output :session :exports both
@@ -12842,7 +12842,7 @@ Entered on [2015-11-19 jeu. 20:56]
 *** format_data_detailed.rb V2                                         :Script:
     New version of this script because we don't care about exactly
     what is the size of the image what we just need is an order:
-     #+BEGIN_SRC ruby :tangle scripts/format_data_detailed_v2.rb
+     #+BEGIN_SRC ruby :tangle ../scripts/format_data_detailed_v2.rb
        require 'yaml'
        require 'pp'
        require 'csv'
@@ -12890,7 +12890,7 @@ Entered on [2015-11-19 jeu. 20:56]
      #+END_SRC
 *** TODO Study if there is any warmup effect
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data_detailed_v2.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+       ruby ../scripts/format_data_detailed_v2.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
      #+end_src
 
      #+RESULTS:
@@ -12978,13 +12978,13 @@ Entered on [2015-11-19 jeu. 20:56]
 ** 2016-04-18
 *** Working on full space pilipili2 GPU 
 **** Results
-     - [[file:data/2016_04_08/pilipili2/18_08_24/Info18_08_24.org][Conditions of experiment]]
-     - [[file:data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters.yaml][Search space]]
-     - [[file:data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml][Results of experiments]]
+     - [[file:../data/2016_04_08/pilipili2/18_08_24/Info18_08_24.org][Conditions of experiment]]
+     - [[file:../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters.yaml][Search space]]
+     - [[file:../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml][Results of experiments]]
 **** Data cleaning                                                   :Script:
     This script remove informations such the image size and the
     differents runs
-    #+BEGIN_SRC ruby :tangle scripts/clean_data.rb
+    #+BEGIN_SRC ruby :tangle ../scripts/clean_data.rb
       require 'yaml'
       input = ARGV[0]
       
@@ -13012,7 +13012,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
     #+RESULTS:
 **** Hierarchic to linear                                            :Script:
-     #+BEGIN_SRC ruby :tangle scripts/convert_hierarchic_to_linear.rb
+     #+BEGIN_SRC ruby :tangle ../scripts/convert_hierarchic_to_linear.rb
        require 'yaml'
                
        input = ARGV[0]
@@ -13036,15 +13036,15 @@ Entered on [2015-11-19 jeu. 20:56]
 **** TODO Search space characteristics                             :Analysis:
      Generate clean data if note already done:
      #+begin_src sh :results output :exports both
-       ruby scripts/clean_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+       ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
      #+end_src
 
      #+RESULTS:
-     : data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml already cleaned, nothing to be done
+     : ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml already cleaned, nothing to be done
 
      Generate csv:
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
 
      #+RESULTS:
@@ -13139,7 +13139,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
 **** TODO A random exploration                                     :Analysis:
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
      
      It is interesting to look how a random search performs by
@@ -13277,19 +13277,22 @@ Entered on [2015-11-19 jeu. 20:56]
     So with only 10 combinations tested it maybe is not enough but
     with 100 conbinations it starts being interesting and it can
     achieve good performances half of the time. 
-**** TODO Gradian descent
-     Still as comparison lets implement local search with a gradient
-     descent.
+**** TODO Local search algorithm
+     Still as comparison lets implement local search. We cannot
+     implement a real gradient descent because our function is not
+     differentiable and discrete. But I can use method which looks
+     like gradient descent.
 ***** Algorithm
       Starting at a point p, knowing the value of the objective
       function f(p):
-        - explore from p a set of directions respecting constraints
+        - explore from the point p an area around p defined by set of
+          directions respecting constraints. 
         - keep the best one
         - repeat until no improvment
 ***** Implementation
       Generate csv:
       #+begin_src sh :results output :exports both
-        ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
       #+end_src
 
       #+RESULTS:
@@ -13323,10 +13326,10 @@ Entered on [2015-11-19 jeu. 20:56]
        Mean   :2.013e-09  
        3rd Qu.:2.001e-09  
        Max.   :4.452e-08
-      #+end_example
+#+end_example
 
       #+begin_src R :results output :session :exports both
-        library(numDeriv)
+        library(rootSolve)
 
         f <- function(x){
             if (x[5] == 1){
@@ -13343,12 +13346,25 @@ Entered on [2015-11-19 jeu. 20:56]
             res
         }
 
-        res <- grad(f, c(2,2,4,2,1,64,2))
+        g <- function(x){
+            res <- df[df$elements_number == x & df$y_component_number == 1 & df$vector_length == 1 & 
+                     df$temporary_size == 2 & df$load_overlap == "true" & df$threads_number == 32 & df$lws_y == 1, ]$time_per_pixel
+            if (length(res) == 0){
+                res <- NA
+            }
+            res
+        }
+        
+        # f(c(2,2,4,2,1,64,2))
+        res <- deriv(expression(g(x)), "x")
+        x <- 8
         res
       #+end_src
 
       #+RESULTS:
-      : [1] NA NA NA NA  0 NA NA
+      : Error in deriv.default(expression(g(x)), "x") : 
+      :   La fonction 'g' n'est pas dans la table des dérivées
+      : [1] 0
 
 **** TODO Genetic Algorithm
 ***** TODO Adding Constraint mechanism
@@ -13367,12 +13383,12 @@ Entered on [2015-11-19 jeu. 20:56]
      - Generation limit 6, population size 10
        #+begin_src sh :results output :exports both
          for i in `seq 1 100`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters.yaml data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml -r data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen.yaml
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters.yaml ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml -r ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen.yaml
          done
        #+end_src
 
        #+begin_src sh :results output :exports both
-         ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen.yaml 
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen.yaml 
        #+end_src
 
        #+RESULTS:
@@ -13387,11 +13403,11 @@ Entered on [2015-11-19 jeu. 20:56]
          par(default)
        #+end_src
 
-**** TODO Quantile regression                                      :Analysis:
-***** Hierarchic data
-****** Linear regression
+**** TODO Regression                                               :Analysis:
+***** Linear regression
+****** Hierarchic data
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
 
      #+RESULTS:
@@ -13912,18 +13928,17 @@ Entered on [2015-11-19 jeu. 20:56]
       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
 
-***** Linear data
-****** Linear regression
+****** Linear data
       Convert to linear if not already done:
       #+begin_src sh :results output :exports both
-        ruby scripts/convert_hierarchic_to_linear.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        ruby ../scripts/convert_hierarchic_to_linear.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
       #+end_src
 
       #+RESULTS:
 
       Convert to csv:
      #+begin_src sh :results output :exports both
-       ruby scripts/format_data.rb data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned_linear.yaml
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned_linear.yaml
      #+end_src
 
      #+RESULTS:
@@ -14044,3 +14059,13 @@ Entered on [2015-11-19 jeu. 20:56]
       [[file:/tmp/babel-7449mze/figure7449N4p.png]]
 
       For now we have exactly the same observation as with hierarchic factors.
+
+****** Conclusion
+       Now I am convinced linear regression is not suited because even
+       if we can study interactions between parameters, if for all of
+       them the distribution of the noise is not known (doesn't follow
+       any law) like the case of elements number, say in a different
+       way for all the parameters if the minimum does not follow the
+       same evolution than the mean, we cannot predict the
+       best value.
+***** Quantile regression
