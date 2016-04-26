@@ -13373,21 +13373,27 @@ Entered on [2015-11-19 jeu. 20:56]
             threads_number     <- c(0,0,0,0,0,1,0,0,0,0,0,0,-1,0)
             lws_y              <- c(0,0,0,0,0,0,1,0,0,0,0,0,0,-1)
 
+            factors <- list(elements_number = as.numeric(levels(as.factor(df$elements_number))), 
+                                  vector_length = as.numeric(levels(as.factor(df$vector_length))), 
+                                  temporary_size = as.numeric(levels(as.factor(df$temporary_size))), 
+                                  threads_number= as.numeric(levels(as.factor(df$threads_number))), 
+                                  lws_y= as.numeric(levels(as.factor(df$lws_y)))) 
+
             directions <- data.frame(elements_number, y_component_number, vector_length, temporary_size, load_overlap, threads_number, lws_y)
             count <- 0
 
             repeat{
                 old_point <- point
                 for(i in 1:nrow(directions)){
-                    p <- data.frame(elements_number = point$elements_number + directions[i,]$elements_number,
+                    p <- data.frame(elements_number = factors$elements_number[match(point$elements_number, factors$elements_number) + directions[i,]$elements_number],
                                     y_component_number = point$y_component_number + directions[i,]$y_component_number,
-                                    vector_length = point$vector_length + directions[i,]$vector_length,
-                                    temporary_size = point$temporary_size + directions[i,]$temporary_size,
+                                    vector_length = factors$vector_length[match(point$vector_length, factors$vector_length) + directions[i,]$vector_length],
+                                    temporary_size = factors$temporary_size[match(point$temporary_size, factors$temporary_size) + directions[i,]$temporary_size],
                                     load_overlap = if(point$load_overlap == "true") i + directions[i,]$load_overlap else 0 + directions[i,]$load_overlap,
-                                    threads_number = point$threads_number + directions[i,]$threads_number,
-                                    lws_y = point$lws_y + directions[i,]$lws_y
+                                    threads_number = factors$threads_number[match(point$threads_number, factors$threads_number) + directions[i,]$threads_number],
+                                    lws_y = factors$lws_y[match(point$lws_y, factors$lws_y) + directions[i,]$lws_y]
                                     )
-                        print(p)
+                        print(p) 
                     if(check_constraint(p) == T){
                         p <- df[df$elements_number == p$elements_number & 
                                 df$y_component_number == p$y_component_number & 
@@ -13425,37 +13431,19 @@ Entered on [2015-11-19 jeu. 20:56]
       #+RESULTS:
       #+begin_example
             elements_number y_component_number vector_length temporary_size vector_recompute load_overlap threads_number lws_y time_per_pixel
-      20847               8                  2             2              2             true         true            512     1   2.288238e-10
+      14096              16                  4             8              4             true        false             32     2   3.507919e-10
         elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               9                  2             2              2            1            512     1
+      1              18                  4             8              4            0             32     2
         elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  3             2              2            2            512     1
+      1              16                  5             8              4            0             32     2
         elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             3              2            3            512     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             2              3            4            512     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             2              2            6            512     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             2              2            6            513     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             2              2            7            512     2
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               7                  2             2              2            8            512     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  1             2              2            9            512     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             1              2           10            512     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             2              1           11            512     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             2              2           11            512     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             2              2           13            511     1
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               8                  2             2              2           14            512     0
-            elements_number y_component_number vector_length temporary_size vector_recompute load_overlap threads_number lws_y time_per_pixel
-      20847               8                  2             2              2             true         true            512     1   2.288238e-10
+      1              16                  4            16              4            0             32     2
+      [1] elements_number    y_component_number vector_length      temporary_size     vector_recompute   load_overlap       threads_number    
+      [8] lws_y              time_per_pixel    
+      <0 rows> (or 0-length row.names)
+      Error in if (point$time_per_pixel > p$time_per_pixel) p (from #40) : 
+        l'argument est de longueur nulle
+      Erreur : objet 'res' introuvable
 #+end_example
 
 
