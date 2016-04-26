@@ -13293,6 +13293,13 @@ Entered on [2015-11-19 jeu. 20:56]
         - keep the best one
         - repeat until no improvment
 ***** Implementation
+      Generate clean data if note already done:
+      #+begin_src sh :results output :exports both
+        ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+      #+end_src
+
+      #+RESULTS:
+
       Generate csv:
       #+begin_src sh :results output :exports both
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -13342,10 +13349,10 @@ Entered on [2015-11-19 jeu. 20:56]
             tempc <- 3 * vector_number * (point$y_component_number + 2) * point$temporary_size * point$vector_length
             out_vec = (1 - point$load_overlap) * tempc
             resc <- vector_number * point$y_component_number * point$temporary_size * point$vector_length
-
+        
             tot <- (tempload + temp + res + tempc + out_vec + resc) * point$threads_number
         }
-
+        
         check_constraint <- function(point){
             res <- if(point$load_overlap %in% 0:1 &
                       point$lws_y <= point$threads_number &
@@ -13354,7 +13361,7 @@ Entered on [2015-11-19 jeu. 20:56]
                       kernel_size(point) < kernel_size(data.frame(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024))
                       ) T else F
         }
-
+        
         point_equal <- function(p1,p2){
             res <- if(p1$elements_number == p2$elements_number &
                       p1$y_component_number == p2$y_component_number &
@@ -13363,7 +13370,7 @@ Entered on [2015-11-19 jeu. 20:56]
                       p1$load_overlap == p2$load_overlap &
                       p1$threads_number == p2$threads_number) T else F
         }
-
+        
         gradient_descent <- function(point, limit=100){
             elements_number    <- c(1,0,0,0,0,0,0,-1,0,0,0,0,0,0)
             y_component_number <- c(0,1,0,0,0,0,0,0,-1,0,0,0,0,0)
@@ -13372,39 +13379,50 @@ Entered on [2015-11-19 jeu. 20:56]
             load_overlap       <- c(0,0,0,0,1,0,0,0,0,0,0,-1,0,0)
             threads_number     <- c(0,0,0,0,0,1,0,0,0,0,0,0,-1,0)
             lws_y              <- c(0,0,0,0,0,0,1,0,0,0,0,0,0,-1)
-
+        
             factors <- list(elements_number = as.numeric(levels(as.factor(df$elements_number))), 
                                   vector_length = as.numeric(levels(as.factor(df$vector_length))), 
                                   temporary_size = as.numeric(levels(as.factor(df$temporary_size))), 
                                   threads_number= as.numeric(levels(as.factor(df$threads_number))), 
                                   lws_y= as.numeric(levels(as.factor(df$lws_y)))) 
-
+        
             directions <- data.frame(elements_number, y_component_number, vector_length, temporary_size, load_overlap, threads_number, lws_y)
             count <- 0
-
+        
             repeat{
                 old_point <- point
+                candidates <- data.frame()
+        
                 for(i in 1:nrow(directions)){
+                    print(point$temporary_size)
+                    print(match(point$temporary_size, factors$temporary_size))
+                    print("==========================")
+
                     p <- data.frame(elements_number = factors$elements_number[match(point$elements_number, factors$elements_number) + directions[i,]$elements_number],
                                     y_component_number = point$y_component_number + directions[i,]$y_component_number,
                                     vector_length = factors$vector_length[match(point$vector_length, factors$vector_length) + directions[i,]$vector_length],
                                     temporary_size = factors$temporary_size[match(point$temporary_size, factors$temporary_size) + directions[i,]$temporary_size],
-                                    load_overlap = if(point$load_overlap == "true") i + directions[i,]$load_overlap else 0 + directions[i,]$load_overlap,
+                                    # load_overlap = if(point$load_overlap == "true") 1 + directions[i,]$load_overlap else 0 + directions[i,]$load_overlap,
+                                    load_overlap = 1,
                                     threads_number = factors$threads_number[match(point$threads_number, factors$threads_number) + directions[i,]$threads_number],
                                     lws_y = factors$lws_y[match(point$lws_y, factors$lws_y) + directions[i,]$lws_y]
                                     )
-                        print(p) 
+        
                     if(check_constraint(p) == T){
                         p <- df[df$elements_number == p$elements_number & 
                                 df$y_component_number == p$y_component_number & 
                                 df$vector_length == p$vector_length &
                                 df$temporary_size == p$temporary_size &
-                                df$load_overlap == p$load_overlap &
+                                # df$load_overlap == (if (p$load_overlap == 0) "false" else "true") &
+                                df$load_overlap == "true" &
                                 df$threads_number == p$threads_number &
                                 df$lws_y == p$lws_y,]
-                        print(p)
-                        point <- if(point$time_per_pixel > p$time_per_pixel) p
+                        candidates <- rbind(p, candidates)
                     }
+                }
+                
+                if(candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]$time_per_pixel < point$time_per_pixel){
+                    point <- candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]
                 }
 
                 count <- count + 1
@@ -13412,17 +13430,18 @@ Entered on [2015-11-19 jeu. 20:56]
                     break
                 }
             }
-
+        
             point
         }
-
+        
         row_to_coordinate <- function(row){
             drops <- c("time_per_pixel", "vector_recompute")
             row[, !(names(row) %in% drops)]
          }
-
+        
         options(width=150)
-        p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
+                                                # p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
+        p <- df[df$elements_number == 18,][1,]
         p
         res <- gradient_descent(p)
         res
@@ -13431,28 +13450,43 @@ Entered on [2015-11-19 jeu. 20:56]
       #+RESULTS:
       #+begin_example
            elements_number y_component_number vector_length temporary_size vector_recompute load_overlap threads_number lws_y time_per_pixel
-      5864               2                  2             1              2             true         true            128     8     2.6359e-10
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               3                  2             1              2            1            128     8
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               2                  3             1              2            2            128     8
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               2                  2             2              2            3            128     8
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               2                  2             1              4            4            128     8
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               2                  2             1              2            6            128     8
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               2                  2             1              2            6            256     8
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               2                  2             1              2            7            128    16
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               1                  2             1              2            8            128     8
-        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1               2                  1             1              2            9            128     8
-      Error in data.frame(elements_number = factors$elements_number[match(point$elements_number,  (from #22) : 
+      6422              18                  6             4              2             true        false            256    32   4.689042e-10
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      [1] 2
+      [1] 1
+      [1] "=========================="
+      Error in data.frame(elements_number = factors$elements_number[match(point$elements_number,  (from #27) : 
         arguments imply differing number of rows: 1, 0
-      Erreur : objet 'res' introuvable
+      Error: object 'res' not found
 #+end_example
 
 
