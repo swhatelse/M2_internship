@@ -13430,19 +13430,28 @@ Entered on [2015-11-19 jeu. 20:56]
 
       #+RESULTS:
       #+begin_example
-            elements_number y_component_number vector_length temporary_size vector_recompute load_overlap threads_number lws_y time_per_pixel
-      14096              16                  4             8              4             true        false             32     2   3.507919e-10
+           elements_number y_component_number vector_length temporary_size vector_recompute load_overlap threads_number lws_y time_per_pixel
+      5864               2                  2             1              2             true         true            128     8     2.6359e-10
         elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1              18                  4             8              4            0             32     2
+      1               3                  2             1              2            1            128     8
         elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1              16                  5             8              4            0             32     2
+      1               2                  3             1              2            2            128     8
         elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
-      1              16                  4            16              4            0             32     2
-      [1] elements_number    y_component_number vector_length      temporary_size     vector_recompute   load_overlap       threads_number    
-      [8] lws_y              time_per_pixel    
-      <0 rows> (or 0-length row.names)
-      Error in if (point$time_per_pixel > p$time_per_pixel) p (from #40) : 
-        l'argument est de longueur nulle
+      1               2                  2             2              2            3            128     8
+        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
+      1               2                  2             1              4            4            128     8
+        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
+      1               2                  2             1              2            6            128     8
+        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
+      1               2                  2             1              2            6            256     8
+        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
+      1               2                  2             1              2            7            128    16
+        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
+      1               1                  2             1              2            8            128     8
+        elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y
+      1               2                  1             1              2            9            128     8
+      Error in data.frame(elements_number = factors$elements_number[match(point$elements_number,  (from #22) : 
+        arguments imply differing number of rows: 1, 0
       Erreur : objet 'res' introuvable
 #+end_example
 
