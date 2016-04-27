@@ -13527,7 +13527,7 @@ Entered on [2015-11-19 jeu. 20:56]
       problem. With the random search we had values under 1.8e-10 and
       the median was at 1.278e-10. Here with the gradient descent the
       maximum is 1.759e-08 and the median is at 2.242e-10. 
-      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 400 :session
+      #+begin_src R :results output graphics :file img/20160408/pilipili2/grad_1000_h.png :exports both :width 700 :height 400 :session
         library(ggplot2)
         ggplot(res) +
             aes(time_per_pixel) +
@@ -13537,7 +13537,7 @@ Entered on [2015-11-19 jeu. 20:56]
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-3568YCH/figure3568Guy.png]]
+      [[file:img/20160408/pilipili2/grad_1000_h.png]]
 
       We see earlier that with the previous histogram we are missing
       some informations. Lets have look at how far is the results from
@@ -13545,7 +13545,7 @@ Entered on [2015-11-19 jeu. 20:56]
       problem with 50% of the time we have speed up less than 60%.
       We clearly see that there are lots of local optimum and lots are
       far from the global optimal.
-      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      #+begin_src R :results output graphics :file img/20160408/pilipili2/grad_1000_speedup_best_h.png :exports both :width 600 :height 400 :session
         library(ggplot2)
         speedup <- c()
         for (i in 1:nrow(res)){
@@ -13561,13 +13561,13 @@ Entered on [2015-11-19 jeu. 20:56]
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-3568YCH/figure35685qg.png]]
+      [[file:img/20160408/pilipili2/grad_1000_speedup_best_h.png]]
 
       In general the improvment brought the gradient descent compared
       to the starting point is generally twice better. This is again
       because we have lots of global optimum and the gradient is
       quickly stuck.
-      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 400 :session
+      #+begin_src R :results output graphics :file img/20160408/pilipili2/grad_1000_speed_start_h.png :exports both :width 700 :height 400 :session
         library(ggplot2)
         speedup <- c()
         for (i in 1:nrow(res)){
@@ -13584,7 +13584,7 @@ Entered on [2015-11-19 jeu. 20:56]
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-3568YCH/figure3568snO.png]]
+      [[file:img/20160408/pilipili2/grad_1000_speed_start_h.png]]
 
       From this observations, what we can conclude is that we have a
       lot of local optimum in which local search can be stuck. The
@@ -13632,8 +13632,8 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
 **** TODO Regression                                               :Analysis:
-***** Linear regression
-****** Hierarchic data
+***** DONE Linear regression
+****** DONE Hierarchic data
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
@@ -13668,7 +13668,7 @@ Entered on [2015-11-19 jeu. 20:56]
        Mean   :2.013e-09  
        3rd Qu.:2.001e-09  
        Max.   :4.452e-08
-#+end_example
+      #+end_example
 
       We can observe the impact of each parameters on the median and
       mean values, they follow te same evolution. Generally extreme
@@ -14156,7 +14156,7 @@ Entered on [2015-11-19 jeu. 20:56]
       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #+end_example
 
-****** Linear data
+****** DONE Linear data
       Convert to linear if not already done:
       #+begin_src sh :results output :exports both
         ruby ../scripts/convert_hierarchic_to_linear.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -14288,7 +14288,7 @@ Entered on [2015-11-19 jeu. 20:56]
 
       For now we have exactly the same observation as with hierarchic factors.
 
-****** Conclusion
+****** DONE Conclusion
        Now I am convinced linear regression is not suited because even
        if we can study interactions between parameters, if for all of
        them the distribution of the noise is not known (doesn't follow
@@ -14296,4 +14296,244 @@ Entered on [2015-11-19 jeu. 20:56]
        way for all the parameters if the minimum does not follow the
        same evolution than the mean, we cannot predict the
        best value.
-***** Quantile regression
+***** TODO Quantile regression
+     First need to know exactly what is behind quantile
+     regression. Then we need to know what design of experiments could
+     work with extremal quantile regression. That means which one
+     brings us the most informations with the smallest set of
+     points. But first need to know it the correct model for our
+     data. So we first define the model, then try different 
+     experiment designs and finally try to recover the model from the
+     selected experiment design by using the least point as possible.
+****** TODO How does it really work?
+       There is multiple way of doing quantile regression. For example
+       we have:
+         - Empirical quantile regression
+         - Least absolute value
+         - Weigthed least squares
+         - etc
+******* TODO The rq function
+******* TODO Weighted least squares
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          summary(df)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number  y_component_number vector_length   temporary_size  vector_recompute load_overlap  threads_number       lws_y        
+         Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000   true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000                    true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+         Median : 6.000   Median :3.000      Median : 4.00   Median :2.000                                  Median : 256.0   Median :  16.00  
+         Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975                                  Mean   : 368.1   Mean   :  73.58  
+         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000                                  3rd Qu.: 512.0   3rd Qu.:  64.00  
+         Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000                                  Max.   :1024.0   Max.   :1024.00  
+         time_per_pixel     
+         Min.   :1.165e-10  
+         1st Qu.:3.028e-10  
+         Median :7.125e-10  
+         Mean   :2.013e-09  
+         3rd Qu.:2.001e-09  
+         Max.   :4.452e-08
+        #+end_example
+
+
+        #+begin_src R :results output :session :exports both
+          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+          iwr <- function(data,formula) { 
+              reg <- lm(data=data,formula=formula)
+              for(i in 1:200){
+                  E <- residuals(reg)
+                  reg <- lm(data=data,formula=formula,weight=g(E))
+              }
+              reg
+          }
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          default <- par()
+          par(mfrow = c(1, 2))
+          curve(f,-10,10)
+          curve(g,-10,10)
+          par(default)
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-3568YCH/figure3568vjv.png]]
+
+        #+begin_src R :results output :session :exports both
+          formula <-df$time_per_pixel ~ df$elements_number + df$y_component_number + df$vector_length + df$threads_number
+          reg <- iwr(df,formula)
+          summary(reg)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm(formula = formula, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -1.054e-05  2.272e-06  4.404e-06  9.175e-06  4.685e-05 
+
+        Coefficients:
+                                Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)            1.711e-10  2.128e-12  80.403   <2e-16 ***
+        df$elements_number    -6.737e-12  1.469e-13 -45.872   <2e-16 ***
+        df$y_component_number -5.149e-12  4.285e-13 -12.017   <2e-16 ***
+        df$vector_length       2.910e-11  7.438e-14 391.253   <2e-16 ***
+        df$threads_number      7.604e-16  1.758e-15   0.433    0.665    
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 9.417e-06 on 23115 degrees of freedom
+        Multiple R-squared:  0.9991,	Adjusted R-squared:  0.9991 
+        F-statistic: 6.667e+06 on 4 and 23115 DF,  p-value: < 2.2e-16
+#+end_example
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        plot(y=df$time_per_pixel,df$elements_number)
+        abline(reg,col="red")
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-3568YCH/figure3568UcE.png]]
+
+        #+begin_src R :results output :session :exports both
+          reg <- iwr(df,time_per_pixel ~ lws_y)
+          summary(reg)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm(formula = formula, data = data, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -0.0035957 -0.0000474 -0.0000083  0.0000021  0.0055898 
+
+        Coefficients:
+                     Estimate Std. Error t value Pr(>|t|)    
+        (Intercept) 9.991e-12  2.779e-13   35.95   <2e-16 ***
+        lws_y       1.197e-10  2.779e-13  430.66   <2e-16 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 0.0001065 on 23118 degrees of freedom
+        Multiple R-squared:  0.8892,	Adjusted R-squared:  0.8892 
+        F-statistic: 1.855e+05 on 1 and 23118 DF,  p-value: < 2.2e-16
+#+end_example
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          plot(y=df$time_per_pixel,df$lws_y)
+          abline(reg,col="red")
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-3568YCH/figure35688t1.png]]
+
+
+****** TODO Modelization  
+     #+begin_src sh :results output :exports both
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+
+     #+RESULTS:
+
+      #+begin_src R :results output :session :exports both
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        summary(df)
+      #+end_src
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+         library(ggplot2)
+         library(grid)
+         library(gridExtra)
+         library(plyr)
+
+         elem_err = ddply(df,c("elements_number"), summarize,
+                          mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         y_err = ddply(df,c("y_component_number"), summarize,
+                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         vec_err = ddply(df,c("vector_length"), summarize,
+                         mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         t_err = ddply(df,c("threads_number"), summarize,
+                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         l_err = ddply(df,c("lws_y"), summarize,
+                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         p1 <- qplot(df$elements_number, df$time_per_pixel) + 
+             geom_point(alpha=0.1) + 
+             scale_y_log10() + 
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+             geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+             ggtitle("Impact of elements number") +
+             geom_quantile(quantiles=0.05, formula = y ~ x + I(x^2), colour="green") +
+             theme(axis.text=element_text(size=12),
+                   axis.title=element_text(size=14,face="bold"))
+
+         p2 <- qplot(df$y_component_number, df$time_per_pixel) + 
+             geom_point(alpha=0.1) + 
+             scale_y_log10() + 
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+             geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+             ggtitle("Impact of y components number") +
+             geom_quantile(quantiles=0.05, formula = y ~ x, colour="green") +
+             theme(axis.text=element_text(size=12),
+                   axis.title=element_text(size=14,face="bold"))
+
+         p3 <- qplot(df$vector_length, df$time_per_pixel) + 
+             geom_point(alpha=0.1) + 
+             scale_y_log10() + 
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+             geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+             geom_quantile(quantiles=0.05, formula = y ~ x, colour="green") +
+             ggtitle("Impact of of the vector length") +
+             theme(axis.text=element_text(size=12),
+                   axis.title=element_text(size=14,face="bold"))
+
+         p4 <- qplot(df$threads_number, df$time_per_pixel) + 
+             geom_point(alpha=0.1) + 
+             scale_y_log10() + 
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+             geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+             geom_quantile(quantiles=0.05, formula = y ~ x, colour="green") +
+             ggtitle("Impact of of the threads number") +
+             theme(axis.text=element_text(size=12),
+                   axis.title=element_text(size=14,face="bold"))
+
+         p5 <- qplot(df$lws_y, df$time_per_pixel) + 
+             geom_point() + 
+             scale_y_log10() + 
+             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+             geom_errorbar(data=l_err,aes(x=(lws_y),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+             geom_quantile(quantiles=0.05, formula = y ~ x + I(log(x)), colour="green") +
+             ggtitle("Impact of of the lws_y") +
+             theme(axis.text=element_text(size=12),
+                   axis.title=element_text(size=14,face="bold"))
+
+         grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors")) 
+
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-3568YCH/figure3568UA0.png]]
+
+****** TODO Which design of experiments?
+
