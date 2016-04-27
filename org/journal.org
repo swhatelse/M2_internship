@@ -13143,7 +13143,6 @@ Entered on [2015-11-19 jeu. 20:56]
      #+end_src
 
      #+RESULTS:
-
      
      It is interesting to look how a random search performs by
      comparison. Lets implement a stupid and simple random search that
@@ -13280,7 +13279,7 @@ Entered on [2015-11-19 jeu. 20:56]
     So with only 10 combinations tested it maybe is not enough but
     with 100 conbinations it starts being interesting and it can
     achieve good performances half of the time. 
-**** TODO Local search algorithm
+**** DONE Local search algorithm
      Still as comparison lets implement local search. We cannot
      implement a real gradient descent because our function is not
      differentiable and discrete. But I can use method which looks
@@ -13448,17 +13447,6 @@ Entered on [2015-11-19 jeu. 20:56]
             drops <- c("time_per_pixel", "vector_recompute")
             row[, !(names(row) %in% drops)]
          }
-
-        options(width=150)
-        res <- data.frame()
-        start <- data.frame()
-        for(i in 1:1000){
-            p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
-            start <- rbind(start,p)  
-            res <- rbind(res,gradient_descent(p))
-        }
-        summary(start)
-        summary(res)
       #+end_src
 
       #+RESULTS:
@@ -13477,9 +13465,134 @@ Entered on [2015-11-19 jeu. 20:56]
        Mean   :8.282e-10  
        3rd Qu.:7.535e-10  
        Max.   :1.751e-08
-#+end_example
+      #+end_example
+
+***** Analysis                                                     :Analysis:
+      #+begin_src R :results output :session :exports both
+        options(width=150)
+        res <- data.frame()
+        start <- data.frame()
+        for(i in 1:1000){
+            p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
+            start <- rbind(start,p)  
+            res <- rbind(res,gradient_descent(p))
+        }
+        write.csv(start, file = "../data/2016_04_08/pilipili2/18_08_24/gradient_1000_data_start.csv")
+        write.csv(res, file = "../data/2016_04_08/pilipili2/18_08_24/gradient_1000_data_res.csv")
+        summary(start)
+        summary(res)
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+       elements_number  y_component_number vector_length    temporary_size  vector_recompute load_overlap threads_number       lws_y        
+       Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :2.000   true:1000        false:480    Min.   :  32.0   Min.   :   1.00  
+       1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.000   1st Qu.:2.000                    true :520    1st Qu.:  64.0   1st Qu.:   2.00  
+       Median : 6.000   Median :3.000      Median : 4.000   Median :4.000                                 Median : 256.0   Median :  16.00  
+       Mean   : 8.524   Mean   :3.479      Mean   : 5.626   Mean   :3.008                                 Mean   : 355.4   Mean   :  73.44  
+       3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.000   3rd Qu.:4.000                                 3rd Qu.: 512.0   3rd Qu.:  64.00  
+       Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :4.000                                 Max.   :1024.0   Max.   :1024.00  
+       time_per_pixel     
+       Min.   :1.165e-10  
+       1st Qu.:3.032e-10  
+       Median :7.147e-10  
+       Mean   :2.184e-09  
+       3rd Qu.:1.919e-09  
+       Max.   :4.203e-08
+       elements_number  y_component_number vector_length  temporary_size  vector_recompute load_overlap threads_number       lws_y       
+       Min.   : 1.000   Min.   :1.000      Min.   : 1.0   Min.   :2.000   true:1000        false:477    Min.   :  32.0   Min.   :  1.00  
+       1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 1.0   1st Qu.:2.000                    true :523    1st Qu.: 128.0   1st Qu.:  2.00  
+       Median : 6.000   Median :3.000      Median : 2.0   Median :2.000                                 Median : 256.0   Median :  8.00  
+       Mean   : 8.598   Mean   :3.496      Mean   : 3.3   Mean   :2.872                                 Mean   : 368.6   Mean   : 37.51  
+       3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 4.0   3rd Qu.:4.000                                 3rd Qu.: 512.0   3rd Qu.: 32.00  
+       Max.   :24.000   Max.   :6.000      Max.   :16.0   Max.   :4.000                                 Max.   :1024.0   Max.   :512.00  
+       time_per_pixel     
+       Min.   :1.165e-10  
+       1st Qu.:1.571e-10  
+       Median :2.242e-10  
+       Mean   :8.198e-10  
+       3rd Qu.:7.233e-10  
+       Max.   :1.759e-08
+      #+end_example
+
+      #+begin_src R :results output :session :exports both
+       start <- read.csv("../data/2016_04_08/pilipili2/18_08_24/gradient_1000_data_start.csv",strip.white=T,header=T)
+       res <- read.csv("../data/2016_04_08/pilipili2/18_08_24/gradient_1000_data_res.csv",strip.white=T,header=T)
+      #+end_src
 
 
+      By looking at the histogram showing the repartition of
+      combinations over the time per pixel, we quickly see the
+      gradient is not as effective than a random search for this
+      problem. With the random search we had values under 1.8e-10 and
+      the median was at 1.278e-10. Here with the gradient descent the
+      maximum is 1.759e-08 and the median is at 2.242e-10. 
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 400 :session
+        library(ggplot2)
+        ggplot(res) +
+            aes(time_per_pixel) +
+            theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+            geom_vline(xintercept = median(res$time_per_pixel), color="darkgreen", linetype=2) +
+            geom_histogram(binwidth=2e-10, color="white", fill="gray0", aes(y=..density.. * 2e-10))
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3568YCH/figure3568Guy.png]]
+
+      We see earlier that with the previous histogram we are missing
+      some informations. Lets have look at how far is the results from
+      the global optimal. We find that is clear not effective on this
+      problem with 50% of the time we have speed up less than 60%.
+      We clearly see that there are lots of local optimum and lots are
+      far from the global optimal.
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        library(ggplot2)
+        speedup <- c()
+        for (i in 1:nrow(res)){
+            speedup[i] <-  min(df$time_per_pixel) / res[i,]$time_per_pixel
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=0.05, color="white", fill="gray1", aes(y=..density.. * 0.05))      
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3568YCH/figure35685qg.png]]
+
+      In general the improvment brought the gradient descent compared
+      to the starting point is generally twice better. This is again
+      because we have lots of global optimum and the gradient is
+      quickly stuck.
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 400 :session
+        library(ggplot2)
+        speedup <- c()
+        for (i in 1:nrow(res)){
+            speedup[i] <-  start[i,]$time_per_pixel / res[i,]$time_per_pixel
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=1, color="white", fill="gray1", aes(y=..density.. * 1))      
+      
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3568YCH/figure3568snO.png]]
+
+      From this observations, what we can conclude is that we have a
+      lot of local optimum in which local search can be stuck. The
+      solutions are generally far from the global optimal. The
+      improvment from the starting point is not very good, maybe my
+      implementation is stuck at a saddle point but I don't thing. So unless
+      knowing at which point starting the exploration the local search
+      is not suited to this kind of problem. 
 **** TODO Genetic Algorithm
 ***** TODO Adding Constraint mechanism
       Gene = An option
