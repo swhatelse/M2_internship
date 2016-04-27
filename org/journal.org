@@ -4008,7 +4008,7 @@ Entered on [2015-11-19 jeu. 20:56]
        1.2875093575170066e-10
        80
 #+end_example
-
+      
        #+begin_src sh :results output :exports both
          ruby ../scripts/format_data.rb ../data/2016_03_30/pilipili2/18_16_33/Gen.yaml 
        #+end_src
@@ -13143,7 +13143,6 @@ Entered on [2015-11-19 jeu. 20:56]
      #+end_src
 
      #+RESULTS:
-
      
      It is interesting to look how a random search performs by
      comparison. Lets implement a stupid and simple random search that
@@ -13280,7 +13279,7 @@ Entered on [2015-11-19 jeu. 20:56]
     So with only 10 combinations tested it maybe is not enough but
     with 100 conbinations it starts being interesting and it can
     achieve good performances half of the time. 
-**** TODO Local search algorithm
+**** DONE Local search algorithm
      Still as comparison lets implement local search. We cannot
      implement a real gradient descent because our function is not
      differentiable and discrete. But I can use method which looks
@@ -13293,6 +13292,13 @@ Entered on [2015-11-19 jeu. 20:56]
         - keep the best one
         - repeat until no improvment
 ***** Implementation
+      Generate clean data if note already done:
+      #+begin_src sh :results output :exports both
+        ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+      #+end_src
+
+      #+RESULTS:
+
       Generate csv:
       #+begin_src sh :results output :exports both
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -13332,62 +13338,261 @@ Entered on [2015-11-19 jeu. 20:56]
 #+end_example
 
       #+begin_src R :results output :session :exports both
-        check_constraint <- function(elements_number, y_component_number=1, vector_length=1, temporary_size=2, load_overlap=0, threads_number=32) {
-            vector_number <- ceiling((elements_number / y_component_number) / vector_length)
+        kernel_size <- function(point) {
+            # point$load_overlap <- if (point$load_overlap == "true") 1 else 0
+            vector_number <- ceiling((point$elements_number / point$y_component_number) / point$vector_length)
             
-            tempload <- (1 - load_overlap) * (vector_number * vector_length) / vector_length * vector_length
-            temp <-  load_overlap * 3 * vector_number * (y_component_number+2) * vector_length
-            res <- vector_number * y_component_number * vector_length
-            tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
-                                                # out_vec = (1 - load_overlap) * 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
-            out_vec = (1 - load_overlap) * tempc
-            resc <- vector_number * y_component_number * temporary_size * vector_length
+            tempload <- (1 - point$load_overlap) * (vector_number * point$vector_length) / point$vector_length * point$vector_length
+            temp <-  point$load_overlap * 3 * vector_number * (point$y_component_number+2) * point$vector_length
+            res <- vector_number * point$y_component_number * point$vector_length
+            tempc <- 3 * vector_number * (point$y_component_number + 2) * point$temporary_size * point$vector_length
+            out_vec = (1 - point$load_overlap) * tempc
+            resc <- vector_number * point$y_component_number * point$temporary_size * point$vector_length
 
-            tot <- (tempload + temp + res + tempc + out_vec + resc) * threads_number
+            tot <- (tempload + temp + res + tempc + out_vec + resc) * point$threads_number
         }
 
-                                                # "compute_kernel_size(:elements_number, :y_component_number, :vector_length, :temporary_size, :load_overlap, :threads_number) < compute_kernel_size(6,6,8,2,false,1024)"
-        gradient_descent <- function(point){
-            elements_number    <- c(1,0,0,0,0,0,0)
-            y_component_number <- c(0,1,0,0,0,0,0)
-            vector_length      <- c(0,0,1,0,0,0,0)
-            temporary_size     <- c(0,0,0,1,0,0,0)
-            load_overlap       <- c(0,0,0,0,1,0,0)
-            threads_number     <- c(0,0,0,0,0,1,0)
-            lws_y              <- c(0,0,0,0,0,0,1)
+        check_constraint <- function(point){
+            res <- if(point$load_overlap %in% 0:1 &
+                      point$lws_y <= point$threads_number &
+                      point$elements_number %% point$y_component_number == 0 &
+                      point$elements_number %/% point$y_component_number <= 4 &
+                      kernel_size(point) < kernel_size(data.frame(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024))
+                      ) T else F
+        }
+
+        point_equal <- function(p1,p2){
+            res <- if(p1$elements_number == p2$elements_number &
+                      p1$y_component_number == p2$y_component_number &
+                      p1$vector_length == p2$vector_length &
+                      p1$temporary_size == p2$temporary_size &
+                      p1$load_overlap == p2$load_overlap &
+                      p1$threads_number == p2$threads_number) T else F
+        }
+
+        gradient_descent <- function(point, limit=100){
+            elements_number    <- c(1,0,0,0,0,0,0,-1,0,0,0,0,0,0)
+            y_component_number <- c(0,1,0,0,0,0,0,0,-1,0,0,0,0,0)
+            vector_length      <- c(0,0,1,0,0,0,0,0,0,-1,0,0,0,0)
+            temporary_size     <- c(0,0,0,1,0,0,0,0,0,0,-1,0,0,0)
+            load_overlap       <- c(0,0,0,0,1,0,0,0,0,0,0,-1,0,0)
+            threads_number     <- c(0,0,0,0,0,1,0,0,0,0,0,0,-1,0)
+            lws_y              <- c(0,0,0,0,0,0,1,0,0,0,0,0,0,-1)
+
+            factors <- list(elements_number = as.numeric(levels(as.factor(df$elements_number))), 
+                                  y_component_number = as.numeric(levels(as.factor(df$y_component_number))), 
+                                  vector_length = as.numeric(levels(as.factor(df$vector_length))), 
+                                  temporary_size = as.numeric(levels(as.factor(df$temporary_size))), 
+                                  threads_number= as.numeric(levels(as.factor(df$threads_number))), 
+                                  lws_y= as.numeric(levels(as.factor(df$lws_y)))) 
 
             directions <- data.frame(elements_number, y_component_number, vector_length, temporary_size, load_overlap, threads_number, lws_y)
+            count <- 0
 
-            points$load_overlap <- if (points$load_overlap == "true") 1 else 0
+            repeat{
+                old_point <- point
+                candidates <- data.frame()
 
-            best <- Inf
-            for(d in directions){
-                                                # if check_constraint() < check_constraint(6,6,8,2,0,1024)){
+                for(i in 1:nrow(directions)){
+                    idx_elements_number = match(point$elements_number, factors$elements_number) + directions[i,]$elements_number
+                    idx_y_component_number = match(point$y_component_number, factors$y_component_number) + directions[i,]$y_component_number
+                    idx_vector_length = match(point$vector_length, factors$vector_length) + directions[i,]$vector_length
+                    idx_temporary_size = match(point$temporary_size, factors$temporary_size) + directions[i,]$temporary_size
+                    idx_threads_number = match(point$threads_number, factors$threads_number) + directions[i,]$threads_number
+                    idx_lws_y = match(point$lws_y, factors$lws_y) + directions[i,]$lws_y
+
+                    if(!(idx_elements_number %in% 1:length(levels(as.factor(df$elements_number))))) next
+                    if(!(idx_y_component_number %in% 1:length(levels(as.factor(df$y_component_number))))) next
+                    if(!(idx_vector_length %in% 1:length(levels(as.factor(df$vector_length))))) next
+                    if(!(idx_temporary_size %in% 1:length(levels(as.factor(df$temporary_size))))) next
+                    if(!(idx_threads_number %in% 1:length(levels(as.factor(df$threads_number))))) next
+                    if(!(idx_lws_y %in% 1:length(levels(as.factor(df$lws_y))))) next
+
+                    p <- data.frame(elements_number = factors$elements_number[idx_elements_number],
+                                    y_component_number = factors$y_component_number[idx_y_component_number],
+                                    vector_length = factors$vector_length[idx_vector_length],
+                                    temporary_size = factors$temporary_size[idx_temporary_size],
+                                    load_overlap = if(point$load_overlap == "true") 1 + directions[i,]$load_overlap else 0 + directions[i,]$load_overlap,
+                                    threads_number = factors$threads_number[idx_threads_number],
+                                    lws_y = factors$lws_y[idx_lws_y]
+                                    )
+
+                    if(check_constraint(p) == T){
+                        p <- df[df$elements_number == p$elements_number & 
+                                df$y_component_number == p$y_component_number & 
+                                df$vector_length == p$vector_length &
+                                df$temporary_size == p$temporary_size &
+                                df$load_overlap == (if (p$load_overlap == 0) "false" else "true") &
+                                #df$load_overlap == "true" &
+                                df$threads_number == p$threads_number &
+                                df$lws_y == p$lws_y,]
+                        candidates <- rbind(p, candidates)
+                    }
+                }
                 
-                                                # }
-                                                # else{
+                if(candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]$time_per_pixel < point$time_per_pixel){
+                    point <- candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]
+                }
 
-                                                # }
+                count <- count + 1
+                if(count >= 100 | point_equal(old_point,point) == T){
+                    break
+                }
             }
+            
+            point
         }
 
         row_to_coordinate <- function(row){
-            c(row$elements_number, row$y_component_number, row$vector_length, row$temporary_size, row$load_overlap, row$threads_number)
-        }
-
-        p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
-p
-                gradient_descent(p)
-                # c(t(p))
+            drops <- c("time_per_pixel", "vector_recompute")
+            row[, !(names(row) %in% drops)]
+         }
       #+end_src
 
       #+RESULTS:
-      :      elements_number y_component_number vector_length temporary_size
-      : 8025              15                  5             1              2
-      :      vector_recompute load_overlap threads_number lws_y time_per_pixel
-      : 8025             true         true             64     8   4.153229e-10
-      : Error in points$load_overlap (from #12) : objet de type 'closure' non indiçable
+      #+begin_example
+       elements_number  y_component_number vector_length    temporary_size  vector_recompute load_overlap threads_number       lws_y       
+       Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :2.000   true:1000        false:485    Min.   :  32.0   Min.   :  1.00  
+       1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 1.000   1st Qu.:2.000                    true :515    1st Qu.: 128.0   1st Qu.:  2.00  
+       Median : 6.000   Median :3.000      Median : 2.000   Median :2.000                                 Median : 256.0   Median :  8.00  
+       Mean   : 8.701   Mean   :3.483      Mean   : 3.459   Mean   :2.904                                 Mean   : 375.4   Mean   : 38.91  
+       3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 4.000   3rd Qu.:4.000                                 3rd Qu.: 512.0   3rd Qu.: 32.00  
+       Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :4.000                                 Max.   :1024.0   Max.   :512.00  
+       time_per_pixel     
+       Min.   :1.165e-10  
+       1st Qu.:1.581e-10  
+       Median :2.228e-10  
+       Mean   :8.282e-10  
+       3rd Qu.:7.535e-10  
+       Max.   :1.751e-08
+      #+end_example
 
+***** Analysis                                                     :Analysis:
+      #+begin_src R :results output :session :exports both
+        options(width=150)
+        res <- data.frame()
+        start <- data.frame()
+        for(i in 1:1000){
+            p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
+            start <- rbind(start,p)  
+            res <- rbind(res,gradient_descent(p))
+        }
+        write.csv(start, file = "../data/2016_04_08/pilipili2/18_08_24/gradient_1000_data_start.csv")
+        write.csv(res, file = "../data/2016_04_08/pilipili2/18_08_24/gradient_1000_data_res.csv")
+        summary(start)
+        summary(res)
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+       elements_number  y_component_number vector_length    temporary_size  vector_recompute load_overlap threads_number       lws_y        
+       Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :2.000   true:1000        false:480    Min.   :  32.0   Min.   :   1.00  
+       1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.000   1st Qu.:2.000                    true :520    1st Qu.:  64.0   1st Qu.:   2.00  
+       Median : 6.000   Median :3.000      Median : 4.000   Median :4.000                                 Median : 256.0   Median :  16.00  
+       Mean   : 8.524   Mean   :3.479      Mean   : 5.626   Mean   :3.008                                 Mean   : 355.4   Mean   :  73.44  
+       3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.000   3rd Qu.:4.000                                 3rd Qu.: 512.0   3rd Qu.:  64.00  
+       Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :4.000                                 Max.   :1024.0   Max.   :1024.00  
+       time_per_pixel     
+       Min.   :1.165e-10  
+       1st Qu.:3.032e-10  
+       Median :7.147e-10  
+       Mean   :2.184e-09  
+       3rd Qu.:1.919e-09  
+       Max.   :4.203e-08
+       elements_number  y_component_number vector_length  temporary_size  vector_recompute load_overlap threads_number       lws_y       
+       Min.   : 1.000   Min.   :1.000      Min.   : 1.0   Min.   :2.000   true:1000        false:477    Min.   :  32.0   Min.   :  1.00  
+       1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 1.0   1st Qu.:2.000                    true :523    1st Qu.: 128.0   1st Qu.:  2.00  
+       Median : 6.000   Median :3.000      Median : 2.0   Median :2.000                                 Median : 256.0   Median :  8.00  
+       Mean   : 8.598   Mean   :3.496      Mean   : 3.3   Mean   :2.872                                 Mean   : 368.6   Mean   : 37.51  
+       3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 4.0   3rd Qu.:4.000                                 3rd Qu.: 512.0   3rd Qu.: 32.00  
+       Max.   :24.000   Max.   :6.000      Max.   :16.0   Max.   :4.000                                 Max.   :1024.0   Max.   :512.00  
+       time_per_pixel     
+       Min.   :1.165e-10  
+       1st Qu.:1.571e-10  
+       Median :2.242e-10  
+       Mean   :8.198e-10  
+       3rd Qu.:7.233e-10  
+       Max.   :1.759e-08
+      #+end_example
+
+      #+begin_src R :results output :session :exports both
+       start <- read.csv("../data/2016_04_08/pilipili2/18_08_24/gradient_1000_data_start.csv",strip.white=T,header=T)
+       res <- read.csv("../data/2016_04_08/pilipili2/18_08_24/gradient_1000_data_res.csv",strip.white=T,header=T)
+      #+end_src
+
+
+      By looking at the histogram showing the repartition of
+      combinations over the time per pixel, we quickly see the
+      gradient is not as effective than a random search for this
+      problem. With the random search we had values under 1.8e-10 and
+      the median was at 1.278e-10. Here with the gradient descent the
+      maximum is 1.759e-08 and the median is at 2.242e-10. 
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 400 :session
+        library(ggplot2)
+        ggplot(res) +
+            aes(time_per_pixel) +
+            theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+            geom_vline(xintercept = median(res$time_per_pixel), color="darkgreen", linetype=2) +
+            geom_histogram(binwidth=2e-10, color="white", fill="gray0", aes(y=..density.. * 2e-10))
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3568YCH/figure3568Guy.png]]
+
+      We see earlier that with the previous histogram we are missing
+      some informations. Lets have look at how far is the results from
+      the global optimal. We find that is clear not effective on this
+      problem with 50% of the time we have speed up less than 60%.
+      We clearly see that there are lots of local optimum and lots are
+      far from the global optimal.
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        library(ggplot2)
+        speedup <- c()
+        for (i in 1:nrow(res)){
+            speedup[i] <-  min(df$time_per_pixel) / res[i,]$time_per_pixel
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=0.05, color="white", fill="gray1", aes(y=..density.. * 0.05))      
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3568YCH/figure35685qg.png]]
+
+      In general the improvment brought the gradient descent compared
+      to the starting point is generally twice better. This is again
+      because we have lots of global optimum and the gradient is
+      quickly stuck.
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 700 :height 400 :session
+        library(ggplot2)
+        speedup <- c()
+        for (i in 1:nrow(res)){
+            speedup[i] <-  start[i,]$time_per_pixel / res[i,]$time_per_pixel
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=1, color="white", fill="gray1", aes(y=..density.. * 1))      
+      
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3568YCH/figure3568snO.png]]
+
+      From this observations, what we can conclude is that we have a
+      lot of local optimum in which local search can be stuck. The
+      solutions are generally far from the global optimal. The
+      improvment from the starting point is not very good, maybe my
+      implementation is stuck at a saddle point but I don't thing. So unless
+      knowing at which point starting the exploration the local search
+      is not suited to this kind of problem. 
 **** TODO Genetic Algorithm
 ***** TODO Adding Constraint mechanism
       Gene = An option
