@@ -13613,8 +13613,8 @@ Entered on [2015-11-19 jeu. 20:56]
            s
          end
          
-         def bar(m)
-           m.call("pouet")
+         def bar(s,m)
+           eval s
          end
          
          f = Proc.new{ |s|
@@ -13622,7 +13622,7 @@ Entered on [2015-11-19 jeu. 20:56]
          }
          
          s = <<EOF
-           bar(f)
+           bar("m.call('pouet')",f)
          EOF
          
          eval s
