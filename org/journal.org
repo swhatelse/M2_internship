@@ -13279,6 +13279,8 @@ Entered on [2015-11-19 jeu. 20:56]
     So with only 10 combinations tested it maybe is not enough but
     with 100 conbinations it starts being interesting and it can
     achieve good performances half of the time. 
+
+***** TODO try LHS
 **** DONE Local search algorithm
      Still as comparison lets implement local search. We cannot
      implement a real gradient descent because our function is not
@@ -13607,6 +13609,20 @@ Entered on [2015-11-19 jeu. 20:56]
       Maybe the most logical idea would be to check the constraints at
       the organism level.
       Need to add valid? method in population.rb
+      #+BEGIN_SRC  ruby
+                begin 
+            super
+            h = {}
+            a = []
+            @genotypes.genes.each{ |g|
+              #h[g.name.to_sym] = @genotypes[g]          
+h[g.name.to_sym] = 1024          
+            }
+            a.push h 
+            #{@search_space.remove_unfeasible} h if #{not @search_space.rules.nil?}
+          end while h.empty?
+          # puts @genotypes.genes.first.name
+      #+end_src
 ****** Passing function to a function                                  :Ruby:
        #+BEGIN_SRC ruby
          def foo(s)
@@ -13622,7 +13638,7 @@ Entered on [2015-11-19 jeu. 20:56]
          }
          
          s = <<EOF
-           bar("m.call('pouet')",f)
+           bar("m[1].call('pouet')",[f,f])
          EOF
          
          eval s
@@ -14329,6 +14345,11 @@ Entered on [2015-11-19 jeu. 20:56]
      data. So we first define the model, then try different 
      experiment designs and finally try to recover the model from the
      selected experiment design by using the least point as possible.
+
+     - [ ] Compare weighted with rq and geom_quantile
+     - [ ] Take a look at predict
+     - [ ] Try optim on the model
+
 ****** TODO How does it really work?
        There is multiple way of doing quantile regression. For example
        we have:
@@ -14337,6 +14358,38 @@ Entered on [2015-11-19 jeu. 20:56]
          - Weigthed least squares
          - etc
 ******* TODO The rq function
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          summary(df)
+        #+end_src
+        
+        #+begin_src R :results output :session :exports both
+          library(quantreg)
+          df$log_time_per_pixel <- log(df$time_per_pixel)
+          model <- rq(data=df, formula = log_time_per_pixel ~ lws_y, tau=.05, method="fn")
+          summary(model) 
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call: rq(formula = log_time_per_pixel ~ lws_y, tau = 0.05, data = df, 
+            method = "fn")
+
+        tau: [1] 0.05
+
+        Coefficients:
+                    Value       Std. Error  t value     Pr(>|t|)   
+        (Intercept)   -22.58029     0.00558 -4045.88306     0.00000
+        lws_y           0.00310     0.00004    78.30774     0.00000
+#+end_example
+
 ******* TODO Weighted least squares
         #+begin_src sh :results output :exports both
           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -14351,13 +14404,20 @@ Entered on [2015-11-19 jeu. 20:56]
 
         #+RESULTS:
         #+begin_example
-         elements_number  y_component_number vector_length   temporary_size  vector_recompute load_overlap  threads_number       lws_y        
-         Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000   true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
-         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000                    true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
-         Median : 6.000   Median :3.000      Median : 4.00   Median :2.000                                  Median : 256.0   Median :  16.00  
-         Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975                                  Mean   : 368.1   Mean   :  73.58  
-         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000                                  3rd Qu.: 512.0   3rd Qu.:  64.00  
-         Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000                                  Max.   :1024.0   Max.   :1024.00  
+         elements_number  y_component_number vector_length   temporary_size 
+         Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+         Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+         Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+         Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+         vector_recompute load_overlap  threads_number       lws_y        
+         true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                          true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                        Median : 256.0   Median :  16.00  
+                                        Mean   : 368.1   Mean   :  73.58  
+                                        3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                        Max.   :1024.0   Max.   :1024.00  
          time_per_pixel     
          Min.   :1.165e-10  
          1st Qu.:3.028e-10  
@@ -14365,19 +14425,18 @@ Entered on [2015-11-19 jeu. 20:56]
          Mean   :2.013e-09  
          3rd Qu.:2.001e-09  
          Max.   :4.452e-08
-        #+end_example
-
+#+end_example
 
         #+begin_src R :results output :session :exports both
           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
           g <- function(x) { f(x)/x^2 }
-          iwr <- function(data,formula) { 
-              reg <- lm(data=data,formula=formula)
+          iwr <- function(d, form) { 
+              model <- lm(data=d,formula=form)
               for(i in 1:200){
-                  E <- residuals(reg)
-                  reg <- lm(data=data,formula=formula,weight=g(E))
+                  residus <- residuals(reg)
+                  model <- lm(data=d, formula=form, weight=g(residus))
               }
-              reg
+              model
           }
         #+end_src
 
@@ -14392,11 +14451,48 @@ Entered on [2015-11-19 jeu. 20:56]
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-3568YCH/figure3568vjv.png]]
+        [[file:/tmp/babel-3743oGc/figure37438rj.png]]
+        
+        I don't know why but in the function iwr R cannot found
+        residus we using weight in lm:
+        #+begin_src R :results output :session :exports both
+          formula <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number
+          reg <- iwr(d=df,form=formula)
+          summary(reg)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+        Error in f(x) (from #1) : objet 'residus' introuvable
+
+        Call:
+        lm(formula = form, data = d)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -4.170e-09 -1.630e-09 -7.900e-10  5.970e-10  3.979e-08 
+
+        Coefficients:
+                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)         1.502e-09  6.523e-11  23.029  < 2e-16 ***
+        elements_number    -1.618e-10  5.260e-12 -30.763  < 2e-16 ***
+        y_component_number  2.223e-10  1.869e-11  11.895  < 2e-16 ***
+        vector_length       2.221e-10  4.409e-12  50.384  < 2e-16 ***
+        threads_number     -3.694e-13  6.563e-14  -5.628 1.84e-08 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 3.436e-09 on 23115 degrees of freedom
+        Multiple R-squared:  0.1449,	Adjusted R-squared:  0.1447 
+        F-statistic: 979.1 on 4 and 23115 DF,  p-value: < 2.2e-16
+        #+end_example
 
         #+begin_src R :results output :session :exports both
-          formula <-df$time_per_pixel ~ df$elements_number + df$y_component_number + df$vector_length + df$threads_number
-          reg <- iwr(df,formula)
+          reg <- lm(data=df,formula=formula)
+          for(i in 1:200){
+              E <- residuals(reg)
+              reg <- lm(data=df,formula=formula,weight=g(E))
+          }
           summary(reg)
         #+end_src
 
@@ -14404,34 +14500,76 @@ Entered on [2015-11-19 jeu. 20:56]
         #+begin_example
 
         Call:
-        lm(formula = formula, weights = g(E))
+        lm(formula = formula, data = df, weights = g(E))
 
         Weighted Residuals:
                Min         1Q     Median         3Q        Max 
         -1.054e-05  2.272e-06  4.404e-06  9.175e-06  4.685e-05 
 
         Coefficients:
-                                Estimate Std. Error t value Pr(>|t|)    
-        (Intercept)            1.711e-10  2.128e-12  80.403   <2e-16 ***
-        df$elements_number    -6.737e-12  1.469e-13 -45.872   <2e-16 ***
-        df$y_component_number -5.149e-12  4.285e-13 -12.017   <2e-16 ***
-        df$vector_length       2.910e-11  7.438e-14 391.253   <2e-16 ***
-        df$threads_number      7.604e-16  1.758e-15   0.433    0.665    
+                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)         1.711e-10  2.128e-12  80.403   <2e-16 ***
+        elements_number    -6.737e-12  1.469e-13 -45.872   <2e-16 ***
+        y_component_number -5.149e-12  4.285e-13 -12.017   <2e-16 ***
+        vector_length       2.910e-11  7.438e-14 391.253   <2e-16 ***
+        threads_number      7.604e-16  1.758e-15   0.433    0.665    
         ---
         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
         Residual standard error: 9.417e-06 on 23115 degrees of freedom
         Multiple R-squared:  0.9991,	Adjusted R-squared:  0.9991 
         F-statistic: 6.667e+06 on 4 and 23115 DF,  p-value: < 2.2e-16
-#+end_example
+        #+end_example
 
+        The linear model is not correct for the elements number:
         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-        plot(y=df$time_per_pixel,df$elements_number)
+        plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,5e-10))
         abline(reg,col="red")
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-3568YCH/figure3568UcE.png]]
+        [[file:/tmp/babel-3743oGc/figure3743J2p.png]]
+
+        #+begin_src R :results output :session :exports both
+          formula <-formula(time_per_pixel ~ elements_number + I(1/elements_number))
+          reg <- lm(data=df,formula=formula)
+                for(i in 1:200){
+                    E <- residuals(reg)
+                    reg <- lm(data=df,formula=formula,weight=g(E))
+                }
+          summary(reg)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm(formula = formula, data = df, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -7.149e-06  2.596e-06  5.170e-06  9.525e-06  4.705e-05 
+
+        Coefficients:
+                               Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)           1.534e-10  9.112e-13 168.303   <2e-16 ***
+        elements_number      -3.765e-13  4.070e-14  -9.249   <2e-16 ***
+        I(1/elements_number)  9.854e-11  3.496e-12  28.184   <2e-16 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 9.652e-06 on 23117 degrees of freedom
+        Multiple R-squared:  0.1369,	Adjusted R-squared:  0.1368 
+        F-statistic:  1833 on 2 and 23117 DF,  p-value: < 2.2e-16
+#+end_example
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+        lines(predict(reg),col="red")        
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-3743oGc/figure3743jRq.png]]
 
         #+begin_src R :results output :session :exports both
           reg <- iwr(df,time_per_pixel ~ lws_y)
@@ -14460,13 +14598,25 @@ Entered on [2015-11-19 jeu. 20:56]
         F-statistic: 1.855e+05 on 1 and 23118 DF,  p-value: < 2.2e-16
 #+end_example
 
+        #+begin_src R :results output :session :exports both
+          formula=formula(time_per_pixel ~ lws_y)
+          reg <- lm(data=df,formula=formula)
+          for(i in 1:200){
+              E <- residuals(reg)
+              reg <- lm(data=df,formula=formula,weight=g(E))
+          }
+
+        #+end_src
+
+        #+RESULTS:
+
         #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
           plot(y=df$time_per_pixel,df$lws_y)
           abline(reg,col="red")
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-3568YCH/figure35688t1.png]]
+        [[file:/tmp/babel-3743oGc/figure3743VGd.png]]
 
 
 ****** TODO Modelization  
@@ -14561,3 +14711,4 @@ Entered on [2015-11-19 jeu. 20:56]
 
 ****** TODO Which design of experiments?
 
+****** TODO Optimization on the model to find the value
