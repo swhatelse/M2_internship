@@ -1,7 +1,7 @@
 #+TITLE:  LabBook
 #+AUTHOR: Steven QUINITO MASNADA
 #+BABEL: :tangle yes
-#+TAGS: Arnaud(a) Brice(b) Script(s) Analysis R(r)
+#+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r)
 
 * TODO [7/14]
   - [X] Run brute force with load_overlap = [true,false]
@@ -13607,6 +13607,30 @@ Entered on [2015-11-19 jeu. 20:56]
       Maybe the most logical idea would be to check the constraints at
       the organism level.
       Need to add valid? method in population.rb
+****** Passing function to a function                                  :Ruby:
+       #+BEGIN_SRC ruby
+         def foo(s)
+           s
+         end
+         
+         def bar(m)
+           m.call("pouet")
+         end
+         
+         f = Proc.new{ |s|
+           s
+         }
+         
+         s = <<EOF
+           bar(f)
+         EOF
+         
+         eval s
+       #+END_SRC
+
+       #+RESULTS:
+       : pouet
+
 ***** TODO Experiment
      - Generation limit 6, population size 10
        #+begin_src sh :results output :exports both
