@@ -1,0 +1,50 @@
+---
+:elements_number: !ruby/range
+  begin: 1
+  end: 24
+  excl: false
+:y_component_number: !ruby/range
+  begin: 1
+  end: 6
+  excl: false
+:vector_length:
+- 1
+- 2
+- 4
+- 8
+- 16
+:temporary_size:
+- 2
+- 4
+:vector_recompute:
+- true
+:load_overlap:
+- true
+- false
+:threads_number:
+- 32
+- 64
+- 128
+- 256
+- 512
+- 1024
+:lws_y:
+- 1
+- 2
+- 4
+- 8
+- 16
+- 32
+- 64
+- 128
+- 256
+- 512
+- 1024
+:rules:
+- options[:lws_y] <= options[:threads_number]
+- options[:threads_number] % options[:lws_y] == 0
+- options[:elements_number] >= options[:y_component_number]
+- options[:elements_number] % options[:y_component_number] == 0
+- options[:elements_number] / options[:y_component_number] <= 4
+- "@checkers[0].call(options[:elements_number], options[:y_component_number], options[:vector_length],
+  options[:temporary_size], options[:load_overlap], options[:threads_number]) < @checkers[0].call(6,6,8,2,false,1024)"
