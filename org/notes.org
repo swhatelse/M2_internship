@@ -608,7 +608,7 @@
     meta-informations about the characteristics of the data.
     Hence, expressing them correctly is important in order to build an
     accurate model that will map the data to best estimated variant.
-    There is to step, determining the characteristics of the data and
+    There is two steps, determining the characteristics of the data and
     them find the best variants.
     To build the model, supervised learning is used in the training
     phase using support vector machines.
