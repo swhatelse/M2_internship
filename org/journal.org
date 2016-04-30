@@ -13663,20 +13663,43 @@ h[g.name.to_sym] = 1024
        #+RESULTS:
 
        #+begin_src sh :results output :exports both
-         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen.yaml 
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
 
        #+RESULTS:
-       
+
        #+begin_src R :results output :session :exports both
          df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
-         attach(df)
-         default <- par()
-         count <- table(df$time_per_pixel)
-         par(mar=c(11.1,5.1,2.1,2.1))
-         barplot(count, xlab="time_per_pixel", ylab="frequency", space=1, las=2)
-         par(default)
        #+end_src
+
+       #+RESULTS:
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml 
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         res1 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+         
+         library(ggplot2)
+         speedup <- c()
+         for (i in 1:nrow(res1)){
+             speedup[i] <-  min(df$time_per_pixel) / res1[i,]$time_per_pixel
+         }
+         data <- data.frame(speedup)
+         ggplot(data) +
+             aes(speedup) +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-3156PQ3/figure3156uZH.png]]
+
      - Generation limit 5, population size 20
        #+begin_src sh :results output :exports both
          DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
@@ -13688,6 +13711,32 @@ h[g.name.to_sym] = 1024
        #+end_src
 
        #+RESULTS:
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g5_p20_m01_e1_tt.yaml 
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         res2 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+         
+         library(ggplot2)
+         speedup <- c()
+         for (i in 1:nrow(res2)){
+             speedup[i] <-  min(df$time_per_pixel) / res2[i,]$time_per_pixel
+         }
+         data <- data.frame(speedup)
+         ggplot(data) +
+             aes(speedup) +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-3156PQ3/figure3156iCg.png]]
 
      - Generation limit 20, population size 5
        #+begin_src sh :results output :exports both
@@ -13712,6 +13761,33 @@ h[g.name.to_sym] = 1024
        #+end_src
 
        #+RESULTS:
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g20_p5_m01_e1_tt.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         res3 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+         
+         library(ggplot2)
+         speedup <- c()
+         for (i in 1:nrow(res3)){
+             speedup[i] <-  min(df$time_per_pixel) / res3[i,]$time_per_pixel
+         }
+         data <- data.frame(speedup)
+         ggplot(data) +
+             aes(speedup) +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-3156PQ3/figure31567qB.png]]
+
 
      - Generation limit 50, population size 2
        #+begin_src sh :results output :exports both
