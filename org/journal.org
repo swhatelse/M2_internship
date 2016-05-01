@@ -13650,18 +13650,6 @@ h[g.name.to_sym] = 1024
        : pouet
 
 ***** TODO Experiment
-     - Generation limit 10, population size 10
-       #+begin_src sh :results output :exports both
-         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
-         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
-         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml"
-         for i in `seq 1 1000`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 10 --population_size 10 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
-         done
-       #+end_src
-
-       #+RESULTS:
-
        #+begin_src sh :results output :exports both
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
@@ -13670,6 +13658,18 @@ h[g.name.to_sym] = 1024
 
        #+begin_src R :results output :session :exports both
          df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+       #+end_src
+
+       #+RESULTS:
+
+     - Generation limit 10, population size 10
+       #+begin_src sh :results output :exports both
+         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml"
+         for i in `seq 1 1000`; do
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 10 --population_size 10 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+         done
        #+end_src
 
        #+RESULTS:
@@ -13798,6 +13798,75 @@ h[g.name.to_sym] = 1024
              ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 50 --population_size 2 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
          done
        #+end_src
+
+       #+RESULTS:
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g50_p2_m01_e1_tt.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         res4 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+         
+         library(ggplot2)
+         speedup <- c()
+         for (i in 1:nrow(res4)){
+             speedup[i] <-  min(df$time_per_pixel) / res4[i,]$time_per_pixel
+         }
+         data <- data.frame(speedup)
+         ggplot(data) +
+             aes(speedup) +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-2602MCh/figure2602Q9R.png]]
+
+
+     - Generation limit 1, population size 100
+       #+begin_src sh :results output :exports both
+         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g1_p100_m01_e1_tt.yaml"
+         for i in `seq 1 100`; do
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 1 --population_size 100 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+         done
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g1_p100_m01_e1_tt.yaml
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         res5 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+         
+         library(ggplot2)
+         speedup <- c()
+         for (i in 1:nrow(res5)){
+             speedup[i] <-  min(df$time_per_pixel) / res5[i,]$time_per_pixel
+         }
+         data <- data.frame(speedup)
+         ggplot(data) +
+             aes(speedup) +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-2602MCh/figure2602R3k.png]]
+
+
 
 **** TODO Regression                                               :Analysis:
 ***** DONE Linear regression
