@@ -13,8 +13,9 @@ OPTIONS:
   -d      Detailed data file for a new experiment
   -i      Specify the OpenCL implementation to use (NVIDIA, Intel)
   -n      Run a new experiment
-  -s      Specify a seed
+  -p      Specify partitioning
   -r      Reuse a detailed data file to complete the experiment by specifying the path of the file
+  -s      Specify a seed
 EOF
 }
 
@@ -23,6 +24,7 @@ SEED=""
 CHECKPOINT_SIZE=""
 REUSE_FILE=""
 NEW=false
+PARTITION=""
 part=1
 
 while getopts "c:d:hi:nr:s:" opt; do
@@ -42,6 +44,9 @@ while getopts "c:d:hi:nr:s:" opt; do
             ;;
         n)
             NEW=true
+            ;;
+        p)
+            PARTITION="$OPTARG"
             ;;
         s)
             SEED="$OPTARG"
@@ -114,6 +119,11 @@ fi
 if [[ $CHECKPOINT_SIZE != "" ]] ;
 then
     CMD="$CMD --chksize $CHECKPOINT_SIZE"
+fi
+
+if [[ $PARTITION != "" ]] ;
+then
+    CMD="$CMD --partition $PARTITION"
 fi
 
 CMD="$CMD >> $INFO_FILE"
