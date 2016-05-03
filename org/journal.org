@@ -13867,7 +13867,113 @@ h[g.name.to_sym] = 1024
        [[file:/tmp/babel-2493LNu/figure2493oiY.png]]
 
 
+****** DONE How many run do we need?
 
+       #+begin_src sh :results output :exports both
+         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g1_p100_m01_e1_tt_30.yaml"
+         for i in `seq 1 30`; do
+             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 1 --population_size 100 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+         done
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output :session :exports both
+         df_tot <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g1_p100_m01_e1_tt_30.yaml 
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file img/20160408/pilipili2/gen_g1_p100_m01_e1_tt_30_h.png :exports both :width 600 :height 400 :session
+         df_30 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+
+         library(ggplot2)
+         speedup <- c()
+         for (i in 1:nrow(df_30)){
+             speedup[i] <-  min(df_tot$time_per_pixel) / df_30[i,]$time_per_pixel
+         }
+         data <- data.frame(speedup)
+         ggplot(data) +
+             aes(speedup) +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160408/pilipili2/gen_g1_p100_m01_e1_tt_30_h.png]]
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g1_p100_m01_e1_tt_100.yaml 
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file img/20160408/pilipili2/gen_g1_p100_m01_e1_tt_100_h.png :exports both :width 600 :height 400 :session
+         df_100 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+
+         library(ggplot2)
+         speedup <- c()
+         for (i in 1:nrow(df_100)){
+             speedup[i] <-  min(df_tot$time_per_pixel) / df_100[i,]$time_per_pixel
+         }
+         data <- data.frame(speedup)
+         ggplot(data) +
+             aes(speedup) +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160408/pilipili2/gen_g1_p100_m01_e1_tt_100_h.png]]
+
+
+
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g1_p100_m01_e1_tt.yaml 
+       #+end_src
+
+       #+RESULTS:
+
+       #+begin_src R :results output graphics :file img/20160408/pilipili2/gen_g1_p100_m01_e1_tt_1000_h.png :exports both :width 600 :height 400 :session
+         df_1000 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+
+         library(ggplot2)
+         speedup <- c()
+         for (i in 1:nrow(df_1000)){
+             speedup[i] <-  min(df_tot$time_per_pixel) / df_1000[i,]$time_per_pixel
+         }
+         data <- data.frame(speedup)
+         ggplot(data) +
+             aes(speedup) +
+             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160408/pilipili2/gen_g1_p100_m01_e1_tt_1000_h.png]]
+
+       30 seems to be enough to have a good idea on the impact of the parameters
+****** TODO Brute force optimization of the genetic algorithm
 **** TODO Regression                                               :Analysis:
 ***** DONE Linear regression
 ****** DONE Hierarchic data
@@ -14622,7 +14728,7 @@ h[g.name.to_sym] = 1024
          Mean   :2.013e-09  
          3rd Qu.:2.001e-09  
          Max.   :4.452e-08
-#+end_example
+        #+end_example
 
         #+begin_src R :results output :session :exports both
           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
@@ -14648,8 +14754,9 @@ h[g.name.to_sym] = 1024
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-3743oGc/figure37438rj.png]]
-        
+        [[file:/tmp/babel-3544UyE/figure3544yPq.png]]
+
+******** Elements number        
         I don't know why but in the function iwr R cannot found
         residus we using weight in lm:
         #+begin_src R :results output :session :exports both
@@ -14659,30 +14766,8 @@ h[g.name.to_sym] = 1024
         #+end_src
 
         #+RESULTS:
-        #+begin_example
-        Error in f(x) (from #1) : objet 'residus' introuvable
-
-        Call:
-        lm(formula = form, data = d)
-
-        Residuals:
-               Min         1Q     Median         3Q        Max 
-        -4.170e-09 -1.630e-09 -7.900e-10  5.970e-10  3.979e-08 
-
-        Coefficients:
-                             Estimate Std. Error t value Pr(>|t|)    
-        (Intercept)         1.502e-09  6.523e-11  23.029  < 2e-16 ***
-        elements_number    -1.618e-10  5.260e-12 -30.763  < 2e-16 ***
-        y_component_number  2.223e-10  1.869e-11  11.895  < 2e-16 ***
-        vector_length       2.221e-10  4.409e-12  50.384  < 2e-16 ***
-        threads_number     -3.694e-13  6.563e-14  -5.628 1.84e-08 ***
-        ---
-        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-        Residual standard error: 3.436e-09 on 23115 degrees of freedom
-        Multiple R-squared:  0.1449,	Adjusted R-squared:  0.1447 
-        F-statistic: 979.1 on 4 and 23115 DF,  p-value: < 2.2e-16
-        #+end_example
+        : Error in residuals(reg) (from #4) : objet 'reg' introuvable
+        : Error in summary(reg) : objet 'reg' introuvable
 
         #+begin_src R :results output :session :exports both
           reg <- lm(data=df,formula=formula)
@@ -14725,16 +14810,17 @@ h[g.name.to_sym] = 1024
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-3743oGc/figure3743J2p.png]]
+        [[file:/tmp/babel-3544UyE/figure3544_Zw.png]]
 
         #+begin_src R :results output :session :exports both
+          # formula <-formula(time_per_pixel ~ elements_number + I(1/elements_number))
           formula <-formula(time_per_pixel ~ elements_number + I(1/elements_number))
-          reg <- lm(data=df,formula=formula)
+          reg_wq <- lm(data=df,formula=formula)
                 for(i in 1:200){
-                    E <- residuals(reg)
-                    reg <- lm(data=df,formula=formula,weight=g(E))
+                    E <- residuals(reg_wq)
+                    reg_wq <- lm(data=df,formula=formula,weight=g(E))
                 }
-          summary(reg)
+          summary(reg_wq)
         #+end_src
 
         #+RESULTS:
@@ -14758,15 +14844,61 @@ h[g.name.to_sym] = 1024
         Residual standard error: 9.652e-06 on 23117 degrees of freedom
         Multiple R-squared:  0.1369,	Adjusted R-squared:  0.1368 
         F-statistic:  1833 on 2 and 23117 DF,  p-value: < 2.2e-16
-#+end_example
+        #+end_example
 
-        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-        plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
-        lines(predict(reg),col="red")        
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_wq_elements_number_zoom_bp.png :exports both :width 600 :height 400 :session
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+          lines(sort(df$elements_number),predict(reg_wq)[order(df$elements_number)],col="red")  
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-3743oGc/figure3743jRq.png]]
+        [[file:img/20160402/pilipili2/hierarchic_wq_elements_number_zoom_bp.png]]
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_wq_elements_number_reg_plot.png :exports both :width 800 :height 600 :session
+          default <- par()
+          par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+          plot(reg_wq)
+          par(default)        
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/hierarchic_wq_elements_number_reg_plot.png]]
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_geom_q_elements_number_zoom_bp.png :exports both :width 600 :height 400 :session
+          library(ggplot2)
+          ggplot(df) + 
+              aes(x=elements_number, y=time_per_pixel ) +
+              geom_point(alpha=.2) +
+              coord_cartesian(ylim=c(0,1e-9)) +
+              geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+              geom_quantile(quantiles=0.05, formula = y ~ x + I(1/x), colour="green")
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/hierarchic_geom_q_elements_number_zoom_bp.png]]
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_rq_elements_number_zoom_bp.png :exports both :width 600 :height 400 :session
+          library(quantreg)
+          reg_rq <- rq(data=df, formula = time_per_pixel ~ elements_number + I(1/elements_number), tau=.05)
+          plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+          lines(sort(df$elements_number),predict(reg_rq)[order(df$elements_number)],col="red")  
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/hierarchic_rq_elements_number_zoom_bp.png]]
+
+
+        #+begin_src R :results output :session :exports both
+          # default <- par()
+          # par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+          plot(reg_rq)
+          # par(default)        
+        #+end_src
+
+        #+RESULTS:
+        : Error in xy.coords(x, y, xlabel, ylabel, log) : 
+        :   'x' and 'y' lengths differ
+
 
         #+begin_src R :results output :session :exports both
           reg <- iwr(df,time_per_pixel ~ lws_y)
@@ -14814,6 +14946,122 @@ h[g.name.to_sym] = 1024
 
         #+RESULTS:
         [[file:/tmp/babel-3743oGc/figure3743VGd.png]]
+
+******** Lws y
+        
+        #+begin_src R :results output :session :exports both
+          reg_wq <- lm(data=df,formula=time_per_pixel ~ lws_y)
+          for(i in 1:200){
+              E <- residuals(reg_wq)
+              reg_wq <- lm(data=df,formula=time_per_pixel ~ lws_y, weight=g(E))
+          }
+          summary(reg_wq)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm(formula = time_per_pixel ~ lws_y, data = df, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -1.290e-05  2.483e-06  4.784e-06  8.696e-06  4.630e-05 
+
+        Coefficients:
+                     Estimate Std. Error t value Pr(>|t|)    
+        (Intercept) 1.300e-10  4.794e-13   271.3   <2e-16 ***
+        lws_y       3.289e-12  6.549e-15   502.3   <2e-16 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 9.191e-06 on 23118 degrees of freedom
+        Multiple R-squared:  0.9161,	Adjusted R-squared:  0.9161 
+        F-statistic: 2.523e+05 on 1 and 23118 DF,  p-value: < 2.2e-16
+#+end_example
+
+        The linear model is not correct for the elements number:
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,1e-8))
+        abline(reg_wq,col="red")
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-14260bXM/figure14260h3P.png]]
+
+        #+begin_src R :results output :session :exports both
+          # formula <-formula(time_per_pixel ~ elements_number + I(1/elements_number))
+          formula <-formula(time_per_pixel ~ lws_y )
+          reg_wq <- lm(data=df,formula=formula)
+                for(i in 1:200){
+                    E <- residuals(reg_wq)
+                    reg_wq <- lm(data=df,formula=formula,weight=g(E))
+                }
+          summary(reg_wq)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm(formula = formula, data = df, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -1.290e-05  2.483e-06  4.784e-06  8.696e-06  4.630e-05 
+
+        Coefficients:
+                     Estimate Std. Error t value Pr(>|t|)    
+        (Intercept) 1.300e-10  4.794e-13   271.3   <2e-16 ***
+        lws_y       3.289e-12  6.549e-15   502.3   <2e-16 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 9.191e-06 on 23118 degrees of freedom
+        Multiple R-squared:  0.9161,	Adjusted R-squared:  0.9161 
+        F-statistic: 2.523e+05 on 1 and 23118 DF,  p-value: < 2.2e-16
+#+end_example
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_wq_lws_y_zoom_bp.png :exports both :width 600 :height 400 :session
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,1e-8))
+          lines(sort(df$lws_y),predict(reg_wq)[order(df$lws_y)],col="red")  
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/hierarchic_wq_lws_y_zoom_bp.png]]
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_wq_lws_y_reg_plot.png :exports both :width 800 :height 600 :session
+          default <- par()
+          par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+          plot(reg_wq)
+          par(default)        
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/hierarchic_wq_lws_y_reg_plot.png]]
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_geom_q_lws_y_zoom_bp.png :exports both :width 600 :height 400 :session
+          library(ggplot2)
+          ggplot(df) + 
+              aes(x=lws_y, y=time_per_pixel ) +
+              geom_point(alpha=.2) +
+              coord_cartesian(ylim=c(0,1e-8)) +
+              geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+              geom_quantile(quantiles=0.05, formula = y ~ x, colour="green")
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/hierarchic_geom_q_lws_y_zoom_bp.png]]
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_rq_lws_y_zoom_bp.png :exports both :width 600 :height 400 :session
+          library(quantreg)
+          reg_rq <- rq(data=df, formula = time_per_pixel ~ lws_y, tau=.05)
+          plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,1e-8))
+          lines(sort(df$lws_y),predict(reg_rq)[order(df$lws_y)],col="red")  
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/hierarchic_rq_lws_y_zoom_bp.png]]
 
 
 ****** TODO Modelization  
@@ -14907,7 +15155,6 @@ h[g.name.to_sym] = 1024
        [[file:/tmp/babel-3568YCH/figure3568UA0.png]]
 
 ****** TODO Which design of experiments?
-
 ****** TODO Optimization on the model to find the value
 * Mai
 ** 2016-05-02
@@ -14922,3 +15169,5 @@ h[g.name.to_sym] = 1024
       subdevice = device.partition_by_names_ext([0,1])
       kernel.build(:CLDEVICE => subdevice)
     #+END_SRC
+
+    
