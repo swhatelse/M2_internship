@@ -3,7 +3,7 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r)
 
-* TODO [7/14]
+* TODO [9/14]
   - [X] Run brute force with load_overlap = [true,false]
     and different combination of local_work_size
   - [X] Try D-Optimal design if we can get enough information
@@ -16,9 +16,9 @@
   - [ ] Take a look to statistic of extreme events and minimum
     estimtation
   - [X] Check when to give the report \to 15 juin 2016, 12H
-  - [ ] Testing simple method like a gradian descent
+  - [X] Testing simple method like a gradian descent
   - [ ] Run brute force on another plate form 
-  - [ ] Constraints for genetic algorithm
+  - [X] Constraints for genetic algorithm
   - [ ] Bug in optimizer benchmark with the constraints
 * Memo
   - Get opencl platform
@@ -14909,3 +14909,16 @@ h[g.name.to_sym] = 1024
 ****** TODO Which design of experiments?
 
 ****** TODO Optimization on the model to find the value
+* Mai
+** 2016-05-02
+*** DONE Device partitionning                                          :Ruby:
+    #+begin_src sh :results output :exports both
+      gem update --user-install opencl_ruby_ffi
+    #+end_src
+    
+    #+BEGIN_SRC ruby
+      require "opencl_ruby_ffi"
+      device = OpenCL::platforms[0].devices[0]
+      subdevice = device.partition_by_names_ext([0,1])
+      kernel.build(:CLDEVICE => subdevice)
+    #+END_SRC
