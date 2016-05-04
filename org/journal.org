@@ -14649,7 +14649,7 @@ h[g.name.to_sym] = 1024
      experiment designs and finally try to recover the model from the
      selected experiment design by using the least point as possible.
 
-     - [ ] Compare weighted with rq and geom_quantile
+     - [X] Compare weighted with rq and geom_quantile
      - [ ] Take a look at predict
      - [ ] Try optim on the model
 
@@ -14691,9 +14691,10 @@ h[g.name.to_sym] = 1024
                     Value       Std. Error  t value     Pr(>|t|)   
         (Intercept)   -22.58029     0.00558 -4045.88306     0.00000
         lws_y           0.00310     0.00004    78.30774     0.00000
-#+end_example
+       #+end_example
 
-******* TODO Weighted least squares
+******* DONE Weighted least squares
+******** DONE Function
         #+begin_src sh :results output :exports both
           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
         #+end_src
@@ -14728,7 +14729,7 @@ h[g.name.to_sym] = 1024
          Mean   :2.013e-09  
          3rd Qu.:2.001e-09  
          Max.   :4.452e-08
-        #+end_example
+#+end_example
 
         #+begin_src R :results output :session :exports both
           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
@@ -14755,8 +14756,8 @@ h[g.name.to_sym] = 1024
 
         #+RESULTS:
         [[file:/tmp/babel-3544UyE/figure3544yPq.png]]
-
-******** Elements number        
+******** Playing with weight regression 
+********* Elements number        
         I don't know why but in the function iwr R cannot found
         residus we using weight in lm:
         #+begin_src R :results output :session :exports both
@@ -14770,6 +14771,7 @@ h[g.name.to_sym] = 1024
         : Error in summary(reg) : objet 'reg' introuvable
 
         #+begin_src R :results output :session :exports both
+          formula <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number
           reg <- lm(data=df,formula=formula)
           for(i in 1:200){
               E <- residuals(reg)
@@ -14804,13 +14806,13 @@ h[g.name.to_sym] = 1024
         #+end_example
 
         The linear model is not correct for the elements number:
-        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_wq_elements_number_zoom_lin_p.png :exports both :width 600 :height 400 :session
         plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,5e-10))
         abline(reg,col="red")
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-3544UyE/figure3544_Zw.png]]
+        [[file:img/20160402/pilipili2/hierarchic_wq_elements_number_zoom_lin_p.png]]
 
         #+begin_src R :results output :session :exports both
           # formula <-formula(time_per_pixel ~ elements_number + I(1/elements_number))
@@ -14844,10 +14846,12 @@ h[g.name.to_sym] = 1024
         Residual standard error: 9.652e-06 on 23117 degrees of freedom
         Multiple R-squared:  0.1369,	Adjusted R-squared:  0.1368 
         F-statistic:  1833 on 2 and 23117 DF,  p-value: < 2.2e-16
-        #+end_example
+#+end_example
 
+        
+        Let's compare
         #+begin_src R :results output graphics :file img/20160402/pilipili2/hierarchic_wq_elements_number_zoom_bp.png :exports both :width 600 :height 400 :session
-           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+          plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
           lines(sort(df$elements_number),predict(reg_wq)[order(df$elements_number)],col="red")  
         #+end_src
 
@@ -14887,67 +14891,35 @@ h[g.name.to_sym] = 1024
         #+RESULTS:
         [[file:img/20160402/pilipili2/hierarchic_rq_elements_number_zoom_bp.png]]
 
-
+        
+        By looking at the plot and comparing the result given by rq
+        and the weighted regression we see that they are pretty close
         #+begin_src R :results output :session :exports both
-          # default <- par()
-          # par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
-          plot(reg_rq)
-          # par(default)        
-        #+end_src
-
-        #+RESULTS:
-        : Error in xy.coords(x, y, xlabel, ylabel, log) : 
-        :   'x' and 'y' lengths differ
-
-
-        #+begin_src R :results output :session :exports both
-          reg <- iwr(df,time_per_pixel ~ lws_y)
-          summary(reg)
+          reg_wq
+          reg_rq
         #+end_src
 
         #+RESULTS:
         #+begin_example
 
         Call:
-        lm(formula = formula, data = data, weights = g(E))
-
-        Weighted Residuals:
-               Min         1Q     Median         3Q        Max 
-        -0.0035957 -0.0000474 -0.0000083  0.0000021  0.0055898 
+        lm(formula = formula, data = df, weights = g(E))
 
         Coefficients:
-                     Estimate Std. Error t value Pr(>|t|)    
-        (Intercept) 9.991e-12  2.779e-13   35.95   <2e-16 ***
-        lws_y       1.197e-10  2.779e-13  430.66   <2e-16 ***
-        ---
-        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+                 (Intercept)       elements_number  I(1/elements_number)  
+                   1.534e-10            -3.765e-13             9.854e-11
+        Call:
+        rq(formula = time_per_pixel ~ elements_number + I(1/elements_number), 
+            tau = 0.05, data = df)
 
-        Residual standard error: 0.0001065 on 23118 degrees of freedom
-        Multiple R-squared:  0.8892,	Adjusted R-squared:  0.8892 
-        F-statistic: 1.855e+05 on 1 and 23118 DF,  p-value: < 2.2e-16
-#+end_example
+        Coefficients:
+                 (Intercept)      elements_number I(1/elements_number) 
+                1.536550e-10        -3.815466e-13         9.460339e-11 
 
-        #+begin_src R :results output :session :exports both
-          formula=formula(time_per_pixel ~ lws_y)
-          reg <- lm(data=df,formula=formula)
-          for(i in 1:200){
-              E <- residuals(reg)
-              reg <- lm(data=df,formula=formula,weight=g(E))
-          }
+        Degrees of freedom: 23120 total; 23117 residual
+        #+end_example
 
-        #+end_src
-
-        #+RESULTS:
-
-        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-          plot(y=df$time_per_pixel,df$lws_y)
-          abline(reg,col="red")
-        #+end_src
-
-        #+RESULTS:
-        [[file:/tmp/babel-3743oGc/figure3743VGd.png]]
-
-******** Lws y
+********* Lws y
         
         #+begin_src R :results output :session :exports both
           reg_wq <- lm(data=df,formula=time_per_pixel ~ lws_y)
@@ -15063,8 +15035,263 @@ h[g.name.to_sym] = 1024
         #+RESULTS:
         [[file:img/20160402/pilipili2/hierarchic_rq_lws_y_zoom_bp.png]]
 
+******** DONE Comparison
+         Lets's compare what we have with rq and weighted regression:
+         #+begin_src R :results output :session :exports both
+            form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+            form_y_comp <- time_per_pixel ~ y_component_number
+            form_v_len <- time_per_pixel ~ vector_length 
+            form_th_nb <- time_per_pixel ~ threads_number
+            form_lws_y <- time_per_pixel ~ lws_y
 
+            model_elem_nb <- lm(data=df,formula=form_elem_nb)
+            for(i in 1:200){
+                E <- residuals(model_elem_nb)
+                model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=g(E))
+            }
+
+            model_y_comp <- lm(data=df,formula=form_y_comp)
+            for(i in 1:200){
+                E <- residuals(model_y_comp)
+                model_y_comp <- lm(data=df,formula=form_y_comp,weight=g(E))
+            }
+
+            model_v_len <- lm(data=df,formula=form_v_len)
+            for(i in 1:200){
+                E <- residuals(model_v_len)
+                model_v_len <- lm(data=df,formula=form_v_len,weight=g(E))
+            }
+
+            model_th_nb <- lm(data=df,formula=form_th_nb)
+            for(i in 1:200){
+                E <- residuals(model_th_nb)
+                model_th_nb <- lm(data=df,formula=form_th_nb,weight=g(E))
+            }
+
+            model_lws_y <- lm(data=df,formula=form_lws_y)
+            for(i in 1:200){
+                E <- residuals(model_lws_y)
+                model_lws_y <- lm(data=df,formula=form_lws_y,weight=g(E))
+            }
+
+         #+end_src
+
+         #+RESULTS:
+
+         #+begin_src R :results output :session :exports both
+           library(quantreg)
+           model_rq_elem_nb <- rq(data=df,formula=form_elem_nb,tau=.05)
+           model_rq_y_comp <- rq(data=df,formula=form_y_comp,tau=.05)
+           model_rq_v_len <- rq(data=df,formula=form_v_len,tau=.05)
+           model_rq_th_nb <- rq(data=df,formula=form_th_nb,tau=.05)
+           model_rq_lws_y <- rq(data=df,formula=form_lws_y,tau=.05)
+         #+end_src
+
+         #+RESULTS:
+
+         We can see that the value for the the intercept are very
+         close between rq and weighted regression:
+         #+begin_src R :results output :session :exports both
+           model_rq_elem_nb
+           model_elem_nb
+           model_rq_y_comp
+           model_y_comp
+           model_rq_v_len
+           model_v_len
+           model_rq_th_nb
+           model_th_nb
+           model_rq_lws_y
+           model_lws_y
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+         Call:
+         rq(formula = form_elem_nb, tau = 0.05, data = df)
+
+         Coefficients:
+                  (Intercept)      elements_number I(1/elements_number) 
+                 1.536550e-10        -3.815466e-13         9.460339e-11 
+
+         Degrees of freedom: 23120 total; 23117 residual
+
+         Call:
+         lm(formula = form_elem_nb, data = df, weights = g(E))
+
+         Coefficients:
+                  (Intercept)       elements_number  I(1/elements_number)  
+                    1.534e-10            -3.765e-13             9.854e-11
+         Call:
+         rq(formula = form_y_comp, tau = 0.05, data = df)
+
+         Coefficients:
+                (Intercept) y_component_number 
+               2.470980e-10      -2.056082e-11 
+
+         Degrees of freedom: 23120 total; 23118 residual
+
+         Call:
+         lm(formula = form_y_comp, data = df, weights = g(E))
+
+         Coefficients:
+                (Intercept)  y_component_number  
+                  2.471e-10          -2.056e-11
+         Call:
+         rq(formula = form_v_len, tau = 0.05, data = df)
+
+         Coefficients:
+           (Intercept) vector_length 
+          1.025898e-10  2.395627e-11 
+
+         Degrees of freedom: 23120 total; 23118 residual
+
+         Call:
+         lm(formula = form_v_len, data = df, weights = g(E))
+
+         Coefficients:
+           (Intercept)  vector_length  
+             1.026e-10      2.396e-11
+         Call:
+         rq(formula = form_th_nb, tau = 0.05, data = df)
+
+         Coefficients:
+            (Intercept) threads_number 
+           1.637616e-10  -8.463471e-15 
+
+         Degrees of freedom: 23120 total; 23118 residual
+
+         Call:
+         lm(formula = form_th_nb, data = df, weights = g(E))
+
+         Coefficients:
+            (Intercept)  threads_number  
+              1.638e-10      -8.463e-15
+         Call:
+         rq(formula = form_lws_y, tau = 0.05, data = df)
+
+         Coefficients:
+          (Intercept)        lws_y 
+         1.303927e-10 3.181779e-12 
+
+         Degrees of freedom: 23120 total; 23118 residual
+
+         Call:
+         lm(formula = form_lws_y, data = df, weights = g(E))
+
+         Coefficients:
+         (Intercept)        lws_y  
+           1.300e-10    3.289e-12
+         #+end_example
+
+         Visually we can say that the results is still pretty close:
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/comparison_rq_wq.png :exports both :width 800 :height 600 :session
+           default <- par()
+           par(mfrow = c(2, 5), oma = c(0, 0, 2, 0))
+
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+           lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+           title("weighted")
+
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+           lines(sort(df$elements_number),predict(model_rq_elem_nb)[order(df$elements_number)],col="red")  
+           title("rq")
+
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
+           lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+           title("weighted")
+
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
+           lines(sort(df$y_component_number),predict(model_rq_y_comp)[order(df$y_component_number)],col="red")  
+           title("rq")
+
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+           lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+           title("weighted")
+
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+           lines(sort(df$vector_length),predict(model_rq_v_len)[order(df$vector_length)],col="red")  
+           title("rq")
+
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,1e-9))
+           lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+           title("weighted")
+
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,1e-9))
+           lines(sort(df$threads_number),predict(model_rq_th_nb)[order(df$threads_number)],col="red")  
+           title("rq")
+
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,1e-8))
+           lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+           title("weighted")
+
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,1e-8))
+           lines(sort(df$lws_y),predict(model_rq_lws_y)[order(df$lws_y)],col="red")  
+           title("rq")
+
+           par(default)        
+
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/comparison_rq_wq.png]]
+
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/comparison_rq_wq_sup.png :exports both :width 800 :height 600 :session
+           default <- par()
+           par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,5e-10))
+           lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+           lines(sort(df$elements_number),predict(model_rq_elem_nb)[order(df$elements_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,3e-10))
+           lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+           lines(sort(df$y_component_number),predict(model_rq_y_comp)[order(df$y_component_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+           lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+           lines(sort(df$vector_length),predict(model_rq_v_len)[order(df$vector_length)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,2e-10))
+           lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+           lines(sort(df$threads_number),predict(model_rq_th_nb)[order(df$threads_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+           lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+           lines(sort(df$lws_y),predict(model_rq_lws_y)[order(df$lws_y)],col="blue")  
+
+           par(default)        
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/comparison_rq_wq_sup.png]]
+
+         Weighted regression seems to do what we want to. For now we
+         can't make more comparison due to the trouble we have with
+         rq and the summary function. We stick with the weighted regression.
+         #+begin_src R :results output :session :exports both
+         summary(model_rq_v_len)
+         #+end_src
+
+         #+RESULTS:
+         : Error in base::backsolve(r, x, k = k, upper.tri = upper.tri, transpose = transpose,  : 
+         :   matrice singulière dans 'backsolve'. Premier zéro sur la diagonale [1]
+         : De plus : Warning message:
+         : In summary.rq(model_rq_v_len) : 14688 non-positive fis
+
+******** TODO How to compute confidence intervals?
+         Do we really need them?
 ****** TODO Modelization  
+       Can we really make a good estimation of extremal values with a
+       model?
+
+       Lets try to build a model by hypothesis on the role of the factors:
+       - elements number determine the number of threads used to
+         perform the computation. The number of threads is given by
+         size of the image / elements number. The more thread we have
+         the more component we are able to compute at the same. But more
+         threads can mean less efficient usage of the ressources.
+         We can also have some overhead with bigger number of threads.
+       
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
@@ -15103,7 +15330,7 @@ h[g.name.to_sym] = 1024
              geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
              geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
              ggtitle("Impact of elements number") +
-             geom_quantile(quantiles=0.05, formula = y ~ x + I(x^2), colour="green") +
+             geom_quantile(quantiles=0.05, formula = y ~ x + I(1/x), colour="green") +
              theme(axis.text=element_text(size=12),
                    axis.title=element_text(size=14,face="bold"))
 
@@ -15113,7 +15340,7 @@ h[g.name.to_sym] = 1024
              geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
              geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
              ggtitle("Impact of y components number") +
-             geom_quantile(quantiles=0.05, formula = y ~ x, colour="green") +
+             geom_quantile(quantiles=0.05, formula = y ~ I(1/x), colour="green") +
              theme(axis.text=element_text(size=12),
                    axis.title=element_text(size=14,face="bold"))
 
@@ -15132,7 +15359,7 @@ h[g.name.to_sym] = 1024
              scale_y_log10() + 
              geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
              geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-             geom_quantile(quantiles=0.05, formula = y ~ x, colour="green") +
+             geom_quantile(quantiles=0.05, formula = y ~ I(1/x), colour="green") +
              ggtitle("Impact of of the threads number") +
              theme(axis.text=element_text(size=12),
                    axis.title=element_text(size=14,face="bold"))
@@ -15152,7 +15379,7 @@ h[g.name.to_sym] = 1024
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-3568YCH/figure3568UA0.png]]
+       [[file:/tmp/babel-4302LHa/figure4302di0.png]]
 
 ****** TODO Which design of experiments?
 ****** TODO Optimization on the model to find the value
