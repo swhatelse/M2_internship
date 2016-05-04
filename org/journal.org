@@ -15669,6 +15669,7 @@ h[g.name.to_sym] = 1024
        [[file:img/20160402/pilipili2/model_elem_nb_p.png]]
 
 ****** TODO Which design of experiments?
+******* TODO Screening design
 ****** TODO Optimization on the model to find the value
        #+begin_src R :results output :session :exports both
         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -15693,9 +15694,89 @@ h[g.name.to_sym] = 1024
          summary(model_complete)
        #+end_src
 
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_complete, data = df, weights = g(E))
+
+       Weighted Residuals:
+              Min         1Q     Median         3Q        Max 
+       -1.760e-05  2.357e-06  3.560e-06  7.449e-06  4.577e-05 
+
+       Coefficients:
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                         9.259e-11  2.185e-12   42.38   <2e-16 ***
+       elements_number                    -3.649e-11  5.511e-13  -66.21   <2e-16 ***
+       I(1/elements_number)               -1.995e-11  1.722e-12  -11.59   <2e-16 ***
+       I(1/y_component_number)             1.350e-10  1.142e-12  118.20   <2e-16 ***
+       vector_length                       3.646e-11  1.099e-13  331.60   <2e-16 ***
+       threads_number                     -4.121e-14  2.287e-15  -18.02   <2e-16 ***
+       I(1/threads_number)                 5.557e-09  6.196e-11   89.68   <2e-16 ***
+       lws_y                               9.079e-12  1.476e-14  615.01   <2e-16 ***
+       elements_number:y_component_number  4.010e-12  6.223e-14   64.43   <2e-16 ***
+       threads_number:lws_y               -5.583e-15  2.480e-17 -225.12   <2e-16 ***
+       elements_number:threads_number      3.455e-15  4.031e-16    8.57   <2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 8.433e-06 on 23109 degrees of freedom
+       Multiple R-squared:  0.9924,	Adjusted R-squared:  0.9924 
+       F-statistic: 3.011e+05 on 10 and 23109 DF,  p-value: < 2.2e-16
+#+end_example
+
+       #+begin_src R :results output :session :exports both
+       summary(df)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+        elements_number  y_component_number vector_length   temporary_size 
+        Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+        1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+        Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+        Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+        3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+        Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+        vector_recompute load_overlap  threads_number       lws_y        
+        true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                         true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                       Median : 256.0   Median :  16.00  
+                                       Mean   : 368.1   Mean   :  73.58  
+                                       3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                       Max.   :1024.0   Max.   :1024.00  
+        time_per_pixel     
+        Min.   :1.165e-10  
+        1st Qu.:3.028e-10  
+        Median :7.125e-10  
+        Mean   :2.013e-09  
+        3rd Qu.:2.001e-09  
+        Max.   :4.452e-08
+#+end_example
+
+       #+begin_src R :results output :session :exports both
+         f <- function(x){
+           predict(model_complete,x)
+         }
+
+         # start <- df[c(1,1,1,128,64)]
+         # start
+         # start<- data.frame( df[1,]$elements_number, df[1,]$y_component_number, df[1,]$vector_length, df[1,]$threads_number, df[1,]$time_per_pixel )
+         start <- (mean(df))[5:13]
+start         
+         # optim(start, f )
+       #+end_src
+
+       #+RESULTS:
+       : Warning message:
+       : In mean.default(df) :
+       :   l'argument n'est ni numérique, ni logique : renvoi de NA
+       : [1] NA NA NA NA NA NA NA NA NA
+
+
 * Mai
 ** 2016-05-02
-*** DONE Device partitionning                                          :Ruby:
+*** Device partitionning                                               :Ruby:
     #+begin_src sh :results output :exports both
       gem update --user-install opencl_ruby_ffi
     #+end_src
@@ -15708,3 +15789,5 @@ h[g.name.to_sym] = 1024
     #+END_SRC
 
     
+** 2016-05-04
+*** TODO Compare rq et wq on simple example for CI
