@@ -27,7 +27,7 @@ NEW=false
 PARTITION=""
 part=1
 
-while getopts "c:d:hi:nr:s:" opt; do
+while getopts "c:d:hi:np:r:s:" opt; do
     case $opt in
         c)
             CHECKPOINT_SIZE="$OPTARG"
