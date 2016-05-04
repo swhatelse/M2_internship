@@ -15280,18 +15280,41 @@ h[g.name.to_sym] = 1024
 
 ******** TODO How to compute confidence intervals?
          Do we really need them?
-****** TODO Modelization  
+****** DONE Modelization  
        Can we really make a good estimation of extremal values with a
        model?
 
        Lets try to build a model by hypothesis on the role of the factors:
-       - elements number determine the number of threads used to
+       - elements number determines the number of threads used to
          perform the computation. The number of threads is given by
          size of the image / elements number. The more thread we have
          the more component we are able to compute at the same. But more
          threads can mean less efficient usage of the ressources.
          We can also have some overhead with bigger number of threads.
-       
+         Knowing that we can express the impact of elements number
+         either :
+         - Data sharing is more important \to elements number + 1/elements number
+         - More threads are better \to elements number + log(elements
+           number)
+       - y component number deternimes the repartition of the
+         component on the y axis for one thread. It has an impact on
+         nvidia architecture because of the cores are
+         organized. Better data usage? Bigger y component should be
+         better. Not sure there is overhead with it. We would have
+         some thing like this:
+         - 1/y component number
+       - vector length have a bad effect because there is not
+         vectorization on Nvidia GPU, so could expect that bigger
+         vector length causes overhead. We would have:
+         - vector length
+       - threads number determines the size of a work group. Threads
+         in work group can share data, bigger groups means better data
+         usage. But smaller work group gives more flexible scheduling
+         opportunity but here is not really a concern. We probably
+         also have overhead due to the number of work groups. We would
+         have: 
+         - threads number + 1/threads number
+       - lws y
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
@@ -15303,7 +15326,323 @@ h[g.name.to_sym] = 1024
         summary(df)
       #+end_src
 
-       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+       #+begin_src R :results output :session :exports both
+            form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+            form_y_comp <- time_per_pixel ~ I(1/y_component_number)
+            form_v_len <- time_per_pixel ~ vector_length 
+            form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+            form_lws_y <- time_per_pixel ~ lws_y 
+
+            model_elem_nb <- lm(data=df,formula=form_elem_nb)
+            for(i in 1:200){
+                E <- residuals(model_elem_nb)
+                model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=g(E))
+            }
+
+            model_y_comp <- lm(data=df,formula=form_y_comp)
+            for(i in 1:200){
+                E <- residuals(model_y_comp)
+                model_y_comp <- lm(data=df,formula=form_y_comp,weight=g(E))
+            }
+
+            model_v_len <- lm(data=df,formula=form_v_len)
+            for(i in 1:200){
+                E <- residuals(model_v_len)
+                model_v_len <- lm(data=df,formula=form_v_len,weight=g(E))
+            }
+
+            model_th_nb <- lm(data=df,formula=form_th_nb)
+            for(i in 1:200){
+                E <- residuals(model_th_nb)
+                model_th_nb <- lm(data=df,formula=form_th_nb,weight=g(E))
+            }
+
+            model_lws_y <- lm(data=df,formula=form_lws_y)
+            for(i in 1:200){
+                E <- residuals(model_lws_y)
+                model_lws_y <- lm(data=df,formula=form_lws_y,weight=g(E))
+            }
+       #+end_src
+
+       #+RESULTS:
+
+       Visually the model is fine:
+       #+begin_src R :results output graphics :file img/20160402/pilipili2/model_wq.png :exports both :width 800 :height 600 :session
+         default <- par()
+         par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+         plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,4e-10))
+         lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+
+         plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
+         lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+
+         plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+         lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+
+         plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,4e-10))
+         lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+
+         plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+         lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+
+         par(default)        
+
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160402/pilipili2/model_wq.png]]
+
+       Can we exploit the information of the summary? The model seems
+       to fit the data very well.
+       #+begin_src R :results output :session :exports both
+         form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + I(1/y_component_number) + vector_length + threads_number + I(1/threads_number) + lws_y + load_overlap + temporary_size
+         model_complete <- lm(data=df,formula=form_complete)
+           for(i in 1:200){
+               E <- residuals(model_complete)
+               model_complete <- lm(data=df,formula=form_complete,weight=g(E))
+           }
+         summary(model_complete)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_complete, data = df, weights = g(E))
+
+       Weighted Residuals:
+              Min         1Q     Median         3Q        Max 
+       -1.275e-05  2.267e-06  3.767e-06  8.051e-06  4.593e-05 
+
+       Coefficients:
+                                 Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)              1.010e-10  3.181e-12  31.755   <2e-16 ***
+       elements_number         -7.498e-12  1.603e-13 -46.774   <2e-16 ***
+       I(1/elements_number)     6.405e-11  4.235e-12  15.125   <2e-16 ***
+       I(1/y_component_number)  1.000e-10  3.427e-12  29.187   <2e-16 ***
+       vector_length            3.047e-11  1.272e-13 239.598   <2e-16 ***
+       threads_number          -1.033e-13  2.977e-15 -34.719   <2e-16 ***
+       I(1/threads_number)      2.300e-09  1.074e-10  21.405   <2e-16 ***
+       lws_y                    3.471e-12  6.227e-15 557.380   <2e-16 ***
+       load_overlaptrue         6.356e-13  1.250e-12   0.509    0.611    
+       temporary_size          -5.116e-13  5.826e-13  -0.878    0.380    
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 8.793e-06 on 23110 degrees of freedom
+       Multiple R-squared:  0.9535,	Adjusted R-squared:  0.9535 
+       F-statistic: 5.27e+04 on 9 and 23110 DF,  p-value: < 2.2e-16
+#+end_example
+
+       What about the interactions? R found a lot of interactions but
+       not all of them are revelant(correlation) and it can be
+       difficult to identify all real interactions:
+       #+begin_src R :results output :session :exports both
+         form_complete <- time_per_pixel ~ (elements_number + I(1/elements_number) + I(1/y_component_number) + vector_length + threads_number + I(1/threads_number) + lws_y)^2
+         model_complete <- lm(data=df,formula=form_complete)
+           for(i in 1:200){
+               E <- residuals(model_complete)
+               model_complete <- lm(data=df,formula=form_complete,weight=g(E))
+           }
+         summary(model_complete)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_complete, data = df, weights = g(E))
+
+       Weighted Residuals:
+              Min         1Q     Median         3Q        Max 
+       -3.405e-05  2.101e-06  3.025e-06  5.168e-06  4.340e-05 
+
+       Coefficients: (2 not defined because of singularities)
+                                                      Estimate Std. Error t value
+       (Intercept)                                  -1.063e-10  5.732e-12 -18.555
+       elements_number                               1.116e-11  4.515e-13  24.719
+       I(1/elements_number)                         -4.412e-10  1.614e-11 -27.344
+       I(1/y_component_number)                       6.932e-10  9.518e-12  72.833
+       vector_length                                 5.086e-11  5.202e-13  97.782
+       threads_number                                6.038e-14  7.761e-15   7.780
+       I(1/threads_number)                           2.373e-09  3.095e-10   7.668
+       lws_y                                         1.578e-12  3.319e-14  47.554
+       elements_number:I(1/elements_number)                 NA         NA      NA
+       elements_number:I(1/y_component_number)      -8.701e-11  1.353e-12 -64.290
+       elements_number:vector_length                -7.284e-13  3.020e-14 -24.122
+       elements_number:threads_number                8.175e-15  4.759e-16  17.179
+       elements_number:I(1/threads_number)          -5.036e-10  2.303e-11 -21.869
+       elements_number:lws_y                        -1.710e-13  2.335e-15 -73.237
+       I(1/elements_number):I(1/y_component_number) -1.327e-10  1.467e-11  -9.048
+       I(1/elements_number):vector_length            1.441e-10  9.048e-13 159.246
+       I(1/elements_number):threads_number           8.158e-14  2.341e-14   3.486
+       I(1/elements_number):I(1/threads_number)      8.630e-09  5.793e-10  14.897
+       I(1/elements_number):lws_y                    1.602e-12  4.939e-14  32.440
+       I(1/y_component_number):vector_length        -7.264e-11  8.745e-13 -83.073
+       I(1/y_component_number):threads_number       -1.596e-13  1.068e-14 -14.942
+       I(1/y_component_number):I(1/threads_number)  -1.663e-09  3.390e-10  -4.906
+       I(1/y_component_number):lws_y                 5.490e-13  3.170e-14  17.320
+       vector_length:threads_number                 -1.519e-14  5.662e-16 -26.831
+       vector_length:I(1/threads_number)             3.463e-10  1.730e-11  20.020
+       vector_length:lws_y                           4.870e-13  2.890e-15 168.492
+       threads_number:I(1/threads_number)                   NA         NA      NA
+       threads_number:lws_y                         -1.441e-15  3.018e-17 -47.734
+       I(1/threads_number):lws_y                     2.766e-09  5.580e-12 495.738
+                                                    Pr(>|t|)    
+       (Intercept)                                   < 2e-16 ***
+       elements_number                               < 2e-16 ***
+       I(1/elements_number)                          < 2e-16 ***
+       I(1/y_component_number)                       < 2e-16 ***
+       vector_length                                 < 2e-16 ***
+       threads_number                               7.56e-15 ***
+       I(1/threads_number)                          1.82e-14 ***
+       lws_y                                         < 2e-16 ***
+       elements_number:I(1/elements_number)               NA    
+       elements_number:I(1/y_component_number)       < 2e-16 ***
+       elements_number:vector_length                 < 2e-16 ***
+       elements_number:threads_number                < 2e-16 ***
+       elements_number:I(1/threads_number)           < 2e-16 ***
+       elements_number:lws_y                         < 2e-16 ***
+       I(1/elements_number):I(1/y_component_number)  < 2e-16 ***
+       I(1/elements_number):vector_length            < 2e-16 ***
+       I(1/elements_number):threads_number          0.000492 ***
+       I(1/elements_number):I(1/threads_number)      < 2e-16 ***
+       I(1/elements_number):lws_y                    < 2e-16 ***
+       I(1/y_component_number):vector_length         < 2e-16 ***
+       I(1/y_component_number):threads_number        < 2e-16 ***
+       I(1/y_component_number):I(1/threads_number)  9.35e-07 ***
+       I(1/y_component_number):lws_y                 < 2e-16 ***
+       vector_length:threads_number                  < 2e-16 ***
+       vector_length:I(1/threads_number)             < 2e-16 ***
+       vector_length:lws_y                           < 2e-16 ***
+       threads_number:I(1/threads_number)                 NA    
+       threads_number:lws_y                          < 2e-16 ***
+       I(1/threads_number):lws_y                     < 2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 7.186e-06 on 23093 degrees of freedom
+       Multiple R-squared:  0.9918,	Adjusted R-squared:  0.9918 
+       F-statistic: 1.08e+05 on 26 and 23093 DF,  p-value: < 2.2e-16
+#+end_example
+
+       Lets try to find the real interactions with what we know from
+       the kernel: 
+       - vector length \to as there is no vectorization the vector length
+         should not have any interactions
+       - elements number & y component number \to elements number dictates
+         the possible values for the y component number. Y component
+         number divides elements number and determines how the work is
+         organized for a thread so they probably have some
+         interactions but I am not sure.
+       - threads number and lws y \to should have interaction because it
+         specifies how threads are organized
+       - threads number and elements number \to specify the quantity of
+         ressources (compute unit and memory used) by a work
+         group. Finding the good balance determines the good usage of
+         the SMX. So they should have interactions
+
+       #+begin_src R :results output :session :exports both
+           form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+                                             I(1/y_component_number) + 
+                                             vector_length + 
+                                             threads_number + I(1/threads_number) + 
+                                             lws_y + 
+                                             elements_number:y_component_number +
+                                             threads_number:lws_y +
+                                             threads_number:elements_number
+
+           model_complete <- lm(data=df,formula=form_complete)
+           for(i in 1:200){
+             E <- residuals(model_complete)
+             model_complete <- lm(data=df,formula=form_complete,weight=g(E))
+           }
+           summary(model_complete)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_complete, data = df, weights = g(E))
+
+       Weighted Residuals:
+              Min         1Q     Median         3Q        Max 
+       -1.760e-05  2.357e-06  3.560e-06  7.449e-06  4.577e-05 
+
+       Coefficients:
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                         9.259e-11  2.185e-12   42.38   <2e-16 ***
+       elements_number                    -3.649e-11  5.511e-13  -66.21   <2e-16 ***
+       I(1/elements_number)               -1.995e-11  1.722e-12  -11.59   <2e-16 ***
+       I(1/y_component_number)             1.350e-10  1.142e-12  118.20   <2e-16 ***
+       vector_length                       3.646e-11  1.099e-13  331.60   <2e-16 ***
+       threads_number                     -4.121e-14  2.287e-15  -18.02   <2e-16 ***
+       I(1/threads_number)                 5.557e-09  6.196e-11   89.68   <2e-16 ***
+       lws_y                               9.079e-12  1.476e-14  615.01   <2e-16 ***
+       elements_number:y_component_number  4.010e-12  6.223e-14   64.43   <2e-16 ***
+       threads_number:lws_y               -5.583e-15  2.480e-17 -225.12   <2e-16 ***
+       elements_number:threads_number      3.455e-15  4.031e-16    8.57   <2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 8.433e-06 on 23109 degrees of freedom
+       Multiple R-squared:  0.9924,	Adjusted R-squared:  0.9924 
+       F-statistic: 3.011e+05 on 10 and 23109 DF,  p-value: < 2.2e-16
+       #+end_example
+
+       T values are big, is it a problem? It is the ratio "siganl
+       noise" of the mean difference between the data and the model
+       and over the variation. t-values that are far from zero are
+       good. But as it is related to the mean do we really care?
+
+       Lets compare to a normal linear regression:
+       #+begin_src R :results output :session :exports both
+         form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + I(1/y_component_number) +  vector_length +  threads_number + I(1/threads_number) + lws_y +
+              elements_number:y_component_number +
+              threads_number:lws_y +
+              threads_number:elements_number
+
+         model_complete <- lm(data=df,formula=form_complete)
+         summary(model_complete)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_complete, data = df)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -7.690e-09 -1.167e-09 -1.050e-10  7.620e-10  3.398e-08 
+
+       Coefficients:
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                        -4.553e-10  9.076e-11  -5.016 5.32e-07 ***
+       elements_number                    -2.181e-10  1.291e-11 -16.894  < 2e-16 ***
+       I(1/elements_number)                4.351e-09  1.489e-10  29.213  < 2e-16 ***
+       I(1/y_component_number)            -1.624e-09  9.714e-11 -16.722  < 2e-16 ***
+       vector_length                       2.233e-10  3.389e-12  65.888  < 2e-16 ***
+       threads_number                     -4.736e-13  1.024e-13  -4.623 3.80e-06 ***
+       I(1/threads_number)                 7.681e-08  2.476e-09  31.019  < 2e-16 ***
+       lws_y                               3.521e-11  3.685e-13  95.554  < 2e-16 ***
+       elements_number:y_component_number  2.120e-11  1.924e-12  11.016  < 2e-16 ***
+       threads_number:lws_y               -2.771e-14  4.065e-16 -68.174  < 2e-16 ***
+       elements_number:threads_number      8.566e-14  8.340e-15  10.272  < 2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 2.636e-09 on 23109 degrees of freedom
+       Multiple R-squared:  0.4967,	Adjusted R-squared:  0.4965 
+       F-statistic:  2280 on 10 and 23109 DF,  p-value: < 2.2e-16
+      #+end_example
+
+       But how can we guest the model of something like that? The
+       formula elements number + 1 / elements number explain well the
+       mean, the general tendency but does not explain well the 5th percentiles: 
+       #+begin_src R :results output graphics :file img/20160402/pilipili2/model_elem_nb_p.png :exports both :width 600 :height 400 :session
          library(ggplot2)
          library(grid)
          library(gridExtra)
@@ -15311,18 +15650,6 @@ h[g.name.to_sym] = 1024
 
          elem_err = ddply(df,c("elements_number"), summarize,
                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-
-         y_err = ddply(df,c("y_component_number"), summarize,
-                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-
-         vec_err = ddply(df,c("vector_length"), summarize,
-                         mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-
-         t_err = ddply(df,c("threads_number"), summarize,
-                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-
-         l_err = ddply(df,c("lws_y"), summarize,
-                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
 
          p1 <- qplot(df$elements_number, df$time_per_pixel) + 
              geom_point(alpha=0.1) + 
@@ -15334,55 +15661,38 @@ h[g.name.to_sym] = 1024
              theme(axis.text=element_text(size=12),
                    axis.title=element_text(size=14,face="bold"))
 
-         p2 <- qplot(df$y_component_number, df$time_per_pixel) + 
-             geom_point(alpha=0.1) + 
-             scale_y_log10() + 
-             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-             geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-             ggtitle("Impact of y components number") +
-             geom_quantile(quantiles=0.05, formula = y ~ I(1/x), colour="green") +
-             theme(axis.text=element_text(size=12),
-                   axis.title=element_text(size=14,face="bold"))
-
-         p3 <- qplot(df$vector_length, df$time_per_pixel) + 
-             geom_point(alpha=0.1) + 
-             scale_y_log10() + 
-             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-             geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-             geom_quantile(quantiles=0.05, formula = y ~ x, colour="green") +
-             ggtitle("Impact of of the vector length") +
-             theme(axis.text=element_text(size=12),
-                   axis.title=element_text(size=14,face="bold"))
-
-         p4 <- qplot(df$threads_number, df$time_per_pixel) + 
-             geom_point(alpha=0.1) + 
-             scale_y_log10() + 
-             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-             geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-             geom_quantile(quantiles=0.05, formula = y ~ I(1/x), colour="green") +
-             ggtitle("Impact of of the threads number") +
-             theme(axis.text=element_text(size=12),
-                   axis.title=element_text(size=14,face="bold"))
-
-         p5 <- qplot(df$lws_y, df$time_per_pixel) + 
-             geom_point() + 
-             scale_y_log10() + 
-             geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-             geom_errorbar(data=l_err,aes(x=(lws_y),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-             geom_quantile(quantiles=0.05, formula = y ~ x + I(log(x)), colour="green") +
-             ggtitle("Impact of of the lws_y") +
-             theme(axis.text=element_text(size=12),
-                   axis.title=element_text(size=14,face="bold"))
-
-         grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors")) 
+         grid.arrange(p1, top=textGrob("Impact of factors")) 
 
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-4302LHa/figure4302di0.png]]
+       [[file:img/20160402/pilipili2/model_elem_nb_p.png]]
 
 ****** TODO Which design of experiments?
 ****** TODO Optimization on the model to find the value
+       #+begin_src R :results output :session :exports both
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        summary(df)
+       #+end_src
+
+       #+begin_src R :results output :session :exports both
+         form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+             I(1/y_component_number) + 
+             vector_length + 
+             threads_number + I(1/threads_number) + 
+             lws_y + 
+             elements_number:y_component_number +
+             threads_number:lws_y +
+             threads_number:elements_number
+
+         model_complete <- lm(data=df,formula=form_complete)
+         for(i in 1:200){
+             E <- residuals(model_complete)
+             model_complete <- lm(data=df,formula=form_complete,weight=g(E))
+         }
+         summary(model_complete)
+       #+end_src
+
 * Mai
 ** 2016-05-02
 *** DONE Device partitionning                                          :Ruby:
