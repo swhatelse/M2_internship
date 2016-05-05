@@ -86,7 +86,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 #+END_abstract
 
 * Introduction
-** Notes                                                           :noexport:
+** Plan                                                            :noexport:
    - In HPC code optimization crucial to exploit hardware.
      Cannot wait for the next generation to bring speedup because it
      does not (Frequency not higher but more cores and henanced ISA). 
@@ -98,14 +98,29 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
      OpenCL. DSL
 
 * Problem analysis
-** Notes                                                           :noexport:
+** Plan                                                            :noexport:
    - Huge search space \to need to explore only part of it \to
      optimization problem.
+   - Interaction between parameters
    - Non-smooth and empirical objective function
    - Combination of discrete and continuous parameters
 * State of the art
-** Notes                                                         :noexport:
+** Plan                                                            :noexport:
    - Atlas \to small search space \to exhaustive search
+** Exploiting the knowledge of the problem
+***    
+** Without knowledge   
+   - Problem too complex \to no geomerty
+   - Random search
+   - Genetic Algo
+* Methods and material
+  - Literate programming \to reproducible work
 * Contribution
+** Why linear regression is not suited
+   - Not gaussian noise
+** Use of quantile regression
+   - Ways of computing quantile regression
+** Using less point as possible
+   - Design of experiment
 * Experiments
 * Conclusion
