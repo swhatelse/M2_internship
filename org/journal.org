@@ -157,6 +157,11 @@
        rsync -avzP --exclude '.git' boast squinitomasnada@access.grid5000.fr:~/grenoble/boast
        rsync -avzP --exclude '.git' boast-lig squinitomasnada@access.grid5000.fr:~/grenoble/boast
      #+end_src
+** R
+   - ggplot2
+   - plyr
+   - quantreg
+   - extraGrid
 * February
 ** 2016-02-02 Notes from Arnaud :Arnaud:
 - [[http://mescal.imag.fr/membres/arnaud.legrand/research/M2R_boast.pdf][internships]]
@@ -15280,10 +15285,46 @@ h[g.name.to_sym] = 1024
 
 ******** TODO How to compute confidence intervals?
          Do we really need them?
-****** DONE Modelization  
+****** TODO Modelization  
        Can we really make a good estimation of extremal values with a
        model?
 
+     #+begin_src sh :results output :exports both
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+
+     #+RESULTS:
+
+      #+begin_src R :results output :session :exports both
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        summary(df)
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+       elements_number  y_component_number vector_length   temporary_size 
+       Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+       1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+       Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+       Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+       3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+       Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+       vector_recompute load_overlap  threads_number       lws_y        
+       true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                        true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                      Median : 256.0   Median :  16.00  
+                                      Mean   : 368.1   Mean   :  73.58  
+                                      3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                      Max.   :1024.0   Max.   :1024.00  
+       time_per_pixel     
+       Min.   :1.165e-10  
+       1st Qu.:3.028e-10  
+       Median :7.125e-10  
+       Mean   :2.013e-09  
+       3rd Qu.:2.001e-09  
+       Max.   :4.452e-08
+#+end_example
+******* DONE Model approximation
        Lets try to build a model by hypothesis on the role of the factors:
        - elements number determines the number of threads used to
          perform the computation. The number of threads is given by
@@ -15315,16 +15356,6 @@ h[g.name.to_sym] = 1024
          have: 
          - threads number + 1/threads number
        - lws y
-     #+begin_src sh :results output :exports both
-       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
-     #+end_src
-
-     #+RESULTS:
-
-      #+begin_src R :results output :session :exports both
-        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-        summary(df)
-      #+end_src
 
        #+begin_src R :results output :session :exports both
             form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
@@ -15525,7 +15556,7 @@ h[g.name.to_sym] = 1024
        Residual standard error: 7.186e-06 on 23093 degrees of freedom
        Multiple R-squared:  0.9918,	Adjusted R-squared:  0.9918 
        F-statistic: 1.08e+05 on 26 and 23093 DF,  p-value: < 2.2e-16
-#+end_example
+      #+end_example
 
        Lets try to find the real interactions with what we know from
        the kernel: 
@@ -15667,6 +15698,227 @@ h[g.name.to_sym] = 1024
 
        #+RESULTS:
        [[file:img/20160402/pilipili2/model_elem_nb_p.png]]
+******* DONE Model refinement
+       We have lots of noise but we already know how to set the
+       majority of the parameters. So how does elements number looks
+       like now?
+       
+       #+begin_src R :results output :session :exports both
+         df[df$time_per_pixel == min(df$time_per_pixel),]
+         df_pruned <- df[df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 2,]
+         df_pruned
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+             elements_number y_component_number vector_length temporary_size
+       13752               6                  6             1              2
+             vector_recompute load_overlap threads_number lws_y time_per_pixel
+       13752             true         true           1024     2   1.165013e-10
+             elements_number y_component_number vector_length temporary_size
+       11920               6                  6             1              2
+       12465              12                  6             1              2
+       12840              12                  6             1              2
+       13140              12                  6             1              4
+       13752               6                  6             1              2
+       14084              18                  6             1              2
+       14134               6                  6             1              4
+       15199              18                  6             1              4
+       15493               6                  6             1              4
+       16171              24                  6             1              4
+       16723              12                  6             1              4
+       16931              24                  6             1              2
+       18960              18                  6             1              4
+       20908              24                  6             1              2
+       21028              18                  6             1              2
+       21305              24                  6             1              4
+             vector_recompute load_overlap threads_number lws_y time_per_pixel
+       11920             true        false           1024     2   1.205250e-10
+       12465             true         true           1024     2   1.579781e-10
+       12840             true        false           1024     2   1.543490e-10
+       13140             true        false           1024     2   1.561956e-10
+       13752             true         true           1024     2   1.165013e-10
+       14084             true         true           1024     2   2.057422e-10
+       14134             true         true           1024     2   1.183983e-10
+       15199             true         true           1024     2   2.029676e-10
+       15493             true        false           1024     2   1.187175e-10
+       16171             true        false           1024     2   1.936598e-10
+       16723             true         true           1024     2   1.523371e-10
+       16931             true        false           1024     2   1.946504e-10
+       18960             true        false           1024     2   2.046648e-10
+       20908             true         true           1024     2   1.924196e-10
+       21028             true        false           1024     2   2.027626e-10
+       21305             true         true           1024     2   1.933576e-10
+#+end_example
+
+       Let's apply the same model than earlier for elements number:
+       #+begin_src R :results output :session :exports both
+         form_elem_nb_pruned <- time_per_pixel ~ elements_number + I(1/elements_number)
+
+         model_elem_nb_pruned <- lm(data=df_pruned, formula=form_elem_nb_pruned)
+         for(i in 1:20){ # 200 did not work but work with less
+              E <- residuals(model_elem_nb_pruned)
+              model_elem_nb_pruned <- lm(data=df_pruned, formula=form_elem_nb_pruned, weight=g(E))
+         }
+         summary(model_elem_nb_pruned)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_elem_nb_pruned, data = df_pruned, weights = g(E))
+
+       Weighted Residuals:
+              Min         1Q     Median         3Q        Max 
+       -7.000e-11  2.409e-07  3.334e-07  6.974e-07  1.257e-06 
+
+       Coefficients:
+                              Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)           1.438e-10  8.639e-16  166508   <2e-16 ***
+       elements_number       2.463e-12  2.886e-17   85344   <2e-16 ***
+       I(1/elements_number) -2.527e-10  4.145e-15  -60966   <2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 7.433e-07 on 13 degrees of freedom
+       Multiple R-squared:      1,	Adjusted R-squared:      1 
+       F-statistic: 6.541e+12 on 2 and 13 DF,  p-value: < 2.2e-16
+#+end_example
+
+       We get a very good R-squared but when checking visually the
+       model is not that accurate. So for the weigted regression the
+       R-squared is not accurate enough because too optimistic. And
+       here the linear regression will do the job.
+       #+begin_src R :results output graphics :file img/20160402/pilipili2/model_elem_nb_pruned_wq_p.png :exports both :width 600 :height 400 :session
+         plot(df_pruned$elements_number,df_pruned$time_per_pixel)
+         lines(sort(df_pruned$elements_number),predict(model_elem_nb_pruned)[order(df_pruned$elements_number)],col="red")  
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160402/pilipili2/model_elem_nb_pruned_wq_p.png]]
+
+       
+       The linear regression allow us to get more accurate information
+       about the correctness of our model. It is good but not perfect:
+       #+begin_src R :results output :session :exports both
+         form_elem_nb_pruned <- time_per_pixel ~ elements_number + I(1/elements_number)
+         model_elem_nb_pruned <- lm(data=df_pruned, formula=form_elem_nb_pruned)
+         summary(model_elem_nb_pruned)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_elem_nb_pruned, data = df_pruned)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -1.405e-11 -8.442e-12 -3.245e-12  6.759e-12  1.846e-11 
+
+       Coefficients:
+                              Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)           1.966e-10  3.232e-11   6.085 3.87e-05 ***
+       elements_number       1.081e-12  1.213e-12   0.891  0.38900    
+       I(1/elements_number) -5.187e-10  1.678e-10  -3.091  0.00859 ** 
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 1.206e-11 on 13 degrees of freedom
+       Multiple R-squared:  0.8965,	Adjusted R-squared:  0.8805 
+       F-statistic: 56.28 on 2 and 13 DF,  p-value: 3.965e-07
+#+end_example
+
+       Lets try to improve of model with the principle that more
+       threads = better perfs. We see that the model fits better. 
+       #+begin_src R :results output :session :exports both
+         form_elem_nb_pruned <- time_per_pixel ~ elements_number + I(elements_number^2)
+         model_elem_nb_pruned <- lm(data=df_pruned, formula=form_elem_nb_pruned)
+         summary(model_elem_nb_pruned)       
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_elem_nb_pruned, data = df_pruned)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -1.360e-11 -5.496e-12 -4.528e-13  6.534e-12  1.243e-11 
+
+       Coefficients:
+                              Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)           4.039e-11  1.255e-11   3.220 0.006709 ** 
+       elements_number       1.439e-11  1.907e-12   7.546 4.21e-06 ***
+       I(elements_number^2) -3.277e-13  6.259e-14  -5.236 0.000161 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 9.013e-12 on 13 degrees of freedom
+       Multiple R-squared:  0.9422,	Adjusted R-squared:  0.9333 
+       F-statistic:   106 on 2 and 13 DF,  p-value: 8.953e-09
+#+end_example
+
+       But the residuals are big:
+       #+begin_src R :results output graphics :file img/20160402/pilipili2/model_elem_nb_pruned_lm_mod1_p.png :exports both :width 600 :height 400 :session
+         plot(df_pruned$elements_number,df_pruned$time_per_pixel)
+         lines(sort(df_pruned$elements_number),predict(model_elem_nb_pruned)[order(df_pruned$elements_number)],col="red")  
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160402/pilipili2/model_elem_nb_pruned_lm_mod1_p.png]]
+
+
+       We can futher henence the model like follows. But I don't know
+       how to justify it. Here we have a perfect:
+       #+begin_src R :results output :session :exports both
+         form_elem_nb_pruned <- time_per_pixel ~ elements_number + I(elements_number^2) + I(elements_number^3)
+
+         model_elem_nb_pruned <- lm(data=df_pruned, formula=form_elem_nb_pruned)
+         summary(model_elem_nb_pruned)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_elem_nb_pruned, data = df_pruned)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -2.878e-12 -1.076e-12  3.700e-16  1.018e-12  2.763e-12 
+
+       Coefficients:
+                              Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)           1.655e-10  7.030e-12   23.54 2.07e-11 ***
+       elements_number      -1.876e-11  1.792e-12  -10.47 2.18e-07 ***
+       I(elements_number^2)  2.154e-12  1.319e-13   16.32 1.47e-09 ***
+       I(elements_number^3) -5.515e-14  2.920e-15  -18.88 2.72e-10 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 1.693e-12 on 12 degrees of freedom
+       Multiple R-squared:  0.9981,	Adjusted R-squared:  0.9976 
+       F-statistic:  2122 on 3 and 12 DF,  p-value: < 2.2e-16
+#+end_example
+
+       #+begin_src R :results output graphics :file img/20160402/pilipili2/model_elem_nb_pruned_lm_mod2_p.png :exports both :width 600 :height 400 :session
+         plot(df_pruned$elements_number,df_pruned$time_per_pixel)
+         lines(sort(df_pruned$elements_number),predict(model_elem_nb_pruned)[order(df_pruned$elements_number)],col="red")  
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160402/pilipili2/model_elem_nb_pruned_lm_mod2_p.png]]
+
+******* TODO What about factors with 2 values?
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         plot(df_pruned$temporary_size,df_pruned$time_per_pixel)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-4778z0D/figure4778bKH.png]]
 
 ****** TODO Which design of experiments?
 ******* TODO Screening design
@@ -15773,7 +16025,6 @@ start
        :   l'argument n'est ni numérique, ni logique : renvoi de NA
        : [1] NA NA NA NA NA NA NA NA NA
 
-
 * Mai
 ** 2016-05-02
 *** Device partitionning                                               :Ruby:
@@ -15787,7 +16038,577 @@ start
       subdevice = device.partition_by_names_ext([0,1])
       kernel.build(:CLDEVICE => subdevice)
     #+END_SRC
-
     
 ** 2016-05-04
-*** TODO Compare rq et wq on simple example for CI
+*** TODO Compare rq et wq on simple example for CI 
+     #+begin_src R :results output :session :exports both
+       f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+       g <- function(x) { f(x)/x^2 }
+       wq <- function(data, formula) { 
+           model <- lm(data=data,formula=formula)
+           for(i in 1:200){
+               residus <- residuals(model)
+               model <- lm(data=data, formula=formula, weight=g(residus))
+           }
+           model
+       }
+       library(quantreg)
+       data("engel")
+       attach(engel)
+     #+end_src
+
+     #+RESULTS:
+
+    We can see that we have totaly different values for std error and
+    t value, but they seems to be link by maybe an order of
+    magntitude. Maybe it is because of the weight: 
+    #+begin_src R :results output :session :exports both
+      model_rq <- rq(data=engel, formula=foodexp~income, tau=0.05)
+
+      model_wq <- lm(data=engel,formula=foodexp~income)
+      for(i in 1:200){
+          E <- residuals(model_wq)
+          model_wq <- lm(data=engel,formula=foodexp~income ,weight=g(E))
+      }
+
+
+      summary(model_rq,se="nid")
+      summary(model_wq)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call: rq(formula = foodexp ~ income, tau = 0.05, data = engel)
+
+    tau: [1] 0.05
+
+    Coefficients:
+                Value     Std. Error t value   Pr(>|t|) 
+    (Intercept) 124.88004  35.06673    3.56121   0.00045
+    income        0.34336   0.04994    6.87609   0.00000
+
+    Call:
+    lm(formula = foodexp ~ income, data = engel, weights = g(E))
+
+    Weighted Residuals:
+        Min      1Q  Median      3Q     Max 
+    -11.417   1.865   2.710   3.339   6.850 
+
+    Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) 1.251e+02  3.176e-01   393.8   <2e-16 ***
+    income      3.433e-01  6.407e-05  5358.7   <2e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.055 on 233 degrees of freedom
+    Multiple R-squared:      1,	Adjusted R-squared:      1 
+    F-statistic: 2.872e+07 on 1 and 233 DF,  p-value: < 2.2e-16
+   #+end_example
+    
+    Lets check if we can observe the same thing on another set of
+    data.
+** 2016-05-06
+*** Brute for on BEPO
+**** TODO Warm up effect
+     #+begin_src sh :results output :exports both
+       ruby ../scripts/format_data_detailed_v2.rb ../data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Data17_01_58.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       df = read.csv("/tmp/test.csv",strip.white=T,header=T)
+       summary(df)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+      elements_number  y_component_number vector_length    temporary_size 
+      Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :2.000  
+      1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.000   1st Qu.:2.000  
+      Median : 6.000   Median :3.000      Median : 4.000   Median :2.000  
+      Mean   : 8.602   Mean   :3.441      Mean   : 5.721   Mean   :2.974  
+      3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.000   3rd Qu.:4.000  
+      Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :4.000  
+      vector_recompute load_overlap   threads_number       lws_y        
+      true:462000      false:227600   Min.   :  32.0   Min.   :   1.00  
+                       true :234400   1st Qu.:  64.0   1st Qu.:   4.00  
+                                      Median : 256.0   Median :  16.00  
+                                      Mean   : 367.9   Mean   :  73.56  
+                                      3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                      Max.   :1024.0   Max.   :1024.00  
+      image_size_index   run_index    time_per_pixel     
+      Min.   :0        Min.   :0.00   Min.   :8.077e-10  
+      1st Qu.:1        1st Qu.:0.75   1st Qu.:3.190e-09  
+      Median :2        Median :1.50   Median :5.021e-09  
+      Mean   :2        Mean   :1.50   Mean   :5.863e-09  
+      3rd Qu.:3        3rd Qu.:2.25   3rd Qu.:6.767e-09  
+      Max.   :4        Max.   :3.00   Max.   :1.398e-07
+#+end_example
+
+   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       library(ggplot2)
+
+       df = read.csv("/tmp/test.csv",strip.white=T,header=T)
+       d <- df[df$vector_length == 1 & df$threads_number == 32 & df$lws_y == 2 & df$elements_number == 1,]
+       ggplot(d,aes(x=factor(run_index), y=time_per_pixel, color=image_size_index)) +
+           
+           facet_grid(. ~ image_size_index) +
+           geom_hline(yintercept=min(d$time_per_pixel), color="red", linetype=2) +
+           geom_boxplot()
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-4778z0D/figure4778ebE.png]]
+    
+    From a more global view we still see the impact of the warm
+    up:
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      library(plyr)
+      d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$threads_number == 32,]
+
+      df2 = ddply(d2,.(run_index,vector_length,image_size_index), summarize, 
+                  mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+
+      ggplot(d2) +
+          geom_jitter(aes(x=factor(run_index), y=time_per_pixel, color=factor(load_overlap), shape=factor(temporary_size))) + 
+          geom_errorbar(data=df2,aes(x=factor(run_index),y=mean, ymin=mean-err, ymax=mean+err)) +
+          facet_grid(vector_length ~ image_size_index, scales="free_y", labeller=label_both) 
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-4778z0D/figure4778rlK.png]]
+
+    Let's focus on the first image size and try to quantify this effect:
+    #+begin_src R :results output :session :exports both
+      library(plyr)
+      d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$image_size_index == 0,]
+
+      df2 = ddply(d2,.(run_index, vector_length, threads_number), summarize, 
+                  mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+      ggplot(d2) +
+          geom_jitter(aes(x=factor(run_index), y=time_per_pixel, color=factor(load_overlap), shape=factor(temporary_size))) + 
+          geom_errorbar(data=df2,aes(x=factor(run_index),y=mean, ymin=mean-err, ymax=mean+err)) +
+          facet_grid(vector_length ~ threads_number, scales="free_y", labeller=label_both) 
+    #+end_src
+
+    #+RESULTS:
+
+    We can see that the majority speedup due to the warmup effect is
+    almost insignificant:
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      # d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$image_size_index == 0,]
+      d2 <- df[df$image_size_index == 0,]
+      warmup <- c()
+      for(row in 1:nrow(d2)){
+            warmup[row] <- d2[row - (row-1) %% 4,]$time_per_pixel / d2[row,]$time_per_pixel
+      }
+
+      d2$warmup <- warmup
+
+      ggplot(d2[d2$run_index > 0 ,]) +
+          aes(x=factor(run_index), y=warmup) +
+          ggtitle("Speed up brought by the warmup effect on the first tested size of images") +
+          geom_boxplot()
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-4778z0D/figure47784vQ.png]]
+
+**** TODO Study of the search space
+     #+begin_src sh :results output :exports both
+       ruby ../scripts/clean_data.rb ../data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Data17_01_58.yaml
+     #+end_src
+
+     #+RESULTS:
+
+      Generate csv:
+      #+begin_src sh :results output :exports both
+        ruby ../scripts/format_data.rb ../data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Data17_01_58_cleaned.yaml
+      #+end_src
+
+      #+RESULTS:
+
+      #+begin_src R :results output :session :exports both
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        summary(df)
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+       elements_number  y_component_number vector_length    temporary_size 
+       Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :2.000  
+       1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.000   1st Qu.:2.000  
+       Median : 6.000   Median :3.000      Median : 4.000   Median :2.000  
+       Mean   : 8.602   Mean   :3.441      Mean   : 5.721   Mean   :2.974  
+       3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.000   3rd Qu.:4.000  
+       Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :4.000  
+       vector_recompute load_overlap  threads_number       lws_y        
+       true:23100       false:11380   Min.   :  32.0   Min.   :   1.00  
+                        true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                      Median : 256.0   Median :  16.00  
+                                      Mean   : 367.9   Mean   :  73.56  
+                                      3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                      Max.   :1024.0   Max.   :1024.00  
+       time_per_pixel     
+       Min.   :9.540e-10  
+       1st Qu.:3.171e-09  
+       Median :5.036e-09  
+       Mean   :5.627e-09  
+       3rd Qu.:6.499e-09  
+       Max.   :4.356e-08
+#+end_example
+
+
+      #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_p.png :exports both :width 800 :height 600 :session
+        library(ggplot2)
+        library(grid)
+        library(gridExtra)
+        library(plyr)
+
+         elem_err = ddply(df,c("elements_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         y_err = ddply(df,c("y_component_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         vec_err = ddply(df,c("vector_length"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         t_err = ddply(df,c("threads_number"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+         l_err = ddply(df,c("lws_y"), summarize,
+                     mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+        p1 <- qplot(df$elements_number, df$time_per_pixel) + 
+            # scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of elements number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p2 <- qplot(df$y_component_number, df$time_per_pixel) + 
+            # scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of y components number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p3 <- qplot(df$vector_length, df$time_per_pixel) + 
+            # scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the vector length") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p4 <- qplot(df$threads_number, df$time_per_pixel) + 
+            # scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the threads number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        p5 <- qplot(df$lws_y, df$time_per_pixel) + 
+            # scale_y_log10() + 
+            geom_point() + 
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=l_err,aes(x=(lws_y),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the lws_y") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
+
+        grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors")) 
+
+      #+end_src
+
+      #+RESULTS:
+      [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_p.png]]
+
+            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean__zoom_p.png :exports both :width 800 :height 600 :session
+              library(ggplot2)
+              library(grid)
+              library(gridExtra)
+              library(plyr)
+
+               elem_err = ddply(df,c("elements_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               y_err = ddply(df,c("y_component_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               vec_err = ddply(df,c("vector_length"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               t_err = ddply(df,c("threads_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               l_err = ddply(df,c("lws_y"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+              p1 <- qplot(df$elements_number, df$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1.5e-8)) +
+                  geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of elements number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p2 <- qplot(df$y_component_number, df$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1e-8)) +
+                  geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of y components number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p3 <- qplot(df$vector_length, df$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1e-8)) +
+                  geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the vector length") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p4 <- qplot(df$threads_number, df$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,7e-9)) +
+                  geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the threads number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p5 <- qplot(df$lws_y, df$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point() + 
+                  coord_cartesian(ylim=c(0,1.5e-8)) +
+                  geom_hline(yintercept=min(df2$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=l_err,aes(x=(lws_y),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the lws_y") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors")) 
+
+         #+end_src
+
+            #+RESULTS:
+            [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean__zoom_p.png]]
+
+ 
+
+            #+begin_src R :results output :session :exports both
+              df[df$time_per_pixel==min(df$time_per_pixel),]
+            #+end_src
+
+            #+RESULTS:
+            :      elements_number y_component_number vector_length temporary_size
+            : 3655              24                  6             4              4
+            :      vector_recompute load_overlap threads_number lws_y time_per_pixel
+            : 3655             true         true            128     1    9.53979e-10
+            
+            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce1_p.png :exports both :width 800 :height 600 :session
+              df2 <- df[df$lws_y==1,]
+              library(ggplot2)
+              library(grid)
+              library(gridExtra)
+              library(plyr)
+
+               elem_err = ddply(df2,c("elements_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               y_err = ddply(df2,c("y_component_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               vec_err = ddply(df2,c("vector_length"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               t_err = ddply(df2,c("threads_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               l_err = ddply(df2,c("lws_y"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+              p1 <- qplot(df2$elements_number, df2$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1.5e-8)) +
+                  geom_hline(yintercept=min(df2$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of elements number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p2 <- qplot(df2$y_component_number, df2$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1e-8)) +
+                  geom_hline(yintercept=min(df2$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of y components number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p3 <- qplot(df2$vector_length, df2$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1e-8)) +
+                  geom_hline(yintercept=min(df2$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the vector length") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p4 <- qplot(df2$threads_number, df2$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,7e-9)) +
+                  geom_hline(yintercept=min(df2$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the threads number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              grid.arrange(p1, p2, p3, p4, ncol=2, top=textGrob("Impact of factors")) 
+            #+end_src
+
+            #+RESULTS:
+            [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce1_p.png]]
+
+            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce2_p.png :exports both :width 800 :height 600 :session
+              df3 <- df2[df2$y_component_number==6,]
+              library(ggplot2)
+              library(grid)
+              library(gridExtra)
+              library(plyr)
+
+               elem_err = ddply(df3,c("elements_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               y_err = ddply(df3,c("y_component_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               vec_err = ddply(df3,c("vector_length"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               t_err = ddply(df3,c("threads_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               l_err = ddply(df3,c("lws_y"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+              p1 <- qplot(df3$elements_number, df3$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1.5e-8)) +
+                  geom_hline(yintercept=min(df3$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of elements number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p3 <- qplot(df3$vector_length, df3$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1e-8)) +
+                  geom_hline(yintercept=min(df3$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the vector length") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p4 <- qplot(df3$threads_number, df3$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,7e-9)) +
+                  geom_hline(yintercept=min(df3$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the threads number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              grid.arrange(p1, p3, p4, ncol=2, top=textGrob("Impact of factors")) 
+            #+end_src
+
+            #+RESULTS:
+            [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce2_p.png]]
+
+            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_p.png :exports both :width 600 :height 400 :session
+              df4 <- df3[df3$elements_number==24,]
+              library(ggplot2)
+              library(grid)
+              library(gridExtra)
+              library(plyr)
+
+               elem_err = ddply(df4,c("elements_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               y_err = ddply(df4,c("y_component_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               vec_err = ddply(df4,c("vector_length"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               t_err = ddply(df4,c("threads_number"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+               l_err = ddply(df4,c("lws_y"), summarize,
+                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+              p3 <- qplot(df4$vector_length, df4$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,1e-8)) +
+                  geom_hline(yintercept=min(df4$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the vector length") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              p4 <- qplot(df4$threads_number, df4$time_per_pixel) + 
+                  # scale_y_log10() + 
+                  geom_point(alpha=0.1) + 
+                  coord_cartesian(ylim=c(0,7e-9)) +
+                  geom_hline(yintercept=min(df4$time_per_pixel), color="red", linetype=2) +
+                  geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+                  ggtitle("Impact of of the threads number") +
+                  theme(axis.text=element_text(size=12),
+                        axis.title=element_text(size=14,face="bold"))
+
+              grid.arrange(p3, p4, ncol=2, top=textGrob("Impact of factors")) 
+            #+end_src
+
+            #+RESULTS:
+            [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_p.png]]
+
+            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_th_nb_distrib_h.png :exports both :width 600 :height 500 :session
+              ggplot(df4) +
+                  aes(x=time_per_pixel)+
+                  facet_grid(threads_number~.) +
+                  geom_histogram()
+
+            #+end_src
+
+            #+RESULTS:
+            [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_th_nb_distrib_h.png]]
+
