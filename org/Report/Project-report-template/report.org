@@ -85,42 +85,68 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
   \newpage
 #+END_abstract
 
-* Introduction
-** Plan                                                            :noexport:
+* Plan                                                             :noexport:
+** Introduction
    - In HPC code optimization crucial to exploit hardware.
      Cannot wait for the next generation to bring speedup because it
      does not (Frequency not higher but more cores and henanced ISA). 
-   - HPC plaforms \ne hardware \to optimization not portable.
+   - HPC plaforms \ne hardware \to code optimizations not portable.
      Porting application to another platform is time consumming and
      can be very tricky. Automatize the porting using tools \to
      autotuner.
    - BOAST framework ruby generating portable code in C, Fortran,
      OpenCL. DSL
-
-* Problem analysis
-** Plan                                                            :noexport:
+** Problem analysis
    - Huge search space \to need to explore only part of it \to
      optimization problem.
-   - Interaction between parameters
+   - Interactions between parameters
    - Non-smooth and empirical objective function
    - Combination of discrete and continuous parameters
-* State of the art
-** Plan                                                            :noexport:
+** State of the art
    - Atlas \to small search space \to exhaustive search
-** Exploiting the knowledge of the problem
-***    
-** Without knowledge   
+*** Exploiting the knowledge of the problem
+****    
+*** Without knowledge   
    - Problem too complex \to no geomerty
    - Random search
    - Genetic Algo
-* Methods and material
+*** Our goal
+    - Study of the search on simple example
+    - Understand why some technics work
+    - Try a simple approach
+** Methods and material
   - Literate programming \to reproducible work
+  - Result validation against bruteforce
+  - Comparison with random, gradiant search
+** Contribution
+*** Case study
+****  Laplacian
+      - Optimizations
+**** Matrix product?
+      - Optimizations
+*** Why linear regression is not suited
+    - Heteroscedasticity
+    - Not gaussian noise and noise is not the same at each point
+    - Express general tendency of the impact of factors
+    - But miss some interactions?
+*** Use of quantile regression
+    - Ways of computing quantile regression
+    - 5th and 95th percentile \to good estimation for extreme values
+    - But optimist R-squared
+*** Model choice and refinement
+    - Hypothesis based on the kernel
+    - Iterative refinement
+*** Importance of the search space expression
+    - Easier modelization
+    - Better capture of the search space features
+*** Using less point as possible
+    - Design of experiment
+** Experiments
+   - Bench min of 4 runs \to warm up effect
+** Conclusion
+* Introduction
+* Problem analysis
+* State of the art
+* Methods
 * Contribution
-** Why linear regression is not suited
-   - Not gaussian noise
-** Use of quantile regression
-   - Ways of computing quantile regression
-** Using less point as possible
-   - Design of experiment
-* Experiments
 * Conclusion
