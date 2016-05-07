@@ -16337,97 +16337,97 @@ start
       #+RESULTS:
       [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_p.png]]
 
-            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean__zoom_p.png :exports both :width 800 :height 600 :session
-              library(ggplot2)
-              library(grid)
-              library(gridExtra)
-              library(plyr)
+      #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean__zoom_p.png :exports both :width 800 :height 600 :session
+        library(ggplot2)
+        library(grid)
+        library(gridExtra)
+        library(plyr)
 
-               elem_err = ddply(df,c("elements_number"), summarize,
-                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+        elem_err = ddply(df,c("elements_number"), summarize,
+                         mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
 
-               y_err = ddply(df,c("y_component_number"), summarize,
-                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+        y_err = ddply(df,c("y_component_number"), summarize,
+                      mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
 
-               vec_err = ddply(df,c("vector_length"), summarize,
-                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+        vec_err = ddply(df,c("vector_length"), summarize,
+                        mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
 
-               t_err = ddply(df,c("threads_number"), summarize,
-                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+        t_err = ddply(df,c("threads_number"), summarize,
+                      mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
 
-               l_err = ddply(df,c("lws_y"), summarize,
-                           mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+        l_err = ddply(df,c("lws_y"), summarize,
+                      mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
 
-              p1 <- qplot(df$elements_number, df$time_per_pixel) + 
-                  # scale_y_log10() + 
-                  geom_point(alpha=0.1) + 
-                  coord_cartesian(ylim=c(0,1.5e-8)) +
-                  geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-                  geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-                  ggtitle("Impact of elements number") +
-                  theme(axis.text=element_text(size=12),
-                        axis.title=element_text(size=14,face="bold"))
+        p1 <- qplot(df$elements_number, df$time_per_pixel) + 
+                                                # scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            coord_cartesian(ylim=c(0,1.5e-8)) +
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=elem_err,aes(x=(elements_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of elements number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
 
-              p2 <- qplot(df$y_component_number, df$time_per_pixel) + 
-                  # scale_y_log10() + 
-                  geom_point(alpha=0.1) + 
-                  coord_cartesian(ylim=c(0,1e-8)) +
-                  geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-                  geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-                  ggtitle("Impact of y components number") +
-                  theme(axis.text=element_text(size=12),
-                        axis.title=element_text(size=14,face="bold"))
+        p2 <- qplot(df$y_component_number, df$time_per_pixel) + 
+                                                # scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            coord_cartesian(ylim=c(0,1e-8)) +
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=y_err,aes(x=(y_component_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of y components number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
 
-              p3 <- qplot(df$vector_length, df$time_per_pixel) + 
-                  # scale_y_log10() + 
-                  geom_point(alpha=0.1) + 
-                  coord_cartesian(ylim=c(0,1e-8)) +
-                  geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-                  geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-                  ggtitle("Impact of of the vector length") +
-                  theme(axis.text=element_text(size=12),
-                        axis.title=element_text(size=14,face="bold"))
+        p3 <- qplot(df$vector_length, df$time_per_pixel) + 
+                                                # scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            coord_cartesian(ylim=c(0,1e-8)) +
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=vec_err,aes(x=(vector_length),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the vector length") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
 
-              p4 <- qplot(df$threads_number, df$time_per_pixel) + 
-                  # scale_y_log10() + 
-                  geom_point(alpha=0.1) + 
-                  coord_cartesian(ylim=c(0,7e-9)) +
-                  geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-                  geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-                  ggtitle("Impact of of the threads number") +
-                  theme(axis.text=element_text(size=12),
-                        axis.title=element_text(size=14,face="bold"))
+        p4 <- qplot(df$threads_number, df$time_per_pixel) + 
+                                                # scale_y_log10() + 
+            geom_point(alpha=0.1) + 
+            coord_cartesian(ylim=c(0,7e-9)) +
+            geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=t_err,aes(x=(threads_number),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the threads number") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
 
-              p5 <- qplot(df$lws_y, df$time_per_pixel) + 
-                  # scale_y_log10() + 
-                  geom_point() + 
-                  coord_cartesian(ylim=c(0,1.5e-8)) +
-                  geom_hline(yintercept=min(df2$time_per_pixel), color="red", linetype=2) +
-                  geom_errorbar(data=l_err,aes(x=(lws_y),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
-                  ggtitle("Impact of of the lws_y") +
-                  theme(axis.text=element_text(size=12),
-                        axis.title=element_text(size=14,face="bold"))
+        p5 <- qplot(df$lws_y, df$time_per_pixel) + 
+                                                # scale_y_log10() + 
+            geom_point() + 
+            coord_cartesian(ylim=c(0,1.5e-8)) +
+            geom_hline(yintercept=min(df2$time_per_pixel), color="red", linetype=2) +
+            geom_errorbar(data=l_err,aes(x=(lws_y),y=mean, ymin=mean-err, ymax=mean+err, color="red")) +
+            ggtitle("Impact of of the lws_y") +
+            theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=14,face="bold"))
 
-              grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors")) 
+        grid.arrange(p1, p2, p3, p4, p5, ncol=3, top=textGrob("Impact of factors")) 
 
-         #+end_src
+       #+end_src
 
-            #+RESULTS:
+      #+RESULTS:
             [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean__zoom_p.png]]
 
  
 
-            #+begin_src R :results output :session :exports both
-              df[df$time_per_pixel==min(df$time_per_pixel),]
-            #+end_src
+      #+begin_src R :results output :session :exports both
+        df[df$time_per_pixel==min(df$time_per_pixel),]
+      #+end_src
 
-            #+RESULTS:
+      #+RESULTS:
             :      elements_number y_component_number vector_length temporary_size
             : 3655              24                  6             4              4
             :      vector_recompute load_overlap threads_number lws_y time_per_pixel
             : 3655             true         true            128     1    9.53979e-10
             
-            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce1_p.png :exports both :width 800 :height 600 :session
+      #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce1_p.png :exports both :width 800 :height 600 :session
               df2 <- df[df$lws_y==1,]
               library(ggplot2)
               library(grid)
@@ -16492,10 +16492,10 @@ start
               grid.arrange(p1, p2, p3, p4, ncol=2, top=textGrob("Impact of factors")) 
             #+end_src
 
-            #+RESULTS:
+      #+RESULTS:
             [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce1_p.png]]
 
-            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce2_p.png :exports both :width 800 :height 600 :session
+      #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce2_p.png :exports both :width 800 :height 600 :session
               df3 <- df2[df2$y_component_number==6,]
               library(ggplot2)
               library(grid)
@@ -16550,10 +16550,10 @@ start
               grid.arrange(p1, p3, p4, ncol=2, top=textGrob("Impact of factors")) 
             #+end_src
 
-            #+RESULTS:
+      #+RESULTS:
             [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce2_p.png]]
 
-            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_p.png :exports both :width 600 :height 400 :session
+      #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_p.png :exports both :width 600 :height 400 :session
               df4 <- df3[df3$elements_number==24,]
               library(ggplot2)
               library(grid)
@@ -16598,10 +16598,10 @@ start
               grid.arrange(p3, p4, ncol=2, top=textGrob("Impact of factors")) 
             #+end_src
 
-            #+RESULTS:
+      #+RESULTS:
             [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_p.png]]
 
-            #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_th_nb_distrib_h.png :exports both :width 600 :height 500 :session
+      #+begin_src R :results output graphics :file img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_th_nb_distrib_h.png :exports both :width 600 :height 500 :session
               ggplot(df4) +
                   aes(x=time_per_pixel)+
                   facet_grid(threads_number~.) +
@@ -16609,6 +16609,5 @@ start
 
             #+end_src
 
-            #+RESULTS:
+      #+RESULTS:
             [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_th_nb_distrib_h.png]]
-
