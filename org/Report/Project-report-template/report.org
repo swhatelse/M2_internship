@@ -122,27 +122,32 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    #     derivative, convexity,etc...
 *** Using information about the problem - Objective function
     - Derivative methods \to local strategy
-      - If non convex \to local minimum \to randomized strategy
-        e.g. simulated annealing
+      - If non convex \to multiple local minimum \to need to know where to
+        start or randomized strategy e.g. simulated annealing
       - If derivation not possible (empirical function) estimate with regression
 *** Using information about the problem - Other kind of knowledge   
-    Heuristics: genetic algorithm
+    Problem too complex
+    Heuristic based: genetic algorithm, random search, pattern search
+    Also machine learning \to identifying category of problem and
+    strategy that work well
 *** Our goal
+    - Complex methods used but no explanation on why they work
+    - Try a simple approach and try to understand it deeply
     - Analytics methods & experiments design
     - Study of the search space on simple example
-    - Try a simple approach and try to understand it deeply
 
 ** Methods and material
   - Literate programming \to reproducible work
   - Result validation against bruteforce
-  - Comparison with random, gradiant search
+  - Comparison with random, gradiant search, and genetic algorithm
+
 ** Contribution
 *** Case study
     # Maybe this should go in experiments
 ****  Laplacian
       - Optimizations explanation
 **** Matrix product?
-      - Optimizations
+      - Optimizations explanation
 *** Why linear regression is not suited
     - Tracks general tendency of the impact of factors
     - Heteroscedasticity
@@ -170,4 +175,33 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 * State of the art
 * Methods
 * Contribution
+** Case study
+   #+BEGIN_SRC C
+     void math(const int32_t width, const int32_t height, const uint8_t * psrc, uint8_t * pdst){
+         int32_t i;
+         int32_t j;
+         int32_t c;
+         int32_t tmp;
+         int32_t w;
+         w = (width) * (3);
+         for (j = 1; j <= height - (2); j += 1) {
+             for (i = 1; i <= width - (2); i += 1) {
+                 for (c = 0; c <= 2; c += 1) {
+                     tmp =  -(psrc[c + (3) * (i - (1) + (width) * (j - (1)))]) - (psrc[c + (3) * (i + (width) * (j - (1)))]) - (psrc[c + (3) * (i + 1 + (width) * (j - (1)))]) - (psrc[c + (3) * (i - (1) + (width) * (j))]) + (psrc[c + (3) * (i + (width) * (j))]) * (9) - (psrc[c + (3) * (i + 1 + (width) * (j))]) - (psrc[c + (3) * (i - (1) + (width) * (j + 1))]) - (psrc[c + (3) * (i + (width) * (j + 1))]) - (psrc[c + (3) * (i + 1 + (width) * (j + 1))]);
+                     pdst[c + (3) * (i + (width) * (j))] = (tmp < 0 ? 0 : (tmp > 255 ? 255 : tmp));
+                 }
+             }
+         }
+     }
+   #+END_SRC
+
+   In order to elaborate our approach, we took a very simple example
+   which is a kernel that computes the Laplacian of an image. There
+   are multiple optimizations that can be done to henance the
+   performance of this kernel. The first optimization we can use is
+   called the vectorization, it allows to take advantage of hardware
+   capable of executing one instruction on multiple data at a time and
+   instead of computing one data, multiple data are computed for the
+   same cost. This kind of architecture is called SIMD.
+* Experiments
 * Conclusion
