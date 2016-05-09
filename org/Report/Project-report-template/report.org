@@ -104,7 +104,6 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    - Non-smooth and empirical objective function
    - Combination of discrete and continuous parameters
      
-
 ** State of the art
    # - Atlas \to small search space or if we know where to search \to
    #   exhaustive search 
@@ -137,7 +136,9 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     - Study of the search space on simple example
 
 ** Methods and material
-  - Literate programming \to reproducible work
+  - Reproducible work
+    - Lab book on github  
+    - Literate programming 
   - Result validation against bruteforce
   - Comparison with random, gradiant search, and genetic algorithm
 
