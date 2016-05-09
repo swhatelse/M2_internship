@@ -106,23 +106,31 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
      
 
 ** State of the art
-   - Atlas \to small search space or if we know where to search \to
-     exhaustive search 
-   - Local search like gradiant search \to to know where to start
-     Can be stuck at local minimum and be from the global optimum
-   - Random algorithms random search, genetic algorithm. 
-     Efficient on complex problem with no geometry.
-     Can escape from local optimum
-   - Using modelization get get knowledge about the search space and
-     to predict behavior
-     - Learning machine \to training overhead
-     - Regression
-
+   # - Atlas \to small search space or if we know where to search \to
+   #   exhaustive search 
+   # - Local search like gradiant search \to to know where to start
+   #   Can be stuck at local minimum and be from the global optimum
+   # - Random algorithms random search, genetic algorithm. 
+   #   Efficient on complex problem with no geometry.
+   #   Can escape from local optimum
+   # - Mix of local and global search \to Generalized pattern search
+   # - Using modelization get get knowledge about the search space and
+   #   to predict behavior
+   #   - Learning machine \to categorisation of similar problem to use
+   #     same strategy, training overhead
+   #   - Regression \to possible to use property of the function, such as
+   #     derivative, convexity,etc...
+*** Using information about the problem - Objective function
+    - Derivative methods \to local strategy
+      - If non convex \to local minimum \to randomized strategy
+        e.g. simulated annealing
+      - If derivation not possible (empirical function) estimate with regression
+*** Using information about the problem - Other kind of knowledge   
+    Heuristics: genetic algorithm
 *** Our goal
     - Analytics methods & experiments design
-    - Study of the search on simple example
-    - Understand why some technics work
-    - Try a simple approach
+    - Study of the search space on simple example
+    - Try a simple approach and try to understand it deeply
 
 ** Methods and material
   - Literate programming \to reproducible work
@@ -132,7 +140,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 *** Case study
     # Maybe this should go in experiments
 ****  Laplacian
-      - Optimizations
+      - Optimizations explanation
 **** Matrix product?
       - Optimizations
 *** Why linear regression is not suited
