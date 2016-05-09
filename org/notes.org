@@ -595,7 +595,7 @@
 *** Summary
     - Tuning the level of precision of floating point variables
     - Use of delta debugging search
-** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/nitro_ipdps2014.pdf][nitro_ipdps2014]] ] Nitro: A Framework for Adaptive Code Variant Tuning
+** DONE [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/nitro_ipdps2014.pdf][nitro_ipdps2014]] ] Nitro: A Framework for Adaptive Code Variant Tuning
 *** Link
     [[http://www.cs.utah.edu/~sauravm/docs/nitro_ipdps2014.pdf]]
 *** Summary
@@ -639,6 +639,22 @@
 *** Link
     http://arxiv.org/pdf/math/0505639.pdf
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/Brewer95.pdf][Brewer95]] ] High-Level Optimization via Automated Statistical Modeling
+*** Summary
+    Autotuner for portable library. Use linear model to predict
+    the objective function.
+    1. Linear regression to find coefficient and keep revelant factors
+    2. Recompute the coefficient adding remaining factors
+    3. Model validation \to use the *Mean Relative Error* to estimate the
+       accuracy of the model. According to them it is better than the
+       R^2.
+
+    Optimization by using depending of the problem :
+      - root finding with compoise model such h(x) = f(x) - g(x) 
+      - or a kind of gradiant descent 
+*** Remarks
+    They did not notice the problem we found with linear
+    regression. It also lacks a deeper study of the search \to to see
+    how it look likes and to see if they are is the same case like us.
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/ipdps09.pdf][ipdps09]] ] A Scalable Auto-tuning Framework for Compiler Optimization
 * Mathematical notions
 ** Non-smooth
