@@ -141,12 +141,18 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     - Literate programming 
   - Result validation against bruteforce
   - Comparison with random, gradiant search, and genetic algorithm
-
 ** Contribution
 *** Case study
     # Maybe this should go in experiments
 ****  Laplacian
       - Optimizations explanation
+        - Vectorization \to vector length
+        - Synthetize loading \to load overlap
+        - Tilling \to y component nulber
+        - Number of threads \to elements number
+        - Size of temporary results \to temporary size
+        - Size of a work group \to threads number
+        - Shape of work group \to lws y
 **** Matrix product?
       - Optimizations explanation
 *** Why linear regression is not suited
@@ -169,6 +175,8 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     - Copying with constraints
 ** Experiments
    - Bench min of 4 runs \to warm up effect
+*** Laplacian
+    - Comparison with random and genetic algo
 ** Conclusion
 
 * Introduction
