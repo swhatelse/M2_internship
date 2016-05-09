@@ -103,18 +103,21 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    - Interactions between parameters
    - Non-smooth and empirical objective function
    - Combination of discrete and continuous parameters
+     
 
 ** State of the art
-   - Atlas \to small search space \to exhaustive search
-   - Model based
-     - Learning machine 
+   - Atlas \to small search space or if we know where to search \to
+     exhaustive search 
+   - Local search like gradiant search \to to know where to start
+     Can be stuck at local minimum and be from the global optimum
+   - Random algorithms random search, genetic algorithm. 
+     Efficient on complex problem with no geometry.
+     Can escape from local optimum
+   - Using modelization get get knowledge about the search space and
+     to predict behavior
+     - Learning machine \to training overhead
      - Regression
-*** Exploiting the knowledge of the problem
-****    
-*** Without knowledge   
-   - Problem too complex \to no geomerty
-   - Random search
-   - Genetic Algo
+
 *** Our goal
     - Analytics methods & experiments design
     - Study of the search on simple example
