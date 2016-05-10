@@ -310,7 +310,8 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
          geom_point(alpha=0.1) + 
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
          geom_errorbar(data=err_v_len,aes(x=vector_length,y=mean, ymin=mean-err, ymax=mean+err),colour="red") +
-         ggtitle("Impact of elements number") +
+         ggtitle("Impact of the vector length") +
+         labs(y="time per pixel in seconds", x="vector length") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
 
@@ -319,6 +320,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
          geom_errorbar(data=err_x_comp,aes(x=x_component_number,y=mean, ymin=mean-err, ymax=mean+err),colour="red") +
          ggtitle("Impact of number of component on the x-axis") +
+         labs(y="time per pixel in seconds", x="x component number") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
 
@@ -388,6 +390,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
          geom_smooth(method="lm", formula = y ~ x + I(1/x), aes(colour="linear regression")) +           
          stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), aes(colour="quantile regression")) +
          ggtitle("Impact of number of component on the x-axis") +
+         labs(y="time per pixel in seconds", x="x component number") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
 
