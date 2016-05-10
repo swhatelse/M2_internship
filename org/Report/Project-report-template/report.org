@@ -209,10 +209,20 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    In order to elaborate our approach, we took a very simple example
    which is a kernel that computes the Laplacian of an image. There
    are multiple optimizations that can be done to henance the
-   performance of this kernel. The first optimization we can use is
-   called the vectorization, it allows to take advantage of hardware
-   capable of executing one instruction on multiple data at a time and
-   instead of computing one data, multiple data are computed for the
-   same cost. This kind of architecture is called SIMD.
+   performance of this kernel. 
+   The first optimization we can use is the vectorization, this allows
+   to take advantage of hardware capable of executing one instruction
+   on multiple data at a time and instead of computing one data, so
+   multiple data are computed for the same cost. 
+   To perform vectorization we need to load more data and
+   some data overlap with each other, to reduce the number of load we
+   can synthetize those data from other, this is the second
+   optimization we can have.
+   Another optimization to henance the performs of the kernel can be
+   to use smaller type for intermediary results, reducing the pressure
+   on the registers.
+   We also can determine the number of threads use to performs the
+   computation. More threads can lead to better parallelism. We do
+   this by specifying the number of component a thread will work on.
 * Experiments
 * Conclusion
