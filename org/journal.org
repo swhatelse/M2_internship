@@ -15281,6 +15281,135 @@ h[g.name.to_sym] = 1024
          : De plus : Warning message:
          : In summary.rq(model_rq_v_len) : 14688 non-positive fis
 
+******** TODO How many iterations is really needed
+         With 50 iterations we are still pretty close to the rq
+         function but we are less accurate with 100 iterations. But
+         how do we know how many iterations are needed?
+         #+begin_src R :results output :session :exports both
+            form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+            form_y_comp <- time_per_pixel ~ y_component_number
+            form_v_len <- time_per_pixel ~ vector_length 
+            form_th_nb <- time_per_pixel ~ threads_number
+            form_lws_y <- time_per_pixel ~ lws_y
+
+            model_elem_nb_50 <- lm(data=df,formula=form_elem_nb)
+            for(i in 1:50){
+                E <- residuals(model_elem_nb_50)
+                model_elem_nb_50 <- lm(data=df,formula=form_elem_nb,weight=g(E))
+            }
+
+            model_y_comp_50 <- lm(data=df,formula=form_y_comp)
+            for(i in 1:50){
+                E <- residuals(model_y_comp_50)
+                model_y_comp_50 <- lm(data=df,formula=form_y_comp,weight=g(E))
+            }
+
+            model_v_len_50 <- lm(data=df,formula=form_v_len)
+            for(i in 1:50){
+                E <- residuals(model_v_len_50)
+                model_v_len_50 <- lm(data=df,formula=form_v_len,weight=g(E))
+            }
+
+            model_th_nb_50 <- lm(data=df,formula=form_th_nb)
+            for(i in 1:50){
+                E <- residuals(model_th_nb_50)
+                model_th_nb_50 <- lm(data=df,formula=form_th_nb,weight=g(E))
+            }
+
+            model_lws_y_50 <- lm(data=df,formula=form_lws_y)
+            for(i in 1:50){
+                E <- residuals(model_lws_y_50)
+                model_lws_y_50 <- lm(data=df,formula=form_lws_y,weight=g(E))
+            }
+
+            model_elem_nb_100 <- lm(data=df,formula=form_elem_nb)
+            for(i in 1:100){
+                E <- residuals(model_elem_nb_100)
+                model_elem_nb_100 <- lm(data=df,formula=form_elem_nb,weight=g(E))
+            }
+
+            model_y_comp_100 <- lm(data=df,formula=form_y_comp)
+            for(i in 1:100){
+                E <- residuals(model_y_comp_100)
+                model_y_comp_100 <- lm(data=df,formula=form_y_comp,weight=g(E))
+            }
+
+            model_v_len_100 <- lm(data=df,formula=form_v_len)
+            for(i in 1:100){
+                E <- residuals(model_v_len_100)
+                model_v_len_100 <- lm(data=df,formula=form_v_len,weight=g(E))
+            }
+
+            model_th_nb_100 <- lm(data=df,formula=form_th_nb)
+            for(i in 1:100){
+                E <- residuals(model_th_nb_100)
+                model_th_nb_100 <- lm(data=df,formula=form_th_nb,weight=g(E))
+            }
+
+            model_lws_y_100 <- lm(data=df,formula=form_lws_y)
+            for(i in 1:100){
+                E <- residuals(model_lws_y_100)
+                model_lws_y_100 <- lm(data=df,formula=form_lws_y,weight=g(E))
+            }
+
+         #+end_src
+
+         #+RESULTS:
+
+         #+begin_src R :results output :session :exports both
+           library(quantreg)
+           model_rq_elem_nb <- rq(data=df,formula=form_elem_nb,tau=.05)
+           model_rq_y_comp <- rq(data=df,formula=form_y_comp,tau=.05)
+           model_rq_v_len <- rq(data=df,formula=form_v_len,tau=.05)
+           model_rq_th_nb <- rq(data=df,formula=form_th_nb,tau=.05)
+           model_rq_lws_y <- rq(data=df,formula=form_lws_y,tau=.05)
+         #+end_src
+
+         #+RESULTS:
+         : Le chargement a nécessité le package : SparseM
+         : 
+         : Attachement du package : ‘SparseM’
+         : 
+         : The following object is masked from ‘package:base’:
+         : 
+         :     backsolve
+
+         Visually we can say that the results is still pretty close:
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/comparison_wq_iterations.png :exports both :width 800 :height 600 :session
+           default <- par()
+           par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,5e-10))
+           lines(sort(df$elements_number),predict(model_elem_nb_50)[order(df$elements_number)],col="red")  
+           lines(sort(df$elements_number),predict(model_elem_nb_100)[order(df$elements_number)],col="green")  
+           lines(sort(df$elements_number),predict(model_rq_elem_nb)[order(df$elements_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,3e-10))
+           lines(sort(df$y_component_number),predict(model_y_comp_50)[order(df$y_component_number)],col="red")  
+           lines(sort(df$y_component_number),predict(model_y_comp_100)[order(df$y_component_number)],col="green")  
+           lines(sort(df$y_component_number),predict(model_rq_y_comp)[order(df$y_component_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+           lines(sort(df$vector_length),predict(model_v_len_50)[order(df$vector_length)],col="red")  
+           lines(sort(df$vector_length),predict(model_v_len_100)[order(df$vector_length)],col="green")  
+           lines(sort(df$vector_length),predict(model_rq_v_len)[order(df$vector_length)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,2e-10))
+           lines(sort(df$threads_number),predict(model_th_nb_50)[order(df$threads_number)],col="red")  
+           lines(sort(df$threads_number),predict(model_th_nb_100)[order(df$threads_number)],col="green")  
+           lines(sort(df$threads_number),predict(model_rq_th_nb)[order(df$threads_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+           lines(sort(df$lws_y),predict(model_lws_y_50)[order(df$lws_y)],col="red")  
+           lines(sort(df$lws_y),predict(model_lws_y_100)[order(df$lws_y)],col="green")  
+           lines(sort(df$lws_y),predict(model_rq_lws_y)[order(df$lws_y)],col="blue")  
+
+           par(default)        
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/comparison_wq_iterations.png]]
+
 ******** TODO How to compute confidence intervals?
          Do we really need them?
 ****** TODO Modelization  
@@ -16104,6 +16233,42 @@ start
     Multiple R-squared:      1,	Adjusted R-squared:      1 
     F-statistic: 2.872e+07 on 1 and 233 DF,  p-value: < 2.2e-16
    #+end_example
+
+    With less iterations we have again different value for the std
+    error and the t-value. I don't yet how to interpret this.
+    #+begin_src R :results output :session :exports both
+      model_wq <- lm(data=engel,formula=foodexp~income)
+      for(i in 1:50){
+          E <- residuals(model_wq)
+          model_wq <- lm(data=engel,formula=foodexp~income ,weight=g(E))
+      }
+
+
+      summary(model_wq)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = foodexp ~ income, data = engel, weights = g(E))
+
+    Weighted Residuals:
+        Min      1Q  Median      3Q     Max 
+    -11.415   1.866   2.711   3.340   6.851 
+
+    Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) 1.250e+02  1.103e+00   113.4   <2e-16 ***
+    income      3.433e-01  2.328e-04  1475.0   <2e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.055 on 233 degrees of freedom
+    Multiple R-squared:  0.9999,	Adjusted R-squared:  0.9999 
+    F-statistic: 2.176e+06 on 1 and 233 DF,  p-value: < 2.2e-16
+#+end_example
+
     
     Lets check if we can observe the same thing on another set of
     data.
