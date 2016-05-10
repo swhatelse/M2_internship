@@ -4682,10 +4682,6 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
      #+begin_example
-     The following objects are masked from df (pos = 4):
-
-         load_overlap, temporary_size, time_per_pixel, vector_length,
-         vector_recompute, x_component_number, y_component_number
       x_component_number vector_length  y_component_number temporary_size
       Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
       1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
@@ -4726,7 +4722,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-3660fge/figure3660GDQ.png]]
+       [[file:/tmp/babel-3694SAZ/figure369431L.png]]
      - Another view of the impact of x_component_number showing the
        estimate of the mean. We can see where will pass the regression
        line and it will tell us the best is at x_component_number
@@ -4752,7 +4748,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-3660fge/figure3660TNW.png]]
+       [[file:/tmp/babel-3694SAZ/figure3694EAS.png]]
      - Repartition of combination
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -4775,7 +4771,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
      
        #+RESULTS:
-       [[file:/tmp/babel-3660fge/figure3660gXc.png]]
+       [[file:/tmp/babel-3694SAZ/figure3694RKY.png]]
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          library(ggplot2)
@@ -4797,7 +4793,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-3660fge/figure3660thi.png]]
+       [[file:/tmp/babel-3694SAZ/figure3694eUe.png]]
      - Looking for the min, regression quantile
        Estimate of the minimum try \to -exp
        
