@@ -158,6 +158,8 @@
        rsync -avzP --exclude '.git' boast-lig squinitomasnada@access.grid5000.fr:~/grenoble/boast
      #+end_src
 ** R
+   sudo apt-get install liblas-dev liblapack-dev
+   - Rcmdr
    - ggplot2
    - plyr
    - quantreg
