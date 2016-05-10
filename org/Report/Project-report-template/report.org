@@ -162,12 +162,20 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
           If not high usage of registers overhead of casting?
         - Size of a work group \to threads number
         - Shape of work group \to lws y
+      - 23100 combinations
 **** Matrix product?
       - Optimizations explanation
 *** The reason why linear regression is not suited
+    - Assumption \to homoscedasticity but we have heteroscedasticity
+      - Why is it a problem?
+        - Unbiased coefficient estimate but biased std error and thus
+          R-squared \to more difficult know if a model is correct
+        - But it is still ok if the error law is the same everywhere
+    - But we don't know anything about the noise
     - Tracks general tendency of the impact of factors
-    - Heteroscedasticity
-    - Non uniform noise
+    - 2 cases:
+      - heteroscedasticity + same error law
+      - heteroscedasticity + different error law
 *** Use of quantile regression
     - Ways of computing quantile regression
     - 5th and 95th percentile \to good estimation for extreme values
@@ -188,6 +196,11 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 **** Search space characteristics
      - Qualitative observation in term of speed up
 **** Comparison with random and genetic algo
+** Future work
+   - Find more suited design of experiments technics
+   - Validate approach on more complex kernel and different
+     architectures
+   - Automatization
 ** Conclusion
 
 * Introduction
@@ -226,7 +239,9 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    #   }
    # \end{lstlisting}
    # #+END_LaTeX
-
+   
+   # Maybe cite Brice paper for this part
+   
    In order to elaborate our approach, we took a very simple example
    which is a kernel that computes the Laplacian of an image. There
    are multiple optimization that can be done to enhance the
@@ -265,7 +280,13 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    the threads scheduling, data sharing. This leads to better usage of
    the resources and it worth to tune it carefully.
 ** The reason why linear regression is not suited
-   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 800 :height 400 :session :caption \MyCaption{Non-uniform noise}
+   #+begin_src sh :results output :exports none
+       ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+   #+end_src
+
+   #+RESULTS:
+
+   #+begin_src R :results output graphics :file img/lm.png :exports results :width 800 :height 400 :session 
      library(ggplot2)
      library(plyr)
      library(gridExtra)
@@ -280,18 +301,18 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
      err_v_len = ddply(df,c("vector_length"), summarize,
                        mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
 
-     p1 <- qplot(factor(df$vector_length), df$time_per_pixel) + 
+     p1 <- qplot(df$vector_length, df$time_per_pixel) + 
          geom_point(alpha=0.1) + 
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-         geom_errorbar(data=err_v_len,aes(x=factor(vector_length),y=mean, ymin=mean-err, ymax=mean+err)) +
+         geom_errorbar(data=err_v_len,aes(x=vector_length,y=mean, ymin=mean-err, ymax=mean+err),colour="red") +
          ggtitle("Impact of elements number") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
 
-     p2 <- qplot(factor(df$x_component_number), df$time_per_pixel) + 
+     p2 <- qplot(df$x_component_number, df$time_per_pixel) + 
          geom_point(alpha=0.1) + 
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-         geom_errorbar(data=err_x_comp,aes(x=factor(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+         geom_errorbar(data=err_x_comp,aes(x=x_component_number,y=mean, ymin=mean-err, ymax=mean+err),colour="red") +
          ggtitle("Impact of number of component on the x-axis") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
@@ -299,14 +320,37 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
      grid.arrange(p1, p2, ncol=2, top="") 
 
    #+end_src
-
-   #+RESULTS:
-   [[file:/tmp/babel-3694SAZ/figure369453Z.png]]
    
-   Linear regression has already been used successfully for auto-tuning problems 
+   #+CAPTION: Linear regression and non-uniform noise
+   #+LABEL: fig:lm-1
+   #+RESULTS:
+   [[file:img/lm.png]]
+   
+   Linear regression has already been used successfully for
+   auto-tuning problems\cite{Brewer:1995:HOV:209937.209946}. But they
+   have been put aside for no real reasons to our knowledge. Using
+   this method to study the impact of the parameters with using linear
+   models to approximate the behavior of the search space coupled with
+   efficient sampling strategies seemed very interesting to us.
+   
+   If linear regression have been efficient in brewer's
+   work\cite{Brewer:1995:HOV:209937.209946} it is maybe because at
+   this time the architecture of computers was less complicated than
+   today. The figure\ref{fig:lm-1} shows clearly the limit of the
+   linear regression on the simple case such as a Laplacian kernel on
+   nowadays architectures. First, one of the assumption of the linear
+   regression is homoscedasticity of the data which is not often
+   necessarily the case, and in our case we can see that the variability
+   is not the same at each factor level.   
    
 * Experiments
+* Future work
 * Conclusion
+#+LaTeX: \nocite{*}
+#+LaTeX: \def\raggedright{}
+\bibliographystyle{IEEEtran}
+\bibliography{../../biblio.bib}
+
 
 * Emacs Setup 							   :noexport:
   This document has local variables in its postembule, which should
