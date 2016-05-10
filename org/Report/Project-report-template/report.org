@@ -224,5 +224,10 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    We also can determine the number of threads use to performs the
    computation. More threads can lead to better parallelism. We do
    this by specifying the number of component a thread will work on.
+   After specifying the quantity of work per thread we can specify how
+   this work is organized by specifying by tilling.
+   There are also two parameters that are important and need to take
+   into account in any kernel are the number of threads in work group
+   and the organization of the threads in the work group.
 * Experiments
 * Conclusion
