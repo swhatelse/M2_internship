@@ -92,7 +92,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
   \newpage
 #+END_abstract
 
-* Plan                                                             :noexport:
+* Plan                                                             
 ** Introduction
    - In HPC code optimization crucial to exploit hardware.
      Cannot wait for the next generation to bring speedup because it
@@ -178,9 +178,12 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       - heteroscedasticity + same error law \to minimum can be predict
       - heteroscedasticity + different error law \to minimum and mean
         uncorrelated \to minimum can not be predict
-*** Quantile regression
+*** The choise of quantile regression
     - Interested in extremal values \to minimum
     - Ways of computing quantile regression
+      - empirical quantiles \to linear regression on a quantile
+      - Least absolute values
+      - Iterated weighted least squares 
     - 5th and 95th percentile \to good estimation for extreme values
     - But optimist R-squared
 *** Model choice and refinement
@@ -373,7 +376,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    regression cannot lead to the global optimum and we need another
    estimator for the minimum. 
 
-** Quantile regression
+** The choise of quantile regression
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
