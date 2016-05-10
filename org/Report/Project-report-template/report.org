@@ -164,7 +164,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
         - Shape of work group \to lws y
 **** Matrix product?
       - Optimizations explanation
-*** Why linear regression is not suited
+*** The reason why linear regression is not suited
     - Tracks general tendency of the impact of factors
     - Heteroscedasticity
     - Non uniform noise
@@ -263,7 +263,48 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    the organization of the threads in the work group. These parameters
    defines the work distribution at coarse grain and have an impact on
    the threads scheduling, data sharing. This leads to better usage of
-   the resources and it worth to tune it carefully.  
+   the resources and it worth to tune it carefully.
+** The reason why linear regression is not suited
+   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 800 :height 400 :session :caption \MyCaption{Non-uniform noise}
+     library(ggplot2)
+     library(plyr)
+     library(gridExtra)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+     attach(df)
+
+     err_x_comp = ddply(df,c("x_component_number"), summarize,
+                        mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+
+     err_v_len = ddply(df,c("vector_length"), summarize,
+                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+     p1 <- qplot(factor(df$vector_length), df$time_per_pixel) + 
+         geom_point(alpha=0.1) + 
+         geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+         geom_errorbar(data=err_v_len,aes(x=factor(vector_length),y=mean, ymin=mean-err, ymax=mean+err)) +
+         ggtitle("Impact of elements number") +
+         theme(axis.text=element_text(size=12),
+               axis.title=element_text(size=14,face="bold"))
+
+     p2 <- qplot(factor(df$x_component_number), df$time_per_pixel) + 
+         geom_point(alpha=0.1) + 
+         geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+         geom_errorbar(data=err_x_comp,aes(x=factor(x_component_number),y=mean, ymin=mean-err, ymax=mean+err)) +
+         ggtitle("Impact of number of component on the x-axis") +
+         theme(axis.text=element_text(size=12),
+               axis.title=element_text(size=14,face="bold"))
+
+     grid.arrange(p1, p2, ncol=2, top="") 
+
+   #+end_src
+
+   #+RESULTS:
+   [[file:/tmp/babel-3694SAZ/figure369453Z.png]]
+   
+   Linear regression has already been used successfully for auto-tuning problems 
+   
 * Experiments
 * Conclusion
 
