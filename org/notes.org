@@ -655,6 +655,29 @@
     They did not notice the problem we found with linear
     regression. It also lacks a deeper study of the search \to to see
     how it look likes and to see if they are is the same case like us.
+*** Link
+    https://www.cs.ubc.ca/~hutter/earg/papers09/Brewer95.pdf
+*** Bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+    @article{Brewer:1995:HOV:209937.209946,
+ author = {Brewer, Eric A.},
+ title = {High-level Optimization via Automated Statistical Modeling},
+ journal = {SIGPLAN Not.},
+ issue_date = {Aug. 1995},
+ volume = {30},
+ number = {8},
+ month = aug,
+ year = {1995},
+ issn = {0362-1340},
+ pages = {80--91},
+ numpages = {12},
+ url = {http://doi.acm.org/10.1145/209937.209946},
+ doi = {10.1145/209937.209946},
+ acmid = {209946},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
+    #+END_SRC
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/ipdps09.pdf][ipdps09]] ] A Scalable Auto-tuning Framework for Compiler Optimization
 * Mathematical notions
 ** Non-smooth
