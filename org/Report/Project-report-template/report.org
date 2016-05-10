@@ -179,6 +179,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       - heteroscedasticity + different error law \to minimum and mean
         uncorrelated \to minimum can not be predict
 *** Quantile regression
+    - Interested in extremal values \to minimum
     - Ways of computing quantile regression
     - 5th and 95th percentile \to good estimation for extreme values
     - But optimist R-squared
@@ -359,20 +360,20 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    figure\ref{fig:lm-1} we can still have the minimum values that
    follow the same evolution as the mean and we can still predict the
    minimum. The resulting model and approximation can still be correct
-   and we can easily know what is the best size for the
-   vector_length. But we would need to make assumptions that about the
+   and we can easily know what is the best size for the length of the
+   vector. But we would need to make assumptions that about the 
    error and we do not know anything about the error. In the right in
    figure\ref{fig:lm-1}, the evolution of the mean and the evolution
    of the minimum is not correlated and the best value is mispredicted.  
 
-   In the case of heteroscedasticity and non-uniform error law, linear
-   regression tracks the general tendency of impact of the
-   parameters. But in our case in which we are interested about the 
-   minimum which is uncorrelated to the mean, the linear regression
-   cannot lead to the global optimum and we need another estimator for
-   the minimum. 
+   We conclude that in the case of heteroscedasticity and non-uniform
+   error law, linear regression tracks the general tendency of impact
+   of the parameters. But in our case in which we are interested about
+   the minimum which is uncorrelated to the mean, the linear
+   regression cannot lead to the global optimum and we need another
+   estimator for the minimum. 
 
-*** Quantile regression
+** Quantile regression
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
@@ -401,6 +402,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    #+RESULTS:
    [[file:img/why_we_choose_quantile_reg.png]]
 
+   In our case 
 * Experiments
 * Future work
 * Conclusion
