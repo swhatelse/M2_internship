@@ -163,6 +163,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
         - Size of a work group \to threads number
         - Shape of work group \to lws y
       - 23100 combinations
+      - Minimization
 **** Matrix product?
       - Optimizations explanation
 *** The reason why linear regression is not suited
@@ -279,6 +280,9 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    defines the work distribution at coarse grain and have an impact on
    the threads scheduling, data sharing. This leads to better usage of
    the resources and it worth to tune it carefully.
+
+   All theses optimizations give us search space of 23100 combinations
+   to minimize the time to compute one pixel.
 ** The reason why linear regression is not suited
    #+begin_src sh :results output :exports none
        ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
@@ -338,11 +342,23 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    this time the architecture of computers was less complicated than
    today. The figure\ref{fig:lm-1} shows clearly the limit of the
    linear regression on the simple case such as a Laplacian kernel on
-   nowadays architectures. First, one of the assumption of the linear
+   nowadays architectures. First, one of the assumptions of the linear
    regression is homoscedasticity of the data which is not often
-   necessarily the case, and in our case we can see that the variability
-   is not the same at each factor level.   
-   
+   necessarily the case, and in our example we can see that the
+   variability is not the same at each factor level.
+
+   Heteroscedasticity is problematic because the least square is not
+   the Best Linear Unbiased Estimator in this case and it biases the
+   variance  and thus the coefficient of determination which makes it   
+   more difficult to evaluate the accuracy of the model.
+
+   if the error law is the same everywhere as in the left in
+   figure\ref{fig:lm-1} we can still have the minimum values that
+   follow the same evolution as the mean. The resulting model and
+   approximation can still be correct but this makes us doing
+   assumptions that about the error and we do not know anything about
+   the error as it is the case in the right in figure\ref{fig:lm-1}  
+
 * Experiments
 * Future work
 * Conclusion
