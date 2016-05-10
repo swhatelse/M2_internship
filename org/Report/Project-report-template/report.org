@@ -167,7 +167,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 **** Matrix product?
       - Optimizations explanation
 *** The reason why linear regression is not suited
-    - Assumption \to homoscedasticity but we have heteroscedasticity
+    - Assumption \to homoscedasticity but pb we have heteroscedasticity
       - Why is it a problem?
         - Unbiased coefficient estimate but biased std error and thus
           R-squared \to more difficult know if a model is correct
@@ -175,9 +175,10 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     - But we don't know anything about the noise
     - Tracks general tendency of the impact of factors
     - 2 cases:
-      - heteroscedasticity + same error law
-      - heteroscedasticity + different error law
-*** Use of quantile regression
+      - heteroscedasticity + same error law \to minimum can be predict
+      - heteroscedasticity + different error law \to minimum and mean
+        uncorrelated \to minimum can not be predict
+*** Quantile regression
     - Ways of computing quantile regression
     - 5th and 95th percentile \to good estimation for extreme values
     - But optimist R-squared
@@ -352,12 +353,50 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    variance  and thus the coefficient of determination which makes it   
    more difficult to evaluate the accuracy of the model.
 
-   if the error law is the same everywhere as in the left in
+   If the error law is the same everywhere as in the left in
    figure\ref{fig:lm-1} we can still have the minimum values that
-   follow the same evolution as the mean. The resulting model and
-   approximation can still be correct but this makes us doing
-   assumptions that about the error and we do not know anything about
-   the error as it is the case in the right in figure\ref{fig:lm-1}  
+   follow the same evolution as the mean and we can still predict the
+   minimum. The resulting model and approximation can still be correct
+   and we can easily know what is the best size for the
+   vector_length. But we would need to make assumptions that about the
+   error and we do not know anything about the error. In the right in
+   figure\ref{fig:lm-1}, the evolution of the mean and the evolution
+   of the minimum is not correlated and the best value is mispredicted.  
+
+   In the case of heteroscedasticity and non-uniform error law, linear
+   regression tracks the general tendency of impact of the
+   parameters. But in our case in which we are interested about the 
+   minimum which is uncorrelated to the mean, the linear regression
+   cannot lead to the global optimum and we need another estimator for
+   the minimum. 
+
+*** Quantile regression
+   #+begin_src sh :results output :exports none
+     ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+   #+end_src
+
+   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg.png :exports results :width 600 :height 400 :session
+     library(ggplot2)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+     attach(df)
+
+     ggplot(df) + 
+         aes(x=x_component_number, y=time_per_pixel) +
+         geom_point(alpha=0.1) + 
+         geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+         geom_smooth(method="lm", formula = y ~ x + I(1/x), aes(colour="linear regression")) +           
+         stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), aes(colour="quantile regression")) +
+         ggtitle("Impact of number of component on the x-axis") +
+         theme(axis.text=element_text(size=12),
+               axis.title=element_text(size=14,face="bold"))
+
+   #+end_src
+
+   #+CAPTION: Linear regression vs quantile regression
+   #+LABEL: fig:qr-example
+   #+RESULTS:
+   [[file:img/why_we_choose_quantile_reg.png]]
 
 * Experiments
 * Future work
