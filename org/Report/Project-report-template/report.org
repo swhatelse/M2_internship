@@ -1,8 +1,14 @@
 #+TITLE: Optimization of the Auto-Tuning of HPC Application Computing Kernels
+#+LANGUAGE: en
 #+Author:
+#+TAGS: noexport(n) deprecated(d)
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+
 #+LaTeX_CLASS: memoir
 #+LaTeX_CLASS_OPTIONS: [12pt, a4paper]
 #+OPTIONS: H:5 title:nil author:nil email:nil creator:nil timestamp:nil skip:nil toc:nil ^:nil
+#+BABEL: :session *R* :cache yes :results output graphics :exports both :tangle yes 
 
 #+LATEX_HEADER:\usepackage[french,english]{babel}
 #+LATEX_HEADER:\usepackage [vscale=0.76,includehead]{geometry}                % See geometry.pdf to learn the layout options. There are lots.
@@ -17,6 +23,7 @@
 #+LATEX_HEADER:\usepackage{helvet} % font sf = helvetica
 #+LATEX_HEADER:\usepackage[latin1]{inputenc}
 #+LATEX_HEADER:\usepackage{relsize}
+#+LATEX_HEADER:\usepackage{listings}
 
 #+BEGIN_LaTeX
 %Style des têtes de section, headings, chapitre
@@ -148,9 +155,11 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       - Optimizations explanation
         - Vectorization \to vector length
         - Synthetize loading \to load overlap
-        - Tilling \to y component nulber
+        - Tilling \to y component number
         - Number of threads \to elements number
         - Size of temporary results \to temporary size
+          Reducing pressure on registers? If high usage of registers?
+          If not high usage of registers overhead of casting?
         - Size of a work group \to threads number
         - Shape of work group \to lws y
 **** Matrix product?
@@ -187,47 +196,95 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 * Methods
 * Contribution
 ** Case study
-   #+BEGIN_SRC C
-     void math(const int32_t width, const int32_t height, const uint8_t * psrc, uint8_t * pdst){
-         int32_t i;
-         int32_t j;
-         int32_t c;
-         int32_t tmp;
-         int32_t w;
-         w = (width) * (3);
-         for (j = 1; j <= height - (2); j += 1) {
-             for (i = 1; i <= width - (2); i += 1) {
-                 for (c = 0; c <= 2; c += 1) {
-                     tmp =  -(psrc[c + (3) * (i - (1) + (width) * (j - (1)))]) - (psrc[c + (3) * (i + (width) * (j - (1)))]) - (psrc[c + (3) * (i + 1 + (width) * (j - (1)))]) - (psrc[c + (3) * (i - (1) + (width) * (j))]) + (psrc[c + (3) * (i + (width) * (j))]) * (9) - (psrc[c + (3) * (i + 1 + (width) * (j))]) - (psrc[c + (3) * (i - (1) + (width) * (j + 1))]) - (psrc[c + (3) * (i + (width) * (j + 1))]) - (psrc[c + (3) * (i + 1 + (width) * (j + 1))]);
-                     pdst[c + (3) * (i + (width) * (j))] = (tmp < 0 ? 0 : (tmp > 255 ? 255 : tmp));
-                 }
-             }
-         }
-     }
-   #+END_SRC
+   # Not sure it is necessary:
+   # #+BEGIN_LaTeX
+   # \lstset{language=C}
+   # \begin{lstlisting}
+   #   void math(const int32_t width, const int32_t height, const uint8_t * psrc, uint8_t * pdst){
+   #       int32_t i;
+   #       int32_t j;
+   #       int32_t c;
+   #       int32_t tmp;
+   #       int32_t w;
+   #       w = (width) * (3);
+   #       for (j = 1; j <= height - (2); j += 1) {
+   #           for (i = 1; i <= width - (2); i += 1) {
+   #               for (c = 0; c <= 2; c += 1) {
+   #                   tmp =  - (psrc[c + (3) * (i - (1) + (width) * (j - (1)))]) 
+   #                          - (psrc[c + (3) * (i + (width) * (j - (1)))]) 
+   #                          - (psrc[c + (3) * (i + 1 + (width) * (j - (1)))]) 
+   #                          - (psrc[c + (3) * (i - (1) + (width) * (j))]) 
+   #                          + (psrc[c + (3) * (i + (width) * (j))]) * (9) 
+   #                          - (psrc[c + (3) * (i + 1 + (width) * (j))]) 
+   #                          - (psrc[c + (3) * (i - (1) + (width) * (j + 1))]) 
+   #                          - (psrc[c + (3) * (i + (width) * (j + 1))]) 
+   #                          - (psrc[c + (3) * (i + 1 + (width) * (j + 1))]);
+   #                   pdst[c + (3) * (i + (width) * (j))] = (tmp < 0 ? 0 : (tmp > 255 ? 255 : tmp));
+   #               }
+   #           }
+   #       }
+   #   }
+   # \end{lstlisting}
+   # #+END_LaTeX
 
    In order to elaborate our approach, we took a very simple example
    which is a kernel that computes the Laplacian of an image. There
-   are multiple optimizations that can be done to henance the
+   are multiple optimization that can be done to enhance the
    performance of this kernel. 
+
    The first optimization we can use is the vectorization, this allows
    to take advantage of hardware capable of executing one instruction
    on multiple data at a time and instead of computing one data, so
-   multiple data are computed for the same cost. 
-   To perform vectorization we need to load more data and
-   some data overlap with each other, to reduce the number of load we
-   can synthetize those data from other, this is the second
-   optimization we can have.
+   multiple data are computed for the same cost. Thus we can specify
+   the length of the vector and we must find what is the correct
+   length of the vector. 
+
+   To perform vectorization we need to load more data and some data
+   overlap with each other, to reduce the number of load we can
+   synthetize those data from other, this is the second optimization
+   we can have. 
+
    Another optimization to henance the performs of the kernel can be
    to use smaller type for intermediary results, reducing the pressure
    on the registers.
+
    We also can determine the number of threads use to performs the
-   computation. More threads can lead to better parallelism. We do
-   this by specifying the number of component a thread will work on.
+   computation. More threads can lead to better parallelism but also
+   more threads overhead. We do this by specifying the number of
+   component a thread will work on. We need know what is the correct
+   size of the job for a thread.
+   
    After specifying the quantity of work per thread we can specify how
-   this work is organized by specifying by tilling.
-   There are also two parameters that are important and need to take
-   into account in any kernel are the number of threads in work group
-   and the organization of the threads in the work group.
+   this work is organized by specifying the tilling. It gives how the
+   components are distributed in the y axis.
+
+   There are also two parameters that are important for any
+   kernel. First we have the number of threads in work group and then
+   the organization of the threads in the work group. These parameters
+   defines the work distribution at coarse grain and have an impact on
+   the threads scheduling, data sharing. This leads to better usage of
+   the resources and it worth to tune it carefully.  
 * Experiments
 * Conclusion
+
+* Emacs Setup 							   :noexport:
+  This document has local variables in its postembule, which should
+  allow Org-mode to work seamlessly without any setup. If you're
+  uncomfortable using such variables, you can safely ignore them at
+  startup. Exporting may require that you copy them in your .emacs.
+
+# Local Variables:
+# eval:    (require 'org-install)
+# eval:    (org-babel-do-load-languages 'org-babel-load-languages '( (sh . t) (R . t) (perl . t) (ditaa . t) ))
+# eval:    (setq org-confirm-babel-evaluate nil)
+# eval:    (unless (boundp 'org-latex-classes) (setq org-latex-classes nil))
+# eval:    (add-to-list 'org-latex-classes '("memoir" "\\documentclass[smallextended]{memoir} \n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n  \\usepackage{graphicx}\n  \\usepackage{hyperref}"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+# eval:    (add-to-list 'org-latex-classes '("acm-proc-article-sp" "\\documentclass{acm_proc_article-sp}\n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+# eval:    (setq org-alphabetical-lists t)
+# eval:    (setq org-src-fontify-natively t)
+# eval:   (setq org-export-babel-evaluate nil)
+# eval:   (setq ispell-local-dictionary "english")
+# eval:   (eval (flyspell-mode t))
+# eval:    (setq org-latex-listings 'minted)
+# eval:    (setq org-latex-minted-options '(("bgcolor" "white") ("style" "tango") ("numbers" "left") ("numbersep" "5pt")))
+# End:
