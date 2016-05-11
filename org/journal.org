@@ -16049,6 +16049,553 @@ h[g.name.to_sym] = 1024
 
 ****** TODO Which design of experiments?
 ******* TODO Screening design
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          summary(df)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number  y_component_number vector_length   temporary_size 
+         Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+         Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+         Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+         Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+         vector_recompute load_overlap  threads_number       lws_y        
+         true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                          true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                        Median : 256.0   Median :  16.00  
+                                        Mean   : 368.1   Mean   :  73.58  
+                                        3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                        Max.   :1024.0   Max.   :1024.00  
+         time_per_pixel     
+         Min.   :1.165e-10  
+         1st Qu.:3.028e-10  
+         Median :7.125e-10  
+         Mean   :2.013e-09  
+         3rd Qu.:2.001e-09  
+         Max.   :4.452e-08
+         #+end_example
+
+        Create the screening desgin:
+        #+begin_src R :results output :session :exports both
+          library(FrF2)
+          screening_d <-  pb(nruns= 64 ,n12.taguchi= FALSE ,nfactors= 7, ncenter= 0 , 
+              replications= 1 ,repeat.only= FALSE ,randomize= TRUE ,seed= 26654 , 
+              factor.names=list( elements_number=c(-1,1),
+                                 y_component_number=c(-1,1),
+                                 vector_length=c(-1,1),
+                                 temporary_size=c(-1,1),
+                                 load_overlap=c(-1,1),
+                                 threads_number=c(-1,1),
+                                 lws_y=c(-1, 1) ) )
+          screening_d
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+           elements_number y_component_number vector_length temporary_size load_overlap
+        1                1                 -1            -1             -1           -1
+        2                1                  1             1              1            1
+        3               -1                  1            -1             -1            1
+        4               -1                 -1            -1              1            1
+        5               -1                 -1             1              1           -1
+        6               -1                  1             1              1           -1
+        7                1                  1             1             -1           -1
+        8               -1                  1             1             -1            1
+        9               -1                 -1            -1             -1           -1
+        10              -1                  1             1              1           -1
+        11              -1                 -1             1             -1           -1
+        12               1                  1             1              1           -1
+        13               1                  1            -1              1           -1
+        14               1                 -1             1             -1           -1
+        15               1                  1            -1              1            1
+        16               1                 -1            -1              1           -1
+        17               1                 -1            -1             -1           -1
+        18               1                 -1             1              1           -1
+        19              -1                  1             1              1            1
+        20               1                 -1             1              1            1
+        21               1                 -1             1             -1            1
+        22              -1                 -1            -1              1            1
+        23               1                  1            -1              1            1
+        24               1                  1             1             -1            1
+        25               1                  1             1             -1           -1
+        26              -1                  1             1              1            1
+        27              -1                 -1             1              1            1
+        28              -1                 -1            -1              1            1
+        29               1                  1             1              1           -1
+        30              -1                  1            -1              1           -1
+        31               1                 -1            -1             -1            1
+        32               1                 -1             1              1           -1
+        33               1                 -1            -1              1           -1
+        34              -1                 -1            -1              1           -1
+        35              -1                  1            -1             -1            1
+        36              -1                  1             1              1           -1
+        37               1                  1            -1             -1            1
+        38              -1                 -1            -1              1           -1
+        39               1                  1            -1             -1           -1
+        40               1                 -1             1              1            1
+        41              -1                 -1            -1             -1            1
+        42               1                 -1             1              1            1
+        43               1                  1            -1              1            1
+        44              -1                  1             1             -1            1
+        45               1                 -1            -1              1           -1
+        46              -1                  1             1             -1            1
+        47              -1                  1            -1             -1           -1
+        48              -1                  1            -1              1            1
+        49               1                  1             1             -1           -1
+        50              -1                 -1            -1             -1            1
+        51               1                  1            -1              1            1
+        52               1                 -1            -1             -1            1
+        53               1                  1             1             -1            1
+        54              -1                 -1             1             -1           -1
+        55              -1                 -1             1             -1            1
+        56              -1                 -1             1             -1           -1
+        57              -1                  1            -1             -1           -1
+        58              -1                  1            -1              1           -1
+        59               1                 -1            -1             -1            1
+        60               1                 -1             1             -1            1
+        61               1                  1            -1             -1           -1
+        62              -1                 -1             1              1            1
+        63              -1                 -1             1             -1           -1
+        64              -1                  1            -1             -1           -1
+           threads_number lws_y
+        1               1     1
+        2               1     1
+        3              -1    -1
+        4               1     1
+        5               1     1
+        6              -1     1
+        7              -1     1
+        8               1    -1
+        9              -1    -1
+        10             -1    -1
+        11              1    -1
+        12              1     1
+        13              1    -1
+        14             -1     1
+        15              1    -1
+        16             -1    -1
+        17              1    -1
+        18              1     1
+        19             -1    -1
+        20             -1    -1
+        21             -1    -1
+        22             -1     1
+        23             -1     1
+        24              1    -1
+        25              1    -1
+        26             -1     1
+        27              1    -1
+        28              1    -1
+        29             -1    -1
+        30              1     1
+        31              1    -1
+        32              1     1
+        33             -1    -1
+        34             -1     1
+        35             -1    -1
+        36              1    -1
+        37             -1    -1
+        38              1    -1
+        39             -1     1
+        40             -1    -1
+        41              1     1
+        42              1    -1
+        43             -1     1
+        44              1     1
+        45             -1     1
+        46              1     1
+        47              1     1
+        48              1    -1
+        49             -1    -1
+        50             -1    -1
+        51              1     1
+        52              1     1
+        53             -1     1
+        54              1    -1
+        55             -1     1
+        56             -1    -1
+        57              1     1
+        58             -1    -1
+        59             -1     1
+        60              1     1
+        61              1    -1
+        62             -1     1
+        63             -1     1
+        64             -1     1
+        class=design, type= pb
+#+end_example
+
+        Decoding into min and max values:
+        #+begin_src R :results output :session :exports both
+          decode <- function(code,x){
+              if(code == -1){
+                  res <- min(x)
+              }
+              else{
+                  res <- max(x)
+              }
+              res
+          }
+
+          set <- data.frame()
+          for(i in 1:nrow(screening_d)){
+              set <- rbind(set,
+                           df[df$elements_number == decode(screening_d[i,]$elements_number, df$elements_number) &
+                           df$y_component_number == decode(screening_d[i,]$y_component_number, df$y_component_number) &
+                           df$vector_length == decode(screening_d[i,]$vector_length, df$vector_length) &
+                           df$temporary_size == decode(screening_d[i,]$temporary_size, df$temporary_size) &
+                           df$load_overlap == (if (screening_d[i,]$load_overlap == -1) "false" else "true") &
+                           df$threads_number == decode(screening_d[i,]$threads_number, df$threads_number) &
+                           df$lws_y == decode(screening_d[i,]$lws_y, df$lws_y)
+                              ,])
+          }
+          set
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+               elements_number y_component_number vector_length temporary_size
+        21511                1                  1             1              4
+        1536                 1                  1             1              2
+        15572                1                  1            16              2
+        9062                24                  6             1              4
+        21779               24                  6             1              4
+        13920                1                  1            16              4
+        9025                 1                  1             1              4
+        8983                24                  6            16              4
+        11657               24                  6             1              2
+        21644                1                  1             1              4
+        12022                1                  1             1              2
+        11205               24                  6            16              2
+        4896                 1                  1             1              2
+        11687               24                  6             1              4
+        155721               1                  1            16              2
+        4081                 1                  1            16              2
+        14494               24                  6             1              2
+               vector_recompute load_overlap threads_number lws_y time_per_pixel
+        21511              true         true           1024  1024   5.375467e-09
+        1536               true        false             32     1   5.828804e-10
+        15572              true        false           1024     1   2.793304e-09
+        9062               true        false           1024     1   1.914266e-10
+        21779              true         true           1024     1   1.913311e-10
+        13920              true         true           1024     1   2.783658e-09
+        9025               true         true           1024     1   2.672037e-10
+        8983               true        false             32     1   4.378793e-10
+        11657              true         true             32     1   1.646092e-10
+        21644              true        false           1024     1   2.686187e-10
+        12022              true         true           1024  1024   5.379390e-09
+        11205              true        false             32     1   4.395678e-10
+        4896               true         true             32     1   5.825783e-10
+        11687              true         true           1024  1024   3.761999e-09
+        155721             true        false           1024     1   2.793304e-09
+        4081               true        false             32     1   2.415739e-09
+        14494              true        false           1024     1   1.911056e-10
+#+end_example
+
+        The problem is that I don't get the number of points I asked
+        because of the constraints. Lots of combination of maximxal
+        values are unfeasible. Lets put that aside for the moment. 
+        Lets try see I we can have the same coefficient using the same
+        model as earlier:
+        #+begin_src R :results output :session :exports both
+            form_screen_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+            form_screen_y_comp <- time_per_pixel ~ I(1/y_component_number)
+            form_screen_v_len <- time_per_pixel ~ vector_length 
+            form_screen_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+            form_screen_lws_y <- time_per_pixel ~ lws_y 
+
+            model_screen_elem_nb <- lm(data=set,formula=form_screen_elem_nb)
+            for(i in 1:5){
+                E <- residuals(model_screen_elem_nb)
+                model_screen_elem_nb <- lm(data=set,formula=form_screen_elem_nb,weight=g(E))
+            }
+
+            model_screen_y_comp <- lm(data=set,formula=form_screen_y_comp)
+            for(i in 1:5){
+                E <- residuals(model_screen_y_comp)
+                model_screen_y_comp <- lm(data=set,formula=form_screen_y_comp,weight=g(E))
+            }
+
+            model_screen_v_len <- lm(data=set,formula=form_screen_v_len)
+            for(i in 1:5){
+                E <- residuals(model_screen_v_len)
+                model_screen_v_len <- lm(data=set,formula=form_screen_v_len,weight=g(E))
+            }
+
+            model_screen_th_nb <- lm(data=set,formula=form_screen_th_nb)
+            for(i in 1:5){
+                E <- residuals(model_screen_th_nb)
+                model_screen_th_nb <- lm(data=set,formula=form_screen_th_nb,weight=g(E))
+            }
+
+            model_screen_lws_y <- lm(data=set,formula=form_screen_lws_y)
+            for(i in 1:5){
+                E <- residuals(model_screen_lws_y)
+                model_screen_lws_y <- lm(data=set,formula=form_screen_lws_y,weight=g(E))
+            }
+       #+end_src
+
+        #+RESULTS:
+
+        For comparison with the full search space:
+        #+begin_src R :results output :session :exports both
+          form_full_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+          form_full_y_comp <- time_per_pixel ~ I(1/y_component_number)
+          form_full_v_len <- time_per_pixel ~ vector_length 
+          form_full_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+          form_full_lws_y <- time_per_pixel ~ lws_y 
+
+          model_full_elem_nb <- lm(data=df,formula=form_full_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_full_elem_nb)
+              model_full_elem_nb <- lm(data=df,formula=form_full_elem_nb,weight=g(E))
+          }
+
+          model_full_y_comp <- lm(data=df,formula=form_full_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_full_y_comp)
+              model_full_y_comp <- lm(data=df,formula=form_full_y_comp,weight=g(E))
+          }
+
+          model_full_v_len <- lm(data=df,formula=form_full_v_len)
+          for(i in 1:200){
+              E <- residuals(model_full_v_len)
+              model_full_v_len <- lm(data=df,formula=form_full_v_len,weight=g(E))
+          }
+
+          model_full_th_nb <- lm(data=df,formula=form_full_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_full_th_nb)
+              model_full_th_nb <- lm(data=df,formula=form_full_th_nb,weight=g(E))
+          }
+
+          model_full_lws_y <- lm(data=df,formula=form_full_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_full_lws_y)
+              model_full_lws_y <- lm(data=df,formula=form_full_lws_y,weight=g(E))
+          }
+       #+end_src
+
+        #+RESULTS:
+
+
+        We have not that bad approximation of coefficient that have a
+        simple model:
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/sc_desgin_64.png :exports both :width 800 :height 600 :session
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,4e-10))
+          lines(sort(set$elements_number),predict(model_screen_elem_nb)[order(set$elements_number)],col="red")  
+          lines(sort(df$elements_number),predict(model_full_elem_nb)[order(df$elements_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
+          lines(sort(set$y_component_number),predict(model_screen_y_comp)[order(set$y_component_number)],col="red")  
+          lines(sort(df$y_component_number),predict(model_full_y_comp)[order(df$y_component_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+          lines(sort(set$vector_length),predict(model_screen_v_len)[order(set$vector_length)],col="red")  
+          lines(sort(df$vector_length),predict(model_full_v_len)[order(df$vector_length)],col="green")  
+
+          plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,4e-10))
+          lines(sort(set$threads_number),predict(model_screen_th_nb)[order(set$threads_number)],col="red")  
+          lines(sort(df$threads_number),predict(model_full_th_nb)[order(df$threads_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+          lines(sort(set$lws_y),predict(model_screen_lws_y)[order(set$lws_y)],col="red")  
+          lines(sort(df$lws_y),predict(model_full_lws_y)[order(df$lws_y)],col="green")  
+
+          par(default)        
+
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/sc_desgin_64.png]]
+
+        Now lets see the pertinency of the model. Here we have two
+        problem: 
+          - Some coefficient failed to be estimated
+          - We don't know how many iterate is correct
+        #+begin_src R :results output :session :exports both
+          form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + I(1/y_component_number) + vector_length + threads_number + I(1/threads_number) + lws_y 
+          # form_complete <- time_per_pixel ~ elements_number + vector_length + threads_number  + lws_y 
+          model_screen_complete <- lm(data=set,formula=form_complete)
+          for(i in 1:5){
+              E <- residuals(model_screen_complete)
+              model_screen_complete <- lm(data=set,formula=form_complete,weight=g(E))
+          }
+
+          summary(model_screen_complete)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = form_complete, data = set, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -7.073e-07  1.270e-07  2.574e-06  6.804e-06  8.769e-06 
+
+        Coefficients: (3 not defined because of singularities)
+                                  Estimate Std. Error  t value Pr(>|t|)    
+        (Intercept)              4.151e-10  2.213e-10    1.875   0.0853 .  
+        elements_number         -7.015e-11  1.008e-13 -696.277  < 2e-16 ***
+        I(1/elements_number)            NA         NA       NA       NA    
+        I(1/y_component_number)         NA         NA       NA       NA    
+        vector_length            1.067e-10  1.343e-11    7.946 4.03e-06 ***
+        threads_number          -1.838e-13  2.031e-13   -0.905   0.3833    
+        I(1/threads_number)             NA         NA       NA       NA    
+        lws_y                    4.992e-12  6.731e-15  741.675  < 2e-16 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 6.246e-06 on 12 degrees of freedom
+        Multiple R-squared:      1,	Adjusted R-squared:      1 
+        F-statistic: 2.543e+05 on 4 and 12 DF,  p-value: < 2.2e-16
+        #+end_example
+
+          #+begin_src R :results output :session :exports both
+          summary(model_screen_elem_nb)
+          summary(model_screen_y_comp)
+          summary(model_screen_v_len)
+          summary(model_screen_th_nb)
+          summary(model_screen_lws_y)
+          #+end_src
+
+          #+RESULTS:
+          #+begin_example
+
+          Call:
+          lm.default(formula = form_screen_elem_nb, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -3.568e-06  1.253e-06  4.055e-06  1.127e-05  1.601e-05 
+
+          Coefficients: (1 not defined because of singularities)
+                                 Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)           2.768e-10  3.323e-11   8.331 5.21e-07 ***
+          elements_number      -3.923e-12  1.856e-12  -2.113   0.0518 .  
+          I(1/elements_number)         NA         NA      NA       NA    
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 9.16e-06 on 15 degrees of freedom
+          Multiple R-squared:  0.2294,	Adjusted R-squared:  0.178 
+          F-statistic: 4.466 on 1 and 15 DF,  p-value: 0.05175
+
+          Call:
+          lm.default(formula = form_screen_y_comp, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -3.568e-06  1.253e-06  4.055e-06  1.127e-05  1.601e-05 
+
+          Coefficients:
+                                   Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)             1.646e-10  3.475e-11   4.738 0.000264 ***
+          I(1/y_component_number) 1.083e-10  5.123e-11   2.113 0.051755 .  
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 9.16e-06 on 15 degrees of freedom
+          Multiple R-squared:  0.2294,	Adjusted R-squared:  0.178 
+          F-statistic: 4.466 on 1 and 15 DF,  p-value: 0.05175
+
+          Call:
+          lm.default(formula = form_screen_v_len, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -4.952e-06  3.754e-07  4.428e-06  1.085e-05  1.611e-05 
+
+          Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)   1.742e-10  8.105e-12   21.49 1.11e-12 ***
+          vector_length 1.653e-11  7.972e-13   20.73 1.87e-12 ***
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 9.024e-06 on 15 degrees of freedom
+          Multiple R-squared:  0.9663,	Adjusted R-squared:  0.964 
+          F-statistic: 429.9 on 1 and 15 DF,  p-value: 1.871e-12
+
+          Call:
+          lm.default(formula = form_screen_th_nb, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -2.884e-06  1.966e-06  4.799e-06  1.141e-05  1.611e-05 
+
+          Coefficients: (1 not defined because of singularities)
+                                Estimate Std. Error t value Pr(>|t|)  
+          (Intercept)          1.923e-10  8.848e-11   2.173   0.0462 *
+          threads_number      -6.697e-16  8.675e-14  -0.008   0.9939  
+          I(1/threads_number)         NA         NA      NA       NA  
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 9.297e-06 on 15 degrees of freedom
+          Multiple R-squared:  3.973e-06,	Adjusted R-squared:  -0.06666 
+          F-statistic: 5.959e-05 on 1 and 15 DF,  p-value: 0.9939
+
+          Call:
+          lm.default(formula = form_screen_lws_y, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -4.812e-06  4.677e-07  3.540e-06  8.994e-06  1.141e-05 
+
+          Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+          (Intercept) 1.864e-10  1.231e-11   15.14  1.7e-10 ***
+          lws_y       3.492e-12  1.283e-14  272.09  < 2e-16 ***
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 7.114e-06 on 15 degrees of freedom
+          Multiple R-squared:  0.9998,	Adjusted R-squared:  0.9998 
+          F-statistic: 7.403e+04 on 1 and 15 DF,  p-value: < 2.2e-16
+#+end_example
+
+        
+       Maybe that with this set of data summary.rq works... but it
+       still fails:
+       #+begin_src R :results output :session :exports both
+         library(quantreg)
+         summary(rq(data=set,formula=form_complete,tau=.05))
+       #+end_src
+
+       #+RESULTS:
+       : Le chargement a nécessité le package : SparseM
+       : 
+       : Attachement du package : ‘SparseM’
+       : 
+       : The following object is masked from ‘package:base’:
+       : 
+       :     backsolve
+       : Error in rq.fit.br(x, y, tau = tau, ...) : Singular design matrix
+
+       And what about the coefficients? It failed...
+       #+begin_src R :results output :session :exports both
+         rq(data=set,formula=form_complete,tau=.05)
+       #+end_src
+
+       #+RESULTS:
+       : Error in rq.fit.br(x, y, tau = tau, ...) : Singular design matrix
+
 ****** TODO Optimization on the model to find the value
        #+begin_src R :results output :session :exports both
         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
