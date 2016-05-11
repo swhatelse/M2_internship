@@ -164,6 +164,7 @@
    - plyr
    - quantreg
    - extraGrid
+   - FrF2
 * February
 ** 2016-02-02 Notes from Arnaud :Arnaud:
 - [[http://mescal.imag.fr/membres/arnaud.legrand/research/M2R_boast.pdf][internships]]
@@ -16049,6 +16050,225 @@ h[g.name.to_sym] = 1024
 
 ****** TODO Which design of experiments?
 ******* TODO Screening design
+         #+begin_src sh :results output :exports both
+           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+         #+end_src
+
+         #+RESULTS:
+
+         #+begin_src R :results output :session :exports both
+           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+           summary(df)
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+          elements_number  y_component_number vector_length   temporary_size 
+          Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+          1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+          Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+          Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+          3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+          Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+          vector_recompute load_overlap  threads_number       lws_y        
+          true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                           true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                         Median : 256.0   Median :  16.00  
+                                         Mean   : 368.1   Mean   :  73.58  
+                                         3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                         Max.   :1024.0   Max.   :1024.00  
+          time_per_pixel     
+          Min.   :1.165e-10  
+          1st Qu.:3.028e-10  
+          Median :7.125e-10  
+          Mean   :2.013e-09  
+          3rd Qu.:2.001e-09  
+          Max.   :4.452e-08
+         #+end_example
+
+        Generating the screening design: 
+        #+begin_src R :results output :session :exports both
+          library(FrF2)
+          screening_d <-  pb(nruns= 64 ,n12.taguchi= FALSE ,nfactors= 7, ncenter= 0 , 
+                    replications= 1 ,repeat.only= FALSE ,randomize= TRUE ,seed= 26654 , 
+                    factor.names=list( elements_number=c(-1,1), 
+                                      y_component_number=c(-1,1), 
+                                      vector_length=c(-1,1),
+                                      temporary_size=c(-1,1), 
+                                      load_overlap=c(-1,1), 
+                                      threads_number=c(-1,1), 
+                                      lws_y=c(-1,1) ) )
+          screening_d          
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+           elements_number y_component_number vector_length temporary_size load_overlap
+        1                1                 -1            -1             -1           -1
+        2                1                  1             1              1            1
+        3               -1                  1            -1             -1            1
+        4               -1                 -1            -1              1            1
+        5               -1                 -1             1              1           -1
+        6               -1                  1             1              1           -1
+        7                1                  1             1             -1           -1
+        8               -1                  1             1             -1            1
+        9               -1                 -1            -1             -1           -1
+        10              -1                  1             1              1           -1
+        11              -1                 -1             1             -1           -1
+        12               1                  1             1              1           -1
+        13               1                  1            -1              1           -1
+        14               1                 -1             1             -1           -1
+        15               1                  1            -1              1            1
+        16               1                 -1            -1              1           -1
+        17               1                 -1            -1             -1           -1
+        18               1                 -1             1              1           -1
+        19              -1                  1             1              1            1
+        20               1                 -1             1              1            1
+        21               1                 -1             1             -1            1
+        22              -1                 -1            -1              1            1
+        23               1                  1            -1              1            1
+        24               1                  1             1             -1            1
+        25               1                  1             1             -1           -1
+        26              -1                  1             1              1            1
+        27              -1                 -1             1              1            1
+        28              -1                 -1            -1              1            1
+        29               1                  1             1              1           -1
+        30              -1                  1            -1              1           -1
+        31               1                 -1            -1             -1            1
+        32               1                 -1             1              1           -1
+        33               1                 -1            -1              1           -1
+        34              -1                 -1            -1              1           -1
+        35              -1                  1            -1             -1            1
+        36              -1                  1             1              1           -1
+        37               1                  1            -1             -1            1
+        38              -1                 -1            -1              1           -1
+        39               1                  1            -1             -1           -1
+        40               1                 -1             1              1            1
+        41              -1                 -1            -1             -1            1
+        42               1                 -1             1              1            1
+        43               1                  1            -1              1            1
+        44              -1                  1             1             -1            1
+        45               1                 -1            -1              1           -1
+        46              -1                  1             1             -1            1
+        47              -1                  1            -1             -1           -1
+        48              -1                  1            -1              1            1
+        49               1                  1             1             -1           -1
+        50              -1                 -1            -1             -1            1
+        51               1                  1            -1              1            1
+        52               1                 -1            -1             -1            1
+        53               1                  1             1             -1            1
+        54              -1                 -1             1             -1           -1
+        55              -1                 -1             1             -1            1
+        56              -1                 -1             1             -1           -1
+        57              -1                  1            -1             -1           -1
+        58              -1                  1            -1              1           -1
+        59               1                 -1            -1             -1            1
+        60               1                 -1             1             -1            1
+        61               1                  1            -1             -1           -1
+        62              -1                 -1             1              1            1
+        63              -1                 -1             1             -1           -1
+        64              -1                  1            -1             -1           -1
+           threads_number lws_y
+        1               1     1
+        2               1     1
+        3              -1    -1
+        4               1     1
+        5               1     1
+        6              -1     1
+        7              -1     1
+        8               1    -1
+        9              -1    -1
+        10             -1    -1
+        11              1    -1
+        12              1     1
+        13              1    -1
+        14             -1     1
+        15              1    -1
+        16             -1    -1
+        17              1    -1
+        18              1     1
+        19             -1    -1
+        20             -1    -1
+        21             -1    -1
+        22             -1     1
+        23             -1     1
+        24              1    -1
+        25              1    -1
+        26             -1     1
+        27              1    -1
+        28              1    -1
+        29             -1    -1
+        30              1     1
+        31              1    -1
+        32              1     1
+        33             -1    -1
+        34             -1     1
+        35             -1    -1
+        36              1    -1
+        37             -1    -1
+        38              1    -1
+        39             -1     1
+        40             -1    -1
+        41              1     1
+        42              1    -1
+        43             -1     1
+        44              1     1
+        45             -1     1
+        46              1     1
+        47              1     1
+        48              1    -1
+        49             -1    -1
+        50             -1    -1
+        51              1     1
+        52              1     1
+        53             -1     1
+        54              1    -1
+        55             -1     1
+        56             -1    -1
+        57              1     1
+        58             -1    -1
+        59             -1     1
+        60              1     1
+        61              1    -1
+        62             -1     1
+        63             -1     1
+        64             -1     1
+        class=design, type= pb
+#+end_example
+
+        Encoding the result into minimal or maximal values:
+        #+begin_src R :results output :session :exports both
+          elements_number_values = c()
+          y_component_number_values = c()
+          vector_length_values = c()
+          
+          decode <- function(code,x) {
+              if(code == -1){                  
+                  res <- min(x)
+              }
+              else{
+                  res <- max(x)
+              }
+          }
+          
+          set <- data.frame()
+          for( i in 1:nrow(screening_d)){
+              set <- rbind(df[df$elements_number == decode(screening_d[i,]$elements_number,df$elements_number) & 
+                              df$y_component_number == decode(screening_d[i,]$y_component_number,df$y_component_number) & 
+                              df$vector_length == decode(screening_d[i,]$vector_length,df$vector_length) & 
+                              df$temporary_size == decode(screening_d[i,]$temporary_size,df$temporary_size) & 
+                              df$load_overlap == decode(screening_d[i,]$load_overlap,df$load_overlap) & 
+                              df$threads_number == decode(screening_d[i,]$threads_number,df$threads_number) & 
+                              df$lws_y == decode(screening_d[i,]$lws_y,df$lws_y)
+                             ,],
+                           set)
+          }
+        #+end_src
+
+        #+RESULTS:
+        :  Error in Summary.factor(c(2L, 1L, 2L, 1L, 2L, 2L, 1L, 2L, 2L, 2L, 1L,  (from #3) : 
+        :   ‘min’ not meaningful for factors
+
 ****** TODO Optimization on the model to find the value
        #+begin_src R :results output :session :exports both
         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
