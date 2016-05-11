@@ -94,16 +94,24 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 
 * Plan                                                             
 ** Introduction
+*** Why Auto-tuning   
    - In HPC code optimization crucial to exploit hardware.
      Cannot wait for the next generation to bring speedup because it
      does not (Frequency not higher but more cores and henanced ISA). 
    - HPC plaforms \ne hardware \to code optimizations not portable.
      Porting application to another platform is time consumming and
      can be very tricky. Automatize the porting using tools \to
-     autotuner.
-
+     auto-tuner.
+*** What is BOAST
    - BOAST framework ruby generating portable code in C, Fortran,
      OpenCL. DSL
+*** Our goal
+    - Complex methods used but no explanation on why they work
+    - Try a simple approach and try to understand it deeply
+    - Analytics methods & experiments design
+    - Study of the search space on simple example
+
+*** Structure of the report
 ** Problem analysis
    - Huge search space \to need to explore only part of it \to
      optimization problem.
@@ -136,16 +144,12 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     Heuristic based: genetic algorithm, random search, pattern search
     Also machine learning \to identifying category of problem and
     strategy that work well
-*** Our goal
-    - Complex methods used but no explanation on why they work
-    - Try a simple approach and try to understand it deeply
-    - Analytics methods & experiments design
-    - Study of the search space on simple example
 
 ** Methods and material
   - Reproducible work
     - Lab book on github  
     - Literate programming 
+    - org mode
   - Result validation against bruteforce
   - Comparison with random, gradiant search, and genetic algorithm
 ** Contribution
@@ -213,9 +217,22 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 * Problem analysis
 * State of the art
 * Methods
-  In order for this work to be usefull for someone else we used
-  literate programming, we kept track about everything we did in
-  laboratory which is available on github with all the data used.
+  In order for this work to be usefull for someone else a laboratory
+  book is available publicly on
+  github\footnote{https://github.com/swhatelse/M2\_internship}. It
+  contains detailed about installation and configuration steps. It
+  keeps tracks of every experiments including their description and
+  analysis. It is structure in a chronological way and thus follows
+  the natural evolution of the work. This gives the possibility to
+  easily understand what have been done at each step and why.
+  Every pieces of codes is explained using literate programming which
+  is very straight forward using the org-mode of emacs.
+  The github repository also contains the complet set of scripts and
+  data used for experiments giving the possibility to anyone to re-run
+  the same experiments using the same data.
+
+  The experiments are run on one machine with GPU Nvidia K40 using the
+  driver 340.32 and two CPUs Intel E5-2630.
 * Contribution
 ** Case study
    # Not sure it is necessary:
