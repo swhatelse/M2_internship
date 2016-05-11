@@ -145,6 +145,11 @@ then
     less /proc/cpuinfo >> $INFO_FILE
     echo "#+END_EXAMPLE" >> $INFO_FILE
 
+    echo "*** RAM" >> $INFO_FILE
+    echo "#+BEGIN_EXAMPLE" >> $INFO_FILE
+    less /proc/meminfo >> $INFO_FILE
+    echo "#+END_EXAMPLE" >> $INFO_FILE
+
     if [[ -n $(command -v nvidia-smi) ]];
     then
         echo "*** GPU INFO FROM NVIDIA-SMI" >> $INFO_FILE
