@@ -16352,7 +16352,7 @@ h[g.name.to_sym] = 1024
         #+begin_src R :results output :session :exports both
           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
           g <- function(x) { f(x)/x^2 }
-          h <- function(x) {pmin(g(x),1000000)}
+          h <- function(x) {pmin(g(x),1e10)}
           iwr <- function(d, form) { 
               model <- lm(data=d,formula=form)
               for(i in 1:200){
@@ -16402,6 +16402,13 @@ h[g.name.to_sym] = 1024
 
         #+RESULTS:
 
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+          plot(random_set)
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-3623dXu/figure3623Rgp.png]]
+
         #+begin_src R :results output :session :exports both
           form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
               I(1/y_component_number) + 
@@ -16425,31 +16432,31 @@ h[g.name.to_sym] = 1024
         #+begin_example
 
         Call:
-        lm(formula = form_complete, data = random_set, weights = h(E))
+        lm.default(formula = form_complete, data = random_set, weights = h(E))
 
-        Residuals:
+        Weighted Residuals:
                Min         1Q     Median         3Q        Max 
-        -6.786e-06 -1.065e-06 -1.170e-07  1.034e-06  1.448e-05 
+        -8.160e-06  2.302e-06  3.830e-06  7.817e-06  4.336e-05 
 
         Coefficients:
                                              Estimate Std. Error t value Pr(>|t|)    
-        (Intercept)                        -2.056e-09  1.508e-09  -1.363  0.17617    
-        elements_number                    -2.292e-10  2.233e-10  -1.027  0.30742    
-        I(1/elements_number)                3.299e-09  2.298e-09   1.436  0.15452    
-        I(1/y_component_number)             3.554e-10  1.652e-09   0.215  0.83013    
-        vector_length                       3.681e-10  5.757e-11   6.394 7.27e-09 ***
-        threads_number                     -1.670e-12  1.863e-12  -0.897  0.37238    
-        I(1/threads_number)                 1.374e-07  4.565e-08   3.011  0.00339 ** 
-        lws_y                               3.772e-11  5.980e-12   6.308 1.07e-08 ***
-        elements_number:y_component_number  2.231e-11  3.345e-11   0.667  0.50649    
-        threads_number:lws_y               -3.103e-14  7.029e-15  -4.414 2.84e-05 ***
-        elements_number:threads_number      2.395e-13  1.458e-13   1.643  0.10401    
+        (Intercept)                        -5.293e-10  2.476e-10  -2.138  0.03527 *  
+        elements_number                     2.851e-11  2.859e-11   0.997  0.32135    
+        I(1/elements_number)                1.129e-09  4.464e-10   2.529  0.01320 *  
+        I(1/y_component_number)            -1.538e-10  2.177e-10  -0.707  0.48164    
+        vector_length                       5.861e-11  7.770e-12   7.543 3.72e-11 ***
+        threads_number                      3.819e-13  1.715e-13   2.226  0.02852 *  
+        I(1/threads_number)                 1.670e-08  5.560e-09   3.004  0.00346 ** 
+        lws_y                               1.154e-11  1.038e-12  11.119  < 2e-16 ***
+        elements_number:y_component_number -4.109e-12  3.769e-12  -1.090  0.27846    
+        threads_number:lws_y               -6.956e-15  1.297e-15  -5.362 6.44e-07 ***
+        elements_number:threads_number     -3.762e-14  2.930e-14  -1.284  0.20245    
         ---
         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-        Residual standard error: 2.833e-06 on 89 degrees of freedom
-        Multiple R-squared:  0.6167,	Adjusted R-squared:  0.5737 
-        F-statistic: 14.32 on 10 and 89 DF,  p-value: 9.086e-15
+        Residual standard error: 1.011e-05 on 89 degrees of freedom
+        Multiple R-squared:  0.7996,	Adjusted R-squared:  0.7771 
+        F-statistic: 35.51 on 10 and 89 DF,  p-value: < 2.2e-16
 #+end_example
 
         
