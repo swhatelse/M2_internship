@@ -137,7 +137,8 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
         (peak performance is generally useless and the optimization
         process is so complex that it's hard to know how it really
         performed) is difficult and même si tu sais qu'il devrait être
-        possible de faire mieux, tu sais pas vraiment où, comment, ...
+        possible de faire mieux, tu sais pas vraiment où, comment( cf
+        of genetic algo on the full search space), ...
 *** Our goal
     Investigate the design of a semi-automatic optimization framework,
     where the applicaiton developer has control and understands how
@@ -179,6 +180,28 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    #     same strategy, training overhead
    #   - Regression \to possible to use property of the function, such as
    #     derivative, convexity,etc...
+   Two (complementary?) approach:
+     - Surogates based:
+       - Machine learning \to learn the objective function
+         - costly training phase
+         - classification \to which strategy apply
+           - Opentuner \to which optimization technics for a given problem
+             because the efficiency of a technics depends on the
+             structure of the problem.
+           - Milepost GCC \to learning characteristics of a program to
+             predict what are the good combinations
+           - Stefan Wild \to Learning combination across platform
+             Worked for similar platforms.
+       - Interpolation
+         - ASK
+       - Regression
+         - Brewer
+     - Optimization \to finding the minimum
+       - Exhaustive search \to Atlas Linear search
+       - Orio \to random search, Nelder Mead Simplex and simulated
+         annealing
+       - OPAL \to Use direct search combinations of heuristics.
+         Global *and* local search
 *** Using information about the problem - Objective function
     - Derivative methods \to local strategy
       - If non convex \to multiple local minimum \to need to know where to
