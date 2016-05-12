@@ -182,36 +182,36 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    #     derivative, convexity,etc...
 
    - 3 complementary approaches:
-    - Reuse knowledge of previous experience \to machine learning
-      - costly training phase
-      - classification \to which strategy to apply
-        - Opentuner \to which optimization technics for a given problem
-          because the efficiency of a technics depends on the
-          structure of the problem.
-        - Milepost GCC \to learning characteristics of a program to
-          predict what are the good combinations, optimization
-          across programs. Predict good configuration using the
-          distribution of good combination by taking the mode.
-          Reuse knowledge across programs
-        - Stefan Wild \to Learning combination across platform
-          Worked for similar platforms. Search space pruning \to random
-          search.
-          Reuse knowledge across platforms
+     - Reuse knowledge of previous experience \to machine learning
+       - costly training phase
+       - classification \to which strategy to apply
+         - Opentuner \to which optimization technics for a given problem
+           because the efficiency of a technics depends on the
+           structure of the problem.
+         - Milepost GCC \to learning characteristics of a program to
+           predict what are the good combinations, optimization
+           across programs. Predict good configuration using the
+           distribution of good combination by taking the mode.
+           Reuse knowledge across programs
+         - Stefan Wild \to Learning combination across platform
+           Worked for similar platforms. Search space pruning \to random
+           search.
+           Reuse knowledge across platforms
 
-    - Getting knowledge on the fly \to regression, interpolation
-      - Brewer \to linear regression for the modelization and root
-        finding for the optimization.
-        Not recent paper \to architecture have evolved. Is linear
-        regression still ok?
-      - ASK \to complex sampling pipeline with different surrogate
-        methods( bayesian regression, interpolation, etc... )
+     - Getting knowledge on the fly \to regression, interpolation
+       - Brewer \to linear regression for the modelization and root
+         finding for the optimization.
+         Not recent paper \to architecture have evolved. Is linear
+         regression still ok?
+       - ASK \to complex sampling pipeline with different surrogate
+         methods( bayesian regression, interpolation, etc... )
         
-    - "Direct search" \to heuristics random, algo gen, etc...
-      - Exhaustive search \to Atlas Linear search
-      - Orio \to random search, Nelder Mead Simplex and simulated
-        annealing
-      - OPAL \to Use direct search combinations of heuristics.
-        Global *and* local search
+     - "Direct search" \to heuristics random, algo gen, etc...
+       - Exhaustive search \to Atlas Linear search
+       - Orio \to random search, Nelder Mead Simplex and simulated
+         annealing
+       - OPAL \to Use direct search combinations of heuristics.
+         Global *and* local search
 
 # *** Using information about the problem - Objective function
 #     - Derivative methods \to local strategy
