@@ -94,22 +94,67 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 
 * Plan                                                             
 ** Introduction
-*** Why Auto-tuning   
-   - In HPC code optimization crucial to exploit hardware.
+*** Why is performance optimization difficult
+   - In HPC code optimization crucial to exploit very complex hardware.
      Cannot wait for the next generation to bring speedup because it
      does not (Frequency not higher but more cores and henanced ISA). 
-   - HPC plaforms \ne hardware \to code optimizations not portable.
+     - many cores
+     - cache hierarchies
+     - vector support
+     - pipelining ILP
+     - GPUs!
+   - HPC plaforms have many \ne hardware \to code optimizations not portable.
      Porting application to another platform is time consumming and
-     can be very tricky. Automatize the porting using tools \to
-     auto-tuner.
-*** What is BOAST
-   - BOAST framework ruby generating portable code in C, Fortran,
-     OpenCL. DSL
+     can be very tricky.
+   - Many attempts in the last decade to automate the generation of
+     optimized code
+*** Code generation and opportunities
+    - The compiler approach: loop unrolling, vectorization, automatic
+      parallelization, loop nest transformation, etc. Yet, many
+      opportunities are not exploited as it is too difficult to
+      exploit them automatically. Sometimes, the source code has to be
+      rewritten in a slightly different way to enable the compiler to
+      be effective
+    - The source-to-source transformation (C to C, Fortran to Fortran,
+      ...). Framework for transform code. Orio. Serge
+      Guelton. Difficile mais limité à un seul langage, et
+      exploitation d'accelérateurs différents difficile. Ça ne se
+      permettra jamais de changer le mapping des données en mémoire
+    - Meta-programming approach: allow the programmer to propose
+      optimizations that the compiler would not be allowed to do
+      (because of the language or because it would require information
+      on the application that cannot be given to the compiler).
+*** Optimizing: the auto-tuning approach
+    - Many optimization options: compiler flags, source-to-source
+      transformations, higher-level modifications (tile/block/vector size).
+    - Auto-tuning: consider all this as a huge optimization problem
+      and try to find the best combination. Many techniques (genetic
+      algorithms, simulated annealing, tabu search, machine learning,
+      ...) depending on the problem constraints. But mainly two
+      problems:
+      - the time needed for such optimization
+      - knowing whether further optimizations could be expected or not
+        (peak performance is generally useless and the optimization
+        process is so complex that it's hard to know how it really
+        performed) is difficult and même si tu sais qu'il devrait être
+        possible de faire mieux, tu sais pas vraiment où, comment, ...
 *** Our goal
+    Investigate the design of a semi-automatic optimization framework,
+    where the applicaiton developer has control and understands how
+    the optimization works and guides it.
+
+    We relied on BOAST, a metaprogramming... (Semi automatic approach
+     \to gives back power to the user, framework ruby generating
+     portable code in C, Fortran, OpenCL. DSL)  and investigate various
+     statisical techniques inspired from the design of expeirments
+     field that emphasizes on reducing experiment cost.
+*** My contribution
+
     - Complex methods used but no explanation on why they work
     - Try a simple approach and try to understand it deeply
     - Analytics methods & experiments design
     - Study of the search space on simple example
+      
 
 *** Structure of the report
 ** Problem analysis
