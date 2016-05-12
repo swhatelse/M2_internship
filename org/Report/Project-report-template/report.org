@@ -181,52 +181,31 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    #   - Regression \to possible to use property of the function, such as
    #     derivative, convexity,etc...
 
-   # Alternative one
-   Two approaches:
-    - Machine learning \to learn the objective function
-       - costly training phase
-       - classification \to which strategy to apply
-         - Opentuner \to which optimization technics for a given problem
-           because the efficiency of a technics depends on the
-           structure of the problem.
-         - Milepost GCC \to learning characteristics of a program to
-           predict what are the good combinations, optimization
-           across programs. Predict good configuration using the
-           distribution of good combination by taking the mode
-         - Stefan Wild \to Learning combination across platform
-           Worked for similar platforms. Search space pruning \to random
-           search 
-    - Optimization \to finding the minimum
-      - Exhaustive search \to Atlas Linear search
-      - Orio \to random search, Nelder Mead Simplex and simulated
-        annealing
-      - OPAL \to Use direct search combinations of heuristics.
-        Global *and* local search
-
-
-    # Alternative two
+   - 3 complementary approaches:
     - Reuse knowledge of previous experience \to machine learning
-       - costly training phase
-       - classification \to which strategy to apply
-         - Opentuner \to which optimization technics for a given problem
-           because the efficiency of a technics depends on the
-           structure of the problem.
-         - Milepost GCC \to learning characteristics of a program to
-           predict what are the good combinations, optimization
-           across programs. Predict good configuration using the
-           distribution of good combination by taking the mode.
-           Reuse knowledge across programs
-         - Stefan Wild \to Learning combination across platform
-           Worked for similar platforms. Search space pruning \to random
-           search.
-           Reuse knowledge across platforms
+      - costly training phase
+      - classification \to which strategy to apply
+        - Opentuner \to which optimization technics for a given problem
+          because the efficiency of a technics depends on the
+          structure of the problem.
+        - Milepost GCC \to learning characteristics of a program to
+          predict what are the good combinations, optimization
+          across programs. Predict good configuration using the
+          distribution of good combination by taking the mode.
+          Reuse knowledge across programs
+        - Stefan Wild \to Learning combination across platform
+          Worked for similar platforms. Search space pruning \to random
+          search.
+          Reuse knowledge across platforms
 
     - Getting knowledge on the fly \to regression, interpolation
-      - Interpolation
-        - ASK
-      - Regression
-        - Brewer \to linear regression
-
+      - Brewer \to linear regression for the modelization and root
+        finding for the optimization.
+        Not recent paper \to architecture have evolved. Is linear
+        regression still ok?
+      - ASK \to complex sampling pipeline with different surrogate
+        methods( bayesian regression, interpolation, etc... )
+        
     - "Direct search" \to heuristics random, algo gen, etc...
       - Exhaustive search \to Atlas Linear search
       - Orio \to random search, Nelder Mead Simplex and simulated
