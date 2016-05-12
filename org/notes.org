@@ -562,6 +562,8 @@
 ** TODO ASK: Adaptative sampling Kit for Performance Characterization
 *** Summary
     - Empirical, blackbox function
+    - Provide a complex pipeline for sampling because sampling is
+      crucial \to impact on the model.
     - Excessive pruning \to missing optimal solutions.
     - Dividing the search space into area with different variance
       upper bound using classication, regression trees and ANOVA.
