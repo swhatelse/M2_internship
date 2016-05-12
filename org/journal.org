@@ -16460,7 +16460,6 @@ h[g.name.to_sym] = 1024
 #+end_example
 
         
-
 ******* TODO Screening design
         #+begin_src sh :results output :exports both
           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -16904,7 +16903,7 @@ h[g.name.to_sym] = 1024
           (1 observation deleted due to missingness)
         Multiple R-squared:      1,	Adjusted R-squared:      1 
         F-statistic: 1.735e+14 on 1 and 14 DF,  p-value: < 2.2e-16
-#+end_example
+        #+end_example
 
           #+begin_src R :results output :session :exports both
           summary(model_screen_elem_nb)
@@ -17036,6 +17035,15 @@ h[g.name.to_sym] = 1024
        #+RESULTS:
        : Error in rq.fit.br(x, y, tau = tau, ...) : Singular design matrix
 
+       The main problem with methods is that supposed to be used with
+       a "symetric" search space, I mean rectangular or
+       square. Because of the constraints this is not the case and we
+       lose lots of points and we and up with not enough points to do
+       the regression correctly, it fails to compute some
+       coefficients. 
+
+******* TODO LHS
+******* TODO D-Opt
 ****** TODO Optimization on the model to find the value
        #+begin_src R :results output :session :exports both
         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -17796,3 +17804,5 @@ start
     1.274531e-10  1.093925e+00
 #+end_example
 
+** 2016-05-12
+   - [ ] Check many points we lose with constraints.
