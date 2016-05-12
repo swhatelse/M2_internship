@@ -425,7 +425,8 @@
           characteristics that give good speedup
         - Easier to analyze than probabilistic model
     - Using the solutions of the closest neighbors works for the same
-      plateform
+      plateform (for classification) and predict distribution
+    - Taking the mode of the distribution to predict best combination.
 *** Questions/remarks
 **** For the probabilistic model, do they use a different uniform sampling on each program? 
 **** Why in the probabilistic model good solutions are those that give 98% of speedup  and in the transductive model it is 95% ?
