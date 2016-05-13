@@ -150,13 +150,11 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
      statisical techniques inspired from the design of expeirments
      field that emphasizes on reducing experiment cost.
 *** My contribution
-
     - Complex methods used but no explanation on why they work
     - Try a simple approach and try to understand it deeply
     - Analytics methods & experiments design
     - Study of the search space on simple example
       
-
 *** Structure of the report
 ** Problem analysis
    - Huge search space \to need to explore only part of it \to
@@ -168,21 +166,6 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
      Represent unfeasible points.
      
 ** State of the art
-   # - Atlas \to small search space or if we know where to search \to
-   #   exhaustive search 
-   # - Local search like gradiant search \to to know where to start
-   #   Can be stuck at local minimum and be from the global optimum
-   # - Random algorithms random search, genetic algorithm. 
-   #   Efficient on complex problem with no geometry.
-   #   Can escape from local optimum
-   # - Mix of local and global search \to Generalized pattern search
-   # - Using modelization get get knowledge about the search space and
-   #   to predict behavior
-   #   - Learning machine \to categorisation of similar problem to use
-   #     same strategy, training overhead
-   #   - Regression \to possible to use property of the function, such as
-   #     derivative, convexity,etc...
-
    - 3 complementary approaches:
      - "Direct search" \to heuristics random, algo gen, etc...
        - Exhaustive search \to Atlas Linear search, know where to search
@@ -227,18 +210,6 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
          with different surrogate methods( bayesian regression,
          interpolation, etc... ) 
         
- 
-# *** Using information about the problem - Objective function
-#     - Derivative methods \to local strategy
-#       - If non convex \to multiple local minimum \to need to know where to
-#         start or randomized strategy e.g. simulated annealing
-#       - If derivation not possible (empirical function) estimate with regression
-# *** Using information about the problem - Other kind of knowledge   
-#     Problem too complex
-#     Heuristic based: genetic algorithm, random search, pattern search
-#     Also machine learning \to identifying category of problem and
-#     strategy that work well
-
 ** Methods and material
   - Reproducible work
     - Lab book on github  
@@ -286,13 +257,13 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
         uncorrelated \to minimum can not be predict
 *** The choise of quantile regression
     - Interested in extremal values \to minimum
+      - 5th and 95th percentile \to good estimation for extreme values
     - Ways of computing quantile regression
       - empirical quantiles \to linear regression on a quantile
       - Least absolute values
       - Iterated weighted least squares 
         - But optimist R-squared
         - Don't know how to interpret the standard error
-    - 5th and 95th percentile \to good estimation for extreme values
 *** Model choice and refinement
     - Hypothesis based on the kernel
       The expert knows his kernel and have hypothesis of how the
@@ -307,7 +278,10 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     - Design of experiment
       - Random
       - Screenning design
+        Not suitable for constrained search space \to lot of point cannot
+        be reached because test those at the border
       - LHS
+        Generally for continuous factors
       - D-optimal
     - Copying with constraints
 ** Experiments
