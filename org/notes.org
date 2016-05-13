@@ -213,7 +213,7 @@
 ** A Batch, Derivative-Free Algorithm for Finding Multiple Local Minima
 *** Link
     http://www.mcs.anl.gov/papers/P5228-1114.pdf
-** TODO A Taxonomy of Constraints in Simulation-Based Optimization
+** A Taxonomy of Constraints in Simulation-Based Optimization
 *** Link
     http://arxiv.org/pdf/1505.07881.pdf
 ** Empirical Performance modeling of GPU kernels using active learning
@@ -247,6 +247,8 @@
 ** Direct search
 *** Templating and Automatic Code for Performance with Python
 **** Summary
+    - Meta programming framework
+    - Mesh adaptive direct-search \to pattern search.
     - Tested 3 variant of NOMAD but no comparison with empirical
       approach.       
 **** Questions/Remarks
@@ -499,7 +501,7 @@
     year = {2015}
     }
     #+END_SRC
-** TODO Solving Derivative-Free Nonlinear Least Squares Problems with POUNDERS
+** Solving Derivative-Free Nonlinear Least Squares Problems with POUNDERS
 *** Link
     http://www.mcs.anl.gov/papers/P5120-0414.pdf
 ** TODO Multi-Objective Optimization of HPC Kernels for Performance, Power, and Energy
@@ -528,7 +530,7 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
-** TODO OpenTuner: An Extensible Framework for Program Autotuning
+** DONE OpenTuner: An Extensible Framework for Program Autotuning
 *** Summary
     - Adapting the search method to particularities of the search
       space.
@@ -559,7 +561,7 @@
       keywords = {autotuner, optimization},
       } 
     #+END_SRC
-** TODO ASK: Adaptative sampling Kit for Performance Characterization
+** DONE ASK: Adaptative sampling Kit for Performance Characterization
 *** Summary
     - Empirical, blackbox function
     - Provide a complex pipeline for sampling because sampling is
@@ -590,10 +592,14 @@
         HAL_VERSION = {v1},
       }
     #+END_SRC
-** TODO Annotation-Based Empirical Performance Tuning Using Orio
+** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/HNS2009.pdf][HNS2009]] ] Annotation-Based Empirical Performance Tuning Using Orio
 *** Summary
-    - Only use random search, Nelder Mead Simplex and simulated
-      annealing for the moment
+    - Source to source autotuner for C, annotation based
+    - Use exhaustive search, random search, Nelder Mead Simplex and simulated
+      annealing
+    - Additional local search phase at the end of the global
+      search. Using kind of greedy algo that stop when no improvment.
+    - Provide parallel search support.
 ** TODO Precimonious: Tuning Assistant for Floating-Point Precision
 *** Summary
     - Tuning the level of precision of floating point variables
@@ -616,7 +622,7 @@
     To build the model, supervised learning is used in the training
     phase using support vector machines.
     They distribute the overhead of the training using incremental
-    learning technics.
+    learning technics \to Active learning
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/SIGOPS_paper.pdf][SIGOPS_paper]] ] An Effective Git And Org-Mode Based Workflow For Reproducible Research
 *** Link
     https://hal.inria.fr/hal-01112795/file/SIGOPS_paper.pdf
