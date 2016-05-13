@@ -164,52 +164,86 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    - Combination of discrete and continuous parameters
    - Constraint optimizations
      Represent unfeasible points.
-     
-** State of the art
-   - 3 complementary approaches:
-     - "Direct search" \to heuristics random, algo gen, etc...
-       - Exhaustive search \to Atlas Linear search, know where to search
-         \to need to know the problem well.
-       - Orio \to source to source annotation based atutotuner 
-         - random search, Nelder Mead Simplex and simulated annealing.
-         - greeding algorithm for local search at the of gobal.
-       - OPAL \to Use direct search combinations of heuristics \to
-         Mesh-adaptive direct-search \to pattern search.
-         Global *and* local search \to work by iterative phase:
-         - Sampling the space \to finding region of interest
-         - Refining the solution
-
-     - Reuse knowledge of previous experience \to machine learning
-       - classification \to which strategy to apply
-         - Opentuner \to which optimization technics for a given problem
-           because the efficiency of a technics depends on the
-           structure of the problem.
-         - Milepost GCC \to learning characteristics of a program to
-           predict what are the good combinations, optimization
-           across programs. Predict good configuration using the
-           distribution of good combination by taking the mode.
-           Reuse knowledge across programs
-         - Stefan Wild \to Learning combination across platform
-           Worked for similar platforms. Search space pruning \to random
-           search.
-           Reuse knowledge across platforms
-       - Generally exhaustive search costly training phase \to reducing impact
-         - Incremental training \to Nitro using active learning
-         - Collective tuning \to crowdtuning, Milepost
-           Models stored in a common database and continuously updated.
-
-     - Getting knowledge on the fly \to regression, interpolation
-       - Brewer \to linear regression for the modelization to predict
-         objective function and root finding  or kind of greedy
-         descent for the optimization.
-         Find correct model automatically
-         Not recent paper \to architecture have evolved. Is linear
-         regression still ok?
-       - ASK \to Emphasis on the sampling because important for the
-         accuracy of the model \to complex sampling pipeline
-         with different surrogate methods( bayesian regression,
-         interpolation, etc... ) 
         
+** Context
+*** HPC/architectures
+*** Compiling
+*** BOAST
+** State of the art on Autotuning
+  - Reuse knowledge of previous experience (generalization) \to machine
+    learning. Generally exhaustive search costly training phase \to
+    reducing impact. Classification \to which strategy to apply.
+    - Small vs. Big
+    - Milepost GCC \to learning characteristics of a program to
+      predict what are the good combinations, optimization
+      across programs. Predict good configuration using the
+      distribution of good combination by taking the mode.
+      Reuse knowledge across programs
+    - Stefan Wild \to Learning combination across platform
+      Worked for similar platforms. Search space pruning \to random
+      search.
+      Reuse knowledge across platforms
+    - Opentuner \to which optimization technics for a given problem
+      because the efficiency of a technics depends on the
+      structure of the problem.
+    - Incremental training \to Nitro using active learning
+    - Collective tuning \to crowdtuning, Milepost
+      Models stored in a common database and continuously updated.
+
+  Optimization: exhaustive search is unfeasible.
+
+  - "Direct search". The efficiency (ability to find the
+    (near)-optimal solution and possibly in the fewest possible
+    experiments) depends on the structure of the problem.
+    - Main techniques:
+      - Gradient descent: ferrari, a priori = local, geometry, convexity.
+        - Issues: 
+          - partly wrong hypothesis (geometry, convexity): simulated
+            annealing, many local searches (genetic algorithms in some
+            sense)
+          - experimental estimation: surrogates, etc. *local* approximation
+          - derivative estimation: Nelder Mead Simplex
+        - \to many heuristics that combine all or part of the different
+          previous approaches depending on how much the various
+          hypothesis are wrong or not. Their efficiency highly depends
+          on these hypothesis.
+    - Some people have thus developed framework to characterize the
+      optimization space.
+      - ASK \to Emphasis on the sampling because important for the
+        accuracy of the model \to complex sampling pipeline with
+        different surrogate methods( bayesian regression,
+        interpolation, etc... ). _Global modeling requires complex
+        models and numerous experiments_.
+    Illustration with a few tools:
+    - Orio \to source to source annotation based atutotuner 
+      - random search, Nelder Mead Simplex and simulated annealing.
+      - greeding algorithm for local search at the of gobal.
+    - OPAL \to Use direct search combinations of heuristics \to
+      Mesh-adaptive direct-search \to pattern search.
+      Global *and* local search \to work by iterative phase:
+      - Sampling the space \to finding region of interest
+      - Refining the solution
+    - In some cases, the problem structure is known and one has an
+      idea of where the optimal solution is but the structure of the
+      space in this neighborhood is too complex. Some fall back to
+      Exhaustive search \to Atlas Linear search, know where to search \to
+      need to know the problem well.
+
+  Primary Goals:
+  - semi-automatic, almost interactive ? more global approach where
+    the relevance of the hypothesis can be evaluated
+  - optimize at low cost, need to prune the search space
+  - from previous experience, generalization from an arch to another
+    seems very difficult
+
+  Somehow similar approach:
+  - Getting knowledge on the fly \to regression, interpolation
+    - Brewer \to linear regression for the modelization to predict
+      objective function and root finding  or kind of greedy
+      descent for the optimization.
+      Find correct model automatically
+      Not recent paper \to architecture have evolved. Is linear
+      regression still ok?
 ** Methods and material
   - Reproducible work
     - Lab book on github  
@@ -217,7 +251,6 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     - org mode
   - Result validation against bruteforce
   - Comparison with random, gradiant search, and genetic algorithm
-** Contribution
 *** Case study
     # Maybe this should go in experiments
 ****  Laplacian
@@ -235,8 +268,17 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       - Minimization
 **** Matrix product?
       - Optimizations explanation
-*** The reason why linear regression is not suited
-    - Assumptions:
+
+** Contribution
+*** Envisioned general approach
+    1. DoE
+       - remove factors
+       - model and optimize
+    2. Loop back to 1
+*** Controlling measurement
+    - min(x_1,...,x_10) ? how to protect against potential warm-up
+    - randomizing to protect against bias
+*** Linear regression of expectation: why it cannot work and how it can be circumvented    - Assumptions:
       - homoscedasticity but pb we have heteroscedasticity
         - Why is it a problem?
           - Unbiased coefficient estimate but biased std error and thus
@@ -255,15 +297,15 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       - heteroscedasticity + same error law \to minimum can be predict
       - heteroscedasticity + different error law \to minimum and mean
         uncorrelated \to minimum can not be predict
-*** The choise of quantile regression
-    - Interested in extremal values \to minimum
-      - 5th and 95th percentile \to good estimation for extreme values
-    - Ways of computing quantile regression
-      - empirical quantiles \to linear regression on a quantile
-      - Least absolute values
-      - Iterated weighted least squares 
-        - But optimist R-squared
-        - Don't know how to interpret the standard error
+**** Using quantile regression
+     - Interested in extremal values \to minimum
+       - 5th and 95th percentile \to good estimation for extreme values
+     - Ways of computing quantile regression
+       - empirical quantiles \to linear regression on a quantile
+       - Least absolute values
+       - Iterated weighted least squares 
+         - But optimist R-squared
+         - Don't know how to interpret the standard error
 *** Model choice and refinement
     - Hypothesis based on the kernel
       The expert knows his kernel and have hypothesis of how the
