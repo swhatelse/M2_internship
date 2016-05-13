@@ -277,6 +277,8 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     2. Loop back to 1
 *** Controlling measurement
     - min(x_1,...,x_10) ? how to protect against potential warm-up
+      - Mostly present just after the compilation of the kernel.
+      - 4 runs \to take the minimum
     - randomizing to protect against bias
 *** Linear regression of expectation: why it cannot work and how it can be circumvented    - Assumptions:
       - homoscedasticity but pb we have heteroscedasticity
