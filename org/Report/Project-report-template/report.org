@@ -182,8 +182,19 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    #     derivative, convexity,etc...
 
    - 3 complementary approaches:
+     - "Direct search" \to heuristics random, algo gen, etc...
+       - Exhaustive search \to Atlas Linear search, know where to search
+         \to need to know the problem well.
+       - Orio \to source to source annotation based atutotuner 
+         - random search, Nelder Mead Simplex and simulated annealing.
+         - greeding algorithm for local search at the of gobal.
+       - OPAL \to Use direct search combinations of heuristics \to
+         Mesh-adaptive direct-search \to pattern search.
+         Global *and* local search \to work by iterative phase:
+         - Sampling the space \to finding region of interest
+         - Refining the solution
+
      - Reuse knowledge of previous experience \to machine learning
-       - costly training phase
        - classification \to which strategy to apply
          - Opentuner \to which optimization technics for a given problem
            because the efficiency of a technics depends on the
@@ -197,6 +208,10 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
            Worked for similar platforms. Search space pruning \to random
            search.
            Reuse knowledge across platforms
+       - Generally exhaustive search costly training phase \to reducing impact
+         - Incremental training \to Nitro using active learning
+         - Collective tuning \to crowdtuning, Milepost
+           Models stored in a common database and continuously updated.
 
      - Getting knowledge on the fly \to regression, interpolation
        - Brewer \to linear regression for the modelization and root
@@ -206,13 +221,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
        - ASK \to complex sampling pipeline with different surrogate
          methods( bayesian regression, interpolation, etc... )
         
-     - "Direct search" \to heuristics random, algo gen, etc...
-       - Exhaustive search \to Atlas Linear search
-       - Orio \to random search, Nelder Mead Simplex and simulated
-         annealing
-       - OPAL \to Use direct search combinations of heuristics.
-         Global *and* local search
-
+ 
 # *** Using information about the problem - Objective function
 #     - Derivative methods \to local strategy
 #       - If non convex \to multiple local minimum \to need to know where to
