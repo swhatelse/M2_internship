@@ -17271,6 +17271,14 @@ h[g.name.to_sym] = 1024
        F-statistic: 787.6 on 2 and 23117 DF,  p-value: < 2.2e-16
        #+end_example
 
+       #+begin_src R :results output :session :exports both
+       predict(model_elements_number),)
+       #+end_src
+
+       #+RESULTS:
+       :      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+       : 7.909e-10 1.397e-09 1.927e-09 2.013e-09 2.306e-09 5.147e-09
+
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
            plot(y=df$time_per_pixel, df$elements_number, ylim=c(0,5e-9))
            lines(sort(df$elements_number),predict(model_elements_number)[order(df$elements_number)],col="red")  
@@ -17291,28 +17299,27 @@ h[g.name.to_sym] = 1024
        #+RESULTS:
        #+begin_example
        $par
-       [1] 1
+       [1] 24
 
        $value
-       [1] 5.14711e-09
+       [1] 7.9114e-10
 
        $counts
        function gradient 
-              2        2 
+             NA       NA 
 
        $convergence
        [1] 0
 
        $message
-       [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
-       [1] 3.29122e-09
+       NULL
 #+end_example
 
        #+begin_src R :results output :session :exports both
          i <- function(x) {
              return(1.549e-09 + -3.789e-11 * x + 3.636e-09 * 1 / x)
          }
-
+as.numeric(predict(model_elements_number,data.frame(elements_number=1),interval="none"))
        curve(i,1,24)
        #+end_src
 
