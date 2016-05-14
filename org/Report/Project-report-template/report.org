@@ -93,7 +93,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 #+END_abstract
 
 * Plan                                                             
-** Introduction
+** Introduction [0/3]
 *** Why is performance optimization difficult
    - In HPC code optimization crucial to exploit very complex hardware.
      Cannot wait for the next generation to bring speedup because it
@@ -156,7 +156,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
     - Study of the search space on simple example
       
 *** Structure of the report
-** Problem analysis
+** Problem analysis [0/2]
    - Huge search space \to need to explore only part of it \to
      optimization problem.
    - Interactions between parameters
@@ -165,11 +165,11 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    - Constraint optimizations
      Represent unfeasible points.
         
-** Context
-*** HPC/architectures
+** Context [0/2]
+*** HPC/architectures 
 *** Compiling
 *** BOAST
-** State of the art on Autotuning
+** State of the art on Autotuning [0/4]
   - Reuse knowledge of previous experience (generalization) \to machine
     learning. Generally exhaustive search costly training phase \to
     reducing impact. Classification \to which strategy to apply.
@@ -246,7 +246,8 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       Find correct model automatically
       Not recent paper \to architecture have evolved. Is linear
       regression still ok?
-** Methods and material
+** State of the art design of experiments [0/2]
+** Methods and material [0/1]
   - Reproducible work
     - Lab book on github  
     - Literate programming 
@@ -268,21 +269,23 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
         - Shape of work group \to lws y
       - 23100 combinations
       - Minimization
+      - Test 5 sizes of images \to mean
 **** Matrix product?
       - Optimizations explanation
 
-** Contribution
-*** Envisioned general approach
+** Contribution [0/12]
+*** Envisioned general approach1[0/1]
     1. DoE
        - remove factors
        - model and optimize
     2. Loop back to 1
-*** Controlling measurement
+*** Controlling measurement [0/1]
     - min(x_1,...,x_10) ? how to protect against potential warm-up
       - Mostly present just after the compilation of the kernel.
       - 4 runs \to take the minimum
     - randomizing to protect against bias
-*** Linear regression of expectation: why it cannot work and how it can be circumvented    - Assumptions:
+*** Linear regression of expectation: why it cannot work and how it can be circumvented [0/3]
+    - Assumptions:
       - homoscedasticity but pb we have heteroscedasticity
         - Why is it a problem?
           - Unbiased coefficient estimate but biased std error and thus
@@ -310,17 +313,17 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
        - Iterated weighted least squares 
          - But optimist R-squared
          - Don't know how to interpret the standard error
-*** Model choice and refinement
+*** Model choice and refinement [0/2]
     - Hypothesis based on the kernel
       The expert knows his kernel and have hypothesis of how the
       optimization will influence the performances.
     - Test parameters independently and remove useless ones. 
     - Iterative refinement \to try to find the interactions.
     - Determines the quality of the prediction using the R-squared.
-*** Importance of the search space expression
+*** Importance of the search space expression [0/1]
     - Easier modelization
     - Better capture of the search space features
-*** Using less point as possible
+*** Using less point as possible [0/3]
     - Design of experiment
       - Random
       - Screenning design
@@ -330,18 +333,18 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
         Generally for continuous factors
       - D-optimal
     - Copying with constraints
-** Experiments
+** Experiments [0/10]
    - Bench min of 4 runs \to warm up effect
 *** Laplacian
 **** Search space characteristics
      - Qualitative observation in term of speed up
 **** Comparison with random and genetic algo
-** Future work
+** Future work [0/2]
    - Find more suited design of experiments technics
    - Validate approach on more complex kernel and different
      architectures
    - Automatization
-** Conclusion
+** Conclusion [0/2]
 
 * Introduction
 * Problem analysis
