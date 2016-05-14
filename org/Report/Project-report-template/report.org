@@ -99,10 +99,10 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
      Cannot wait for the next generation to bring speedup because it
      does not (Frequency not higher but more cores and henanced ISA). 
      - many cores \to heavy parallelism
-     - cache hierarchies
+     - pipelining ILP \to 
      - vector support \to SIMD
-     - pipelining ILP
-     - GPUs!
+     - cache hierarchies
+     - GPUs! \to different way of programming (than CPU)
    - HPC plaforms have many \ne hardware \to code optimizations not portable.
      Porting application to another platform is time consumming and
      can be very tricky.
@@ -247,11 +247,12 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       Not recent paper \to architecture have evolved. Is linear
       regression still ok?
 ** State of the art design of experiments [0/2]
-** Methods and material [0/1]
+** DONE Methods and material [0/2]
   - Reproducible work
     - Lab book on github  
     - Literate programming 
     - org mode
+  - OpenCL
   - Result validation against bruteforce
   - Comparison with random, gradiant search, and genetic algorithm
 *** Case study
@@ -345,23 +346,52 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
      architectures
    - Automatization
 ** Conclusion [0/2]
+   And finally I saved the world...
 
 * Introduction
   From genome sequencing to [...] including climate modeling, [...]
   all this problematic have something in common, the need of huge
-  power of computation and High Performance Computing (computing) is
+  power of computation. And High Performance Computing (HPC) is
   the most effective solution. It has brought the science to another
   level and now it is a tool that scientists cannot live without like
   for example to simulate [...] or to analyze peta-octets of data. The
-  expectations of scientist in term of performances are higher and
+  expectations of scientists in term of performances are higher and
   higher as they need to run more and more heavy computations. To take
   advantage of the power of an HPC it is mandatory to correctly tune
-  an application. This is every complicated task because today's HPCs
+  an application. This is a every complicated task because today's HPCs
   are extremely complex machines. It not possible to wait for the next
   generation of hardware to bring automatically a speedup as it was
   the case at the beginning because the frequency doesn't increase
-  anymore and in contrary tends to decrease. We passed from
-  multi-cores to many-cores architecture
+  anymore and in contrary tends to decrease. We went from
+  multi-cores to many-cores architectures, for 2020 exascale
+  platforms, with millions of cores, are expected in order to reach
+  the exaflops. Thus, scientists have to take into account this
+  massive parallelism when writting the code. Hardware can also be of
+  type Single Instruction Multiple DATA (SIMD) and provide the
+  support for vector operations and additional operations can be
+  performs for free. 
+  # If processors have quickly gotten
+  # faster the memory did not followed the same evolution and 
+  # has all the difficults to keep the pace. 
+  # Thus it is one of the most
+  
+  # Pas satisfait de cet partie...
+  Another difficult the developer has to face is that memory is one of
+  the most important bottleneck on current systems and and to
+  circumvent this issue the developer has its disposal different cache
+  hierarchies to reduce the memory access. To do so it has to exploit
+  explicitly the data locality.
+  The order of the instruction have all an impact in the execution
+  pipeline. Finally to add a little more complexity we also use GPUs
+  require which are totally different from the CPUs. As a result performance
+  optimization is difficult to achieve adding to that the fact that
+  there are many HPCs platforms with different hardware which make
+  optimization work well one supercomputer and bad on another
+  one. Porting application is very time consumming and can also be
+  very tricky.
+
+  Today's machine also
+  have different 
 * Problem analysis
 * State of the art
 * Methods
