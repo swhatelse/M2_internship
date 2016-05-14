@@ -98,9 +98,9 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    - In HPC code optimization crucial to exploit very complex hardware.
      Cannot wait for the next generation to bring speedup because it
      does not (Frequency not higher but more cores and henanced ISA). 
-     - many cores
+     - many cores \to heavy parallelism
      - cache hierarchies
-     - vector support
+     - vector support \to SIMD
      - pipelining ILP
      - GPUs!
    - HPC plaforms have many \ne hardware \to code optimizations not portable.
@@ -347,6 +347,21 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 ** Conclusion [0/2]
 
 * Introduction
+  From genome sequencing to [...] including climate modeling, [...]
+  all this problematic have something in common, the need of huge
+  power of computation and High Performance Computing (computing) is
+  the most effective solution. It has brought the science to another
+  level and now it is a tool that scientists cannot live without like
+  for example to simulate [...] or to analyze peta-octets of data. The
+  expectations of scientist in term of performances are higher and
+  higher as they need to run more and more heavy computations. To take
+  advantage of the power of an HPC it is mandatory to correctly tune
+  an application. This is every complicated task because today's HPCs
+  are extremely complex machines. It not possible to wait for the next
+  generation of hardware to bring automatically a speedup as it was
+  the case at the beginning because the frequency doesn't increase
+  anymore and in contrary tends to decrease. We passed from
+  multi-cores to many-cores architecture
 * Problem analysis
 * State of the art
 * Methods
