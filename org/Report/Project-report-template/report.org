@@ -94,61 +94,165 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 
 * Plan                                                             
 ** Introduction
-   - In HPC code optimization crucial to exploit hardware.
+*** Why is performance optimization difficult
+   - In HPC code optimization crucial to exploit very complex hardware.
      Cannot wait for the next generation to bring speedup because it
      does not (Frequency not higher but more cores and henanced ISA). 
-   - HPC plaforms \ne hardware \to code optimizations not portable.
+     - many cores
+     - cache hierarchies
+     - vector support
+     - pipelining ILP
+     - GPUs!
+   - HPC plaforms have many \ne hardware \to code optimizations not portable.
      Porting application to another platform is time consumming and
-     can be very tricky. Automatize the porting using tools \to
-     autotuner.
+     can be very tricky.
+   - Many attempts in the last decade to automate the generation of
+     optimized code
+*** Code generation and opportunities
+    - The compiler approach: loop unrolling, vectorization, automatic
+      parallelization, loop nest transformation, etc. Yet, many
+      opportunities are not exploited as it is too difficult to
+      exploit them automatically. Sometimes, the source code has to be
+      rewritten in a slightly different way to enable the compiler to
+      be effective
+    - The source-to-source transformation (C to C, Fortran to Fortran,
+      ...). Framework for transform code. Orio. Serge
+      Guelton. Difficile mais limité à un seul langage, et
+      exploitation d'accelérateurs différents difficile. Ça ne se
+      permettra jamais de changer le mapping des données en mémoire
+    - Meta-programming approach: allow the programmer to propose
+      optimizations that the compiler would not be allowed to do
+      (because of the language or because it would require information
+      on the application that cannot be given to the compiler).
+*** Optimizing: the auto-tuning approach
+    - Many optimization options: compiler flags, source-to-source
+      transformations, higher-level modifications (tile/block/vector size).
+    - Auto-tuning: consider all this as a huge optimization problem
+      and try to find the best combination. Many techniques (genetic
+      algorithms, simulated annealing, tabu search, machine learning,
+      ...) depending on the problem constraints. But mainly two
+      problems:
+      - the time needed for such optimization
+      - knowing whether further optimizations could be expected or not
+        (peak performance is generally useless and the optimization
+        process is so complex that it's hard to know how it really
+        performed) is difficult and même si tu sais qu'il devrait être
+        possible de faire mieux, tu sais pas vraiment où, comment( cf
+        of genetic algo on the full search space), ...
+*** Our goal
+    Investigate the design of a semi-automatic optimization framework,
+    where the applicaiton developer has control and understands how
+    the optimization works and guides it.
 
-   - BOAST framework ruby generating portable code in C, Fortran,
-     OpenCL. DSL
+    We relied on BOAST, a metaprogramming... (Semi automatic approach
+     \to gives back power to the user, framework ruby generating
+     portable code in C, Fortran, OpenCL. DSL)  and investigate various
+     statisical techniques inspired from the design of expeirments
+     field that emphasizes on reducing experiment cost.
+*** My contribution
+    - Complex methods used but no explanation on why they work
+    - Try a simple approach and try to understand it deeply
+    - Analytics methods & experiments design
+    - Study of the search space on simple example
+      
+*** Structure of the report
 ** Problem analysis
    - Huge search space \to need to explore only part of it \to
      optimization problem.
    - Interactions between parameters
    - Non-smooth and empirical objective function
    - Combination of discrete and continuous parameters
-     
-** State of the art
-   # - Atlas \to small search space or if we know where to search \to
-   #   exhaustive search 
-   # - Local search like gradiant search \to to know where to start
-   #   Can be stuck at local minimum and be from the global optimum
-   # - Random algorithms random search, genetic algorithm. 
-   #   Efficient on complex problem with no geometry.
-   #   Can escape from local optimum
-   # - Mix of local and global search \to Generalized pattern search
-   # - Using modelization get get knowledge about the search space and
-   #   to predict behavior
-   #   - Learning machine \to categorisation of similar problem to use
-   #     same strategy, training overhead
-   #   - Regression \to possible to use property of the function, such as
-   #     derivative, convexity,etc...
-*** Using information about the problem - Objective function
-    - Derivative methods \to local strategy
-      - If non convex \to multiple local minimum \to need to know where to
-        start or randomized strategy e.g. simulated annealing
-      - If derivation not possible (empirical function) estimate with regression
-*** Using information about the problem - Other kind of knowledge   
-    Problem too complex
-    Heuristic based: genetic algorithm, random search, pattern search
-    Also machine learning \to identifying category of problem and
-    strategy that work well
-*** Our goal
-    - Complex methods used but no explanation on why they work
-    - Try a simple approach and try to understand it deeply
-    - Analytics methods & experiments design
-    - Study of the search space on simple example
+   - Constraint optimizations
+     Represent unfeasible points.
+        
+** Context
+*** HPC/architectures
+*** Compiling
+*** BOAST
+** State of the art on Autotuning
+  - Reuse knowledge of previous experience (generalization) \to machine
+    learning. Generally exhaustive search costly training phase \to
+    reducing impact. Classification \to which strategy to apply.
+    - Small vs. Big
+    - Milepost GCC \to learning characteristics of a program to
+      predict what are the good combinations, optimization
+      across programs. Predict good configuration using the
+      distribution of good combination by taking the mode.
+      Reuse knowledge across programs
+    - Stefan Wild \to Learning combination across platform
+      Worked for similar platforms. Search space pruning \to random
+      search.
+      Reuse knowledge across platforms
+    - Opentuner \to which optimization technics for a given problem
+      because the efficiency of a technics depends on the
+      structure of the problem.
+    - Incremental training \to Nitro using active learning
+    - Collective tuning \to crowdtuning, Milepost
+      Models stored in a common database and continuously updated.
 
+  Optimization: exhaustive search is unfeasible.
+
+  - "Direct search". The efficiency (ability to find the
+    (near)-optimal solution and possibly in the fewest possible
+    experiments) depends on the structure of the problem.
+    - Main techniques:
+      - Gradient descent: ferrari, a priori = local, geometry, convexity.
+        - Issues: 
+          - partly wrong hypothesis (geometry, convexity): simulated
+            annealing, many local searches (genetic algorithms in some
+            sense)
+          - experimental estimation: surrogates, etc. *local*
+            approximation
+            Usefull to remove the noise and facilitate the search
+          - derivative estimation: Nelder Mead Simplex
+        - \to many heuristics that combine all or part of the different
+          previous approaches depending on how much the various
+          hypothesis are wrong or not. Their efficiency highly depends
+          on these hypothesis.
+    - Some people have thus developed framework to characterize the
+      optimization space.
+      - ASK \to Emphasis on the sampling because important for the
+        accuracy of the model \to complex sampling pipeline with
+        different surrogate methods( bayesian regression,
+        interpolation, etc... ). _Global modeling requires complex
+        models and numerous experiments_.
+    Illustration with a few tools:
+    - Orio \to source to source annotation based atutotuner 
+      - random search, Nelder Mead Simplex and simulated annealing.
+      - greeding algorithm for local search at the of gobal.
+    - OPAL \to Use direct search combinations of heuristics \to
+      Mesh-adaptive direct-search \to pattern search.
+      Global *and* local search \to work by iterative phase:
+      - Sampling the space \to finding region of interest
+      - Refining the solution
+    - In some cases, the problem structure is known and one has an
+      idea of where the optimal solution is but the structure of the
+      space in this neighborhood is too complex. Some fall back to
+      Exhaustive search \to Atlas Linear search, know where to search \to
+      need to know the problem well.
+
+  Primary Goals:
+  - semi-automatic, almost interactive ? more global approach where
+    the relevance of the hypothesis can be evaluated
+  - optimize at low cost, need to prune the search space
+  - from previous experience, generalization from an arch to another
+    seems very difficult
+
+  Somehow similar approach:
+  - Getting knowledge on the fly \to regression, interpolation
+    - Brewer \to linear regression for the modelization to predict
+      objective function and root finding  or kind of greedy
+      descent for the optimization.
+      Find correct model automatically
+      Not recent paper \to architecture have evolved. Is linear
+      regression still ok?
 ** Methods and material
   - Reproducible work
     - Lab book on github  
     - Literate programming 
+    - org mode
   - Result validation against bruteforce
   - Comparison with random, gradiant search, and genetic algorithm
-** Contribution
 *** Case study
     # Maybe this should go in experiments
 ****  Laplacian
@@ -166,35 +270,65 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       - Minimization
 **** Matrix product?
       - Optimizations explanation
-*** The reason why linear regression is not suited
-    - Assumption \to homoscedasticity but pb we have heteroscedasticity
-      - Why is it a problem?
-        - Unbiased coefficient estimate but biased std error and thus
-          R-squared \to more difficult know if a model is correct
-        - But it is still ok if the error law is the same everywhere
-    - But we don't know anything about the noise
+
+** Contribution
+*** Envisioned general approach
+    1. DoE
+       - remove factors
+       - model and optimize
+    2. Loop back to 1
+*** Controlling measurement
+    - min(x_1,...,x_10) ? how to protect against potential warm-up
+      - Mostly present just after the compilation of the kernel.
+      - 4 runs \to take the minimum
+    - randomizing to protect against bias
+*** Linear regression of expectation: why it cannot work and how it can be circumvented    - Assumptions:
+      - homoscedasticity but pb we have heteroscedasticity
+        - Why is it a problem?
+          - Unbiased coefficient estimate but biased std error and thus
+            R-squared \to more difficult know if a model is correct
+          - But it is still ok if the error law is the same everywhere
+      - But we don't know anything about the noise and normal
+        distribution of the noise is assumed. We cannot do anything
+        about that because in our case the noise come from complex
+        interactions between parameters.
+        Possible to reduce it by fixing values but it is not always
+        possible to do that e.g. if for all the parameters the noise
+        falls the same law. But we still have some difficult to find
+        model due to the other parameters.        
     - Tracks general tendency of the impact of factors
     - 2 cases:
       - heteroscedasticity + same error law \to minimum can be predict
       - heteroscedasticity + different error law \to minimum and mean
         uncorrelated \to minimum can not be predict
-*** The choise of quantile regression
-    - Interested in extremal values \to minimum
-    - Ways of computing quantile regression
-      - empirical quantiles \to linear regression on a quantile
-      - Least absolute values
-      - Iterated weighted least squares 
-    - 5th and 95th percentile \to good estimation for extreme values
-    - But optimist R-squared
+**** Using quantile regression
+     - Interested in extremal values \to minimum
+       - 5th and 95th percentile \to good estimation for extreme values
+     - Ways of computing quantile regression
+       - empirical quantiles \to linear regression on a quantile
+       - Least absolute values
+       - Iterated weighted least squares 
+         - But optimist R-squared
+         - Don't know how to interpret the standard error
 *** Model choice and refinement
     - Hypothesis based on the kernel
-    - Iterative refinement
-    - Determines the quality of the prediction
+      The expert knows his kernel and have hypothesis of how the
+      optimization will influence the performances.
+    - Test parameters independently and remove useless ones. 
+    - Iterative refinement \to try to find the interactions.
+    - Determines the quality of the prediction using the R-squared.
 *** Importance of the search space expression
     - Easier modelization
     - Better capture of the search space features
 *** Using less point as possible
     - Design of experiment
+      - Random
+      - Screenning design
+        Not suitable for constrained search space \to lot of point cannot
+        be reached because test those at the border
+      - LHS
+        Generally for continuous factors
+      - D-optimal
     - Copying with constraints
 ** Experiments
    - Bench min of 4 runs \to warm up effect
@@ -213,9 +347,22 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 * Problem analysis
 * State of the art
 * Methods
-  In order for this work to be usefull for someone else we used
-  literate programming, we kept track about everything we did in
-  laboratory which is available on github with all the data used.
+  In order for this work to be usefull for someone else a laboratory
+  book is available publicly on
+  github\footnote{https://github.com/swhatelse/M2\_internship}. It
+  contains detailed about installation and configuration steps. It
+  keeps tracks of every experiments including their description and
+  analysis. It is structure in a chronological way and thus follows
+  the natural evolution of the work. This gives the possibility to
+  easily understand what have been done at each step and why.
+  Every pieces of codes is explained using literate programming which
+  is very straight forward using the org-mode of emacs.
+  The github repository also contains the complet set of scripts and
+  data used for experiments giving the possibility to anyone to re-run
+  the same experiments using the same data.
+
+  The experiments are run on one machine with GPU Nvidia K40 using the
+  driver 340.32 and two CPUs Intel E5-2630.
 * Contribution
 ** Case study
    # Not sure it is necessary:

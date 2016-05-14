@@ -213,10 +213,10 @@
 ** A Batch, Derivative-Free Algorithm for Finding Multiple Local Minima
 *** Link
     http://www.mcs.anl.gov/papers/P5228-1114.pdf
-** TODO A Taxonomy of Constraints in Simulation-Based Optimization
+** A Taxonomy of Constraints in Simulation-Based Optimization
 *** Link
     http://arxiv.org/pdf/1505.07881.pdf
-** TODO Empirical Performance modeling of GPU kernels using active learning
+** Empirical Performance modeling of GPU kernels using active learning
 *** Link
     http://www.mcs.anl.gov/papers/P4097-0713_1.pdf
 ** TODO Empirical Performance Tuning of Dense Linear Algebra Sofware
@@ -247,6 +247,8 @@
 ** Direct search
 *** Templating and Automatic Code for Performance with Python
 **** Summary
+    - Meta programming framework
+    - Mesh adaptive direct-search \to pattern search.
     - Tested 3 variant of NOMAD but no comparison with empirical
       approach.       
 **** Questions/Remarks
@@ -425,7 +427,8 @@
           characteristics that give good speedup
         - Easier to analyze than probabilistic model
     - Using the solutions of the closest neighbors works for the same
-      plateform
+      plateform (for classification) and predict distribution
+    - Taking the mode of the distribution to predict best combination.
 *** Questions/remarks
 **** For the probabilistic model, do they use a different uniform sampling on each program? 
 **** Why in the probabilistic model good solutions are those that give 98% of speedup  and in the transductive model it is 95% ?
@@ -498,7 +501,7 @@
     year = {2015}
     }
     #+END_SRC
-** TODO Solving Derivative-Free Nonlinear Least Squares Problems with POUNDERS
+** Solving Derivative-Free Nonlinear Least Squares Problems with POUNDERS
 *** Link
     http://www.mcs.anl.gov/papers/P5120-0414.pdf
 ** TODO Multi-Objective Optimization of HPC Kernels for Performance, Power, and Energy
@@ -527,7 +530,7 @@
     HAL_VERSION = {v1},
     }
     #+END_SRC
-** TODO OpenTuner: An Extensible Framework for Program Autotuning
+** DONE OpenTuner: An Extensible Framework for Program Autotuning
 *** Summary
     - Adapting the search method to particularities of the search
       space.
@@ -558,9 +561,13 @@
       keywords = {autotuner, optimization},
       } 
     #+END_SRC
-** TODO ASK: Adaptative sampling Kit for Performance Characterization
+** DONE ASK: Adaptative sampling Kit for Performance Characterization
 *** Summary
     - Empirical, blackbox function
+    - Provide a complex pipeline for sampling because sampling is
+      crucial \to impact on the model. State of the art sampling methods
+    - Multiple modelization methods: bayesian regression,
+      interpolation, etc...
     - Excessive pruning \to missing optimal solutions.
     - Dividing the search space into area with different variance
       upper bound using classication, regression trees and ANOVA.
@@ -587,10 +594,14 @@
         HAL_VERSION = {v1},
       }
     #+END_SRC
-** TODO Annotation-Based Empirical Performance Tuning Using Orio
+** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/HNS2009.pdf][HNS2009]] ] Annotation-Based Empirical Performance Tuning Using Orio
 *** Summary
-    - Only use random search, Nelder Mead Simplex and simulated
-      annealing for the moment
+    - Source to source autotuner for C, annotation based
+    - Use exhaustive search, random search, Nelder Mead Simplex and simulated
+      annealing
+    - Additional local search phase at the end of the global
+      search. Using kind of greedy algo that stop when no improvment.
+    - Provide parallel search support.
 ** TODO Precimonious: Tuning Assistant for Floating-Point Precision
 *** Summary
     - Tuning the level of precision of floating point variables
@@ -613,7 +624,7 @@
     To build the model, supervised learning is used in the training
     phase using support vector machines.
     They distribute the overhead of the training using incremental
-    learning technics.
+    learning technics \to Active learning
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/SIGOPS_paper.pdf][SIGOPS_paper]] ] An Effective Git And Org-Mode Based Workflow For Reproducible Research
 *** Link
     https://hal.inria.fr/hal-01112795/file/SIGOPS_paper.pdf
@@ -638,7 +649,7 @@
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/extremal_quant_reg.pdf][extremal_quant_reg]] ] EXTREMAL QUANTILE REGRESSION
 *** Link
     http://arxiv.org/pdf/math/0505639.pdf
-** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/Brewer95.pdf][Brewer95]] ] High-Level Optimization via Automated Statistical Modeling
+** DONE [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/Brewer95.pdf][Brewer95]] ] High-Level Optimization via Automated Statistical Modeling
 *** Summary
     Autotuner for portable library. Use linear model to predict
     the objective function.
@@ -679,6 +690,7 @@
 } 
     #+END_SRC
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/ipdps09.pdf][ipdps09]] ] A Scalable Auto-tuning Framework for Compiler Optimization
+** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/ansel-pldi09.pdf][ansel-pldi09]] ] PetaBricks: A Language and Compiler for Algorithmic Choice
 * Mathematical notions
 ** Non-smooth
    Discontinous and non differentiable functions. 

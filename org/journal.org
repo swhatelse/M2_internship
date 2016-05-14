@@ -3,7 +3,7 @@
 #+BABEL: :tangle yes
 #+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r)
 
-* TODO [9/14]
+* TODO [10/15]
   - [X] Run brute force with load_overlap = [true,false]
     and different combination of local_work_size
   - [X] Try D-Optimal design if we can get enough information
@@ -20,6 +20,7 @@
   - [ ] Run brute force on another plate form 
   - [X] Constraints for genetic algorithm
   - [ ] Bug in optimizer benchmark with the constraints
+  - [X] Ask on stackoverflow for the backsolve problem
 * Memo
   - Get opencl platform
     #+begin_src R :results output :session :exports both
@@ -158,13 +159,13 @@
        rsync -avzP --exclude '.git' boast-lig squinitomasnada@access.grid5000.fr:~/grenoble/boast
      #+end_src
 ** R
-   sudo apt-get install liblas-dev liblapack-dev
+   sudo apt-get install liblas-dev liblapack-dev gsl-bin libgsl0-dev
    - Rcmdr
    - ggplot2
    - plyr
    - quantreg
    - extraGrid
-   - FrF2
+   - gsl
 * February
 ** 2016-02-02 Notes from Arnaud :Arnaud:
 - [[http://mescal.imag.fr/membres/arnaud.legrand/research/M2R_boast.pdf][internships]]
@@ -15410,6 +15411,299 @@ h[g.name.to_sym] = 1024
 
          #+RESULTS:
          [[file:img/20160402/pilipili2/comparison_wq_iterations.png]]
+******** TODO Which limit to the weight
+         #+begin_src R :results output :session :exports both
+           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           h <- function(x) {pmin(g(x),1e15)}
+         #+end_src
+
+         #+RESULTS:
+
+         #+begin_src R :results output :session :exports both
+            form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+            form_y_comp <- time_per_pixel ~ y_component_number
+            form_v_len <- time_per_pixel ~ vector_length 
+            form_th_nb <- time_per_pixel ~ threads_number
+            form_lws_y <- time_per_pixel ~ lws_y
+
+            model_elem_nb_50 <- lm(data=df,formula=form_elem_nb)
+            for(i in 1:50){
+                E <- residuals(model_elem_nb_50)
+                model_elem_nb_50 <- lm(data=df,formula=form_elem_nb,weight=g(E))
+            }
+
+            model_y_comp_50 <- lm(data=df,formula=form_y_comp)
+            for(i in 1:50){
+                E <- residuals(model_y_comp_50)
+                model_y_comp_50 <- lm(data=df,formula=form_y_comp,weight=g(E))
+            }
+
+            model_v_len_50 <- lm(data=df,formula=form_v_len)
+            for(i in 1:50){
+                E <- residuals(model_v_len_50)
+                model_v_len_50 <- lm(data=df,formula=form_v_len,weight=g(E))
+            }
+
+            model_th_nb_50 <- lm(data=df,formula=form_th_nb)
+            for(i in 1:50){
+                E <- residuals(model_th_nb_50)
+                model_th_nb_50 <- lm(data=df,formula=form_th_nb,weight=g(E))
+            }
+
+            model_lws_y_50 <- lm(data=df,formula=form_lws_y)
+            for(i in 1:50){
+                E <- residuals(model_lws_y_50)
+                model_lws_y_50 <- lm(data=df,formula=form_lws_y,weight=g(E))
+            }
+         #+end_src
+
+         #+RESULTS:
+
+         #+begin_src R :results output :session :exports both
+            model_elem_nb_100 <- lm(data=df,formula=form_elem_nb)
+            for(i in 1:100){
+                E <- residuals(model_elem_nb_100)
+                model_elem_nb_100 <- lm(data=df,formula=form_elem_nb,weight=h(E))
+            }
+
+            model_y_comp_100 <- lm(data=df,formula=form_y_comp)
+            for(i in 1:100){
+                E <- residuals(model_y_comp_100)
+                model_y_comp_100 <- lm(data=df,formula=form_y_comp,weight=h(E))
+            }
+
+            model_v_len_100 <- lm(data=df,formula=form_v_len)
+            for(i in 1:100){
+                E <- residuals(model_v_len_100)
+                model_v_len_100 <- lm(data=df,formula=form_v_len,weight=h(E))
+            }
+
+            model_th_nb_100 <- lm(data=df,formula=form_th_nb)
+            for(i in 1:100){
+                E <- residuals(model_th_nb_100)
+                model_th_nb_100 <- lm(data=df,formula=form_th_nb,weight=h(E))
+            }
+
+            model_lws_y_100 <- lm(data=df,formula=form_lws_y)
+            for(i in 1:100){
+                E <- residuals(model_lws_y_100)
+                model_lws_y_100 <- lm(data=df,formula=form_lws_y,weight=h(E))
+            }
+
+         #+end_src
+
+         #+RESULTS:
+
+         #+begin_src R :results output :session :exports both
+           library(quantreg)
+           model_rq_elem_nb <- rq(data=df,formula=form_elem_nb,tau=.05)
+           model_rq_y_comp <- rq(data=df,formula=form_y_comp,tau=.05)
+           model_rq_v_len <- rq(data=df,formula=form_v_len,tau=.05)
+           model_rq_th_nb <- rq(data=df,formula=form_th_nb,tau=.05)
+           model_rq_lws_y <- rq(data=df,formula=form_lws_y,tau=.05)
+         #+end_src
+
+         #+RESULTS:
+
+         Visually we can say that the results is still pretty close:
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/weighted_1.png :exports both :width 800 :height 600 :session
+           default <- par()
+           par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,5e-10))
+           lines(sort(df$elements_number),predict(model_elem_nb_50)[order(df$elements_number)],col="red")  
+           lines(sort(df$elements_number),predict(model_elem_nb_100)[order(df$elements_number)],col="green")  
+           lines(sort(df$elements_number),predict(model_rq_elem_nb)[order(df$elements_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,3e-10))
+           lines(sort(df$y_component_number),predict(model_y_comp_50)[order(df$y_component_number)],col="red")  
+           lines(sort(df$y_component_number),predict(model_y_comp_100)[order(df$y_component_number)],col="green")  
+           lines(sort(df$y_component_number),predict(model_rq_y_comp)[order(df$y_component_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+           lines(sort(df$vector_length),predict(model_v_len_50)[order(df$vector_length)],col="red")  
+           lines(sort(df$vector_length),predict(model_v_len_100)[order(df$vector_length)],col="green")  
+           lines(sort(df$vector_length),predict(model_rq_v_len)[order(df$vector_length)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,2e-10))
+           lines(sort(df$threads_number),predict(model_th_nb_50)[order(df$threads_number)],col="red")  
+           lines(sort(df$threads_number),predict(model_th_nb_100)[order(df$threads_number)],col="green")  
+           lines(sort(df$threads_number),predict(model_rq_th_nb)[order(df$threads_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+           lines(sort(df$lws_y),predict(model_lws_y_50)[order(df$lws_y)],col="red")  
+           lines(sort(df$lws_y),predict(model_lws_y_100)[order(df$lws_y)],col="green")  
+           lines(sort(df$lws_y),predict(model_rq_lws_y)[order(df$lws_y)],col="blue")  
+
+           par(default)        
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/weighted_1.png]]
+
+
+         By checking the complete model we can see that the coef for y
+         component number is not correct, it should be negative
+         because the minimum decrease with the increasing of the y
+         component number:
+         #+begin_src R :results output :session :exports both
+           model <- time_per_pixel ~ elements_number + I(1/elements_number) + y_component_number + 
+                    vector_length + threads_number + lws_y
+
+           fit_100 <- lm(data=df,formula=model)
+           for(i in 1:100){
+               E <- residuals(fit_100)
+               fit_100 <- lm(data=df,formula=model,weight=h(E))
+           }
+           summary(fit_100)
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+
+         Call:
+         lm(formula = model, data = df, weights = h(E))
+
+         Weighted Residuals:
+                Min         1Q     Median         3Q        Max 
+         -1.235e-05  2.357e-06  3.836e-06  8.074e-06  4.593e-05 
+
+         Coefficients:
+                                Estimate Std. Error t value Pr(>|t|)    
+         (Intercept)           1.318e-10  2.528e-12   52.15   <2e-16 ***
+         elements_number      -8.832e-12  8.425e-14 -104.83   <2e-16 ***
+         I(1/elements_number)  1.852e-10  4.921e-12   37.63   <2e-16 ***
+         y_component_number    6.232e-12  3.541e-13   17.60   <2e-16 ***
+         vector_length         3.156e-11  8.370e-14  377.06   <2e-16 ***
+         threads_number       -1.530e-13  1.421e-15 -107.68   <2e-16 ***
+         lws_y                 3.510e-12  1.414e-15 2482.89   <2e-16 ***
+         ---
+         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         Residual standard error: 8.805e-06 on 23113 degrees of freedom
+         Multiple R-squared:  0.9983,	Adjusted R-squared:  0.9983 
+         F-statistic: 2.247e+06 on 6 and 23113 DF,  p-value: < 2.2e-16
+         #+end_example
+
+         By unzooming, we can see that for y component number it is
+         almost flat so maybe that is why the we did not found the
+         correct coefficient.
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/weighted_no_zoom.png :exports both :width 600 :height 400 :session
+               default <- par()
+           par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+           plot(y=df$time_per_pixel,df$elements_number)
+           lines(sort(df$elements_number),predict(model_elem_nb_50)[order(df$elements_number)],col="red")  
+           lines(sort(df$elements_number),predict(model_elem_nb_100)[order(df$elements_number)],col="green")  
+           lines(sort(df$elements_number),predict(model_rq_elem_nb)[order(df$elements_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$y_component_number)
+           lines(sort(df$y_component_number),predict(model_y_comp_50)[order(df$y_component_number)],col="red")  
+           lines(sort(df$y_component_number),predict(model_y_comp_100)[order(df$y_component_number)],col="green")  
+           lines(sort(df$y_component_number),predict(model_rq_y_comp)[order(df$y_component_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$vector_length)
+           lines(sort(df$vector_length),predict(model_v_len_50)[order(df$vector_length)],col="red")  
+           lines(sort(df$vector_length),predict(model_v_len_100)[order(df$vector_length)],col="green")  
+           lines(sort(df$vector_length),predict(model_rq_v_len)[order(df$vector_length)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$threads_number)
+           lines(sort(df$threads_number),predict(model_th_nb_50)[order(df$threads_number)],col="red")  
+           lines(sort(df$threads_number),predict(model_th_nb_100)[order(df$threads_number)],col="green")  
+           lines(sort(df$threads_number),predict(model_rq_th_nb)[order(df$threads_number)],col="blue")  
+
+           plot(y=df$time_per_pixel,df$lws_y)
+           lines(sort(df$lws_y),predict(model_lws_y_50)[order(df$lws_y)],col="red")  
+           lines(sort(df$lws_y),predict(model_lws_y_100)[order(df$lws_y)],col="green")  
+           lines(sort(df$lws_y),predict(model_rq_lws_y)[order(df$lws_y)],col="blue")  
+
+           par(default)        
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/weighted_no_zoom.png]]
+
+         Do we still have NA coef? Yes we do.
+         #+begin_src R :results output :session :exports both
+           form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + I(1/y_component_number) + vector_length + threads_number + I(1/threads_number) + lws_y 
+           model_screen_complete <- lm(data=set,formula=form_complete)
+           for(i in 1:200){
+               E <- residuals(model_screen_complete)
+               model_screen_complete <- lm(data=set,formula=form_complete,weight=h(E))
+           }
+           summary(model_screen_complete)
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+
+         Call:
+         lm.default(formula = form_complete, data = set, weights = h(E))
+
+         Weighted Residuals:
+                Min         1Q     Median         3Q        Max 
+         -1.110e-08  2.660e-07  2.573e-06  6.802e-06  8.768e-06 
+
+         Coefficients: (3 not defined because of singularities)
+                                   Estimate Std. Error   t value Pr(>|t|)    
+         (Intercept)              4.148e-10  2.217e-10     1.871   0.0859 .  
+         elements_number         -7.015e-11  1.213e-14 -5782.658  < 2e-16 ***
+         I(1/elements_number)            NA         NA        NA       NA    
+         I(1/y_component_number)         NA         NA        NA       NA    
+         vector_length            1.067e-10  1.345e-11     7.936 4.08e-06 ***
+         threads_number          -1.848e-13  2.034e-13    -0.909   0.3815    
+         I(1/threads_number)             NA         NA        NA       NA    
+         lws_y                    4.993e-12  2.727e-16 18308.133  < 2e-16 ***
+         ---
+         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         Residual standard error: 6.239e-06 on 12 degrees of freedom
+         Multiple R-squared:      1,	Adjusted R-squared:      1 
+         F-statistic: 1.226e+08 on 4 and 12 DF,  p-value: < 2.2e-16
+#+end_example
+
+         Maybe the weight bound is to heigh? Even with low bound we
+         have NA values:
+         #+begin_src R :results output :session :exports both
+           h <- function(x) {pmin(g(x),1e2)}
+           form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + I(1/y_component_number) + vector_length + threads_number + I(1/threads_number) + lws_y 
+           model_screen_complete <- lm(data=set,formula=form_complete)
+           for(i in 1:200){
+               E <- residuals(model_screen_complete)
+               model_screen_complete <- lm(data=set,formula=form_complete,weight=h(E))
+           }
+           summary(model_screen_complete)
+
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+
+         Call:
+         lm.default(formula = form_complete, data = set, weights = h(E))
+
+         Residuals:
+                Min         1Q     Median         3Q        Max 
+         -7.553e-09 -3.545e-09  1.792e-09  2.525e-09  6.943e-09 
+
+         Coefficients: (3 not defined because of singularities)
+                                   Estimate Std. Error t value Pr(>|t|)    
+         (Intercept)              4.807e-10  3.049e-10   1.577 0.140844    
+         elements_number         -4.711e-11  1.081e-11  -4.359 0.000930 ***
+         I(1/elements_number)            NA         NA      NA       NA    
+         I(1/y_component_number)         NA         NA      NA       NA    
+         vector_length            1.011e-10  1.814e-11   5.576 0.000121 ***
+         threads_number           4.724e-13  2.728e-13   1.732 0.108959    
+         I(1/threads_number)             NA         NA      NA       NA    
+         lws_y                    4.084e-12  3.415e-13  11.957 5.03e-08 ***
+         ---
+         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         Residual standard error: 4.926e-09 on 12 degrees of freedom
+         Multiple R-squared:  0.9464,	Adjusted R-squared:  0.9286 
+         F-statistic: 52.99 on 4 and 12 DF,  p-value: 1.58e-07
+         #+end_example
 
 ******** TODO How to compute confidence intervals?
          Do we really need them?
@@ -16049,60 +16343,195 @@ h[g.name.to_sym] = 1024
        [[file:/tmp/babel-4778z0D/figure4778bKH.png]]
 
 ****** TODO Which design of experiments?
-******* TODO Screening design
-         #+begin_src sh :results output :exports both
-           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
-         #+end_src
+******* TODO Random
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        #+end_src
 
-         #+RESULTS:
+        #+RESULTS:
 
-         #+begin_src R :results output :session :exports both
-           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-           summary(df)
-         #+end_src
-
-         #+RESULTS:
-         #+begin_example
-          elements_number  y_component_number vector_length   temporary_size 
-          Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
-          1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
-          Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
-          Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
-          3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
-          Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
-          vector_recompute load_overlap  threads_number       lws_y        
-          true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
-                           true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
-                                         Median : 256.0   Median :  16.00  
-                                         Mean   : 368.1   Mean   :  73.58  
-                                         3rd Qu.: 512.0   3rd Qu.:  64.00  
-                                         Max.   :1024.0   Max.   :1024.00  
-          time_per_pixel     
-          Min.   :1.165e-10  
-          1st Qu.:3.028e-10  
-          Median :7.125e-10  
-          Mean   :2.013e-09  
-          3rd Qu.:2.001e-09  
-          Max.   :4.452e-08
-         #+end_example
-
-        Generating the screening design: 
         #+begin_src R :results output :session :exports both
-          library(FrF2)
-          screening_d <-  pb(nruns= 64 ,n12.taguchi= FALSE ,nfactors= 7, ncenter= 0 , 
-                    replications= 1 ,repeat.only= FALSE ,randomize= TRUE ,seed= 26654 , 
-                    factor.names=list( elements_number=c(-1,1), 
-                                      y_component_number=c(-1,1), 
-                                      vector_length=c(-1,1),
-                                      temporary_size=c(-1,1), 
-                                      load_overlap=c(-1,1), 
-                                      threads_number=c(-1,1), 
-                                      lws_y=c(-1,1) ) )
-          screening_d          
+          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+          h <- function(x) {pmin(g(x),1e10)}
+          iwr <- function(d, form) { 
+              model <- lm(data=d,formula=form)
+              for(i in 1:200){
+                  residus <- residuals(reg)
+                  model <- lm(data=d, formula=form, weight=h(residus))
+              }
+              model
+          }
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          summary(df)
         #+end_src
 
         #+RESULTS:
         #+begin_example
+         elements_number  y_component_number vector_length   temporary_size 
+         Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+         Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+         Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+         Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+         vector_recompute load_overlap  threads_number       lws_y        
+         true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                          true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                        Median : 256.0   Median :  16.00  
+                                        Mean   : 368.1   Mean   :  73.58  
+                                        3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                        Max.   :1024.0   Max.   :1024.00  
+         time_per_pixel     
+         Min.   :1.165e-10  
+         1st Qu.:3.028e-10  
+         Median :7.125e-10  
+         Mean   :2.013e-09  
+         3rd Qu.:2.001e-09  
+         Max.   :4.452e-08
+#+end_example
+
+        Take a random set:
+        #+begin_src R :results output :session :exports both
+          random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+          plot(random_set)
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-3623dXu/figure3623Rgp.png]]
+
+        #+begin_src R :results output :session :exports both
+          form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+              I(1/y_component_number) + 
+              vector_length + 
+              threads_number + I(1/threads_number) + 
+              lws_y + 
+              elements_number:y_component_number +
+              threads_number:lws_y +
+              threads_number:elements_number
+
+          model_complete <- lm(data=random_set,formula=form_complete)
+          for(i in 1:200){
+              E <- residuals(model_complete)
+              model_complete <- lm(data=random_set,formula=form_complete,weight=h(E))
+          }
+          summary(model_complete)
+
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = form_complete, data = random_set, weights = h(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -8.160e-06  2.302e-06  3.830e-06  7.817e-06  4.336e-05 
+
+        Coefficients:
+                                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)                        -5.293e-10  2.476e-10  -2.138  0.03527 *  
+        elements_number                     2.851e-11  2.859e-11   0.997  0.32135    
+        I(1/elements_number)                1.129e-09  4.464e-10   2.529  0.01320 *  
+        I(1/y_component_number)            -1.538e-10  2.177e-10  -0.707  0.48164    
+        vector_length                       5.861e-11  7.770e-12   7.543 3.72e-11 ***
+        threads_number                      3.819e-13  1.715e-13   2.226  0.02852 *  
+        I(1/threads_number)                 1.670e-08  5.560e-09   3.004  0.00346 ** 
+        lws_y                               1.154e-11  1.038e-12  11.119  < 2e-16 ***
+        elements_number:y_component_number -4.109e-12  3.769e-12  -1.090  0.27846    
+        threads_number:lws_y               -6.956e-15  1.297e-15  -5.362 6.44e-07 ***
+        elements_number:threads_number     -3.762e-14  2.930e-14  -1.284  0.20245    
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 1.011e-05 on 89 degrees of freedom
+        Multiple R-squared:  0.7996,	Adjusted R-squared:  0.7771 
+        F-statistic: 35.51 on 10 and 89 DF,  p-value: < 2.2e-16
+#+end_example
+
+        
+******* TODO Screening design
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          summary(df)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number  y_component_number vector_length   temporary_size 
+         Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+         Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+         Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+         Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+         vector_recompute load_overlap  threads_number       lws_y        
+         true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                          true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                        Median : 256.0   Median :  16.00  
+                                        Mean   : 368.1   Mean   :  73.58  
+                                        3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                        Max.   :1024.0   Max.   :1024.00  
+         time_per_pixel     
+         Min.   :1.165e-10  
+         1st Qu.:3.028e-10  
+         Median :7.125e-10  
+         Mean   :2.013e-09  
+         3rd Qu.:2.001e-09  
+         Max.   :4.452e-08
+         #+end_example
+
+        Create the screening desgin:
+        #+begin_src R :results output :session :exports both
+          library(FrF2)
+          screening_d <-  pb(nruns= 64 ,n12.taguchi= FALSE ,nfactors= 7, ncenter= 0 , 
+              replications= 1 ,repeat.only= FALSE ,randomize= TRUE ,seed= 26654 , 
+              factor.names=list( elements_number=c(-1,1),
+                                 y_component_number=c(-1,1),
+                                 vector_length=c(-1,1),
+                                 temporary_size=c(-1,1),
+                                 load_overlap=c(-1,1),
+                                 threads_number=c(-1,1),
+                                 lws_y=c(-1, 1) ) )
+          screening_d
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+        Le chargement a nécessité le package : DoE.base
+        Le chargement a nécessité le package : grid
+        Le chargement a nécessité le package : conf.design
+
+        Attachement du package : ‘DoE.base’
+
+        The following objects are masked from ‘package:stats’:
+
+            aov, lm
+
+        The following object is masked from ‘package:graphics’:
+
+            plot.design
+
+        The following object is masked from ‘package:base’:
+
+            lengths
            elements_number y_component_number vector_length temporary_size load_overlap
         1                1                 -1            -1             -1           -1
         2                1                  1             1              1            1
@@ -16236,96 +16665,401 @@ h[g.name.to_sym] = 1024
         class=design, type= pb
 #+end_example
 
-        Encoding the result into minimal or maximal values:
+        Decoding into min and max values:
         #+begin_src R :results output :session :exports both
-          elements_number_values = c()
-          y_component_number_values = c()
-          vector_length_values = c()
-          
-          decode <- function(code,x) {
-              if(code == -1){                  
+          decode <- function(code,x){
+              if(code == -1){
                   res <- min(x)
               }
               else{
                   res <- max(x)
               }
+              res
           }
-          
+
           set <- data.frame()
-          for( i in 1:nrow(screening_d)){
-              set <- rbind(df[df$elements_number == decode(screening_d[i,]$elements_number,df$elements_number) & 
-                              df$y_component_number == decode(screening_d[i,]$y_component_number,df$y_component_number) & 
-                              df$vector_length == decode(screening_d[i,]$vector_length,df$vector_length) & 
-                              df$temporary_size == decode(screening_d[i,]$temporary_size,df$temporary_size) & 
-                              df$load_overlap == decode(screening_d[i,]$load_overlap,df$load_overlap) & 
-                              df$threads_number == decode(screening_d[i,]$threads_number,df$threads_number) & 
-                              df$lws_y == decode(screening_d[i,]$lws_y,df$lws_y)
-                             ,],
-                           set)
+          for(i in 1:nrow(screening_d)){
+              set <- rbind(set,
+                           df[df$elements_number == decode(screening_d[i,]$elements_number, df$elements_number) &
+                           df$y_component_number == decode(screening_d[i,]$y_component_number, df$y_component_number) &
+                           df$vector_length == decode(screening_d[i,]$vector_length, df$vector_length) &
+                           df$temporary_size == decode(screening_d[i,]$temporary_size, df$temporary_size) &
+                           df$load_overlap == (if (screening_d[i,]$load_overlap == -1) "false" else "true") &
+                           df$threads_number == decode(screening_d[i,]$threads_number, df$threads_number) &
+                           df$lws_y == decode(screening_d[i,]$lws_y, df$lws_y)
+                              ,])
           }
+          set
         #+end_src
 
         #+RESULTS:
-        :  Error in Summary.factor(c(2L, 1L, 2L, 1L, 2L, 2L, 1L, 2L, 2L, 2L, 1L,  (from #3) : 
-        :   ‘min’ not meaningful for factors
+        #+begin_example
+               elements_number y_component_number vector_length temporary_size
+        21511                1                  1             1              4
+        1536                 1                  1             1              2
+        15572                1                  1            16              2
+        9062                24                  6             1              4
+        21779               24                  6             1              4
+        13920                1                  1            16              4
+        9025                 1                  1             1              4
+        8983                24                  6            16              4
+        11657               24                  6             1              2
+        21644                1                  1             1              4
+        12022                1                  1             1              2
+        11205               24                  6            16              2
+        4896                 1                  1             1              2
+        11687               24                  6             1              4
+        155721               1                  1            16              2
+        4081                 1                  1            16              2
+        14494               24                  6             1              2
+               vector_recompute load_overlap threads_number lws_y time_per_pixel
+        21511              true         true           1024  1024   5.375467e-09
+        1536               true        false             32     1   5.828804e-10
+        15572              true        false           1024     1   2.793304e-09
+        9062               true        false           1024     1   1.914266e-10
+        21779              true         true           1024     1   1.913311e-10
+        13920              true         true           1024     1   2.783658e-09
+        9025               true         true           1024     1   2.672037e-10
+        8983               true        false             32     1   4.378793e-10
+        11657              true         true             32     1   1.646092e-10
+        21644              true        false           1024     1   2.686187e-10
+        12022              true         true           1024  1024   5.379390e-09
+        11205              true        false             32     1   4.395678e-10
+        4896               true         true             32     1   5.825783e-10
+        11687              true         true           1024  1024   3.761999e-09
+        155721             true        false           1024     1   2.793304e-09
+        4081               true        false             32     1   2.415739e-09
+        14494              true        false           1024     1   1.911056e-10
+#+end_example
 
-****** TODO Optimization on the model to find the value
-       #+begin_src R :results output :session :exports both
-        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-        summary(df)
+         #+begin_src R :results output :session :exports both
+           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           h <- function(x) {pmin(g(x),1e15)}
+         #+end_src
+
+
+        The problem is that I don't get the number of points I asked
+        because of the constraints. Lots of combination of maximxal
+        values are unfeasible. Lets put that aside for the moment. 
+        Lets try see I we can have the same coefficient using the same
+        model as earlier:
+        #+begin_src R :results output :session :exports both
+            form_screen_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+            form_screen_y_comp <- time_per_pixel ~ I(1/y_component_number)
+            form_screen_v_len <- time_per_pixel ~ vector_length 
+            form_screen_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+            form_screen_lws_y <- time_per_pixel ~ lws_y 
+
+            model_screen_elem_nb <- lm(data=set,formula=form_screen_elem_nb)
+            for(i in 1:5){
+                E <- residuals(model_screen_elem_nb)
+                model_screen_elem_nb <- lm(data=set,formula=form_screen_elem_nb,weight=g(E))
+            }
+
+            model_screen_y_comp <- lm(data=set,formula=form_screen_y_comp)
+            for(i in 1:5){
+                E <- residuals(model_screen_y_comp)
+                model_screen_y_comp <- lm(data=set,formula=form_screen_y_comp,weight=g(E))
+            }
+
+            model_screen_v_len <- lm(data=set,formula=form_screen_v_len)
+            for(i in 1:5){
+                E <- residuals(model_screen_v_len)
+                model_screen_v_len <- lm(data=set,formula=form_screen_v_len,weight=g(E))
+            }
+
+            model_screen_th_nb <- lm(data=set,formula=form_screen_th_nb)
+            for(i in 1:5){
+                E <- residuals(model_screen_th_nb)
+                model_screen_th_nb <- lm(data=set,formula=form_screen_th_nb,weight=g(E))
+            }
+
+            model_screen_lws_y <- lm(data=set,formula=form_screen_lws_y)
+            for(i in 1:5){
+                E <- residuals(model_screen_lws_y)
+                model_screen_lws_y <- lm(data=set,formula=form_screen_lws_y,weight=g(E))
+            }
        #+end_src
 
-       #+begin_src R :results output :session :exports both
-         form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
-             I(1/y_component_number) + 
-             vector_length + 
-             threads_number + I(1/threads_number) + 
-             lws_y + 
-             elements_number:y_component_number +
-             threads_number:lws_y +
-             threads_number:elements_number
+        #+RESULTS:
 
-         model_complete <- lm(data=df,formula=form_complete)
-         for(i in 1:200){
-             E <- residuals(model_complete)
-             model_complete <- lm(data=df,formula=form_complete,weight=g(E))
-         }
-         summary(model_complete)
+        For comparison with the full search space:
+        #+begin_src R :results output :session :exports both
+          form_full_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+          form_full_y_comp <- time_per_pixel ~ I(1/y_component_number)
+          form_full_v_len <- time_per_pixel ~ vector_length 
+          form_full_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+          form_full_lws_y <- time_per_pixel ~ lws_y 
+
+          model_full_elem_nb <- lm(data=df,formula=form_full_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_full_elem_nb)
+              model_full_elem_nb <- lm(data=df,formula=form_full_elem_nb,weight=g(E))
+          }
+
+          model_full_y_comp <- lm(data=df,formula=form_full_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_full_y_comp)
+              model_full_y_comp <- lm(data=df,formula=form_full_y_comp,weight=g(E))
+          }
+
+          model_full_v_len <- lm(data=df,formula=form_full_v_len)
+          for(i in 1:200){
+              E <- residuals(model_full_v_len)
+              model_full_v_len <- lm(data=df,formula=form_full_v_len,weight=g(E))
+          }
+
+          model_full_th_nb <- lm(data=df,formula=form_full_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_full_th_nb)
+              model_full_th_nb <- lm(data=df,formula=form_full_th_nb,weight=g(E))
+          }
+
+          model_full_lws_y <- lm(data=df,formula=form_full_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_full_lws_y)
+              model_full_lws_y <- lm(data=df,formula=form_full_lws_y,weight=g(E))
+          }
+       #+end_src
+
+        #+RESULTS:
+
+
+        We have not that bad approximation of coefficient that have a
+        simple model:
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/sc_desgin_64.png :exports both :width 800 :height 600 :session
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,4e-10))
+          lines(sort(set$elements_number),predict(model_screen_elem_nb)[order(set$elements_number)],col="red")  
+          lines(sort(df$elements_number),predict(model_full_elem_nb)[order(df$elements_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
+          lines(sort(set$y_component_number),predict(model_screen_y_comp)[order(set$y_component_number)],col="red")  
+          lines(sort(df$y_component_number),predict(model_full_y_comp)[order(df$y_component_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+          lines(sort(set$vector_length),predict(model_screen_v_len)[order(set$vector_length)],col="red")  
+          lines(sort(df$vector_length),predict(model_full_v_len)[order(df$vector_length)],col="green")  
+
+          plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,4e-10))
+          lines(sort(set$threads_number),predict(model_screen_th_nb)[order(set$threads_number)],col="red")  
+          lines(sort(df$threads_number),predict(model_full_th_nb)[order(df$threads_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+          lines(sort(set$lws_y),predict(model_screen_lws_y)[order(set$lws_y)],col="red")  
+          lines(sort(df$lws_y),predict(model_full_lws_y)[order(df$lws_y)],col="green")  
+
+          par(default)        
+
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/sc_desgin_64.png]]
+
+        Now lets see the pertinency of the model. Here we have two
+        problem: 
+          - Some coefficient failed to be estimated
+          - We don't know how many iterate is correct
+        #+begin_src R :results output :session :exports both
+          form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + I(1/y_component_number) + vector_length + threads_number + I(1/threads_number) + lws_y 
+          # form_complete <- time_per_pixel ~ elements_number + vector_length + threads_number  + lws_y 
+          model_screen_complete <- lm(data=set,formula=form_complete)
+          for(i in 1:200){
+              E <- residuals(model_screen_complete)
+              model_screen_complete <- lm(data=set,formula=form_complete,weight=g(E))
+          }
+
+          summary(model_screen_complete)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         Error in model.frame.default(formula = form_complete, data = set, weights = g(E),  (from #3) : 
+          les longueurs des variables diffèrent (trouvé pour '(weights)')
+
+        Call:
+        lm.default(formula = form_complete, data = set, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -5.824e-05 -4.484e-05  6.970e-07  1.122e-05  1.599e-05 
+
+        Coefficients: (6 not defined because of singularities)
+                                 Estimate Std. Error  t value Pr(>|t|)    
+        (Intercept)             1.153e-10  1.154e-17  9990308   <2e-16 ***
+        elements_number         1.519e-10  1.154e-17 13170699   <2e-16 ***
+        I(1/elements_number)           NA         NA       NA       NA    
+        I(1/y_component_number)        NA         NA       NA       NA    
+        vector_length                  NA         NA       NA       NA    
+        threads_number                 NA         NA       NA       NA    
+        I(1/threads_number)            NA         NA       NA       NA    
+        lws_y                          NA         NA       NA       NA    
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 3.276e-05 on 14 degrees of freedom
+          (1 observation deleted due to missingness)
+        Multiple R-squared:      1,	Adjusted R-squared:      1 
+        F-statistic: 1.735e+14 on 1 and 14 DF,  p-value: < 2.2e-16
+        #+end_example
+
+          #+begin_src R :results output :session :exports both
+          summary(model_screen_elem_nb)
+          summary(model_screen_y_comp)
+          summary(model_screen_v_len)
+          summary(model_screen_th_nb)
+          summary(model_screen_lws_y)
+          #+end_src
+
+          #+RESULTS:
+          #+begin_example
+
+          Call:
+          lm.default(formula = form_screen_elem_nb, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -3.568e-06  1.253e-06  4.055e-06  1.127e-05  1.601e-05 
+
+          Coefficients: (1 not defined because of singularities)
+                                 Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)           2.768e-10  3.323e-11   8.331 5.21e-07 ***
+          elements_number      -3.923e-12  1.856e-12  -2.113   0.0518 .  
+          I(1/elements_number)         NA         NA      NA       NA    
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 9.16e-06 on 15 degrees of freedom
+          Multiple R-squared:  0.2294,	Adjusted R-squared:  0.178 
+          F-statistic: 4.466 on 1 and 15 DF,  p-value: 0.05175
+
+          Call:
+          lm.default(formula = form_screen_y_comp, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -3.568e-06  1.253e-06  4.055e-06  1.127e-05  1.601e-05 
+
+          Coefficients:
+                                   Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)             1.646e-10  3.475e-11   4.738 0.000264 ***
+          I(1/y_component_number) 1.083e-10  5.123e-11   2.113 0.051755 .  
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 9.16e-06 on 15 degrees of freedom
+          Multiple R-squared:  0.2294,	Adjusted R-squared:  0.178 
+          F-statistic: 4.466 on 1 and 15 DF,  p-value: 0.05175
+
+          Call:
+          lm.default(formula = form_screen_v_len, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -4.952e-06  3.754e-07  4.428e-06  1.085e-05  1.611e-05 
+
+          Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)   1.742e-10  8.105e-12   21.49 1.11e-12 ***
+          vector_length 1.653e-11  7.972e-13   20.73 1.87e-12 ***
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 9.024e-06 on 15 degrees of freedom
+          Multiple R-squared:  0.9663,	Adjusted R-squared:  0.964 
+          F-statistic: 429.9 on 1 and 15 DF,  p-value: 1.871e-12
+
+          Call:
+          lm.default(formula = form_screen_th_nb, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -2.884e-06  1.966e-06  4.799e-06  1.141e-05  1.611e-05 
+
+          Coefficients: (1 not defined because of singularities)
+                                Estimate Std. Error t value Pr(>|t|)  
+          (Intercept)          1.923e-10  8.848e-11   2.173   0.0462 *
+          threads_number      -6.697e-16  8.675e-14  -0.008   0.9939  
+          I(1/threads_number)         NA         NA      NA       NA  
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 9.297e-06 on 15 degrees of freedom
+          Multiple R-squared:  3.973e-06,	Adjusted R-squared:  -0.06666 
+          F-statistic: 5.959e-05 on 1 and 15 DF,  p-value: 0.9939
+
+          Call:
+          lm.default(formula = form_screen_lws_y, data = set, weights = g(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -4.812e-06  4.677e-07  3.540e-06  8.994e-06  1.141e-05 
+
+          Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+          (Intercept) 1.864e-10  1.231e-11   15.14  1.7e-10 ***
+          lws_y       3.492e-12  1.283e-14  272.09  < 2e-16 ***
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 7.114e-06 on 15 degrees of freedom
+          Multiple R-squared:  0.9998,	Adjusted R-squared:  0.9998 
+          F-statistic: 7.403e+04 on 1 and 15 DF,  p-value: < 2.2e-16
+#+end_example
+
+        
+       Maybe that with this set of data summary.rq works... but it
+       still fails:
+       #+begin_src R :results output :session :exports both
+         library(quantreg)
+         summary(rq(data=set,formula=form_complete,tau=.05))
        #+end_src
 
        #+RESULTS:
-       #+begin_example
+       : Le chargement a nécessité le package : SparseM
+       : 
+       : Attachement du package : ‘SparseM’
+       : 
+       : The following object is masked from ‘package:base’:
+       : 
+       :     backsolve
+       : Error in rq.fit.br(x, y, tau = tau, ...) : Singular design matrix
 
-       Call:
-       lm(formula = form_complete, data = df, weights = g(E))
+       And what about the coefficients? It failed...
+       #+begin_src R :results output :session :exports both
+         rq(data=set,formula=form_complete,tau=.05)
+       #+end_src
 
-       Weighted Residuals:
-              Min         1Q     Median         3Q        Max 
-       -1.760e-05  2.357e-06  3.560e-06  7.449e-06  4.577e-05 
+       #+RESULTS:
+       : Error in rq.fit.br(x, y, tau = tau, ...) : Singular design matrix
 
-       Coefficients:
-                                            Estimate Std. Error t value Pr(>|t|)    
-       (Intercept)                         9.259e-11  2.185e-12   42.38   <2e-16 ***
-       elements_number                    -3.649e-11  5.511e-13  -66.21   <2e-16 ***
-       I(1/elements_number)               -1.995e-11  1.722e-12  -11.59   <2e-16 ***
-       I(1/y_component_number)             1.350e-10  1.142e-12  118.20   <2e-16 ***
-       vector_length                       3.646e-11  1.099e-13  331.60   <2e-16 ***
-       threads_number                     -4.121e-14  2.287e-15  -18.02   <2e-16 ***
-       I(1/threads_number)                 5.557e-09  6.196e-11   89.68   <2e-16 ***
-       lws_y                               9.079e-12  1.476e-14  615.01   <2e-16 ***
-       elements_number:y_component_number  4.010e-12  6.223e-14   64.43   <2e-16 ***
-       threads_number:lws_y               -5.583e-15  2.480e-17 -225.12   <2e-16 ***
-       elements_number:threads_number      3.455e-15  4.031e-16    8.57   <2e-16 ***
-       ---
-       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+       The main problem with methods is that supposed to be used with
+       a "symetric" search space, I mean rectangular or
+       square. Because of the constraints this is not the case and we
+       lose lots of points and we and up with not enough points to do
+       the regression correctly, it fails to compute some
+       coefficients. 
 
-       Residual standard error: 8.433e-06 on 23109 degrees of freedom
-       Multiple R-squared:  0.9924,	Adjusted R-squared:  0.9924 
-       F-statistic: 3.011e+05 on 10 and 23109 DF,  p-value: < 2.2e-16
-#+end_example
+******* TODO LHS
+******* TODO D-Opt
+****** TODO Optimization on the model to find the value
+******* DONE Understanding why the bfgs method of optim does not work with my regression
+        - Conclusion:
+          The reason why bfgs methods did not improve the starting
+          value is that the slope is nearly flat so I increase it by
+          multipling each coefficient.
+       #+begin_src sh :results output :exports both
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+       #+end_src
+
+       #+RESULTS:
 
        #+begin_src R :results output :session :exports both
-       summary(df)
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        summary(df)
        #+end_src
 
        #+RESULTS:
@@ -16354,23 +17088,416 @@ h[g.name.to_sym] = 1024
 #+end_example
 
        #+begin_src R :results output :session :exports both
-         f <- function(x){
-           predict(model_complete,x)
-         }
-
-         # start <- df[c(1,1,1,128,64)]
-         # start
-         # start<- data.frame( df[1,]$elements_number, df[1,]$y_component_number, df[1,]$vector_length, df[1,]$threads_number, df[1,]$time_per_pixel )
-         start <- (mean(df))[5:13]
-start         
-         # optim(start, f )
+         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+         g <- function(x) { f(x)/x^2 }
        #+end_src
 
        #+RESULTS:
-       : Warning message:
-       : In mean.default(df) :
-       :   l'argument n'est ni numérique, ni logique : renvoi de NA
-       : [1] NA NA NA NA NA NA NA NA NA
+       
+       BFGS doesn't work on a very simple case, there is no
+       improvement of the start value.:
+       #+begin_src R :results output :session :exports both
+         model <- time_per_pixel ~ elements_number # + I(1/elements_number)
+         fit <- lm(data=df,formula=model)
+         func <- function(x){
+             as.numeric(predict(fit,data.frame(elements_number=x[1]),interval="none"))
+         }
+         optim(c(5),func,method="L-BFGS-B",lower=1,upper=24)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       $par
+       [1] 5
+
+       $value
+       [1] 2.458811e-09
+
+       $counts
+       function gradient 
+              2        2 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+#+end_example
+
+       Let's test an even simpler one. L-BFGS-B Still doesn't works:
+       #+begin_src R :results output :session :exports both
+         model <- time_per_pixel ~ vector_length
+         fit <- lm(data=df,formula=model)
+         func <- function(x){
+             as.numeric(predict(fit,data.frame(vector_length=x[1]),interval="none"))
+         }
+         optim(c(5),func,method="Brent",lower=1,upper=24)
+         optim(c(5),func,method="L-BFGS-B",lower=1,upper=24)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       $par
+       [1] 1
+
+       $value
+       [1] 9.300069e-10
+
+       $counts
+       function gradient 
+             NA       NA 
+
+       $convergence
+       [1] 0
+
+       $message
+       NULL
+       $par
+       [1] 5
+
+       $value
+       [1] 1.845604e-09
+
+       $counts
+       function gradient 
+              2        2 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+#+end_example
+
+       Maybe it cannot compute the gradiant because the expression is
+       not available. In fact it is because the slope is to low,
+       almost flat:
+       #+begin_src R :results output :session :exports both
+         func2 <- function(x){
+             as.numeric(fit$coefficients[1])*1e11 + as.numeric(fit$coefficients[2])*1e11 * x[1]
+         }
+         func3 <- function(x){
+             7.011077e-10 + 2.288992e-10 * x[1]
+         }
+         func4 <- function(x){
+             7.011077e-4 + 2.288992e-4 * x[1]
+         }
+         func5 <- function(x){
+             7.011077e-6 + 2.288992e-6 * x[1]
+         }
+         as.numeric(fit$coefficients[1])
+         as.numeric(fit$coefficients[2])
+         optim(c(10),func2,method="L-BFGS-B",lower=1,upper=24)
+         optim(c(10),func3,method="L-BFGS-B",lower=1,upper=24)
+         optim(c(10),func4,method="L-BFGS-B",lower=1,upper=24)
+         optim(c(10),func5,method="L-BFGS-B",lower=1,upper=24)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       [1] 7.011077e-10
+       [1] 2.288992e-10
+       $par
+       [1] 1
+
+       $value
+       [1] 93.00069
+
+       $counts
+       function gradient 
+              2        2 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+       $par
+       [1] 10
+
+       $value
+       [1] 2.9901e-09
+
+       $counts
+       function gradient 
+              2        2 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+       $par
+       [1] 1
+
+       $value
+       [1] 0.0009300069
+
+       $counts
+       function gradient 
+             11       11 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+       $par
+       [1] 9.999998
+
+       $value
+       [1] 2.990099e-05
+
+       $counts
+       function gradient 
+              2        2 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+       #+end_example
+
+       Same problem with another package:
+       #+begin_src R :results output :session :exports both
+         library(lbfgsb3)
+         func2 <- function(x){
+             as.numeric(fit$coefficients[1]) + as.numeric(fit$coefficients[2]) * x[1]
+         }
+         a<-lbfgsb3(c(10),func2,lower=1,upper=16)
+         a
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       $prm
+       [1] 10
+
+       $f
+       [1] 2.9901e-09
+
+       $g
+       [1] 2.288992e-10
+
+       $info
+       $info$task
+       [1] "START"
+
+       $info$itask
+       [1] 7
+
+       $info$lsave
+       [1] FALSE  TRUE  TRUE FALSE
+
+       $info$icsave
+       [1] 0
+
+       $info$dsave
+        [1] 1.000000e+00 0.000000e+00 2.220446e-09 0.000000e+00 2.220446e-16
+        [6] 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00
+       [11] 0.000000e+00 0.000000e+00 2.288992e-10 0.000000e+00 0.000000e+00
+       [16] 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00
+       [21] 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00
+       [26] 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00
+
+       $info$isave
+        [1]   5  25 100   1   6  11  36  61  86 186 286 287 288 289 290 291   0   0   0
+       [20]   0   0   0   0   8   0   0   1   0   0   0   0   0   0   1   0   0   0   1
+       [39]   0   0   0   0   0   0
+#+end_example
+
+       Is multiplying coef correct? It seems to have the same shape:
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         model <- time_per_pixel ~ elements_number + I(1/elements_number)
+         fit <- lm(data=df,formula=model)
+         func1 <- function(x){
+             as.numeric(fit$coefficients[1]) + as.numeric(fit$coefficients[2]) * x + as.numeric(fit$coefficients[3]) * 1 / x
+         }
+         func2 <- function(x){
+             as.numeric(fit$coefficients[1])*1e11 + as.numeric(fit$coefficients[2])*1e11 * x + as.numeric(fit$coefficients[3])*1e11 * 1 / x
+         }
+         default <- par()
+         par(mfrow = c(1, 2), oma = c(0, 0, 2, 0))
+         plot(func1)
+         plot(func2)
+         par(default)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-3066ESq/figure3066alB.png]]
+
+       So I should multiple all my coef by 1e11:
+       #+begin_src R :results output :session :exports both
+         model <- time_per_pixel ~ elements_number + I(1/elements_number)
+         fit <- lm(data=df,formula=model)
+         fit$coefficients <- fit$coefficients*1e11
+         func <- function(x){
+             as.numeric(predict(fit,data.frame(elements_number=x[1]),interval="none"))
+         }
+         optim(c(5),func,method="L-BFGS-B",lower=1,upper=24)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       $par
+       [1] 24
+
+       $value
+       [1] 79.09117
+
+       $counts
+       function gradient 
+              3        3 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+       #+end_example
+
+******* TODO Testing
+ 
+       - complex case:
+         #+begin_src R :results output :session :exports both
+           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           h <- function(x) {pmin(g(x),1e15)}
+           
+           model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+               I(1/y_component_number) + 
+               vector_length + 
+               threads_number + I(1/threads_number) + 
+               lws_y + 
+               elements_number:y_component_number +
+               threads_number:lws_y +
+               threads_number:elements_number
+           
+           fit <- lm(data=df,formula=model)
+           for(i in 1:200){
+               E <- residuals(fit)
+               fit <- lm(data=df,formula=model,weight=g(E))
+           }
+           
+           fit <- rq(data=df,formula=model,tau=.05)
+           fit$coefficients <- fit$coefficients*1e11
+           func <- function(x){
+               as.numeric(predict(fit,data.frame(elements_number=x[1], y_component_number=x[2], vector_length=x[3], threads_number=x[4], lws_y=x[5]),interval="none"))
+           }
+         #+end_src
+
+         #+RESULTS:
+
+         The results corresponds to what we obtain with the model:
+         #+begin_src R :results output :session :exports both
+           optim(c(2,6,2,256,5),func,method="L-BFGS-B",lower=c(1,1,1,32,1),upper=c(24,6,16,1024,1024))
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+         $par
+         [1]  24.000000   1.183297   1.000000 404.301994   1.000000
+
+         $value
+         [1] -48.24422
+
+         $counts
+         function gradient 
+               31       31 
+
+         $convergence
+         [1] 0
+
+         $message
+         [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+         #+end_example
+
+         But the closest combination doesn't exist. Because All
+         combinations with more than 6 elements on the x-axis are
+         reject by the constraints:
+         #+begin_src R :results output :session :exports both
+          df[df$elements_number==24 & df$y_component_number==1 & df$vector_length==1 & df$threads_number==512 & df$lws_y==1 ,]
+          df[df$y_component_number==1 & df$vector_length==1 & df$threads_number==512 & df$lws_y==1 ,]
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+         [1] elements_number    y_component_number vector_length      temporary_size    
+         [5] vector_recompute   load_overlap       threads_number     lws_y             
+         [9] time_per_pixel    
+         <0 rows> (or 0-length row.names)
+              elements_number y_component_number vector_length temporary_size
+         391                3                  1             1              2
+         452                4                  1             1              4
+         860                4                  1             1              2
+         1057               2                  1             1              2
+         1185               3                  1             1              2
+         1587               2                  1             1              4
+         1780               1                  1             1              4
+         2323               3                  1             1              4
+         2397               2                  1             1              4
+         3775               4                  1             1              2
+         4465               1                  1             1              2
+         4496               4                  1             1              4
+         4961               3                  1             1              4
+         5485               2                  1             1              2
+         6052               1                  1             1              2
+         6088               1                  1             1              4
+              vector_recompute load_overlap threads_number lws_y time_per_pixel
+         391              true         true            512     1   3.378041e-10
+         452              true        false            512     1   3.304370e-10
+         860              true        false            512     1   3.300297e-10
+         1057             true        false            512     1   2.829691e-10
+         1185             true        false            512     1   3.383311e-10
+         1587             true         true            512     1   2.878744e-10
+         1780             true         true            512     1   2.410064e-10
+         2323             true        false            512     1   3.397962e-10
+         2397             true        false            512     1   2.877417e-10
+         3775             true         true            512     1   3.283868e-10
+         4465             true         true            512     1   2.404110e-10
+         4496             true         true            512     1   3.310624e-10
+         4961             true         true            512     1   3.398253e-10
+         5485             true         true            512     1   2.843226e-10
+         6052             true        false            512     1   2.422354e-10
+         6088             true        false            512     1   2.410245e-10
+#+end_example
+
+******* Playing with optim 
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         p <- poly.calc(-1:5)
+         func <- as.function(p)
+         plot(func,0,5)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-5109ISg/figure5109lzc.png]]
+
+       #+begin_src R :results output :session :exports both
+         func2 <- function(x){
+             func(x[1])
+         }
+         optim(c(3),func2,method="L-BFGS-B", lower=0,upper=5)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       $par
+       [1] 2.530655
+
+       $value
+       [1] -12.35878
+
+       $counts
+       function gradient 
+              8        8 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+#+end_example
 
 * Mai
 ** 2016-05-02
@@ -16994,3 +18121,40 @@ start
 
       #+RESULTS:
             [[file:img/20160425/bepo-HP-Z800-Workstation/factor_impact_mean_reduce3_th_nb_distrib_h.png]]
+** 2016-05-11
+*** Summary.rq backsolve error   
+   Not sure it helps but it is the most advanced reponse I found: 
+   http://stackoverflow.com/questions/18754324/improving-a-badly-conditioned-matrix/19716062#19716062
+   Posted on stackoverflow:
+   http://stackoverflow.com/questions/37165467/backsolve-error-with-summary-rq-on-heteroscedastic-data
+
+   #+begin_src R :results output :session :exports both
+     df <- read.csv("https://raw.githubusercontent.com/swhatelse/rq_problem/master/data.csv")
+     fit_log <- rq(data=df,formula=I(log(time_per_pixel))~vector_length,tau=.05,method="fn")
+     fit <- rq(data=df,formula=time_per_pixel~vector_length,tau=.05,method="fn")
+     summary(fit,se="nid")
+     fit
+     exp(fit_log$coefficients)
+   #+end_src
+
+   #+RESULTS:
+   #+begin_example
+   Error in base::backsolve(r, x, k = k, upper.tri = upper.tri, transpose = transpose,  : 
+     matrice singulière dans 'backsolve'. Premier zéro sur la diagonale [1]
+   De plus : Warning message:
+   In summary.rq(fit, se = "nid") : 14688 non-positive fis
+   Call:
+   rq(formula = time_per_pixel ~ vector_length, tau = 0.05, data = df, 
+       method = "fn")
+
+   Coefficients:
+     (Intercept) vector_length 
+    5.493212e-11  2.338409e-11 
+
+   Degrees of freedom: 23120 total; 23118 residual
+     (Intercept) vector_length 
+    1.274531e-10  1.093925e+00
+#+end_example
+
+** 2016-05-12
+   - [ ] Check many points we lose with constraints.
