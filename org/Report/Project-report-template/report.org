@@ -397,8 +397,32 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
   optimizations working well on one supercomputer and bad on another
   one. The code must be specific to the platform target and porting
   applications is very time consumming and can also be very tricky.
+  
   In the last decade many attempt have been made to automate the
-  generation of optimized code.
+  generation of optimized code. The first approach is to rely on the
+  compiler to perform the optimizations. Compilers are capable of
+  detecting instructions that can be vectorized or parallelized. They
+  are also capable of many loop optimizations such  loop unrolling,
+  nest transformation, software pipelining, etc... Yet it exists many
+  other opportunities to perform optimizations but it is to difficult
+  to exploit them automatically. Moreover, it is sometimes necessary
+  to rewrite the code in a slightly different way to enable the
+  compiler to be effective. 
+  That is why frameworks such Orio\cite{} for source-to-source
+  transformation have been developed. This approach generally use
+  annotations to describe the optimizations and generate the optimized
+  code. The drawbacks are that the it is restricted to one language
+  because the input and output languages are the same and it is
+  difficult to exploit different accelerators. Also it does not allow
+  operations that change the memory mapping such transposing a matrix.
+  The meta-programming approach gives more flexibility to the
+  programmer as it provides a higher level of abstraction. It consists
+  in using high level languages to descriptions the computation and
+  the optimizations.  This allow the programmer to propose
+  optimizations that the compiler would not be allowed to do.[...] 
+
+  Usually there are many optimization options,
+  
   
 * Problem analysis
 * State of the art
