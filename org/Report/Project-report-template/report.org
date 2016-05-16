@@ -430,9 +430,10 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    #+begin_src R :results output graphics :file img/function_examples.png :exports both :width 600 :height 400 :session
      library(polynom)
      default <- par()
-     par(mfrow = c(1, 2), oma = c(0, 0, 2, 0))
+     par(mfrow = c(2, 2), oma = c(0, 0, 0, 0))
      plot(poly.calc(1:2), xlim=range(-10:10))
      plot(poly.calc(-1:5))
+     plot(abs,xlim=range(-5,5))
      par(default)
    #+end_src
 
