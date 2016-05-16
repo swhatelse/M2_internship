@@ -421,11 +421,25 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
   the optimizations.  This allow the programmer to propose
   optimizations that the compiler would not be allowed to do.[...] 
 
-  Usually there are many optimization options,
+  Usually there are many optimization options, there are the compiler flags
   
   
 * Problem analysis
 * State of the art
+** Autotuning
+   #+begin_src R :results output graphics :file img/function_examples.png :exports both :width 600 :height 400 :session
+     library(polynom)
+     default <- par()
+     par(mfrow = c(1, 2), oma = c(0, 0, 2, 0))
+     plot(poly.calc(1:2), xlim=range(-10:10))
+     plot(poly.calc(-1:5))
+     par(default)
+   #+end_src
+
+   #+RESULTS:
+   [[file:img/function_examples.png]]
+
+** Design of experiments
 * Methods
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
