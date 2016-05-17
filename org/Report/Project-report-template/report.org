@@ -115,15 +115,18 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
       exploit them automatically. Sometimes, the source code has to be
       rewritten in a slightly different way to enable the compiler to
       be effective
-    - The source-to-source transformation (C to C, Fortran to Fortran,
-      ...). Framework for transform code. Orio. Serge
-      Guelton. Difficile mais limité à un seul langage, et
-      exploitation d'accelérateurs différents difficile. Ça ne se
-      permettra jamais de changer le mapping des données en mémoire
-    - Meta-programming approach: allow the programmer to propose
-      optimizations that the compiler would not be allowed to do
-      (because of the language or because it would require information
-      on the application that cannot be given to the compiler).
+    - Parametric optimization:
+      - The source-to-source transformation (C to C, Fortran to Fortran,
+        ...). Framework for transform code. Orio. Serge
+        Guelton. Difficile mais limité à un seul langage, et
+        exploitation d'accelérateurs différents difficile. Ça ne se
+        permettra jamais de changer le mapping des données en mémoire
+      - Meta-programming approach: allow the programmer to propose
+        optimizations that the compiler would not be allowed to do
+        (because of the language or because it would require information
+        on the application that cannot be given to the compiler).
+        # But it is also the case with source-to-source transformation
+        # right?    
 *** Optimizing: the auto-tuning approach
     - Many optimization options: compiler flags, source-to-source
       transformations, higher-level modifications (tile/block/vector size).
@@ -407,21 +410,26 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
   other opportunities to perform optimizations but it is to difficult
   to exploit them automatically. Moreover, it is sometimes necessary
   to rewrite the code in a slightly different way to enable the
-  compiler to be effective. 
-  That is why frameworks such Orio\cite{} for source-to-source
+  compiler to be effective. That is why frameworks such Orio\cite{} for source-to-source
   transformation have been developed. This approach generally use
-  annotations to describe the optimizations and generate the optimized
-  code. The drawbacks are that the it is restricted to one language
+  annotations to describe the optimizations. It allows to bring user's
+  knowledge in the process of generation of an optimized code. The
+  drawbacks are that the it is restricted to one language 
   because the input and output languages are the same and it is
   difficult to exploit different accelerators. Also it does not allow
   operations that change the memory mapping such transposing a matrix.
-  The meta-programming approach gives more flexibility to the
-  programmer as it provides a higher level of abstraction. It consists
-  in using high level languages to descriptions the computation and
-  the optimizations.  This allow the programmer to propose
-  optimizations that the compiler would not be allowed to do.[...] 
+  The meta-programming approach goes further by giving more
+  flexibility to the programmer as it provides a higher level of
+  abstraction. It consists in using high level languages to
+  descriptions the computation and the optimizations.  This allow the
+  programmer to propose optimizations that the compiler would not be
+  allowed to do.[...]  
 
-  Usually there are many optimization options, there are the compiler flags
+  The problem is, usually there are many optimization options, there
+  are the compiler flags, source to transformation and high-level
+  modifications (e.g. the size of the a tile, block or
+  vector). The auto-tuning consider all this a huge optimization
+  problem and try to find the best combination of parameters.
   
   
 * Problem analysis
