@@ -14656,7 +14656,7 @@ h[g.name.to_sym] = 1024
      selected experiment design by using the least point as possible.
 
      - [X] Compare weighted with rq and geom_quantile
-     - [ ] Take a look at predict
+     - [X] Take a look at predict
      - [ ] Try optim on the model
 
 ****** TODO How does it really work?
@@ -15747,7 +15747,8 @@ h[g.name.to_sym] = 1024
        3rd Qu.:2.001e-09  
        Max.   :4.452e-08
 #+end_example
-******* DONE Model approximation
+
+******* DONE Model approximation        
        Lets try to build a model by hypothesis on the role of the factors:
        - elements number determines the number of threads used to
          perform the computation. The number of threads is given by
@@ -16121,6 +16122,73 @@ h[g.name.to_sym] = 1024
 
        #+RESULTS:
        [[file:img/20160402/pilipili2/model_elem_nb_p.png]]
+
+       I just figure out that the model is not accurate yet because
+       the coeffcient of y component is positive instead of negative
+       (because we saw that we want the bigger value for it)
+       #+begin_src R :results output :session :exports both
+           form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+                                             y_component_number + I(1/y_component_number) + 
+                                             vector_length + 
+                                             threads_number + I(1/threads_number) + 
+                                             lws_y + 
+                                             elements_number:y_component_number +
+                                             threads_number:lws_y +
+                                             threads_number:elements_number
+
+           model_complete <- lm(data=df,formula=form_complete)
+           for(i in 1:200){
+             E <- residuals(model_complete)
+             model_complete <- lm(data=df,formula=form_complete,weight=g(E))
+           }
+           summary(model_complete)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = form_complete, data = df, weights = g(E))
+
+       Weighted Residuals:
+              Min         1Q     Median         3Q        Max 
+       -1.810e-05  2.364e-06  3.765e-06  7.541e-06  4.591e-05 
+
+       Coefficients:
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                         6.704e-11  7.614e-13   88.05   <2e-16 ***
+       vector_length                       3.058e-11  1.027e-13  297.62   <2e-16 ***
+       threads_number                      4.136e-14  2.650e-15   15.61   <2e-16 ***
+       I(1/threads_number)                 4.117e-09  6.331e-11   65.03   <2e-16 ***
+       lws_y                               8.986e-12  5.707e-15 1574.37   <2e-16 ***
+       elements_number:y_component_number -1.167e-12  2.456e-14  -47.51   <2e-16 ***
+       threads_number:lws_y               -5.463e-15  1.015e-17 -538.17   <2e-16 ***
+       threads_number:elements_number     -1.363e-14  2.768e-16  -49.26   <2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 8.527e-06 on 23112 degrees of freedom
+       Multiple R-squared:  0.9999,	Adjusted R-squared:  0.9999 
+       F-statistic: 5.774e+07 on 7 and 23112 DF,  p-value: < 2.2e-16
+#+end_example
+
+       #+begin_src R :results output graphics :file img/20160402/pilipili2/model_y_comp_nb_p.png :exports both :width 600 :height 400 :session
+         form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+
+         model_y_comp <- lm(data=df,formula=form_y_comp)
+         for(i in 1:200){
+             E <- residuals(model_y_comp)
+             model_y_comp <- lm(data=df,formula=form_y_comp,weight=g(E))
+         }
+
+         plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
+         lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+                
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160402/pilipili2/model_y_comp_nb_p.png]]
+
 ******* DONE Model refinement
        We have lots of noise but we already know how to set the
        majority of the parameters. So how does elements number looks
@@ -17125,6 +17193,68 @@ h[g.name.to_sym] = 1024
        [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
 #+end_example
 
+       #+begin_src R :results output :session :exports both
+       summary(fit) 
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm(formula = model, data = df)
+
+       Residuals:
+              Min         1Q     Median         3Q        Max 
+       -2.727e-09 -1.806e-09 -1.019e-09  2.420e-10  4.157e-08 
+
+       Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)      3.079e-09  4.157e-11   74.07   <2e-16 ***
+       elements_number -1.240e-10  3.953e-12  -31.36   <2e-16 ***
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 3.638e-09 on 23118 degrees of freedom
+       Multiple R-squared:  0.04081,	Adjusted R-squared:  0.04077 
+       F-statistic: 983.7 on 1 and 23118 DF,  p-value: < 2.2e-16
+#+end_example
+
+       #+begin_src R :results output :session :exports both
+         func(24)
+       #+end_src
+
+       #+RESULTS:
+       : [1] 1.029919e-10
+
+       The slope value is too small for the algorithm, the solution is
+       to normalize:
+       #+begin_src R :results output :session :exports both
+         func <- function(x){
+             as.numeric(predict(fit,data.frame(elements_number=x[1]),interval="none"))/as.numeric(predict(fit,data.frame(elements_number=3),interval="none"))
+         }
+         optim(c(5),func,method="L-BFGS-B",lower=1,upper=24)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+       $par
+       [1] 24
+
+       $value
+       [1] 0.03804942
+
+       $counts
+       function gradient 
+              3        3 
+
+       $convergence
+       [1] 0
+
+       $message
+       [1] "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+#+end_example
+
+
        Let's test an even simpler one. L-BFGS-B Still doesn't works:
        #+begin_src R :results output :session :exports both
          model <- time_per_pixel ~ vector_length
@@ -17367,7 +17497,7 @@ h[g.name.to_sym] = 1024
            h <- function(x) {pmin(g(x),1e15)}
            
            model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
-               I(1/y_component_number) + 
+               y_component_number + I(1/y_component_number) + 
                vector_length + 
                threads_number + I(1/threads_number) + 
                lws_y + 
@@ -17381,7 +17511,6 @@ h[g.name.to_sym] = 1024
                fit <- lm(data=df,formula=model,weight=g(E))
            }
            
-           fit <- rq(data=df,formula=model,tau=.05)
            fit$coefficients <- fit$coefficients*1e11
            func <- function(x){
                as.numeric(predict(fit,data.frame(elements_number=x[1], y_component_number=x[2], vector_length=x[3], threads_number=x[4], lws_y=x[5]),interval="none"))
@@ -17418,8 +17547,8 @@ h[g.name.to_sym] = 1024
          combinations with more than 6 elements on the x-axis are
          reject by the constraints:
          #+begin_src R :results output :session :exports both
-          df[df$elements_number==24 & df$y_component_number==1 & df$vector_length==1 & df$threads_number==512 & df$lws_y==1 ,]
-          df[df$y_component_number==1 & df$vector_length==1 & df$threads_number==512 & df$lws_y==1 ,]
+           df[df$elements_number==24 & df$y_component_number==1 & df$vector_length==1 & df$threads_number==512 & df$lws_y==1 ,]
+           df[df$y_component_number==1 & df$vector_length==1 & df$threads_number==512 & df$lws_y==1 ,]
          #+end_src
 
          #+RESULTS:
@@ -17463,7 +17592,11 @@ h[g.name.to_sym] = 1024
          6052             true        false            512     1   2.422354e-10
          6088             true        false            512     1   2.410245e-10
 #+end_example
-
+         
+******* TODO Deal with constraint / non-continuous functions
+        Constraint can be taken into account in the objective
+        function.
+        Fictive value to hide non-continuous.
 ******* Playing with optim 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          p <- poly.calc(-1:5)
