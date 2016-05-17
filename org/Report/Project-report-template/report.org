@@ -122,7 +122,7 @@ Text
 # #+END_abstract
 
 * Plan                                                             
-** Introduction [0/3]
+** Introduction [1/3]
 *** Why is performance optimization difficult
    - In HPC code optimization crucial to exploit very complex hardware.
      Cannot wait for the next generation to bring speedup because it
@@ -179,11 +179,19 @@ Text
     We relied on BOAST, a metaprogramming... (Semi automatic approach
      \to gives back power to the user, framework ruby generating
      portable code in C, Fortran, OpenCL. DSL)  and investigate various
-     statisical techniques inspired from the design of expeirments
+     statistical techniques inspired from the design of expeirments
      field that emphasizes on reducing experiment cost.
 *** My contribution
-    - Complex methods used but no explanation on why they work
+    - (Complex methods used but no explanation on why they work)
     - Try a simple approach and try to understand it deeply
+      - Getting knowledge from the problem to guide the user:
+        - Take into account hypothesis
+        - Linear regression methods to model the search space \to
+          finding good model based on hypothesis. Allow the user to
+          check this hypothesis. And understand the problem.
+        - The problem with regression of expectation  
+        - Design of experiments \to reducing number of experiments
+      
     - Analytics methods & experiments design
     - Study of the search space on simple example
       
@@ -485,6 +493,24 @@ Text
    various statistical techniques inspired from the design of
    experiments that emphasizes on reducing experiment cost.
 ** My contribution
+   My contribution during this internship was to try an approach 
+   that take into account the hypothesis the developer is doing to
+   make model of the impact of the parameters in order to  guide the
+   user in the tuning process. More precisely we investigated to know
+   if linear regression and design experiments could bring accurate
+   information using less point as possible. For the modelization of
+   computer phenomena, linear model are generally enough to get accurate
+   prediction because the models are not too complex. We tested this
+   approach on a simple kernel that compute the Laplacian of an
+   image. We found that the linear regression is able to be accurate
+   enough will being able to make simple model that traduce how the
+   different optimization parameters can acts. However we also figured
+   out regression of expectation is not suited with current
+   architecture as it was the case two decades ago\cite{}. To model
+   phenomena with non-uniform noise quantile regression is a better
+   solution. 
+
+
 ** Structure  of the report
 
 * Problem analysis
