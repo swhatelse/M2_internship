@@ -1,6 +1,6 @@
 #+TITLE: Optimization of the Auto-Tuning of HPC Application Computing Kernels
 #+LANGUAGE: en
-#+Author:
+#+Author: Steven QUINITO MASNADA
 #+TAGS: noexport(n) deprecated(d)
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
@@ -87,10 +87,39 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 \session{$[$June/September$]$\hfill year}
 #+END_LaTeX
 
-#+BEGIN_abstract
-  Blablabla
-  \newpage
-#+END_abstract
+#+BEGIN_LaTeX
+\selectlanguage{english} % french si rapport en français
+\frontmatter
+\begin{titlingpage}
+\maketitle
+\end{titlingpage}
+
+%\small
+\setlength{\parskip}{-1pt plus 1pt}
+
+\renewcommand{\abstracttextfont}{\normalfont}
+\abstractintoc
+\begin{abstract} 
+Text 
+\end{abstract}
+\abstractintoc
+\renewcommand\abstractname{R\'esum\'e}
+\selectlanguage{english}% french si rapport en français
+
+\cleardoublepage
+
+\tableofcontents* % the asterisk means that the table of contents itself isn't put into the ToC
+\normalsize
+
+\mainmatter
+\SingleSpace
+
+#+END_LaTeX
+
+# #+BEGIN_abstract
+#   Blablabla
+#   \newpage
+# #+END_abstract
 
 * Plan                                                             
 ** Introduction [0/3]
@@ -352,6 +381,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
    And finally I saved the world...
 
 * Introduction
+** Why is performance optimization difficult?
   From genome sequencing to [...] including climate modeling, [...]
   all this problematic have something in common, the need of huge
   power of computation. And High Performance Computing (HPC) is
@@ -400,7 +430,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
   optimizations working well on one supercomputer and bad on another
   one. The code must be specific to the platform target and porting
   applications is very time consumming and can also be very tricky.
-  
+** Code generation and opportunities  
   In the last decade many attempt have been made to automate the
   generation of optimized code. The first approach is to rely on the
   compiler to perform the optimizations. Compilers are capable of
@@ -424,7 +454,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
   descriptions the computation and the optimizations.  This allow the
   programmer to propose optimizations that the compiler would not be
   allowed to do.[...]  
-
+** Optimizing: the auto-tuning approach
   The problem is, usually there are many optimization options, there
   are the compiler flags, source to transformation and high-level
   modifications (e.g. the size of the a tile, block or
