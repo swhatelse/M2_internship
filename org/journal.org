@@ -167,6 +167,8 @@
    - extraGrid
    - gsl
    - polynom
+   - DoE.base
+   - DoE.wrapper
 * February
 ** 2016-02-02 Notes from Arnaud :Arnaud:
 - [[http://mescal.imag.fr/membres/arnaud.legrand/research/M2R_boast.pdf][internships]]
@@ -16528,8 +16530,7 @@ h[g.name.to_sym] = 1024
         Multiple R-squared:  0.7996,	Adjusted R-squared:  0.7771 
         F-statistic: 35.51 on 10 and 89 DF,  p-value: < 2.2e-16
 #+end_example
-
-        
+                
 ******* DONE Screening design
         #+begin_src sh :results output :exports both
           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -17114,6 +17115,401 @@ h[g.name.to_sym] = 1024
 
 ******* TODO LHS
 ******* TODO D-Opt
+        Lets use the entire search space to generate a D-optimal design:
+        #+begin_src R :results output :session :exports both
+          kernel_size <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) {
+                                                  # load_overlap <- if (load_overlap == "true") 1 else 0
+              vector_number <- ceiling((elements_number / y_component_number) / vector_length)
+              
+              tempload <- (1 - load_overlap) * (vector_number * vector_length) / vector_length * vector_length
+              temp <-  load_overlap * 3 * vector_number * (y_component_number+2) * vector_length
+              res <- vector_number * y_component_number * vector_length
+              tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+              out_vec = (1 - load_overlap) * tempc
+              resc <- vector_number * y_component_number * temporary_size * vector_length
+
+              tot <- (tempload + temp + res + tempc + out_vec + resc) * threads_number
+          }
+
+          check_constraint <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap){
+              res <- if(#load_overlap %in% 0:1 &
+                        lws_y <= threads_number &
+                        elements_number %% y_component_number == 0 &
+                        elements_number %/% y_component_number <= 4 &
+                        kernel_size(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) < kernel_size(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024)
+                        ) T else F
+          }
+
+          elements_number_values <- as.numeric(levels(as.factor(df$elements_number)))
+          y_component_number_values <- as.numeric(levels(as.factor(df$y_component_number)))
+          vector_length_values <- as.numeric(levels(as.factor(df$vector_length)))
+          load_overlap_values <- c(0,1) # levels(df$load_overlap)
+          threads_number_values <- as.numeric(levels(as.factor(df$threads_number)))
+          temporary_sizes_values <- as.numeric(levels(as.factor(df$temporary_size)))
+          lws_y_values <- as.numeric(levels(as.factor(df$lws_y)))
+
+          elements_number <- c()
+          y_component_number <- c()
+          vector_length <- c()
+          threads_number <- c()
+          lws_y <- c()
+          temporary_size <- c()
+          load_overlap <- c()
+
+          for(e in elements_number_values){
+              for(y in y_component_number_values){
+                  for(v in vector_length_values){
+                      for(t in threads_number_values){
+                          for(l in lws_y_values) {
+                              for(s in temporary_sizes_values){
+                                  for(o in load_overlap_values){
+                                      if(check_constraint(elements_number=e, y_component_number=y, vector_length=v, threads_number=t, lws_y=l, temporary_size=s, load_overlap=o)){
+                                          elements_number[length(elements_number)+1] <- e
+                                          y_component_number[length(y_component_number)+1] <- y
+                                          vector_length[length(vector_length)+1] <- v
+                                          threads_number[length(threads_number)+1] <- t
+                                          lws_y[length(lws_y)+1] <- l
+                                          temporary_size[length(temporary_size)+1] <- s
+                                          load_overlap[length(load_overlap)+1] <- o
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+
+          complete_set <- data.frame(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap)
+          summary(complete_set)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number  y_component_number vector_length    threads_number  
+         Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :  32.0  
+         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.000   1st Qu.:  64.0  
+         Median : 6.000   Median :3.000      Median : 4.000   Median : 256.0  
+         Mean   : 8.602   Mean   :3.441      Mean   : 5.721   Mean   : 367.9  
+         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.000   3rd Qu.: 512.0  
+         Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :1024.0  
+             lws_y         temporary_size   load_overlap   
+         Min.   :   1.00   Min.   :2.000   Min.   :0.0000  
+         1st Qu.:   4.00   1st Qu.:2.000   1st Qu.:0.0000  
+         Median :  16.00   Median :2.000   Median :1.0000  
+         Mean   :  73.56   Mean   :2.974   Mean   :0.5074  
+         3rd Qu.:  64.00   3rd Qu.:4.000   3rd Qu.:1.0000  
+         Max.   :1024.00   Max.   :4.000   Max.   :1.0000
+        #+end_example
+
+        #+begin_src R :results output :session :exports both
+          library(DoE.base)
+          library(DoE.wrapper)
+
+
+          Dopt <- Dopt.design( 100 , data=complete_set, formula= 
+                                                           "~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size + load_overlap)" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          set <- data.frame()
+          for(i in 1:nrow(Dopt)){
+              set <- rbind(set, df[ df$elements_number == Dopt$elements_number[i]
+                                   & df$y_component_number == Dopt$y_component_number[i]
+                                   & df$vector_length == Dopt$vector_length[i]
+                                   & df$temporary_size == Dopt$temporary_size[i] 
+                                   & df$threads_number == Dopt$threads_number[i]
+                                   & df$load_overlap == (if (Dopt$load_overlap[i] == 1) "true" else "false")
+                                   & df$lws_y == Dopt$lws_y[i], ])
+
+
+          }
+          summary(set)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number y_component_number vector_length   temporary_size
+         Min.   : 1.0    Min.   :1.00       Min.   : 1.00   Min.   :2.00  
+         1st Qu.: 4.0    1st Qu.:1.00       1st Qu.: 1.00   1st Qu.:2.00  
+         Median : 6.0    Median :5.00       Median : 4.00   Median :4.00  
+         Mean   : 9.9    Mean   :3.96       Mean   : 7.25   Mean   :3.02  
+         3rd Qu.:20.0    3rd Qu.:6.00       3rd Qu.:16.00   3rd Qu.:4.00  
+         Max.   :24.0    Max.   :6.00       Max.   :16.00   Max.   :4.00  
+         vector_recompute load_overlap threads_number       lws_y       
+         true:100         false:49     Min.   :  32.0   Min.   :   1.0  
+                          true :51     1st Qu.:  64.0   1st Qu.:   2.0  
+                                       Median :1024.0   Median :  16.0  
+                                       Mean   : 596.2   Mean   : 273.3  
+                                       3rd Qu.:1024.0   3rd Qu.: 448.0  
+                                       Max.   :1024.0   Max.   :1024.0  
+         time_per_pixel     
+         Min.   :1.181e-10  
+         1st Qu.:3.844e-10  
+         Median :1.375e-09  
+         Mean   :4.708e-09  
+         3rd Qu.:3.972e-09  
+         Max.   :4.452e-08
+#+end_example
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          plot(Dopt)
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-4202M5s/figure4202INU.png]]
+
+        Let's see if we can identify the parameters that have an
+        impact. It hardly find revelant parameters:
+        #+begin_src R :results output :session :exports both
+          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+
+          model <- time_per_pixel ~ (elements_number + y_component_number + vector_length + threads_number + lws_y + temporary_size + load_overlap)
+          fit <- lm(data=set,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              model_y_comp <- lm(data=set,formula=model,weight=g(E))
+          }
+          summary(fit)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = model, data = set)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -9.818e-09 -3.099e-09 -4.442e-10  1.220e-09  2.808e-08 
+
+        Coefficients:
+                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)         5.331e-10  2.741e-09   0.194  0.84625    
+        elements_number    -2.790e-10  9.293e-11  -3.002  0.00345 ** 
+        y_component_number  6.559e-10  3.672e-10   1.786  0.07738 .  
+        vector_length       5.664e-10  9.550e-11   5.931 5.22e-08 ***
+        threads_number     -2.496e-12  1.597e-12  -1.563  0.12150    
+        lws_y               1.045e-11  1.674e-12   6.243 1.30e-08 ***
+        temporary_size     -2.876e-10  6.135e-10  -0.469  0.64027    
+        load_overlaptrue   -5.226e-10  1.227e-09  -0.426  0.67126    
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 6.13e-09 on 92 degrees of freedom
+        Multiple R-squared:  0.4816,	Adjusted R-squared:  0.4422 
+        F-statistic: 12.21 on 7 and 92 DF,  p-value: 6.04e-11
+        #+end_example
+
+        What if we already know the model can we do "one-shot"?:
+        #+begin_src R :results output :session :exports both
+          library(DoE.base)
+          library(DoE.wrapper)
+
+
+          Dopt <- Dopt.design( 100 , data=complete_set, formula= 
+                                                           "~ elements_number + I(1/elements_number) + 
+                                             y_component_number + I(1/y_component_number) + 
+                                             vector_length + 
+                                             threads_number + I(1/threads_number) + 
+                                             lws_y + 
+                                             elements_number:y_component_number +
+                                             threads_number:lws_y +
+                                             threads_number:elements_number" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          set <- data.frame()
+          for(i in 1:nrow(Dopt)){
+              set <- rbind(set, df[ df$elements_number == Dopt$elements_number[i]
+                                   & df$y_component_number == Dopt$y_component_number[i]
+                                   & df$vector_length == Dopt$vector_length[i]
+                                   & df$temporary_size == Dopt$temporary_size[i] 
+                                   & df$threads_number == Dopt$threads_number[i]
+                                   & df$load_overlap == (if (Dopt$load_overlap[i] == 1) "true" else "false")
+                                   & df$lws_y == Dopt$lws_y[i], ])
+
+
+          }
+          summary(set)
+
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number y_component_number vector_length   temporary_size
+         Min.   : 1.00   Min.   :1.00       Min.   : 1.00   Min.   :2.0   
+         1st Qu.: 2.00   1st Qu.:1.00       1st Qu.: 1.00   1st Qu.:2.0   
+         Median : 5.50   Median :3.00       Median : 4.00   Median :2.0   
+         Mean   : 9.08   Mean   :3.33       Mean   : 7.16   Mean   :2.6   
+         3rd Qu.:16.00   3rd Qu.:6.00       3rd Qu.:16.00   3rd Qu.:4.0   
+         Max.   :24.00   Max.   :6.00       Max.   :16.00   Max.   :4.0   
+         vector_recompute load_overlap threads_number       lws_y       
+         true:100         false:60     Min.   :  32.0   Min.   :   1.0  
+                          true :40     1st Qu.:  64.0   1st Qu.:   2.0  
+                                       Median : 384.0   Median :  32.0  
+                                       Mean   : 478.4   Mean   : 252.3  
+                                       3rd Qu.:1024.0   3rd Qu.: 512.0  
+                                       Max.   :1024.0   Max.   :1024.0  
+         time_per_pixel     
+         Min.   :1.196e-10  
+         1st Qu.:4.632e-10  
+         Median :2.388e-09  
+         Mean   :6.271e-09  
+         3rd Qu.:5.324e-09  
+         Max.   :4.452e-08
+#+end_example
+
+        100 points is not enough:
+        #+begin_src R :results output :session :exports both
+          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+
+          model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+                                             y_component_number + I(1/y_component_number) + 
+                                             vector_length + 
+                                             threads_number + I(1/threads_number) + 
+                                             lws_y + 
+                                             elements_number:y_component_number +
+                                             threads_number:lws_y +
+                                             threads_number:elements_number
+          fit <- lm(data=set,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              model_y_comp <- lm(data=set,formula=model,weight=g(E))
+          }
+          summary(fit)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = model, data = set)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -1.381e-08 -4.537e-09 -1.384e-09  3.319e-09  1.977e-08 
+
+        Coefficients:
+                                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)                        -2.162e-08  9.125e-09  -2.369  0.02003 *  
+        elements_number                     7.114e-10  6.273e-10   1.134  0.25983    
+        I(1/elements_number)                2.090e-08  4.501e-09   4.644 1.19e-05 ***
+        y_component_number                  2.101e-09  1.436e-09   1.463  0.14703    
+        I(1/y_component_number)             2.296e-10  5.941e-09   0.039  0.96926    
+        vector_length                       6.759e-10  1.078e-10   6.271 1.30e-08 ***
+        threads_number                      4.338e-12  3.501e-12   1.239  0.21869    
+        I(1/threads_number)                 2.911e-07  9.583e-08   3.038  0.00313 ** 
+        lws_y                               3.444e-11  8.552e-12   4.027  0.00012 ***
+        elements_number:y_component_number -1.327e-10  1.087e-10  -1.221  0.22545    
+        threads_number:lws_y               -2.037e-14  8.871e-15  -2.296  0.02406 *  
+        elements_number:threads_number     -1.566e-13  1.943e-13  -0.806  0.42231    
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 6.939e-09 on 88 degrees of freedom
+        Multiple R-squared:  0.6441,	Adjusted R-squared:  0.5997 
+        F-statistic: 14.48 on 11 and 88 DF,  p-value: 1.642e-15
+        #+end_example
+
+        To get the same information as the full space we need at least 
+        #+begin_src R :results output :session :exports both
+          library(DoE.base)
+          library(DoE.wrapper)
+
+
+          Dopt <- Dopt.design( 7000 , data=complete_set, formula= 
+                                                            "~ elements_number + I(1/elements_number) + 
+                                             y_component_number + I(1/y_component_number) + 
+                                             vector_length + 
+                                             threads_number + I(1/threads_number) + 
+                                             lws_y + 
+                                             elements_number:y_component_number +
+                                             threads_number:lws_y +
+                                             threads_number:elements_number" , nRepeat= 5 ,randomize= TRUE ,seed= 28517 )
+
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          set <- data.frame()
+          for(i in 1:nrow(Dopt)){
+              set <- rbind(set, df[ df$elements_number == Dopt$elements_number[i]
+                                   & df$y_component_number == Dopt$y_component_number[i]
+                                   & df$vector_length == Dopt$vector_length[i]
+                                   & df$temporary_size == Dopt$temporary_size[i] 
+                                   & df$threads_number == Dopt$threads_number[i]
+                                   & df$load_overlap == (if (Dopt$load_overlap[i] == 1) "true" else "false")
+                                   & df$lws_y == Dopt$lws_y[i], ])
+
+
+          }
+
+          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+
+          model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+              y_component_number + I(1/y_component_number) + 
+              vector_length + 
+              threads_number + I(1/threads_number) + 
+              lws_y + 
+              elements_number:y_component_number +
+              threads_number:lws_y +
+              threads_number:elements_number
+          fit <- lm(data=set,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              model_y_comp <- lm(data=set,formula=model,weight=g(E))
+          }
+          summary(fit)
+
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = model, data = set)
+
+        Residuals:
+               Min         1Q     Median         3Q        Max 
+        -7.368e-09 -1.161e-09 -1.270e-10  7.350e-10  3.428e-08 
+
+        Coefficients:
+                                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)                        -7.876e-10  4.596e-10  -1.714  0.08662 .  
+        elements_number                    -2.104e-10  3.433e-11  -6.128 9.38e-10 ***
+        I(1/elements_number)                3.679e-09  2.902e-10  12.679  < 2e-16 ***
+        y_component_number                  1.318e-10  7.904e-11   1.667  0.09556 .  
+        I(1/y_component_number)            -1.118e-09  3.174e-10  -3.522  0.00043 ***
+        vector_length                       2.232e-10  6.048e-12  36.903  < 2e-16 ***
+        threads_number                     -4.628e-13  1.853e-13  -2.498  0.01251 *  
+        I(1/threads_number)                 7.167e-08  4.505e-09  15.910  < 2e-16 ***
+        lws_y                               3.408e-11  6.567e-13  51.891  < 2e-16 ***
+        elements_number:y_component_number  1.672e-11  6.283e-12   2.662  0.00779 ** 
+        threads_number:lws_y               -2.670e-14  7.213e-16 -37.010  < 2e-16 ***
+        elements_number:threads_number      7.632e-14  1.490e-14   5.122 3.10e-07 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 2.625e-09 on 6988 degrees of freedom
+        Multiple R-squared:  0.491,	Adjusted R-squared:  0.4902 
+        F-statistic: 612.8 on 11 and 6988 DF,  p-value: < 2.2e-16
+#+end_example
+
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          library(ggplot2)
+          library(plyr)
+
+          ggplot(set) + 
+              aes(x=elements_number, y=time_per_pixel ) +
+              geom_point(alpha=0.5) +
+              geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+              stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), colour="green")
+
+        #+end_src   
+
+        #+RESULTS:
+        [[file:/tmp/babel-4202M5s/figure4202VeO.png]]
+
 ****** TODO Optimization on the model to find the value
 ******* DONE Understanding why the bfgs method of optim does not work with my regression
         - Conclusion:
