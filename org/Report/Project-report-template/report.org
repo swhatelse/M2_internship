@@ -84,7 +84,7 @@ $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 }
-\session{$[$June/September$]$\hfill year}
+\session{$[$June$]$\hfill 2016}
 #+END_LaTeX
 
 #+BEGIN_LaTeX
@@ -456,10 +456,12 @@ Text
   allowed to do.[...]  
 ** Optimizing: the auto-tuning approach
   The problem is, usually there are many optimization options, there
-  are the compiler flags, source to transformation and high-level
+  are the compiler flags, source-to-source transformation and high-level
   modifications (e.g. the size of the a tile, block or
-  vector). The auto-tuning consider all this a huge optimization
-  problem and try to find the best combination of parameters.
+  vector). The auto-tuning consider all this as a huge optimization
+  problem and try to find the best combination of parameters. The
+  search space can be huge, and the exhaustive is prohibitive. Hence
+  many techniques
   
   
 * Problem analysis
