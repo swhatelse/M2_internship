@@ -16191,6 +16191,72 @@ h[g.name.to_sym] = 1024
        #+RESULTS:
        [[file:img/20160402/pilipili2/model_y_comp_nb_p.png]]
 
+       - Just to see if quadratic model works:
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/model_anotherone_nb_p.png :exports both :width 600 :height 400 :session
+           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           form_elem_nb <- time_per_pixel ~ elements_number + I(elements_number^2) + I(elements_number^3)
+           form_y_comp <- time_per_pixel ~ I(1/y_component_number)
+           form_v_len <- time_per_pixel ~ vector_length 
+           form_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2)
+           form_lws_y <- time_per_pixel ~ lws_y 
+           
+           model_elem_nb <- lm(data=df,formula=form_elem_nb)
+           for(i in 1:200){
+               E <- residuals(model_elem_nb)
+               model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=g(E))
+           }
+           
+           model_y_comp <- lm(data=df,formula=form_y_comp)
+           for(i in 1:200){
+               E <- residuals(model_y_comp)
+               model_y_comp <- lm(data=df,formula=form_y_comp,weight=g(E))
+           }
+           
+           model_v_len <- lm(data=df,formula=form_v_len)
+           for(i in 1:200){
+               E <- residuals(model_v_len)
+               model_v_len <- lm(data=df,formula=form_v_len,weight=g(E))
+           }
+           
+           model_th_nb <- lm(data=df,formula=form_th_nb)
+           for(i in 1:200){
+               E <- residuals(model_th_nb)
+               model_th_nb <- lm(data=df,formula=form_th_nb,weight=g(E))
+           }
+           
+           model_lws_y <- lm(data=df,formula=form_lws_y)
+           for(i in 1:200){
+               E <- residuals(model_lws_y)
+               model_lws_y <- lm(data=df,formula=form_lws_y,weight=g(E))
+           }
+           
+           default <- par()
+           par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+           
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,4e-10))
+           lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+           
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
+           lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+           
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+           lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+           
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,4e-10))
+           lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+           
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+           lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+           
+           par(default)        
+           
+       #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/model_anotherone_nb_p.png]]
+
+
 ******* DONE Model refinement
        We have lots of noise but we already know how to set the
        majority of the parameters. So how does elements number looks
@@ -17167,7 +17233,812 @@ h[g.name.to_sym] = 1024
        the regression correctly, it fails to compute some
        coefficients. 
 
-******* TODO LHS
+******* DONE LHS
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          summary(df)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number  y_component_number vector_length   temporary_size 
+         Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+         Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+         Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+         Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+         vector_recompute load_overlap  threads_number       lws_y        
+         true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                          true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                        Median : 256.0   Median :  16.00  
+                                        Mean   : 368.1   Mean   :  73.58  
+                                        3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                        Max.   :1024.0   Max.   :1024.00  
+         time_per_pixel     
+         Min.   :1.165e-10  
+         1st Qu.:3.028e-10  
+         Median :7.125e-10  
+         Mean   :2.013e-09  
+         3rd Qu.:2.001e-09  
+         Max.   :4.452e-08
+#+end_example
+
+        Let's generate the LHS design and discretize the points:
+        #+begin_src R :results output :session :exports both
+            library(DoE.base)
+            library(DoE.wrapper)
+            
+            elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+            y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+            vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+            threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+            lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+            temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+            load_overlap_val <- levels(df$load_overlap)
+            
+          Design.1 <- lhs.design( type= "maximin" , nruns= 441 ,nfactors= 7 ,digits= NULL ,seed=20049 , factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
+                                                                                                                          idx_y_component_number = c(1,length(y_component_number_val)),
+                                                                                                                          idx_vector_length = c(1,length(vector_length_val)), 
+                                                                                                                          idx_threads_number = c(1,length(threads_number_val)),
+                                                                                                                          idx_temporary_size = c(1,length(temporary_size_val)), 
+                                                                                                                          idx_lws_y = c(1,length(lws_y_val)), 
+                                                                                                                          idx_load_overlap = c(1,length(load_overlap_val)) 
+                                                                                                                          ) 
+                                )
+            
+          Design.1.rounded <- round(Design.1) # Ideally we would like to express factor(local_work_size_index) but the Dopt.design does not know how to handle it
+            
+          set <- data.frame()
+          for(i in 1:nrow(Design.1)){
+              set <- rbind(set, df[ df$elements_number == elements_number_val[Design.1$idx_elements_number[i]]
+                                   & df$y_component_number == y_component_number_val[Design.1$idx_y_component_number[i]]
+                                   & df$vector_length == vector_length_val[Design.1$idx_vector_length[i]]
+                                   & df$threads_number == threads_number_val[Design.1$idx_threads_number[i]]
+                                   & df$lws_y == lws_y_val[Design.1$idx_lws_y[i]]
+                                   & df$temporary_size == temporary_size_val[Design.1$idx_temporary_size[i]]
+                                   & df$load_overlap == load_overlap_val[Design.1$idx_load_overlap[i]], ])
+          }
+                    
+          summary(set)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+        Loading required package: grid
+        Loading required package: conf.design
+
+        Attaching package: ‘DoE.base’
+
+        The following objects are masked from ‘package:stats’:
+
+            aov, lm
+
+        The following object is masked from ‘package:graphics’:
+
+            plot.design
+
+        The following object is masked from ‘package:base’:
+
+            lengths
+        Loading required package: FrF2
+        Loading required package: rsm
+         elements_number  y_component_number vector_length   temporary_size
+         Min.   : 1.000   Min.   :1.000      Min.   :1.000   Min.   :2     
+         1st Qu.: 3.000   1st Qu.:2.000      1st Qu.:2.000   1st Qu.:2     
+         Median : 6.000   Median :3.000      Median :2.000   Median :2     
+         Mean   : 6.822   Mean   :2.842      Mean   :3.564   Mean   :2     
+         3rd Qu.:10.000   3rd Qu.:4.000      3rd Qu.:4.000   3rd Qu.:2     
+         Max.   :20.000   Max.   :5.000      Max.   :8.000   Max.   :2     
+         vector_recompute load_overlap threads_number      lws_y       
+         true:101         false:101    Min.   : 32.0   Min.   :  1.00  
+                          true :  0    1st Qu.: 64.0   1st Qu.:  4.00  
+                                       Median :128.0   Median : 16.00  
+                                       Mean   :187.2   Mean   : 51.95  
+                                       3rd Qu.:256.0   3rd Qu.: 32.00  
+                                       Max.   :512.0   Max.   :512.00  
+         time_per_pixel     
+         Min.   :1.457e-10  
+         1st Qu.:3.087e-10  
+         Median :7.661e-10  
+         Mean   :1.830e-09  
+         3rd Qu.:1.889e-09  
+         Max.   :1.790e-08
+#+end_example
+
+        Now let's see how much informations we can get. Here it is
+        worst than the with the D-optimal design:
+        #+begin_src R :results output :session :exports both
+          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+          h <- function(x) {pmin(g(x),1e10)}
+          
+          model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+              y_component_number + I(1/y_component_number) + 
+              vector_length + 
+              threads_number + I(1/threads_number) + 
+              lws_y + 
+              elements_number:y_component_number +
+              threads_number:lws_y +
+              threads_number:elements_number
+          fit <- lm(data=set,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              fit <- lm(data=set,formula=model,weight=h(E))
+          }
+          summary(fit)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = model, data = set, weights = h(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -5.401e-06  1.533e-06  3.391e-06  6.573e-06  2.677e-05 
+
+        Coefficients:
+                                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)                         5.218e-10  3.509e-10   1.487  0.14054    
+        elements_number                    -1.239e-10  3.609e-11  -3.432  0.00091 ***
+        I(1/elements_number)               -2.453e-10  1.682e-10  -1.458  0.14825    
+        y_component_number                 -9.731e-11  7.899e-11  -1.232  0.22118    
+        I(1/y_component_number)             4.069e-11  2.287e-10   0.178  0.85917    
+        vector_length                       5.377e-11  7.661e-12   7.019 4.24e-10 ***
+        threads_number                      6.660e-14  2.197e-13   0.303  0.76246    
+        I(1/threads_number)                 8.171e-09  2.512e-09   3.253  0.00162 ** 
+        lws_y                               1.853e-11  9.771e-13  18.961  < 2e-16 ***
+        elements_number:y_component_number  2.229e-11  7.204e-12   3.094  0.00264 ** 
+        threads_number:lws_y               -2.394e-14  2.359e-15 -10.150  < 2e-16 ***
+        elements_number:threads_number      1.750e-14  3.571e-14   0.490  0.62527    
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 7.943e-06 on 89 degrees of freedom
+        Multiple R-squared:  0.9554,	Adjusted R-squared:  0.9499 
+        F-statistic: 173.3 on 11 and 89 DF,  p-value: < 2.2e-16
+#+end_example
+
+        We can see that the model does not correctly fit the
+        points. And it did not sample point at 1024 for the
+        threads_number and lws_y:
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/lhs_desgin_100.png :exports both :width 600 :height 400 :session
+          form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+          form_Dopt_y_comp <- time_per_pixel ~ I(1/y_component_number)
+          form_Dopt_v_len <- time_per_pixel ~ vector_length 
+          form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+          form_Dopt_lws_y <- time_per_pixel ~ lws_y 
+          
+          model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_elem_nb)
+              model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+          }
+          
+          model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_y_comp)
+              model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+          }
+          
+          model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_v_len)
+              model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+          }
+          
+          model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_th_nb)
+              model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+          }
+          
+          model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_lws_y)
+              model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+          }
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=set$time_per_pixel,set$elements_number, ylim=c(0,4e-10))
+          lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+          lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+          lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+          plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+          lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+          lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+          par(default)        
+
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/lhs_desgin_100.png]]
+        
+        And with a different model
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/lhs_desgin_100_2.png :exports both :width 600 :height 400 :session
+          form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(elements_number^2) 
+          form_Dopt_y_comp <- time_per_pixel ~ I(1/y_component_number)
+          form_Dopt_v_len <- time_per_pixel ~ vector_length 
+          form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2) 
+          form_Dopt_lws_y <- time_per_pixel ~ lws_y 
+          
+          model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_elem_nb)
+              model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+          }
+          
+          model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_y_comp)
+              model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+          }
+          
+          model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_v_len)
+              model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+          }
+          
+          model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_th_nb)
+              model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+          }
+          
+          model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_lws_y)
+              model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+          }
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=set$time_per_pixel,set$elements_number, ylim=c(0,4e-10))
+          lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+          lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+          lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+          plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+          lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+          lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+          par(default)        
+
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/lhs_desgin_100_2.png]]
+
+        Let's try the complete model:
+        #+begin_src R :results output :session :exports both
+                  f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+          h <- function(x) {pmin(g(x),1e10)}
+          
+          model <- time_per_pixel ~ elements_number + I(elements_number^2) + 
+              y_component_number + I(1/y_component_number) + 
+              vector_length + 
+              threads_number + I(threads_number^2) + 
+              lws_y + 
+              elements_number:y_component_number +
+              threads_number:lws_y +
+              threads_number:elements_number
+          fit <- lm(data=set,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              fit <- lm(data=set,formula=model,weight=h(E))
+          }
+          summary(fit)
+
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm.default(formula = model, data = set, weights = h(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -5.503e-06  1.177e-06  3.576e-06  6.239e-06  2.681e-05 
+
+        Coefficients:
+                                             Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)                         5.876e-10  4.077e-10   1.441 0.152988    
+        elements_number                    -8.260e-11  2.430e-11  -3.399 0.001015 ** 
+        I(elements_number^2)               -9.666e-13  1.796e-12  -0.538 0.591896    
+        y_component_number                 -7.263e-11  1.296e-10  -0.560 0.576651    
+        I(1/y_component_number)             1.006e-10  2.917e-10   0.345 0.730969    
+        vector_length                       4.610e-11  7.565e-12   6.094 2.76e-08 ***
+        threads_number                     -2.393e-12  5.441e-13  -4.397 3.03e-05 ***
+        I(threads_number^2)                 3.583e-15  9.065e-16   3.953 0.000154 ***
+        lws_y                               1.849e-11  9.811e-13  18.848  < 2e-16 ***
+        elements_number:y_component_number  1.867e-11  1.151e-11   1.621 0.108486    
+        threads_number:lws_y               -2.410e-14  2.328e-15 -10.355  < 2e-16 ***
+        elements_number:threads_number      3.717e-14  2.535e-14   1.466 0.146127    
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 7.887e-06 on 89 degrees of freedom
+        Multiple R-squared:  0.9431,	Adjusted R-squared:  0.9361 
+        F-statistic: 134.1 on 11 and 89 DF,  p-value: < 2.2e-16
+        #+end_example
+
+        This model suggest to fix the parameters as follows:
+        #+begin_src R :results output :session :exports both
+        reduced <- df[df$vector_length == 1 & df$lws_y == 1 & df$threads_number == 1024 & df$elements_number == 24,]
+        summary(reduced)        
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number y_component_number vector_length temporary_size
+         Min.   :24      Min.   :6          Min.   :1     Min.   :2     
+         1st Qu.:24      1st Qu.:6          1st Qu.:1     1st Qu.:2     
+         Median :24      Median :6          Median :1     Median :3     
+         Mean   :24      Mean   :6          Mean   :1     Mean   :3     
+         3rd Qu.:24      3rd Qu.:6          3rd Qu.:1     3rd Qu.:4     
+         Max.   :24      Max.   :6          Max.   :1     Max.   :4     
+         vector_recompute load_overlap threads_number     lws_y   time_per_pixel     
+         true:4           false:2      Min.   :1024   Min.   :1   Min.   :1.911e-10  
+                          true :2      1st Qu.:1024   1st Qu.:1   1st Qu.:1.911e-10  
+                                       Median :1024   Median :1   Median :1.912e-10  
+                                       Mean   :1024   Mean   :1   Mean   :1.912e-10  
+                                       3rd Qu.:1024   3rd Qu.:1   3rd Qu.:1.914e-10  
+                                       Max.   :1024   Max.   :1   Max.   :1.914e-10
+        #+end_example
+
+        Now we are missign some points to know how to fix the y
+        component number:
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/lhs_desgin_pruned.png :exports both :width 600 :height 400 :session
+        plot(reduced)
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/lhs_desgin_pruned.png]]
+
+        Either we are not accurate enough with 100 points and we need
+        more at the begining either we could use Dopt.augment to add
+        more points (but it assumes we know the model).
+
+        Are we better with 200 points?
+        #+begin_src R :results output :session :exports both
+                    library(DoE.base)
+            library(DoE.wrapper)
+            
+            elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+            y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+            vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+            threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+            lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+            temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+            load_overlap_val <- levels(df$load_overlap)
+            
+          Design.1 <- lhs.design( type= "maximin" , nruns= 863 ,nfactors= 7 ,digits= NULL ,seed=20049 , factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
+                                                                                                                          idx_y_component_number = c(1,length(y_component_number_val)),
+                                                                                                                          idx_vector_length = c(1,length(vector_length_val)), 
+                                                                                                                          idx_threads_number = c(1,length(threads_number_val)),
+                                                                                                                          idx_temporary_size = c(1,length(temporary_size_val)), 
+                                                                                                                          idx_lws_y = c(1,length(lws_y_val)), 
+                                                                                                                          idx_load_overlap = c(1,length(load_overlap_val)) 
+                                                                                                                          ) 
+                                )
+            
+          Design.1.rounded <- round(Design.1) # Ideally we would like to express factor(local_work_size_index) but the Dopt.design does not know how to handle it
+            
+          set <- data.frame()
+          for(i in 1:nrow(Design.1)){
+              set <- rbind(set, df[ df$elements_number == elements_number_val[Design.1$idx_elements_number[i]]
+                                   & df$y_component_number == y_component_number_val[Design.1$idx_y_component_number[i]]
+                                   & df$vector_length == vector_length_val[Design.1$idx_vector_length[i]]
+                                   & df$threads_number == threads_number_val[Design.1$idx_threads_number[i]]
+                                   & df$lws_y == lws_y_val[Design.1$idx_lws_y[i]]
+                                   & df$temporary_size == temporary_size_val[Design.1$idx_temporary_size[i]]
+                                   & df$load_overlap == load_overlap_val[Design.1$idx_load_overlap[i]], ])
+          }
+                    
+          summary(set)
+
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number  y_component_number vector_length   temporary_size
+         Min.   : 1.000   Min.   :1.000      Min.   :1.000   Min.   :2     
+         1st Qu.: 3.000   1st Qu.:2.000      1st Qu.:2.000   1st Qu.:2     
+         Median : 6.000   Median :3.000      Median :4.000   Median :2     
+         Mean   : 7.631   Mean   :3.049      Mean   :3.783   Mean   :2     
+         3rd Qu.:12.000   3rd Qu.:4.000      3rd Qu.:4.000   3rd Qu.:2     
+         Max.   :20.000   Max.   :5.000      Max.   :8.000   Max.   :2     
+         vector_recompute load_overlap threads_number      lws_y       
+         true:203         false:203    Min.   : 32.0   Min.   :  1.00  
+                          true :  0    1st Qu.: 64.0   1st Qu.:  2.00  
+                                       Median :256.0   Median :  8.00  
+                                       Mean   :243.2   Mean   : 44.51  
+                                       3rd Qu.:512.0   3rd Qu.: 32.00  
+                                       Max.   :512.0   Max.   :512.00  
+         time_per_pixel     
+         Min.   :1.301e-10  
+         1st Qu.:2.802e-10  
+         Median :5.127e-10  
+         Mean   :1.403e-09  
+         3rd Qu.:1.442e-09  
+         Max.   :1.833e-08
+#+end_example
+
+         #+begin_src R :results output :session :exports both
+          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+          h <- function(x) {pmin(g(x),1e10)}
+          
+          model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+              y_component_number + I(1/y_component_number) + 
+              vector_length + 
+              threads_number + I(1/threads_number) + 
+              lws_y + 
+              elements_number:y_component_number +
+              threads_number:lws_y +
+              threads_number:elements_number
+          fit <- lm(data=set,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              fit <- lm(data=set,formula=model,weight=h(E))
+          }
+          summary(fit)
+        #+end_src
+
+         #+RESULTS:
+         #+begin_example
+
+         Call:
+         lm.default(formula = model, data = set, weights = h(E))
+
+         Weighted Residuals:
+                Min         1Q     Median         3Q        Max 
+         -9.350e-06  1.812e-06  3.049e-06  5.476e-06  2.928e-05 
+
+         Coefficients:
+                                              Estimate Std. Error t value Pr(>|t|)    
+         (Intercept)                         1.359e-10  1.997e-10   0.680   0.4970    
+         elements_number                    -3.638e-11  1.590e-11  -2.289   0.0232 *  
+         I(1/elements_number)                6.879e-11  1.206e-10   0.570   0.5691    
+         y_component_number                 -3.526e-11  3.854e-11  -0.915   0.3613    
+         I(1/y_component_number)             6.451e-12  1.206e-10   0.053   0.9574    
+         vector_length                       4.268e-11  6.015e-12   7.096 2.45e-11 ***
+         threads_number                      1.195e-13  1.253e-13   0.954   0.3415    
+         I(1/threads_number)                 8.965e-09  2.087e-09   4.296 2.77e-05 ***
+         lws_y                               1.932e-11  5.652e-13  34.180  < 2e-16 ***
+         elements_number:y_component_number  4.304e-12  3.328e-12   1.293   0.1975    
+         threads_number:lws_y               -2.649e-14  1.194e-15 -22.181  < 2e-16 ***
+         elements_number:threads_number      8.759e-15  1.151e-14   0.761   0.4476    
+         ---
+         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         Residual standard error: 6.551e-06 on 191 degrees of freedom
+         Multiple R-squared:  0.9499,	Adjusted R-squared:  0.947 
+         F-statistic: 328.9 on 11 and 191 DF,  p-value: < 2.2e-16
+#+end_example
+        
+        With 200 points its not that great either:
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/lhs_desgin_200.png :exports both :width 600 :height 400 :session
+          form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+          form_Dopt_y_comp <- time_per_pixel ~ I(1/y_component_number)
+          form_Dopt_v_len <- time_per_pixel ~ vector_length 
+          form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+          form_Dopt_lws_y <- time_per_pixel ~ lws_y 
+          
+          model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_elem_nb)
+              model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+          }
+          
+          model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_y_comp)
+              model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+          }
+          
+          model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_v_len)
+              model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+          }
+          
+          model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_th_nb)
+              model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+          }
+          
+          model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_lws_y)
+              model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+          }
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=set$time_per_pixel,set$elements_number, ylim=c(0,4e-10))
+          lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+          lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+          lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+          plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+          lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+          lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+          par(default)        
+
+        #+end_src
+
+                #+RESULTS:
+                [[file:img/20160402/pilipili2/lhs_desgin_200.png]]
+
+         Maybe 5th percentile is not enough. Let's see with 1th
+         percentile:
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/lhs_desgin_200_1th.png :exports both :width 600 :height 400 :session
+           f <- function(x) { x * (0.01 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           h <- function(x) {pmin(g(x),1e10)}
+           
+          form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+          form_Dopt_y_comp <- time_per_pixel ~ I(1/y_component_number)
+          form_Dopt_v_len <- time_per_pixel ~ vector_length 
+          form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+          form_Dopt_lws_y <- time_per_pixel ~ lws_y 
+          
+          model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_elem_nb)
+              model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+          }
+          
+          model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_y_comp)
+              model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+          }
+          
+          model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_v_len)
+              model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+          }
+          
+          model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_th_nb)
+              model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+          }
+          
+          model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_lws_y)
+              model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+          }
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=set$time_per_pixel,set$elements_number, ylim=c(0,4e-10))
+          lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+          lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+          lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+          plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+          lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+          lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+          par(default)        
+
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/lhs_desgin_200_1th.png]]
+
+         Or maybe it comes from the bound:
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/lhs_desgin_200_no_bound.png :exports both :width 600 :height 400 :session
+           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           h <- function(x) {pmin(g(x),1e10)}
+           
+          form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+          form_Dopt_y_comp <- time_per_pixel ~ I(1/y_component_number)
+          form_Dopt_v_len <- time_per_pixel ~ vector_length 
+          form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+          form_Dopt_lws_y <- time_per_pixel ~ lws_y 
+          
+          model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_elem_nb)
+              model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=g(E))
+          }
+          
+          model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_y_comp)
+              model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=g(E))
+          }
+          
+          model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_v_len)
+              model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=g(E))
+          }
+          
+          model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_th_nb)
+              model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=g(E))
+          }
+          
+          model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_lws_y)
+              model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=g(E))
+          }
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=set$time_per_pixel,set$elements_number, ylim=c(0,4e-10))
+          lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+          lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+          lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+          plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+          lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+          lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+          par(default)        
+
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/lhs_desgin_200_no_bound.png]]
+
+
+         What about 100 points with 1th percentile:
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/lhs_desgin_100_1th.png :exports both :width 600 :height 400 :session
+                     library(DoE.base)
+            library(DoE.wrapper)
+            
+            elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+            y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+            vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+            threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+            lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+            temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+            load_overlap_val <- levels(df$load_overlap)
+            
+          Design.1 <- lhs.design( type= "maximin" , nruns= 441 ,nfactors= 7 ,digits= NULL ,seed=20049 , factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
+                                                                                                                          idx_y_component_number = c(1,length(y_component_number_val)),
+                                                                                                                          idx_vector_length = c(1,length(vector_length_val)), 
+                                                                                                                          idx_threads_number = c(1,length(threads_number_val)),
+                                                                                                                          idx_temporary_size = c(1,length(temporary_size_val)), 
+                                                                                                                          idx_lws_y = c(1,length(lws_y_val)), 
+                                                                                                                          idx_load_overlap = c(1,length(load_overlap_val)) 
+                                                                                                                          ) 
+                                )
+            
+          Design.1.rounded <- round(Design.1)
+            
+          set <- data.frame()
+          for(i in 1:nrow(Design.1)){
+              set <- rbind(set, df[ df$elements_number == elements_number_val[Design.1$idx_elements_number[i]]
+                                   & df$y_component_number == y_component_number_val[Design.1$idx_y_component_number[i]]
+                                   & df$vector_length == vector_length_val[Design.1$idx_vector_length[i]]
+                                   & df$threads_number == threads_number_val[Design.1$idx_threads_number[i]]
+                                   & df$lws_y == lws_y_val[Design.1$idx_lws_y[i]]
+                                   & df$temporary_size == temporary_size_val[Design.1$idx_temporary_size[i]]
+                                   & df$load_overlap == load_overlap_val[Design.1$idx_load_overlap[i]], ])
+          }
+                    
+        f <- function(x) { x * (0.01 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           h <- function(x) {pmin(g(x),1e10)}
+           
+          form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+          form_Dopt_y_comp <- time_per_pixel ~ I(1/y_component_number)
+          form_Dopt_v_len <- time_per_pixel ~ vector_length 
+          form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+          form_Dopt_lws_y <- time_per_pixel ~ lws_y 
+          
+          model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_elem_nb)
+              model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+          }
+          
+          model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_y_comp)
+              model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+          }
+          
+          model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_v_len)
+              model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+          }
+          
+          model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_th_nb)
+              model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+          }
+          
+          model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_Dopt_lws_y)
+              model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+          }
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=set$time_per_pixel,set$elements_number, ylim=c(0,4e-10))
+          lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+          lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+          lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+          plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+          lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+          plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+          lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+          par(default)        
+
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/lhs_desgin_100_1th.png]]
+
 ******* DONE D-Opt
         - Conclusion of the D-optimal design:
           It cannot not be used to try to find the model. Because it
