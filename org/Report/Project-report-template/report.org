@@ -1,4 +1,4 @@
-#+TITLE: Optimization of the Auto-Tuning of HPC Application Computing Kernels
+#+TITLE: Semi-Automatic Performance Optimization of HPC Kernels
 #+LANGUAGE: en
 #+Author: Steven QUINITO MASNADA
 #+TAGS: noexport(n) deprecated(d)
@@ -122,7 +122,7 @@ Text
 # #+END_abstract
 
 * Plan                                                             
-** Introduction [1/3]
+** Introduction [2/3]
 *** Why is performance optimization difficult
    - In HPC code optimization crucial to exploit very complex hardware.
      Cannot wait for the next generation to bring speedup because it
@@ -207,7 +207,7 @@ Text
         
 ** Context [0/2]
 *** HPC/architectures 
-*** Compiling
+*** Compilation
 *** BOAST
 ** State of the art on Autotuning [0/4]
   - Reuse knowledge of previous experience (generalization) \to machine
@@ -287,6 +287,13 @@ Text
       Not recent paper \to architecture have evolved. Is linear
       regression still ok?
 ** State of the art design of experiments [0/2]
+   - Using less point as possible:
+     - LHS
+       For continuous space
+     - D-Optimal
+       Require to know the model
+     - Fractional design
+       Screening design \to Take the extreme values
 ** DONE Methods and material [0/2]
   - Reproducible work
     - Lab book on github  
@@ -315,17 +322,21 @@ Text
       - Optimizations explanation
 
 ** Contribution [0/12]
-*** Envisioned general approach1[0/1]
+*** Envisioned general approach[0/1]
     1. DoE
-       - remove factors
+       - Sampling the space wisely
+       - remove factors from the model
        - model and optimize
-    2. Loop back to 1
+    2. Loop back to 1 to refine the model
 *** Controlling measurement [0/1]
     - min(x_1,...,x_10) ? how to protect against potential warm-up
+      - Energy saving mode of current hardware(CPU and GPUs)
       - Mostly present just after the compilation of the kernel.
       - 4 runs \to take the minimum
-    - randomizing to protect against bias
-*** Linear regression of expectation: why it cannot work and how it can be circumvented [0/3]
+    - randomizing to protect against bias, even for full search
+      space. But run and image size not randomized.
+*** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
+**** Least Squared regression and non uniform noise  
     - Assumptions:
       - homoscedasticity but pb we have heteroscedasticity
         - Why is it a problem?
@@ -371,8 +382,9 @@ Text
         Not suitable for constrained search space \to lot of point cannot
         be reached because test those at the border
       - LHS
-        Generally for continuous factors
+        Generally for continuous factors \to convert to discrete  
       - D-optimal
+        Cannot be used to find the model.
     - Copying with constraints
 ** Experiments [0/10]
    - Bench min of 4 runs \to warm up effect
@@ -495,25 +507,34 @@ Text
 ** My contribution
    My contribution during this internship was to try an approach 
    that take into account the hypothesis the developer is doing to
-   make model of the impact of the parameters in order to  guide the
+   make model of the impact of the parameters in order to guide the
    user in the tuning process. More precisely we investigated to know
    if linear regression and design experiments could bring accurate
-   information using less point as possible. For the modelization of
+   information using the least point as possible. For the modelization of
    computer phenomena, linear model are generally enough to get accurate
    prediction because the models are not too complex. We tested this
    approach on a simple kernel that compute the Laplacian of an
    image. We found that the linear regression is able to be accurate
-   enough will being able to make simple model that traduce how the
+   enough while having simple models that traduce how the
    different optimization parameters can acts. However we also figured
    out regression of expectation is not suited with current
    architecture as it was the case two decades ago\cite{}. To model
    phenomena with non-uniform noise quantile regression is a better
    solution. 
 
-
 ** Structure  of the report
-
+   The second part of this report expose the problem of the
+   optimization auto-tuning problem. The third part is dedicated to
+   the study of the state of the art methods in auto-tuning and design
+   of experiments. The fourth part contain details about the methods
+   and materials. The fiveth part presents my contribution during the
+   internship. The sixth shows some results. And the last part
+   presents the future work.
 * Problem analysis
+* Context
+** HPC architectures
+** Compilation
+** BOAST
 * State of the art
 ** Autotuning
    #+begin_src R :results output graphics :file img/function_examples.png :exports results :width 600 :height 400 :session
@@ -547,39 +568,7 @@ Text
 
   The experiments are run on one machine with GPU Nvidia K40 using the
   driver 340.32 and two CPUs Intel E5-2630.
-* Contribution
 ** Case study
-   # Not sure it is necessary:
-   # #+BEGIN_LaTeX
-   # \lstset{language=C}
-   # \begin{lstlisting}
-   #   void math(const int32_t width, const int32_t height, const uint8_t * psrc, uint8_t * pdst){
-   #       int32_t i;
-   #       int32_t j;
-   #       int32_t c;
-   #       int32_t tmp;
-   #       int32_t w;
-   #       w = (width) * (3);
-   #       for (j = 1; j <= height - (2); j += 1) {
-   #           for (i = 1; i <= width - (2); i += 1) {
-   #               for (c = 0; c <= 2; c += 1) {
-   #                   tmp =  - (psrc[c + (3) * (i - (1) + (width) * (j - (1)))]) 
-   #                          - (psrc[c + (3) * (i + (width) * (j - (1)))]) 
-   #                          - (psrc[c + (3) * (i + 1 + (width) * (j - (1)))]) 
-   #                          - (psrc[c + (3) * (i - (1) + (width) * (j))]) 
-   #                          + (psrc[c + (3) * (i + (width) * (j))]) * (9) 
-   #                          - (psrc[c + (3) * (i + 1 + (width) * (j))]) 
-   #                          - (psrc[c + (3) * (i - (1) + (width) * (j + 1))]) 
-   #                          - (psrc[c + (3) * (i + (width) * (j + 1))]) 
-   #                          - (psrc[c + (3) * (i + 1 + (width) * (j + 1))]);
-   #                   pdst[c + (3) * (i + (width) * (j))] = (tmp < 0 ? 0 : (tmp > 255 ? 255 : tmp));
-   #               }
-   #           }
-   #       }
-   #   }
-   # \end{lstlisting}
-   # #+END_LaTeX
-   
    # Maybe cite Brice paper for this part
    
    In order to elaborate our approach, we took a very simple example
@@ -622,7 +611,46 @@ Text
 
    All theses optimizations give us search space of 23100 combinations
    to minimize the time to compute one pixel.
-** The reason why linear regression is not suited
+* Contribution
+** Envisioned general approach
+   #+BEGIN_LaTeX
+   \begin{figure}[tbh]
+   \centering
+   \includegraphics[width=.8\linewidth]{./img/process.pdf}
+   \caption{\label{fig:1}Workflow}
+   \end{figure}
+   #+END_LaTeX
+** Controlling measurement
+   #+begin_src sh :results output :exports none
+     ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+   #+end_src
+
+   #+RESULTS:
+
+   #+begin_src R :results output graphics :file img/warm_up.png :exports results :width 800 :height 600 :session
+     library(plyr)
+     library(ggplot2)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+     attach(df)
+
+     d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$threads_number == 32,]
+     
+     df2 = ddply(d2,.(run_index,vector_length,image_size_index), summarize, 
+                      mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+     
+     
+     ggplot(d2) +
+         # geom_jitter(aes(x=factor(run_index), y=time_per_pixel, color=factor(load_overlap), shape=factor(temporary_size))) + 
+         geom_point(aes(x=factor(run_index), y=time_per_pixel)) + 
+         geom_errorbar(data=df2,aes(x=factor(run_index),y=mean, ymin=mean-err, ymax=mean+err)) +
+         facet_grid(vector_length ~ image_size_index, scales="free_y", labeller=label_both) 
+   #+end_src
+
+   #+RESULTS:
+   [[file:img/warm_up.png]]
+
+** Linear regression of expectation: why it cannot work and how it can be circumvented
    #+begin_src sh :results output :exports none
        ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
