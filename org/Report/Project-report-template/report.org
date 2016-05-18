@@ -206,7 +206,16 @@ Text
      Represent unfeasible points.
         
 ** Context [0/2]
-*** HPC/architectures 
+*** HPC/architectures     
+    - Crucial for science and business
+    - To get performance \to exploit hardware \to take characteristics into account
+      - Many cores
+      - GPUs
+      - vector support
+      - cache levels
+      - ILP \to break instruction dependencies
+    - Architecture \ne from a HPC to another
+      Specialized code \to not portable
 *** Compilation
 *** BOAST
 ** State of the art on Autotuning [0/4]
