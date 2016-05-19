@@ -244,6 +244,7 @@ Text
     - Architecture \ne from a HPC to another
       Specialized code \to not portable
 *** Compilation
+*** Auto-tuning
 *** BOAST
 ** State of the art on Autotuning [0/4]
    - What is autotuning
@@ -677,8 +678,9 @@ Text
    dissimilar platforms (ARM in their case).
 
    Another use of machine learning techniques is to select the best
-   search strategy because the efficiency of a search method is highly
-   dependent of the problem structure. Opentuner\cite{Ansel:2014:OEF:2628071.2628092}
+   search strategy as the efficiency of a search method is highly 
+   dependent of the problem
+   structure. Opentuner\cite{Ansel:2014:OEF:2628071.2628092}  
    
    #+begin_src R :results output graphics :file img/function_examples.png :exports results :width 600 :height 400 :session
      library(polynom)
