@@ -205,7 +205,7 @@ Text
           - Solution \to quantile regression
             - Pb with rq \to error to compute std. err, etc...
             - Used iterated weighted least square 
-              Pb to make inferences \to biased R-squared
+              Pb to make inferences \to biased R-squared and std. error
               # Are std.err biased to?
               How to compute CI?
               
@@ -617,8 +617,8 @@ Text
    least squared to compute it. Even if the coefficient computed are
    accurate, the main concern with this methods is that it is
    difficult to make inferences because we have biased 
-   R-squared. This was mainly problematic to the validation and
-   refinement of the model.
+   R-squared and standard error. This was mainly problematic for the
+   validation and refinement of the model.
 
    In the second time, we try find a way to build simple and accurate
    model. To do so, sampling the search space correctly is crucial,
