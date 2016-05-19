@@ -122,7 +122,7 @@ Text
 # #+END_abstract
 
 * Plan                                                             
-** Introduction [2/3]
+** Introduction [3/3]
 *** Why is performance optimization difficult
    - In HPC code optimization crucial to exploit very complex hardware.
      Cannot wait for the next generation to bring speedup because it
@@ -246,7 +246,9 @@ Text
 *** BOAST
 ** State of the art on Autotuning [0/4]
   - Reuse knowledge of previous experience (generalization) \to machine
-    learning. Generally exhaustive search costly training phase \to
+    learning. For different problem \to re-usability. 
+    What is machine learning and why it is useful in auto-tuning.
+    Generally exhaustive search costly training phase \to
     reducing impact. Classification \to which strategy to apply.
     - Small vs. Big
     - Milepost GCC \to learning characteristics of a program to
@@ -276,8 +278,8 @@ Text
           - partly wrong hypothesis (geometry, convexity): simulated
             annealing, many local searches (genetic algorithms in some
             sense)
-          - experimental estimation: surrogates, etc. *local*
-            approximation
+          - experimental estimation (empirical function)  :
+            surrogates, etc. *local* approximation
             Usefull to remove the noise and facilitate the search
           - derivative estimation: Nelder Mead Simplex
         - \to many heuristics that combine all or part of the different
@@ -292,9 +294,9 @@ Text
         interpolation, etc... ). _Global modeling requires complex
         models and numerous experiments_.
     Illustration with a few tools:
-    - Orio \to source to source annotation based atutotuner 
+    - Orio \to source to source annotation based autotuner 
       - random search, Nelder Mead Simplex and simulated annealing.
-      - greeding algorithm for local search at the of gobal.
+      - greeding algorithm for local search at the end of gobal.
     - OPAL \to Use direct search combinations of heuristics \to
       Mesh-adaptive direct-search \to pattern search.
       Global *and* local search \to work by iterative phase:
@@ -641,7 +643,10 @@ Text
 ** Compilation
 ** BOAST
 * State of the art
-** Autotuning
+** Auto-tuning
+   In auto-tuning one can find two major categories of approaches. The
+   first one is the use of machine learning techniques.
+   
    #+begin_src R :results output graphics :file img/function_examples.png :exports results :width 600 :height 400 :session
      library(polynom)
      default <- par()
