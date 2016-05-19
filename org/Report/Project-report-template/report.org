@@ -158,7 +158,8 @@ Text
         # right?    
 *** Optimizing: the auto-tuning approach
     - Many optimization options: compiler flags, source-to-source
-      transformations, higher-level modifications (tile/block/vector size).
+      transformations, higher-level modifications (tile/block/vector
+      size). Each combination represents an implementation.      
     - Auto-tuning: consider all this as a huge optimization problem
       and try to find the best combination. Many techniques (genetic
       algorithms, simulated annealing, tabu search, machine learning,
@@ -245,6 +246,9 @@ Text
 *** Compilation
 *** BOAST
 ** State of the art on Autotuning [0/4]
+   - What is autotuning
+     paramters \to represents different version/implementation
+
   - Reuse knowledge of previous experience (generalization) \to machine
     learning. For different problem \to re-usability. 
     What is machine learning and why it is useful in auto-tuning.
@@ -545,20 +549,22 @@ Text
 ** Optimizing: the auto-tuning approach
   The problem is, usually there are many optimization options, there
   are the compiler flags, code generation parameters (e.g. the size of
-  the a tile, block or vector). The auto-tuning consider all this as a
-  huge optimization problem and try to find the best combination of
-  parameters. The search space can be huge, and the exhaustive search
-  is prohibitive. Hence many techniques have been used such genetic
-  algorithm, simulated annealing, tabu search, machine learning.
-  But these kind of methods have some limitations. First the number of
-  combination tested is not optimal, thus the time to perform the
-  optimization can still be very long. In addition to this, it is
-  difficult to know whether further optimizations could be expected or
-  not and how to get them. Because it is complicated to estimate the
-  quality of an optimization. Comparing to the peak performance is
-  generally meaningless and it is hard to know how the combination
-  really performed because the best optimization is unknown. As a
-  result the user is exclude from the tuning process by the lack of
+  the a tile, block or vector). Each combinations of parameters is a
+  generated implementation of a program and the auto-tuning consider
+  all this as a huge optimization problem and try to find the best
+  combination of parameters. The search space can be huge, and the
+  exhaustive search is prohibitive. Hence many techniques have been
+  used such genetic algorithm, simulated annealing, tabu search,
+  machine learning. But these kind of methods have some
+  limitations. First the number of combination tested is not optimal,
+  thus the time to perform the optimization can still be very long. In
+  addition to this, it is difficult to know whether further
+  optimizations could be expected or not and how to get them. Because
+  it is complicated to estimate the quality of an
+  optimization. Comparing to the peak performance is generally 
+  meaningless and it is hard to know how the combination really
+  performed because the best optimization is unknown. As a result the
+  user is exclude from the tuning process by the lack of 
   feed back and any valuable information.
 ** Our Goal
    The idea is to give some power back to the user by investigating
@@ -653,7 +659,7 @@ Text
    what is the best action to apply for this category of programs.
 
    This approach has been proven successful by the project Milepost
-   GCC from Grigori Fursin\cite{}, which is now part of GCC. He used
+   GCC from Grigori Fursin\cite{fursin:hal-00685276}, which is now part of GCC. He used
    machine learning to learn characteristics of programs and the
    distributions of combinations that gives the most speedup. The idea
    is that good performing combinations have high probability to bring
@@ -661,7 +667,7 @@ Text
    across programs.
    
    Stefan Wild et al. focused porting of optimization between similar
-   platforms\cite{}. They study the correlation between platform and
+   platforms\cite{RoyBalHovWil2015}. They study the correlation between platform and
    the performance of combinations parameters. They used machine
    learning to build performance model of platform and this model
    to approximate performance of another platform. The more the
@@ -669,6 +675,10 @@ Text
    more the accurate the predictions. They managed to find correlations
    between intel CPU, IBM Power but this approach fails with too
    dissimilar platforms (ARM in their case).
+
+   Another use of machine learning techniques is to select the best
+   search strategy because the efficiency of a search method is highly
+   dependent of the problem structure. Opentuner\cite{Ansel:2014:OEF:2628071.2628092}
    
    #+begin_src R :results output graphics :file img/function_examples.png :exports results :width 600 :height 400 :session
      library(polynom)
