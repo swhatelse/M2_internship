@@ -18041,11 +18041,14 @@ h[g.name.to_sym] = 1024
 
 ******* DONE D-Opt
         - Conclusion of the D-optimal design:
-          It cannot not be used to try to find the model. Because it
-          will select points that explain the model. In our case we
-          have lot of point that can explain many different models as
-          we see bellow with an absurb model. The model must be know
-          before.           
+          D-Optimal should be used when we already know what is the
+          correct model. For finding the model we should be careful to
+          *not* make any hypothesis on the model and just suppose a
+          linear model (maybe with interactions between
+          factors). Because otherwise it will select points that
+          explain the model. In our case we have lots of points that can
+          explain many different models as we see bellow with an
+          absurb model. The model must be know before.           
         #+begin_src sh :results output :exports both
           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
         #+end_src
@@ -18151,24 +18154,6 @@ h[g.name.to_sym] = 1024
           summary(complete_set)
         #+end_src
 
-        #+RESULTS:
-        #+begin_example
-         elements_number  y_component_number vector_length    threads_number  
-         Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :  32.0  
-         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.000   1st Qu.:  64.0  
-         Median : 6.000   Median :3.000      Median : 4.000   Median : 256.0  
-         Mean   : 8.602   Mean   :3.441      Mean   : 5.721   Mean   : 367.9  
-         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.000   3rd Qu.: 512.0  
-         Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :1024.0  
-             lws_y         temporary_size   load_overlap   
-         Min.   :   1.00   Min.   :2.000   Min.   :0.0000  
-         1st Qu.:   4.00   1st Qu.:2.000   1st Qu.:0.0000  
-         Median :  16.00   Median :2.000   Median :1.0000  
-         Mean   :  73.56   Mean   :2.974   Mean   :0.5074  
-         3rd Qu.:  64.00   3rd Qu.:4.000   3rd Qu.:1.0000  
-         Max.   :1024.00   Max.   :4.000   Max.   :1.0000
-#+end_example
-        
         We generate 100 points just to see if it is enough. With just
         a very simple model, it detects that temporary size and load
         overlap have an important impact but they aren't in fact for
@@ -18855,6 +18840,415 @@ h[g.name.to_sym] = 1024
 
                 #+RESULTS:
                 [[file:img/20160402/pilipili2/dopt_desgin_100_absurd.png]]
+
+       What if I try with a "non-oriented choice": 
+       #+begin_src R :results output :session :exports both
+        library(DoE.base)
+        library(DoE.wrapper)
+
+         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+         g <- function(x) { f(x)/x^2 }
+         h <- function(x) {pmin(g(x),1e15)}
+
+         Dopt <- Dopt.design( 100 , data=complete_set, formula= 
+                                                              "~ elements_number +
+                                                                 y_component_number + 
+                                                                 vector_length + 
+                                                                 threads_number + 
+                                                                 lws_y + 
+                                                                 load_overlap +
+                                                                 temporary_size" , nRepeat= 20 ,randomize= TRUE ,seed= 28517 )
+
+         set <- data.frame()
+         for(i in 1:nrow(Dopt)){
+             set <- rbind(set, df[ df$elements_number == Dopt$elements_number[i]
+                                        & df$y_component_number == Dopt$y_component_number[i]
+                                        & df$vector_length == Dopt$vector_length[i]
+                                        & df$temporary_size == Dopt$temporary_size[i] 
+                                        & df$threads_number == Dopt$threads_number[i]
+                                        & df$load_overlap == (if (Dopt$load_overlap[i] == 1) "true" else "false")
+                                        & df$lws_y == Dopt$lws_y[i], ])
+         }
+
+          model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+                                             y_component_number + I(1/y_component_number) + 
+                                             vector_length + 
+                                             threads_number + I(1/threads_number) + 
+                                             lws_y + 
+                                             elements_number:y_component_number +
+                                             threads_number:lws_y +
+                                             threads_number:elements_number
+          fit <- lm(data=set,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              fit <- lm(data=set,formula=model,weight=g(E))
+          }
+          summary(fit)
+       #+end_src
+
+       #+RESULTS:
+       #+begin_example
+
+       Call:
+       lm.default(formula = model, data = set, weights = g(E))
+
+       Weighted Residuals:
+              Min         1Q     Median         3Q        Max 
+       -1.040e-05  4.860e-07  4.094e-06  1.051e-05  4.442e-05 
+
+       Coefficients: (3 not defined because of singularities)
+                                            Estimate Std. Error t value Pr(>|t|)    
+       (Intercept)                        -1.748e-10  7.140e-10  -0.245  0.80713    
+       elements_number                    -1.309e-11  1.048e-11  -1.249  0.21502    
+       I(1/elements_number)                2.964e-10  6.959e-10   0.426  0.67119    
+       y_component_number                  7.584e-11  8.718e-11   0.870  0.38660    
+       I(1/y_component_number)             4.766e-10  4.897e-10   0.973  0.33296    
+       vector_length                       2.341e-11  8.564e-12   2.734  0.00752 ** 
+       threads_number                     -3.270e-13  1.559e-13  -2.098  0.03871 *  
+       I(1/threads_number)                        NA         NA      NA       NA    
+       lws_y                               3.549e-12  1.644e-14 215.877  < 2e-16 ***
+       elements_number:y_component_number         NA         NA      NA       NA    
+       threads_number:lws_y                       NA         NA      NA       NA    
+       elements_number:threads_number      1.595e-14  8.986e-15   1.775  0.07919 .  
+       ---
+       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+       Residual standard error: 1.186e-05 on 91 degrees of freedom
+       Multiple R-squared:      1,	Adjusted R-squared:      1 
+       F-statistic: 1.951e+13 on 8 and 91 DF,  p-value: < 2.2e-16
+#+end_example
+
+       Using no hypothesis at the begining could be a good starting point:
+       #+begin_src R :results output graphics :file img/20160402/pilipili2/dopt_desgin_100_no_hypothesis.png :exports both :width 600 :height 400 :session
+
+         form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(elements_number^2)
+         form_Dopt_y_comp <- time_per_pixel ~ y_component_number + I(y_component_number^2)
+         form_Dopt_v_len <- time_per_pixel ~ vector_length 
+         form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2)
+         form_Dopt_lws_y <- time_per_pixel ~ lws_y + I(1/lws_y)
+
+         model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_elem_nb)
+             model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+         }
+
+         model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_y_comp)
+             model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+         }
+
+         model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_v_len)
+             model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+         }
+
+         model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_th_nb)
+             model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+         }
+
+         model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_lws_y)
+             model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+         }
+
+         default <- par()
+         par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+         plot(y=set$time_per_pixel,set$elements_number,ylim=c(0,4e-9))
+         lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+         lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+         lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+         plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+         lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+         lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+         par(default)        
+
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160402/pilipili2/dopt_desgin_100_no_hypothesis.png]]
+
+       Here we can compare to different model with a neutral D-opt:
+       #+begin_src R :results output graphics :file img/20160402/pilipili2/dopt_desgin_100_no_hypothesis_2.png :exports both :width 600 :height 400 :session
+
+         form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+         form_Dopt_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+         form_Dopt_v_len <- time_per_pixel ~ vector_length 
+         form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2)
+         form_Dopt_lws_y <- time_per_pixel ~ lws_y + I(1/lws_y)
+
+         model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_elem_nb)
+             model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+         }
+
+         model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_y_comp)
+             model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+         }
+
+         model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_v_len)
+             model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+         }
+
+         model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_th_nb)
+             model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+         }
+
+         model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_lws_y)
+             model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+         }
+
+         default <- par()
+         par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+         plot(y=set$time_per_pixel,set$elements_number,ylim=c(0,4e-9))
+         lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+         lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+         lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+         plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+         lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+         lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+         par(default)        
+
+       #+end_src
+
+       #+RESULTS:
+       [[file:img/20160402/pilipili2/dopt_desgin_100_no_hypothesis_2.png]]
+
+       And with interactions:
+      #+begin_src R :results output :session :exports both
+        library(DoE.base)
+        library(DoE.wrapper)
+
+         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+         g <- function(x) { f(x)/x^2 }
+         h <- function(x) {pmin(g(x),1e15)}
+
+         Dopt <- Dopt.design( 100 , data=complete_set, formula= 
+                                                              "~ (elements_number +
+                                                                 y_component_number + 
+                                                                 vector_length + 
+                                                                 threads_number + 
+                                                                 lws_y + 
+                                                                 load_overlap +
+                                                                 temporary_size)^2" , nRepeat= 20 ,randomize= TRUE ,seed= 28517 )
+
+         set <- data.frame()
+         for(i in 1:nrow(Dopt)){
+             set <- rbind(set, df[ df$elements_number == Dopt$elements_number[i]
+                                        & df$y_component_number == Dopt$y_component_number[i]
+                                        & df$vector_length == Dopt$vector_length[i]
+                                        & df$temporary_size == Dopt$temporary_size[i] 
+                                        & df$threads_number == Dopt$threads_number[i]
+                                        & df$load_overlap == (if (Dopt$load_overlap[i] == 1) "true" else "false")
+                                        & df$lws_y == Dopt$lws_y[i], ])
+         }
+
+          model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+                                             y_component_number + I(1/y_component_number) + 
+                                             vector_length + 
+                                             threads_number + I(1/threads_number) + 
+                                             lws_y + 
+                                             elements_number:y_component_number +
+                                             threads_number:lws_y +
+                                             threads_number:elements_number
+          fit <- lm(data=set,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              fit <- lm(data=set,formula=model,weight=g(E))
+          }
+          summary(fit)
+       #+end_src
+
+      #+RESULTS:
+      #+begin_example
+
+      Call:
+      lm.default(formula = model, data = set, weights = g(E))
+
+      Weighted Residuals:
+             Min         1Q     Median         3Q        Max 
+      -1.052e-05  1.391e-06  4.007e-06  9.869e-06  4.572e-05 
+
+      Coefficients: (2 not defined because of singularities)
+                                           Estimate Std. Error t value Pr(>|t|)    
+      (Intercept)                         5.972e-11  1.266e-10   0.472 0.638305    
+      elements_number                    -1.834e-11  5.133e-12  -3.572 0.000572 ***
+      I(1/elements_number)                9.090e-11  3.684e-11   2.467 0.015508 *  
+      y_component_number                 -1.454e-12  5.842e-12  -0.249 0.804017    
+      I(1/y_component_number)                    NA         NA      NA       NA    
+      vector_length                       3.676e-11  4.881e-12   7.532 3.72e-11 ***
+      threads_number                      8.194e-14  8.859e-14   0.925 0.357496    
+      I(1/threads_number)                 6.999e-09  4.212e-09   1.662 0.100049    
+      lws_y                               8.741e-12  3.571e-13  24.480  < 2e-16 ***
+      elements_number:y_component_number         NA         NA      NA       NA    
+      threads_number:lws_y               -5.082e-15  3.487e-16 -14.575  < 2e-16 ***
+      elements_number:threads_number      6.590e-15  5.669e-15   1.162 0.248135    
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Residual standard error: 1.426e-05 on 90 degrees of freedom
+      Multiple R-squared:      1,	Adjusted R-squared:      1 
+      F-statistic: 2.015e+15 on 9 and 90 DF,  p-value: < 2.2e-16
+#+end_example
+
+       Linear + interactions seems  also to be a good start to find a model:
+      #+begin_src R :results output graphics :file img/20160402/pilipili2/dopt_desgin_100_no_hypothesis_interaction.png :exports both :width 600 :height 400 :session
+
+         form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+         form_Dopt_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+         form_Dopt_v_len <- time_per_pixel ~ vector_length 
+         form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2)
+         form_Dopt_lws_y <- time_per_pixel ~ lws_y + I(1/lws_y)
+
+         model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_elem_nb)
+             model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+         }
+
+         model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_y_comp)
+             model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+         }
+
+         model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_v_len)
+             model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+         }
+
+         model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_th_nb)
+             model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+         }
+
+         model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_lws_y)
+             model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+         }
+
+         default <- par()
+         par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+         plot(y=set$time_per_pixel,set$elements_number,ylim=c(0,4e-9))
+         lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+         lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+         lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+         plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+         lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+         lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+         par(default)        
+
+       #+end_src
+
+      #+RESULTS:
+      [[file:img/20160402/pilipili2/dopt_desgin_100_no_hypothesis_interaction.png]]
+
+      #+begin_src R :results output graphics :file img/20160402/pilipili2/dopt_desgin_100_no_hypothesis_interactions_2.png :exports both :width 600 :height 400 :session
+
+         form_Dopt_elem_nb <- time_per_pixel ~ elements_number + I(elements_number^2)
+         form_Dopt_y_comp <- time_per_pixel ~ y_component_number + I(y_component_number^2)
+         form_Dopt_v_len <- time_per_pixel ~ vector_length 
+         form_Dopt_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2)
+         form_Dopt_lws_y <- time_per_pixel ~ lws_y + I(1/lws_y)
+
+         model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_elem_nb)
+             model_Dopt_elem_nb <- lm(data=set,formula=form_Dopt_elem_nb,weight=h(E))
+         }
+
+         model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_y_comp)
+             model_Dopt_y_comp <- lm(data=set,formula=form_Dopt_y_comp,weight=h(E))
+         }
+
+         model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_v_len)
+             model_Dopt_v_len <- lm(data=set,formula=form_Dopt_v_len,weight=h(E))
+         }
+
+         model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_th_nb)
+             model_Dopt_th_nb <- lm(data=set,formula=form_Dopt_th_nb,weight=h(E))
+         }
+
+         model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y)
+         for(i in 1:200){
+             E <- residuals(model_Dopt_lws_y)
+             model_Dopt_lws_y <- lm(data=set,formula=form_Dopt_lws_y,weight=h(E))
+         }
+
+         default <- par()
+         par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+         plot(y=set$time_per_pixel,set$elements_number,ylim=c(0,4e-9))
+         lines(sort(set$elements_number),predict(model_Dopt_elem_nb)[order(set$elements_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$y_component_number, ylim=c(0,5e-10))
+         lines(sort(set$y_component_number),predict(model_Dopt_y_comp)[order(set$y_component_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$vector_length, ylim=c(0,5e-10))
+         lines(sort(set$vector_length),predict(model_Dopt_v_len)[order(set$vector_length)],col="green")  
+
+         plot(y=set$time_per_pixel,set$threads_number, ylim=c(0,4e-10))
+         lines(sort(set$threads_number),predict(model_Dopt_th_nb)[order(set$threads_number)],col="green")  
+
+         plot(y=set$time_per_pixel,set$lws_y, ylim=c(0,4e-8))
+         lines(sort(set$lws_y),predict(model_Dopt_lws_y)[order(set$lws_y)],col="green")  
+
+         par(default)        
+
+       #+end_src
+
+      #+RESULTS:
+      [[file:img/20160402/pilipili2/dopt_desgin_100_no_hypothesis_interactions_2.png]]
 
 ****** TODO Optimization on the model to find the value
 ******* DONE Understanding why the bfgs method of optim does not work with my regression
