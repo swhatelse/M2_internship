@@ -645,7 +645,30 @@ Text
 * State of the art
 ** Auto-tuning
    In auto-tuning one can find two major categories of approaches. The
-   first one is the use of machine learning techniques.
+   first one is the use of machine learning techniques. Machine
+   learning is used to build models over a large training set to make
+   predictions. Thus, there is a will of generalization, the knowledge  
+   is reuse from previous experiences. It is used to identify category
+   of programs that have the same characteristics, and to determine
+   what is the best action to apply for this category of programs.
+
+   This approach has been proven successful by the project Milepost
+   GCC from Grigori Fursin\cite{}, which is now part of GCC. He used
+   machine learning to learn characteristics of programs and the
+   distributions of combinations that gives the most speedup. The idea
+   is that good performing combinations have high probability to bring
+   good speedup for similar programs. This allowed to reuse knowledge
+   across programs.
+   
+   Stefan Wild et al. focused porting of optimization between similar
+   platforms\cite{}. They study the correlation between platform and
+   the performance of combinations parameters. They used machine
+   learning to build performance model of platform and this model
+   to approximate performance of another platform. The more the
+   combinations performance are correlated between two platforms the
+   more the accurate the predictions. They managed to find correlations
+   between intel CPU, IBM Power but this approach fails with too
+   dissimilar platforms (ARM in their case).
    
    #+begin_src R :results output graphics :file img/function_examples.png :exports results :width 600 :height 400 :session
      library(polynom)
