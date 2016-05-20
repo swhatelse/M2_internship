@@ -121,7 +121,7 @@ Text
 #   \newpage
 # #+END_abstract
 
-* Plan                                                             
+* Plan 
 ** Introduction [3/3]
 *** Why is performance optimization difficult
    - In HPC code optimization crucial to exploit very complex hardware.
@@ -246,10 +246,11 @@ Text
 *** Compilation
 *** Auto-tuning
 *** BOAST
-** State of the art on Autotuning [0/4]
+** State of the art on Autotuning [2/4]
    - What is autotuning
      paramters \to represents different version/implementation
 
+  # Maybe an overview of machine learning in general
   - Reuse knowledge of previous experience (generalization) \to machine
     learning. For different problem \to re-usability. 
     What is machine learning and why it is useful in auto-tuning.
@@ -651,9 +652,9 @@ Text
 ** BOAST
 * State of the art
 ** Auto-tuning
-   In auto-tuning one can find two major categories of approaches. The
-   first one is the use of machine learning techniques. Machine
-   learning is used to build models over a large training set to make
+   In auto-tuning one can find two major categories of
+   approaches. Some has focus on the is of machine learning techniques
+   Machine learning is used to build models over a large training set to make
    predictions. Thus, there is a will of generalization, the knowledge  
    is reuse from previous experiences. It is used to identify category
    of programs that have the same characteristics, and to determine
@@ -677,11 +678,41 @@ Text
    between intel CPU, IBM Power but this approach fails with too
    dissimilar platforms (ARM in their case).
 
-   Another use of machine learning techniques is to select the best
-   search strategy as the efficiency of a search method is highly 
-   dependent of the problem
-   structure. Opentuner\cite{Ansel:2014:OEF:2628071.2628092}  
+   As efficiency of a search strategy is dependent on the structure of
+   the search, machine learning can be used to learn what search
+   methods to use according to the characteristics of the search
+   space. That is the approach taken by the auto-tuning framework
+   Opentuner\cite{Ansel:2014:OEF:2628071.2628092}.  
+
+   The main drawback with machine learning techniques is that they
+   need to be trained on a large amount of instances to be effective
+   enough. To mitigate this problem, some, such the framework
+   Nitro\cite{Muralidharan:2014:NFA:2650283.2650550} uses active
+   learning to distribute the training overhead.
+
+   Another approach is to distribute the training overhead over the
+   different users, it is called
+   crowdtuning\cite{memon:hal-00944513}. Informations are collected in
+   a shared database and machine learning is applied to continuously
+   update the model. 
    
+   Other have worked more around the optimization side to find more
+   suited search techniques that are able to find the near-optimal
+   solution by exploring the least points of the search space
+   possible. Many techniques are applied to the auto-tuning
+   problems. Some of them use the derivatives such gradient
+   descent which is a kind of local search techniques. It exploits the
+   locality of the search space and has particularity to converge
+   quickly to a the optimal solution but it requires that the search
+   space has a specific geometry and convexity of the objective
+   function. But these hypothesis are not necessarily true\ref{fig:obj-func-ex}. The
+   objective function may not be convex, hence with many local optimum
+   and a local search search would be stuck in a local optimum. The
+   problem is that local optimum can be far from the global
+   optimum. That is why, to escape from this, global search are more
+   suited such the simulated annealing, or genetic algorithm (kind of
+   multiple local search).    
+
    #+begin_src R :results output graphics :file img/function_examples.png :exports results :width 600 :height 400 :session
      library(polynom)
      default <- par()
@@ -692,8 +723,54 @@ Text
      par(default)
    #+end_src
 
+   #+CAPTION: Objective function characterics
+   #+LABEL: fig:obj-func-ex
    #+RESULTS:
    [[file:img/function_examples.png]]
+
+   Another concern is that, the objective function is an empirical
+   function, hence it can be necessary to build a surrogate. This is
+   usefull to remove the noise and as a result it facilitates the
+   search. Also the derivative estimation may not be always possible and
+   derivated-based searches cannot work, and the alternative is to use
+   derivative-free based searches such as Nelder Mead Simplex.
+   The previous search methods are used in
+   Orio\cite{Hartono:2009:AEP:1586640.1587666}, a source to source 
+   auto-tuner. It uses random search and simulated annealing as global
+   search methods and Nelder Mead Simplex as local search. 
+
+   The efficiency of the previous approach is highly dependent on how
+   much the hypothesis about he search space are wrong and sometimes
+   it is difficult know how it looks. For this reason some have worked
+   on generic heuristics that combine all or part of the previous aspects
+   such as pattern search\cite{Hooke:1961:DSS:321062.321069} which is
+   a derivative-free based search that combines global search that
+   explore the space in a finite set of direction to find  
+   regions of interest and local search to examine regions of
+   interest. This kind of methods allow to make less hypothesis and
+   require less knowledge about the search space. This approach has
+   been used in OPAL\cite{orban2011templating}, a meta-programming
+   framework. It uses the mesh-adaptive
+   direct-search\cite{Audet04meshadaptive}, it is an extention of the
+   pattern search. It can explore in an infinte set of directions
+   unlike pattern search and use derivative information when available
+   to speedup the search.
+
+   While some people developed framework to characterize the search
+   space such as ASK\cite{deoliveiracastro:hal-00952307} in order to
+   have a better understanding of it. This tool emphasis on the
+   sampling because it is crucial for build an accurate model. It
+   provides a complex sampling pipeline with different surrogate
+   methods (Bayesian regression, interpolation, etc...)
+
+   In some cases, the problem structure is well know and one has an
+   idea of where is the optimal solution but the structure of the
+   space in this neighborhood is too complex. The approach
+   taken in Atlas \cite{Whaley:1998:ATL:509058.509096} is to focus
+   only in one part of the search space to perform an exhaustive
+   search. But this require know the problem well and where to search.
+
+   In general auto-tuners exclude the user from the optimization process
 
 ** Design of experiments
 * Methods
