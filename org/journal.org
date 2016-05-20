@@ -16589,18 +16589,29 @@ h[g.name.to_sym] = 1024
 
         Take a random set:
         #+begin_src R :results output :session :exports both
+          set.seed(1) 
           random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
         #+end_src
 
         #+RESULTS:
 
-        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
-          plot(random_set)
+        Checking if there are some duplicated points. There are no duplicated points:
+        #+begin_src R :results output :session :exports both
+          nrow(random_set[duplicated(random_set),])
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-3623dXu/figure3623Rgp.png]]
+        : [1] 0
 
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/random_100_set_points.png :exports both :width 800 :height 600 :session
+          plot(random_set[,c(1,2,3,4,6,7,8)])
+        #+end_src
+        
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/random_100_set_points.png]]
+
+        The R-squared is worse than with LHS but can we really trust
+        it? And It detects less usefull factors:
         #+begin_src R :results output :session :exports both
           form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
               I(1/y_component_number) + 
@@ -16624,33 +16635,250 @@ h[g.name.to_sym] = 1024
         #+begin_example
 
         Call:
-        lm.default(formula = form_complete, data = random_set, weights = h(E))
+        lm(formula = form_complete, data = random_set, weights = h(E))
 
         Weighted Residuals:
                Min         1Q     Median         3Q        Max 
-        -8.160e-06  2.302e-06  3.830e-06  7.817e-06  4.336e-05 
+        -1.482e-05  2.349e-06  3.846e-06  6.139e-06  3.797e-05 
 
         Coefficients:
                                              Estimate Std. Error t value Pr(>|t|)    
-        (Intercept)                        -5.293e-10  2.476e-10  -2.138  0.03527 *  
-        elements_number                     2.851e-11  2.859e-11   0.997  0.32135    
-        I(1/elements_number)                1.129e-09  4.464e-10   2.529  0.01320 *  
-        I(1/y_component_number)            -1.538e-10  2.177e-10  -0.707  0.48164    
-        vector_length                       5.861e-11  7.770e-12   7.543 3.72e-11 ***
-        threads_number                      3.819e-13  1.715e-13   2.226  0.02852 *  
-        I(1/threads_number)                 1.670e-08  5.560e-09   3.004  0.00346 ** 
-        lws_y                               1.154e-11  1.038e-12  11.119  < 2e-16 ***
-        elements_number:y_component_number -4.109e-12  3.769e-12  -1.090  0.27846    
-        threads_number:lws_y               -6.956e-15  1.297e-15  -5.362 6.44e-07 ***
-        elements_number:threads_number     -3.762e-14  2.930e-14  -1.284  0.20245    
+        (Intercept)                        -1.697e-10  1.259e-10  -1.348  0.18099    
+        elements_number                    -5.167e-11  2.584e-11  -1.999  0.04863 *  
+        I(1/elements_number)                5.800e-10  1.886e-10   3.076  0.00279 ** 
+        I(1/y_component_number)            -1.970e-10  1.544e-10  -1.275  0.20548    
+        vector_length                       5.920e-11  8.235e-12   7.188 1.94e-10 ***
+        threads_number                      2.549e-13  1.260e-13   2.023  0.04608 *  
+        I(1/threads_number)                 1.752e-08  3.855e-09   4.543 1.73e-05 ***
+        lws_y                               1.403e-11  9.268e-13  15.137  < 2e-16 ***
+        elements_number:y_component_number  7.541e-12  3.846e-12   1.961  0.05306 .  
+        threads_number:lws_y               -8.966e-15  1.007e-15  -8.907 5.86e-14 ***
+        elements_number:threads_number     -3.176e-14  1.542e-14  -2.060  0.04236 *  
         ---
         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-        Residual standard error: 1.011e-05 on 89 degrees of freedom
-        Multiple R-squared:  0.7996,	Adjusted R-squared:  0.7771 
-        F-statistic: 35.51 on 10 and 89 DF,  p-value: < 2.2e-16
-#+end_example
-                
+        Residual standard error: 8.843e-06 on 89 degrees of freedom
+        Multiple R-squared:  0.8858,	Adjusted R-squared:  0.8729 
+        F-statistic: 69.01 on 10 and 89 DF,  p-value: < 2.2e-16
+        #+end_example
+
+        Can we compare it to the full space? Anova? We can't use anova
+        because we don't have the some number of data between the full
+        space and the random set
+        #+begin_src R :results output :session :exports both
+          form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+              I(1/y_component_number) + 
+              vector_length + 
+              threads_number + I(1/threads_number) + 
+              lws_y + 
+              elements_number:y_component_number +
+              threads_number:lws_y +
+              threads_number:elements_number
+
+          model_complete_full_space <- lm(data=df,formula=form_complete)
+          for(i in 1:200){
+              E <- residuals(model_complete_full_space)
+              model_complete_full_space <- lm(data=df,formula=form_complete,weight=h(E))
+          }
+          anova(model_complete_full_space,model_complete)
+        #+end_src
+
+        #+RESULTS:
+        : Error in anova.lmlist(object, ...) : 
+        :   tous les modèles n'ont pas été ajustés à la même taille du jeu de données
+
+        #+begin_src R :results output :session :exports both
+          form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+          form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+          form_v_len <- time_per_pixel ~ vector_length 
+          form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+          form_lws_y <- time_per_pixel ~ lws_y
+
+          model_elem_nb <- lm(data=df,formula=form_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_elem_nb)
+              model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=h(E))
+          }
+
+          model_y_comp <- lm(data=df,formula=form_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_y_comp)
+              model_y_comp <- lm(data=df,formula=form_y_comp,weight=h(E))
+          }
+
+          model_v_len <- lm(data=df,formula=form_v_len)
+          for(i in 1:200){
+              E <- residuals(model_v_len)
+              model_v_len <- lm(data=df,formula=form_v_len,weight=h(E))
+          }
+
+          model_th_nb <- lm(data=df,formula=form_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_th_nb)
+              model_th_nb <- lm(data=df,formula=form_th_nb,weight=h(E))
+          }
+
+          model_lws_y <- lm(data=df,formula=form_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_lws_y)
+              model_lws_y <- lm(data=df,formula=form_lws_y,weight=h(E))
+          }
+
+          #########################
+
+          model_subset_elem_nb <- lm(data=random_set,formula=form_elem_nb)
+          for(i in 1:200){
+              E <- residuals(model_subset_elem_nb)
+              model_subset_elem_nb <- lm(data=random_set,formula=form_elem_nb,weight=h(E))
+          }
+
+          model_subset_y_comp <- lm(data=random_set,formula=form_y_comp)
+          for(i in 1:200){
+              E <- residuals(model_subset_y_comp)
+              model_subset_y_comp <- lm(data=random_set,formula=form_y_comp,weight=h(E))
+          }
+
+          model_subset_v_len <- lm(data=random_set,formula=form_v_len)
+          for(i in 1:200){
+              E <- residuals(model_subset_v_len)
+              model_subset_v_len <- lm(data=random_set,formula=form_v_len,weight=h(E))
+          }
+
+          model_subset_th_nb <- lm(data=random_set,formula=form_th_nb)
+          for(i in 1:200){
+              E <- residuals(model_subset_th_nb)
+              model_subset_th_nb <- lm(data=random_set,formula=form_th_nb,weight=h(E))
+          }
+
+          model_subset_lws_y <- lm(data=random_set,formula=form_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_subset_lws_y)
+              model_subset_lws_y <- lm(data=random_set,formula=form_lws_y,weight=h(E))
+          }
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,9e-10))
+          lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+          lines(sort(random_set$elements_number),predict(model_subset_elem_nb)[order(random_set$elements_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,9e-10))
+          lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+          lines(sort(random_set$y_component_number),predict(model_subset_y_comp)[order(random_set$y_component_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+          lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+          lines(sort(random_set$vector_length),predict(model_subset_v_len)[order(random_set$vector_length)],col="green")  
+
+          plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,1e-9))
+          lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+          lines(sort(random_set$threads_number),predict(model_subset_th_nb)[order(random_set$threads_number)],col="green")  
+
+          plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+          lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+          lines(sort(random_set$lws_y),predict(model_subset_lws_y)[order(random_set$lws_y)],col="green")  
+
+          par(default)        
+
+      
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-3647p_q/figure3647MO1.png]]
+
+ 
+        We cannot take conclusion by comparing with one sample. We
+        need many and make the average of the fit. On average it
+        seems that we can get pretty close estimate compared to the
+        full search space regression:
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/random_100_fit_100_avg_comp.png :exports both :width 800 :height 600 :session
+           elements_number_val = as.numeric(levels(as.factor(df$elements_number)))
+           y_component_number_val = as.numeric(levels(as.factor(df$y_component_number)))
+           vector_length_val = as.numeric(levels(as.factor(df$vector_length)))
+           threads_number_val = as.numeric(levels(as.factor(df$threads_number)))
+           lws_y_val = as.numeric(levels(as.factor(df$lws_y)))
+           
+           sum_elem_nb <- c(rep(0,length(elements_number_val)))                      
+           sum_y_comp <- c(rep(0,length(y_component_number_val)))                      
+           sum_v_len <- c(rep(0,length(vector_length_val)))                      
+           sum_th_nb <- c(rep(0,length(threads_number_val)))                      
+           sum_lws_y <- c(rep(0,length(lws_y_val))) 
+
+           runs = 100   
+                            
+           for(j in 1:runs){
+               random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+               model_subset_elem_nb <- lm(data=random_set,formula=form_elem_nb)
+               model_subset_y_comp <- lm(data=random_set,formula=form_y_comp)
+               model_subset_v_len <- lm(data=random_set,formula=form_v_len)
+               model_subset_th_nb <- lm(data=random_set,formula=form_th_nb)
+               model_subset_lws_y <- lm(data=random_set,formula=form_lws_y)
+               for(i in 1:200){
+                   E <- residuals(model_subset_elem_nb)
+                   model_subset_elem_nb <- lm(data=random_set,formula=form_elem_nb,weight=h(E))
+
+                   E <- residuals(model_subset_y_comp)
+                   model_subset_y_comp <- lm(data=random_set,formula=form_y_comp,weight=h(E))
+
+                   E <- residuals(model_subset_v_len)
+                   model_subset_v_len <- lm(data=random_set,formula=form_v_len,weight=h(E))
+
+                   E <- residuals(model_subset_th_nb)
+                   model_subset_th_nb <- lm(data=random_set,formula=form_th_nb,weight=h(E))
+
+                   E <- residuals(model_subset_lws_y)
+                   model_subset_lws_y <- lm(data=random_set,formula=form_lws_y,weight=h(E))
+
+               }
+               sum_elem_nb <- sum_elem_nb + predict(model_subset_elem_nb,data.frame(elements_number=elements_number_val),interval="none")
+               sum_y_comp <- sum_y_comp + predict(model_subset_y_comp,data.frame(y_component_number=y_component_number_val),interval="none")
+               sum_v_len <- sum_v_len + predict(model_subset_v_len,data.frame(vector_length=vector_length_val),interval="none")
+               sum_th_nb <- sum_th_nb + predict(model_subset_th_nb,data.frame(threads_number=threads_number_val),interval="none")
+               sum_lws_y <- sum_lws_y + predict(model_subset_lws_y,data.frame(lws_y=lws_y_val),interval="none")
+          }
+
+           avg_elem_nb <- sum_elem_nb / runs
+           avg_y_comp <- sum_y_comp / runs 
+           avg_v_len <- sum_v_len / runs 
+           avg_th_nb <- sum_th_nb / runs 
+           avg_lws_y <- sum_lws_y / runs 
+
+          default <- par()
+          par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+          plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+          lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+          lines(elements_number_val,avg_elem_nb,col="green")  
+
+          plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-9))
+          lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+          lines(y_component_number_val,avg_y_comp,col="green")  
+
+          plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-9))
+          lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+          lines(vector_length_val,avg_v_len,col="green")  
+
+          plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,1e-9))
+          lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+          lines(threads_number_val,avg_th_nb,col="green")  
+
+          plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,9e-9))
+          lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+          lines(lws_y_val,avg_lws_y,col="green")  
+
+          par(default)        
+
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/random_100_fit_100_avg_comp.png]]
+
+        
 ******* DONE Screening design
         #+begin_src sh :results output :exports both
           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -18039,6 +18267,155 @@ h[g.name.to_sym] = 1024
          #+RESULTS:
          [[file:img/20160402/pilipili2/lhs_desgin_100_1th.png]]
 
+         Let's compare it with the full search space regression by
+         running it 100 and dooing the average:
+         #+begin_src R :results output :session :exports both
+            library(DoE.base)
+            library(DoE.wrapper)
+
+            elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+            y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+            vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+            threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+            lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+            temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+            load_overlap_val <- levels(df$load_overlap)
+
+            sum_elem_nb <- c(rep(0,length(elements_number_val)))                      
+            sum_y_comp <- c(rep(0,length(y_component_number_val)))                      
+            sum_v_len <- c(rep(0,length(vector_length_val)))                      
+            sum_th_nb <- c(rep(0,length(threads_number_val)))                      
+            sum_lws_y <- c(rep(0,length(lws_y_val))) 
+
+           form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+           form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+           form_v_len <- time_per_pixel ~ vector_length 
+           form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+           form_lws_y <- time_per_pixel ~ lws_y
+
+            model_elem_nb <- lm(data=df,formula=form_elem_nb)
+            model_y_comp <- lm(data=df,formula=form_y_comp)
+            model_v_len <- lm(data=df,formula=form_v_len)
+            model_th_nb <- lm(data=df,formula=form_th_nb)
+            model_lws_y <- lm(data=df,formula=form_lws_y)
+            for(i in 1:200){
+                E <- residuals(model_elem_nb)
+                model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=h(E))
+
+                E <- residuals(model_y_comp)
+                model_y_comp <- lm(data=df,formula=form_y_comp,weight=h(E))
+
+                E <- residuals(model_v_len)
+                model_v_len <- lm(data=df,formula=form_v_len,weight=h(E))
+
+                E <- residuals(model_th_nb)
+                model_th_nb <- lm(data=df,formula=form_th_nb,weight=h(E))
+
+                E <- residuals(model_lws_y)
+                model_lws_y <- lm(data=df,formula=form_lws_y,weight=h(E))
+
+            }
+
+            runs = 100   
+
+            for(j in 1:runs){
+                Design.1 <- lhs.design( type= "maximin" , nruns= 441 ,nfactors= 7, randomize=TRUE ,digits= NULL, factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
+                                                                                                                   idx_y_component_number = c(1,length(y_component_number_val)),
+                                                                                                                   idx_vector_length = c(1,length(vector_length_val)), 
+                                                                                                                   idx_threads_number = c(1,length(threads_number_val)),
+                                                                                                                   idx_temporary_size = c(1,length(temporary_size_val)), 
+                                                                                                                   idx_lws_y = c(1,length(lws_y_val)), 
+                                                                                                                   idx_load_overlap = c(1,length(load_overlap_val)) 
+                                                                                                                   ) 
+                                       )
+
+                Design.1.rounded <- round(Design.1) 
+
+                set <- data.frame()
+                for(i in 1:nrow(Design.1)){
+                    set <- rbind(set, df[ df$elements_number == elements_number_val[Design.1$idx_elements_number[i]]
+                                         & df$y_component_number == y_component_number_val[Design.1$idx_y_component_number[i]]
+                                         & df$vector_length == vector_length_val[Design.1$idx_vector_length[i]]
+                                         & df$threads_number == threads_number_val[Design.1$idx_threads_number[i]]
+                                         & df$lws_y == lws_y_val[Design.1$idx_lws_y[i]]
+                                         & df$temporary_size == temporary_size_val[Design.1$idx_temporary_size[i]]
+                                         & df$load_overlap == load_overlap_val[Design.1$idx_load_overlap[i]], ])
+                }
+
+
+                model_subset_elem_nb <- lm(data=set,formula=form_elem_nb)
+                model_subset_y_comp <- lm(data=set,formula=form_y_comp)
+                model_subset_v_len <- lm(data=set,formula=form_v_len)
+                model_subset_th_nb <- lm(data=set,formula=form_th_nb)
+                model_subset_lws_y <- lm(data=set,formula=form_lws_y)
+                for(i in 1:200){
+                    E <- residuals(model_subset_elem_nb)
+                    model_subset_elem_nb <- lm(data=set,formula=form_elem_nb,weight=h(E))
+
+                    E <- residuals(model_subset_y_comp)
+                    model_subset_y_comp <- lm(data=set,formula=form_y_comp,weight=h(E))
+
+                    E <- residuals(model_subset_v_len)
+                    model_subset_v_len <- lm(data=set,formula=form_v_len,weight=h(E))
+
+                    E <- residuals(model_subset_th_nb)
+                    model_subset_th_nb <- lm(data=set,formula=form_th_nb,weight=h(E))
+
+                    E <- residuals(model_subset_lws_y)
+                    model_subset_lws_y <- lm(data=set,formula=form_lws_y,weight=h(E))
+
+                }
+                sum_elem_nb <- sum_elem_nb + predict(model_subset_elem_nb,data.frame(elements_number=elements_number_val),interval="none")
+                sum_y_comp <- sum_y_comp + predict(model_subset_y_comp,data.frame(y_component_number=y_component_number_val),interval="none")
+                sum_v_len <- sum_v_len + predict(model_subset_v_len,data.frame(vector_length=vector_length_val),interval="none")
+                sum_th_nb <- sum_th_nb + predict(model_subset_th_nb,data.frame(threads_number=threads_number_val),interval="none")
+                sum_lws_y <- sum_lws_y + predict(model_subset_lws_y,data.frame(lws_y=lws_y_val),interval="none")
+            }
+
+            avg_elem_nb <- sum_elem_nb / runs
+            avg_y_comp <- sum_y_comp / runs 
+            avg_v_len <- sum_v_len / runs 
+            avg_th_nb <- sum_th_nb / runs 
+            avg_lws_y <- sum_lws_y / runs 
+
+         #+end_src
+
+         #+RESULTS:
+
+         That's weird LHS is better for most of the factors expect for
+         lws_y. The hypothesis is that because of the constraints lots
+         of high lws_y are rejected. That's why we are worse than random:
+         #+begin_src R :results output graphics :file img/20160402/pilipili2/LHS_100_fit_100_avg_comp.png :exports both :width 800 :height 600 :session
+           default <- par()
+           par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+           lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+           lines(elements_number_val,avg_elem_nb,col="green")  
+
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-9))
+           lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+           lines(y_component_number_val,avg_y_comp,col="green")  
+
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-9))
+           lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+           lines(vector_length_val,avg_v_len,col="green")  
+
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,1e-9))
+           lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+           lines(threads_number_val,avg_th_nb,col="green")  
+
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,9e-9))
+           lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+           lines(lws_y_val,avg_lws_y,col="green")  
+
+           par(default)                 
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/LHS_100_fit_100_avg_comp.png]]
+
+
 ******* DONE D-Opt
         - Conclusion of the D-optimal design:
           D-Optimal should be used when we already know what is the
@@ -18153,6 +18530,24 @@ h[g.name.to_sym] = 1024
           complete_set <- data.frame(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap)
           summary(complete_set)
         #+end_src
+
+        #+RESULTS:
+        #+begin_example
+         elements_number  y_component_number vector_length    threads_number  
+         Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :  32.0  
+         1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.000   1st Qu.:  64.0  
+         Median : 6.000   Median :3.000      Median : 4.000   Median : 256.0  
+         Mean   : 8.602   Mean   :3.441      Mean   : 5.721   Mean   : 367.9  
+         3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.000   3rd Qu.: 512.0  
+         Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :1024.0  
+             lws_y         temporary_size   load_overlap   
+         Min.   :   1.00   Min.   :2.000   Min.   :0.0000  
+         1st Qu.:   4.00   1st Qu.:2.000   1st Qu.:0.0000  
+         Median :  16.00   Median :2.000   Median :1.0000  
+         Mean   :  73.56   Mean   :2.974   Mean   :0.5074  
+         3rd Qu.:  64.00   3rd Qu.:4.000   3rd Qu.:1.0000  
+         Max.   :1024.00   Max.   :4.000   Max.   :1.0000
+         #+end_example
 
         We generate 100 points just to see if it is enough. With just
         a very simple model, it detects that temporary size and load
@@ -19249,6 +19644,257 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
       [[file:img/20160402/pilipili2/dopt_desgin_100_no_hypothesis_interactions_2.png]]
+
+      Let's compare to the full search space regression byt running
+      100 and averaging:
+      #+begin_src R :results output :session :exports both
+         library(DoE.base)
+         library(DoE.wrapper)
+
+         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+         g <- function(x) { f(x)/x^2 }
+         h <- function(x) {pmin(g(x),1e10)}
+
+         elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+         y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+         vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+         threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+         lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+         temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+         load_overlap_val <- levels(df$load_overlap)
+
+         sum_elem_nb <- c(rep(0,length(elements_number_val)))                      
+         sum_y_comp <- c(rep(0,length(y_component_number_val)))                      
+         sum_v_len <- c(rep(0,length(vector_length_val)))                      
+         sum_th_nb <- c(rep(0,length(threads_number_val)))                      
+         sum_lws_y <- c(rep(0,length(lws_y_val))) 
+
+        form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+        form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+        form_v_len <- time_per_pixel ~ vector_length 
+        form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+        form_lws_y <- time_per_pixel ~ lws_y
+
+         model_elem_nb <- lm(data=df,formula=form_elem_nb)
+         model_y_comp <- lm(data=df,formula=form_y_comp)
+         model_v_len <- lm(data=df,formula=form_v_len)
+         model_th_nb <- lm(data=df,formula=form_th_nb)
+         model_lws_y <- lm(data=df,formula=form_lws_y)
+         for(i in 1:200){
+             E <- residuals(model_elem_nb)
+             model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=h(E))
+
+             E <- residuals(model_y_comp)
+             model_y_comp <- lm(data=df,formula=form_y_comp,weight=h(E))
+
+             E <- residuals(model_v_len)
+             model_v_len <- lm(data=df,formula=form_v_len,weight=h(E))
+
+             E <- residuals(model_th_nb)
+             model_th_nb <- lm(data=df,formula=form_th_nb,weight=h(E))
+
+             E <- residuals(model_lws_y)
+             model_lws_y <- lm(data=df,formula=form_lws_y,weight=h(E))
+
+         }
+
+         runs = 100   
+
+         for(j in 1:runs){
+             set <- Dopt.design( 100 , data=df, formula="~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size + load_overlap)" , nRepeat= 20 ,randomize= TRUE)
+             model_subset_elem_nb <- lm(data=set,formula=form_elem_nb)
+             model_subset_y_comp <- lm(data=set,formula=form_y_comp)
+             model_subset_v_len <- lm(data=set,formula=form_v_len)
+             model_subset_th_nb <- lm(data=set,formula=form_th_nb)
+             model_subset_lws_y <- lm(data=set,formula=form_lws_y)
+             for(i in 1:200){
+                 E <- residuals(model_subset_elem_nb)
+                 model_subset_elem_nb <- lm(data=set,formula=form_elem_nb,weight=h(E))
+
+                 E <- residuals(model_subset_y_comp)
+                 model_subset_y_comp <- lm(data=set,formula=form_y_comp,weight=h(E))
+
+                 E <- residuals(model_subset_v_len)
+                 model_subset_v_len <- lm(data=set,formula=form_v_len,weight=h(E))
+
+                 E <- residuals(model_subset_th_nb)
+                 model_subset_th_nb <- lm(data=set,formula=form_th_nb,weight=h(E))
+
+                 E <- residuals(model_subset_lws_y)
+                 model_subset_lws_y <- lm(data=set,formula=form_lws_y,weight=h(E))
+
+             }
+             sum_elem_nb <- sum_elem_nb + predict(model_subset_elem_nb,data.frame(elements_number=elements_number_val),interval="none")
+             sum_y_comp <- sum_y_comp + predict(model_subset_y_comp,data.frame(y_component_number=y_component_number_val),interval="none")
+             sum_v_len <- sum_v_len + predict(model_subset_v_len,data.frame(vector_length=vector_length_val),interval="none")
+             sum_th_nb <- sum_th_nb + predict(model_subset_th_nb,data.frame(threads_number=threads_number_val),interval="none")
+             sum_lws_y <- sum_lws_y + predict(model_subset_lws_y,data.frame(lws_y=lws_y_val),interval="none")
+         }
+
+         avg_elem_nb <- sum_elem_nb / runs
+         avg_y_comp <- sum_y_comp / runs 
+         avg_v_len <- sum_v_len / runs 
+         avg_th_nb <- sum_th_nb / runs 
+         avg_lws_y <- sum_lws_y / runs 
+         #+end_src
+
+      #+RESULTS:
+
+      With D-Opt without hypothesis we are still able to get an "idea"
+      of the slope but it is less accurate than random or lhs:
+      #+begin_src R :results output graphics :file img/20160402/pilipili2/Dopt_100_fit_100_avg_comp.png :exports both :width 800 :height 600 :session
+           default <- par()
+           par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+           lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+           lines(elements_number_val,avg_elem_nb,col="green")  
+
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-9))
+           lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+           lines(y_component_number_val,avg_y_comp,col="green")  
+
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-9))
+           lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+           lines(vector_length_val,avg_v_len,col="green")  
+
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,1e-9))
+           lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+           lines(threads_number_val,avg_th_nb,col="green")  
+
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,9e-9))
+           lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+           lines(lws_y_val,avg_lws_y,col="green")  
+
+           par(default)                 
+         #+end_src
+
+      #+RESULTS:
+      [[file:img/20160402/pilipili2/Dopt_100_fit_100_avg_comp.png]]
+
+      Let's see what we get if we add interactions:
+      #+begin_src R :results output :session :exports both
+         library(DoE.base)
+         library(DoE.wrapper)
+
+         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+         g <- function(x) { f(x)/x^2 }
+         h <- function(x) {pmin(g(x),1e10)}
+
+         elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+         y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+         vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+         threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+         lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+         temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+         load_overlap_val <- levels(df$load_overlap)
+
+         sum_elem_nb <- c(rep(0,length(elements_number_val)))                      
+         sum_y_comp <- c(rep(0,length(y_component_number_val)))                      
+         sum_v_len <- c(rep(0,length(vector_length_val)))                      
+         sum_th_nb <- c(rep(0,length(threads_number_val)))                      
+         sum_lws_y <- c(rep(0,length(lws_y_val))) 
+
+        form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+        form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+        form_v_len <- time_per_pixel ~ vector_length 
+        form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+        form_lws_y <- time_per_pixel ~ lws_y
+
+         model_elem_nb <- lm(data=df,formula=form_elem_nb)
+         model_y_comp <- lm(data=df,formula=form_y_comp)
+         model_v_len <- lm(data=df,formula=form_v_len)
+         model_th_nb <- lm(data=df,formula=form_th_nb)
+         model_lws_y <- lm(data=df,formula=form_lws_y)
+         for(i in 1:200){
+             E <- residuals(model_elem_nb)
+             model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=h(E))
+
+             E <- residuals(model_y_comp)
+             model_y_comp <- lm(data=df,formula=form_y_comp,weight=h(E))
+
+             E <- residuals(model_v_len)
+             model_v_len <- lm(data=df,formula=form_v_len,weight=h(E))
+
+             E <- residuals(model_th_nb)
+             model_th_nb <- lm(data=df,formula=form_th_nb,weight=h(E))
+
+             E <- residuals(model_lws_y)
+             model_lws_y <- lm(data=df,formula=form_lws_y,weight=h(E))
+
+         }
+
+         runs = 100   
+
+         for(j in 1:runs){
+             set <- Dopt.design( 100 , data=df, formula="~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size + load_overlap)^2" , nRepeat= 20 ,randomize= TRUE)
+             model_subset_elem_nb <- lm(data=set,formula=form_elem_nb)
+             model_subset_y_comp <- lm(data=set,formula=form_y_comp)
+             model_subset_v_len <- lm(data=set,formula=form_v_len)
+             model_subset_th_nb <- lm(data=set,formula=form_th_nb)
+             model_subset_lws_y <- lm(data=set,formula=form_lws_y)
+             for(i in 1:200){
+                 E <- residuals(model_subset_elem_nb)
+                 model_subset_elem_nb <- lm(data=set,formula=form_elem_nb,weight=h(E))
+
+                 E <- residuals(model_subset_y_comp)
+                 model_subset_y_comp <- lm(data=set,formula=form_y_comp,weight=h(E))
+
+                 E <- residuals(model_subset_v_len)
+                 model_subset_v_len <- lm(data=set,formula=form_v_len,weight=h(E))
+
+                 E <- residuals(model_subset_th_nb)
+                 model_subset_th_nb <- lm(data=set,formula=form_th_nb,weight=h(E))
+
+                 E <- residuals(model_subset_lws_y)
+                 model_subset_lws_y <- lm(data=set,formula=form_lws_y,weight=h(E))
+
+             }
+             sum_elem_nb <- sum_elem_nb + predict(model_subset_elem_nb,data.frame(elements_number=elements_number_val),interval="none")
+             sum_y_comp <- sum_y_comp + predict(model_subset_y_comp,data.frame(y_component_number=y_component_number_val),interval="none")
+             sum_v_len <- sum_v_len + predict(model_subset_v_len,data.frame(vector_length=vector_length_val),interval="none")
+             sum_th_nb <- sum_th_nb + predict(model_subset_th_nb,data.frame(threads_number=threads_number_val),interval="none")
+             sum_lws_y <- sum_lws_y + predict(model_subset_lws_y,data.frame(lws_y=lws_y_val),interval="none")
+         }
+
+         avg_elem_nb <- sum_elem_nb / runs
+         avg_y_comp <- sum_y_comp / runs 
+         avg_v_len <- sum_v_len / runs 
+         avg_th_nb <- sum_th_nb / runs 
+         avg_lws_y <- sum_lws_y / runs 
+         #+end_src
+
+      #+RESULTS:
+
+            #+begin_src R :results output graphics :file img/20160402/pilipili2/Dopt_100_fit_100_avg_interactions_comp.png :exports both :width 800 :height 600 :session
+           default <- par()
+           par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+           plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,1e-9))
+           lines(sort(df$elements_number),predict(model_elem_nb)[order(df$elements_number)],col="red")  
+           lines(elements_number_val,avg_elem_nb,col="green")  
+
+           plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-9))
+           lines(sort(df$y_component_number),predict(model_y_comp)[order(df$y_component_number)],col="red")  
+           lines(y_component_number_val,avg_y_comp,col="green")  
+
+           plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-9))
+           lines(sort(df$vector_length),predict(model_v_len)[order(df$vector_length)],col="red")  
+           lines(vector_length_val,avg_v_len,col="green")  
+
+           plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,1e-9))
+           lines(sort(df$threads_number),predict(model_th_nb)[order(df$threads_number)],col="red")  
+           lines(threads_number_val,avg_th_nb,col="green")  
+
+           plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,9e-9))
+           lines(sort(df$lws_y),predict(model_lws_y)[order(df$lws_y)],col="red")  
+           lines(lws_y_val,avg_lws_y,col="green")  
+
+           par(default)                 
+         #+end_src
+
+         #+RESULTS:
+         [[file:img/20160402/pilipili2/Dopt_100_fit_100_avg_interactions_comp.png]]
 
 ****** TODO Optimization on the model to find the value
 ******* DONE Understanding why the bfgs method of optim does not work with my regression
@@ -20428,3 +21074,5 @@ h[g.name.to_sym] = 1024
 
 ** 2016-05-12
    - [ ] Check many points we lose with constraints.
+** 2016-05-20
+*** TODO Combining Design of experiments
