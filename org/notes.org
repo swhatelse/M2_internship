@@ -264,7 +264,7 @@
 **** Link
     http://www.gerad.ca/~orban/_static/templating.pdf
 **** Bibtex
-    #+BEGIN_SRC 
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
     @book{orban2011templating,
     title={Templating and Automatic Code Generation for Performance with Python},
     author={Orban, D. and Groupe d'{\'e}tudes et de recherche en analyse des d{\'e}cisions (Montr{\'e}al, Qu{\'e}bec)},
@@ -289,7 +289,7 @@
 **** Link
     http://delivery.acm.org/10.1145/330000/321069/p212-hooke.pdf?ip=194.199.27.221&id=321069&acc=ACTIVE%20SERVICE&key=7EBF6E77E86B478F%2E9B0CC472860F67C6%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&CFID=751594268&CFTOKEN=50107111&__acm__=1455030106_ccd8cb9aa66e698e79840f74cfa6aa91
 **** Bibtex
-    #+BEGIN_SRC 
+    #+BEGIN_SRC :tangle ./biblio.bib
     @article{Hooke:1961:DSS:321062.321069,
     author = {Hooke, Robert and Jeeves, T. A.},
     title = {`` Direct Search'' Solution of Numerical and Statistical Problems},
@@ -365,7 +365,7 @@
 **** Link
     http://epubs.siam.org/doi/pdf/10.1137/040603371
 **** Bibtex
-    #+BEGIN_SRC 
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
     @ARTICLE{Audet04meshadaptive,
     author = {Charles Audet and J. E},
     title = {Mesh adaptive direct search algorithms for constrained optimization},
@@ -602,6 +602,24 @@
     - Additional local search phase at the end of the global
       search. Using kind of greedy algo that stop when no improvment.
     - Provide parallel search support.
+*** Bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+    @inproceedings{Hartono:2009:AEP:1586640.1587666,
+ author = {Hartono, Albert and Norris, Boyana and Sadayappan, P.},
+ title = {Annotation-based Empirical Performance Tuning Using Orio},
+ booktitle = {Proceedings of the 2009 IEEE International Symposium on Parallel\&Distributed Processing},
+ series = {IPDPS '09},
+ year = {2009},
+ isbn = {978-1-4244-3751-1},
+ pages = {1--11},
+ numpages = {11},
+ url = {http://dx.doi.org/10.1109/IPDPS.2009.5161004},
+ doi = {10.1109/IPDPS.2009.5161004},
+ acmid = {1587666},
+ publisher = {IEEE Computer Society},
+ address = {Washington, DC, USA},
+} 
+    #+END_SRC
 ** TODO Precimonious: Tuning Assistant for Floating-Point Precision
 *** Summary
     - Tuning the level of precision of floating point variables
@@ -625,6 +643,25 @@
     phase using support vector machines.
     They distribute the overhead of the training using incremental
     learning technics \to Active learning
+*** Bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+      @inproceedings{Muralidharan:2014:NFA:2650283.2650550,
+       author = {Muralidharan, Saurav and Shantharam, Manu and Hall, Mary and Garland, Michael and Catanzaro, Bryan},
+       title = {Nitro: A Framework for Adaptive Code Variant Tuning},
+       booktitle = {Proceedings of the 2014 IEEE 28th International Parallel and Distributed Processing Symposium},
+       series = {IPDPS '14},
+       year = {2014},
+       isbn = {978-1-4799-3800-1},
+       pages = {501--512},
+       numpages = {12},
+       url = {http://dx.doi.org/10.1109/IPDPS.2014.59},
+       doi = {10.1109/IPDPS.2014.59},
+       acmid = {2650550},
+       publisher = {IEEE Computer Society},
+       address = {Washington, DC, USA},
+       keywords = {Autotuning, Performance Optimization, GPUs},
+      } 
+    #+END_SRC
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/SIGOPS_paper.pdf][SIGOPS_paper]] ] An Effective Git And Org-Mode Based Workflow For Reproducible Research
 *** Link
     https://hal.inria.fr/hal-01112795/file/SIGOPS_paper.pdf
@@ -691,6 +728,26 @@
     #+END_SRC
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/ipdps09.pdf][ipdps09]] ] A Scalable Auto-tuning Framework for Compiler Optimization
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/ansel-pldi09.pdf][ansel-pldi09]] ] PetaBricks: A Language and Compiler for Algorithmic Choice
+** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/atlas.pdf][atlas]] ] Automatically Tuned Linear Algebra Software
+*** Bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+    @inproceedings{Whaley:1998:ATL:509058.509096,
+ author = {Whaley, R. Clint and Dongarra, Jack J.},
+ title = {Automatically Tuned Linear Algebra Software},
+ booktitle = {Proceedings of the 1998 ACM/IEEE Conference on Supercomputing},
+ series = {SC '98},
+ year = {1998},
+ isbn = {0-89791-984-X},
+ location = {San Jose, CA},
+ pages = {1--27},
+ numpages = {27},
+ url = {http://dl.acm.org/citation.cfm?id=509058.509096},
+ acmid = {509096},
+ publisher = {IEEE Computer Society},
+ address = {Washington, DC, USA},
+ keywords = {BLAS, code generation, high performance, linear algebra, optimization, tuning},
+} 
+    #+END_SRC
 * Mathematical notions
 ** Non-smooth
    Discontinous and non differentiable functions. 

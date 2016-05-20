@@ -770,7 +770,10 @@ Text
    only in one part of the search space to perform an exhaustive
    search. But this require know the problem well and where to search.
 
-   In general auto-tuners exclude the user from the optimization process
+   In general auto-tuners exclude the user from the optimization
+   process. It means that it is difficult for him to know if the
+   result can be further improved, and has no clue about the quality
+   of the solution.
 
 ** Design of experiments
 * Methods
