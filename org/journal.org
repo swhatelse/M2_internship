@@ -20379,6 +20379,82 @@ h[g.name.to_sym] = 1024
         Constraint can be taken into account in the objective
         function.
         Fictive value to hide non-continuous.
+         #+begin_src R :results output :session :exports both
+            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+            g <- function(x) { f(x)/x^2 }
+            h <- function(x) {pmin(g(x),1e15)}
+
+           # kernel_size <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) {
+           #                                         # load_overlap <- if (load_overlap == "true") 1 else 0
+           #     vector_number <- ceiling((elements_number / y_component_number) / vector_length)
+               
+           #     tempload <- (1 - load_overlap) * (vector_number * vector_length) / vector_length * vector_length
+           #     temp <-  load_overlap * 3 * vector_number * (y_component_number+2) * vector_length
+           #     res <- vector_number * y_component_number * vector_length
+           #     tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+           #     out_vec = (1 - load_overlap) * tempc
+           #     resc <- vector_number * y_component_number * temporary_size * vector_length
+
+           #     tot <- (tempload + temp + res + tempc + out_vec + resc) * threads_number
+           # }
+
+           check_constraint <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap){
+               res <- if(#load_overlap %in% 0:1 &
+                         lws_y <= threads_number &
+                         elements_number %% y_component_number == 0 &
+                         elements_number %/% y_component_number <= 4
+                         # kernel_size(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) < kernel_size(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024)
+                         ) T else F
+           }
+
+            
+            model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+                y_component_number + I(1/y_component_number) + 
+                vector_length + 
+                threads_number + I(1/threads_number) + 
+                lws_y + 
+                elements_number:y_component_number +
+                threads_number:lws_y +
+                threads_number:elements_number
+            
+            fit <- lm(data=df,formula=model)
+            for(i in 1:200){
+                E <- residuals(fit)
+                fit <- lm(data=df,formula=model,weight=g(E))
+            }
+            
+            fit$coefficients <- fit$coefficients*1e11
+            func <- function(x){
+                if(check_constraint(x[1],x[2],x[3],x[4],x[5])){
+                    as.numeric(predict(fit,data.frame(elements_number=x[1], y_component_number=x[2], vector_length=x[3], threads_number=x[4], lws_y=x[5]),interval="none"))
+                }
+                else{
+                    10000  
+                }
+            }
+
+            optim(c(6,6,2,256,2),func,method="L-BFGS-B",lower=c(1,1,1,32,1),upper=c(24,6,16,1024,1024))
+         #+end_src
+
+         #+RESULTS:
+         #+begin_example
+         $par
+         [1]    6    6    1 1024    1
+
+         $value
+         [1] 5.759064
+
+         $counts
+         function gradient 
+               49       49 
+
+         $convergence
+         [1] 0
+
+         $message
+         [1] "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+#+end_example
+
 ******* Playing with optim 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          p <- poly.calc(-1:5)
@@ -21073,7 +21149,8 @@ h[g.name.to_sym] = 1024
 #+end_example
 
 ** 2016-05-12
-   - [ ] Check many points we lose with constraints.
+*** TODO Check many points we lose with constraints.
+*** TODO Optim and constraints
 ** 2016-05-20
 *** TODO Combining Design of experiments
      #+begin_src sh :results output :exports both
@@ -21319,3 +21396,121 @@ h[g.name.to_sym] = 1024
 
 ** 2016-05-23
 *** TODO Plot error / prediction to see if we can use it to check model
+     #+begin_src sh :results output :exports both
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+       g <- function(x) { f(x)/x^2 }
+       h <- function(x) {pmin(g(x),1e10)}
+     #+end_src
+    
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       summary(df)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+      elements_number  y_component_number vector_length   temporary_size 
+      Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+      1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+      Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+      Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+      3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+      Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+      vector_recompute load_overlap  threads_number       lws_y        
+      true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                       true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                     Median : 256.0   Median :  16.00  
+                                     Mean   : 368.1   Mean   :  73.58  
+                                     3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                     Max.   :1024.0   Max.   :1024.00  
+      time_per_pixel     
+      Min.   :1.165e-10  
+      1st Qu.:3.028e-10  
+      Median :7.125e-10  
+      Mean   :2.013e-09  
+      3rd Qu.:2.001e-09  
+      Max.   :4.452e-08
+#+end_example
+
+    #+begin_src R :results output :session :exports both
+      form_complete <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+          I(1/y_component_number) + 
+          vector_length + 
+          threads_number + I(1/threads_number) + 
+          lws_y + 
+          elements_number:y_component_number +
+          threads_number:lws_y +
+          threads_number:elements_number
+
+      model_complete <- lm(data=df,formula=form_complete)
+      for(i in 1:200){
+          E <- residuals(model_complete)
+          model_complete <- lm(data=df,formula=form_complete,weight=g(E))
+      }
+      summary(model_complete)
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      default <- par()
+      par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+      plot(model_complete)
+      par(default)    
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-4163dFq/figure4163XkA.png]]
+
+    #+begin_src R :results output :session :exports both
+      form_complete <- time_per_pixel ~ elements_number +
+          y_component_number + 
+          vector_length + 
+          threads_number +
+          lws_y + 
+          elements_number:y_component_number 
+
+      model_complete <- lm(data=df,formula=form_complete)
+      for(i in 1:200){
+          E <- residuals(model_complete)
+          model_complete <- lm(data=df,formula=form_complete,weight=g(E))
+      }
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      default <- par()
+      par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+      plot(model_complete)
+      par(default)    
+    #+end_src
+ 
+   #+RESULTS:
+    [[file:/tmp/babel-4163dFq/figure4163x4M.png]]
+
+    
+   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+     plot(fitted(model_complete),residuals(model_complete)) # ylim=(c(-0.5e-9,1e-9))
+     abline(0,0,lty=2)
+   #+end_src
+
+   #+RESULTS:
+   [[file:/tmp/babel-4163dFq/figure4163Zfa.png]]
+
+   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+     plot(fitted(model_complete),fitted(model_complete) + residuals(model_complete), ylim=c(-0.5e-9,1e-9))
+     abline(0,0,lty=2)
+   #+end_src
+
+   #+RESULTS:
+   [[file:/tmp/babel-4163dFq/figure4163_KO.png]]
+
