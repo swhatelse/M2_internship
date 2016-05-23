@@ -936,6 +936,8 @@ Text
        ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
    #+end_src  
 
+   #+RESULTS:
+
    #+begin_src R :results output :session :exports none
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
      speedup <- c()
@@ -1118,46 +1120,43 @@ Text
 ***** LHS
 ***** D-Optimal
 *** 
-   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 600 :height 400 :session
-     # ggplot(data) +
-     #     aes(speedup) +
-     #     theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-     #     geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
-     #     geom_histogram(color="white", fill="gray1")
-
+   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 800 :height 400 :session
      library(ggplot2)
      library(grid)
      library(gridExtra)
 
      p1 <- qplot(data=random) +
-         geom_histogram(aes(x=speedup,y=..density.. * 1e-9), binwidth=1e-9, color="white") +
+         geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=0.05, color="white") +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(df$time_per_pixel), color="green", linetype=2) +
-         geom_vline(xintercept = mean(df$time_per_pixel), color="red", linetype=2) +
-         geom_vline(xintercept = quantile(df$time_per_pixel, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         ggtitle("Density of speedup for the random search") +
+         geom_vline(xintercept = median(random$speedup), color="green", linetype=2) +
+         geom_vline(xintercept = mean(random$speedup), color="red", linetype=2) +
+         geom_vline(xintercept = quantile(random$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         ggtitle("Random search") +
          labs(y="Density", x="Speedup")
 
      p2 <- qplot(data=grad) +
          geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=.05, color="white") +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(speedup), color="darkgreen", linetype=2) +
-         geom_vline(xintercept = quantile(speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         geom_vline(xintercept = mean(speedup), color="red", linetype=2) +
-         ggtitle("Density of the speedup for the gradient descent") +
+         geom_vline(xintercept = median(grad$speedup), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(grad$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(grad$speedup), color="red", linetype=2) +
+         ggtitle("Greedy") +
          labs(y="Density", x="Speedup")
 
      p3 <- qplot(data=ga) +
          geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=.05, color="white") +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(speedup), color="darkgreen", linetype=2) +
-         geom_vline(xintercept = quantile(speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         geom_vline(xintercept = mean(speedup), color="red", linetype=2) +
-         ggtitle("Density of the speedup for the genetic algorithm") +
+         geom_vline(xintercept = median(ga$speedup), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(ga$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(ga$speedup), color="red", linetype=2) +
+         ggtitle("Genetic algorithm") +
          labs(y="Density", x="Speedup")
          
-       grid.arrange(p1, p2, p3, ncol=2, top=textGrob("Repartition of the performance combination")) 
+       grid.arrange(p1, p2, p3, ncol=3, top=textGrob("Speedup of the tuning process compared to the best")) 
    #+end_src
+
+   #+RESULTS:
+   [[file:/tmp/babel-42001Fq/figure42008nS.png]]
 
 ** Characteristics of the search space
    #+begin_src sh :results output :exports none
