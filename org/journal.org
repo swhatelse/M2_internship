@@ -14551,7 +14551,7 @@ h[g.name.to_sym] = 1024
        Mean   :2.013e-09  
        3rd Qu.:2.001e-09  
        Max.   :4.452e-08
-      #+end_example
+#+end_example
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
         library(ggplot2)
@@ -14595,7 +14595,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-4542_tc/figure4542tEs.png]]
+      [[file:/tmp/babel-4163dFq/figure41639IA.png]]
 
       #+begin_src R :results output :session :exports both
         df[df$time_per_pixel == min(df$time_per_pixel),]
@@ -14635,7 +14635,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-7449mze/figure7449N4p.png]]
+      [[file:/tmp/babel-4163dFq/figure4163KTG.png]]
 
       For now we have exactly the same observation as with hierarchic factors.
 
@@ -21076,3 +21076,246 @@ h[g.name.to_sym] = 1024
    - [ ] Check many points we lose with constraints.
 ** 2016-05-20
 *** TODO Combining Design of experiments
+     #+begin_src sh :results output :exports both
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+       g <- function(x) { f(x)/x^2 }
+       h <- function(x) {pmin(g(x),1e10)}
+     #+end_src
+    
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       summary(df)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+      elements_number  y_component_number vector_length   temporary_size 
+      Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+      1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+      Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+      Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+      3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+      Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+      vector_recompute load_overlap  threads_number       lws_y        
+      true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                       true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                     Median : 256.0   Median :  16.00  
+                                     Mean   : 368.1   Mean   :  73.58  
+                                     3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                     Max.   :1024.0   Max.   :1024.00  
+      time_per_pixel     
+      Min.   :1.165e-10  
+      1st Qu.:3.028e-10  
+      Median :7.125e-10  
+      Mean   :2.013e-09  
+      3rd Qu.:2.001e-09  
+      Max.   :4.452e-08
+#+end_example
+
+     In our case the random sample is the most suited as a starting
+     point. Let's see how much points we need:
+     #+begin_src R :results output :session :exports both
+       library(quantreg)
+       elements_number_val = as.numeric(levels(as.factor(df$elements_number)))
+       y_component_number_val = as.numeric(levels(as.factor(df$y_component_number)))
+       vector_length_val = as.numeric(levels(as.factor(df$vector_length)))
+       threads_number_val = as.numeric(levels(as.factor(df$threads_number)))
+       lws_y_val = as.numeric(levels(as.factor(df$lws_y)))
+
+       sum_elem_nb_100 <- c(rep(0,length(elements_number_val)))                      
+       sum_y_comp_100 <- c(rep(0,length(y_component_number_val)))                      
+       sum_v_len_100 <- c(rep(0,length(vector_length_val)))                      
+       sum_th_nb_100 <- c(rep(0,length(threads_number_val)))                      
+       sum_lws_y_100 <- c(rep(0,length(lws_y_val))) 
+
+       sum_elem_nb_50 <- c(rep(0,length(elements_number_val)))                      
+       sum_y_comp_50 <- c(rep(0,length(y_component_number_val)))                      
+       sum_v_len_50 <- c(rep(0,length(vector_length_val)))                      
+       sum_th_nb_50 <- c(rep(0,length(threads_number_val)))                      
+       sum_lws_y_50 <- c(rep(0,length(lws_y_val))) 
+
+       form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+       form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+       form_v_len <- time_per_pixel ~ vector_length 
+       form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+       form_lws_y <- time_per_pixel ~ lws_y
+
+       model_elem_nb <- lm(data=df,formula=form_elem_nb)
+       model_y_comp <- lm(data=df,formula=form_y_comp)
+       model_v_len <- lm(data=df,formula=form_v_len)
+       model_th_nb <- lm(data=df,formula=form_th_nb)
+       model_lws_y <- lm(data=df,formula=form_lws_y)
+       # for(i in 1:200){
+       #     E <- residuals(model_elem_nb)
+       #     model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=h(E))
+
+       #     E <- residuals(model_y_comp)
+       #     model_y_comp <- lm(data=df,formula=form_y_comp,weight=h(E))
+
+       #     E <- residuals(model_v_len)
+       #     model_v_len <- lm(data=df,formula=form_v_len,weight=h(E))
+
+       #     E <- residuals(model_th_nb)
+       #     model_th_nb <- lm(data=df,formula=form_th_nb,weight=h(E))
+
+       #     E <- residuals(model_lws_y)
+       #     model_lws_y <- lm(data=df,formula=form_lws_y,weight=h(E))
+
+       # }
+
+       model_elem_nb <- rq(data=df,formula=form_elem_nb,tau=.05)
+       model_y_comp <- rq(data=df,formula=form_y_comp,tau=.05)
+       model_v_len <- rq(data=df,formula=form_v_len,tau=.05)
+       model_th_nb <- rq(data=df,formula=form_th_nb,tau=.05)
+       model_lws_y <- rq(data=df,formula=form_lws_y,tau=.05)
+
+
+       runs = 30   
+
+       for(j in 1:runs){
+           random_set_100 <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+           model_subset_100_elem_nb <- lm(data=random_set_100,formula=form_elem_nb)
+           model_subset_100_y_comp <- lm(data=random_set_100,formula=form_y_comp)
+           model_subset_100_v_len <- lm(data=random_set_100,formula=form_v_len)
+           model_subset_100_th_nb <- lm(data=random_set_100,formula=form_th_nb)
+           model_subset_100_lws_y <- lm(data=random_set_100,formula=form_lws_y)
+
+           random_set_50 <- df[sample(1:nrow(df), size = 10, replace = FALSE),]
+           model_subset_50_elem_nb <- lm(data=random_set_50,formula=form_elem_nb)
+           model_subset_50_y_comp <- lm(data=random_set_50,formula=form_y_comp)
+           model_subset_50_v_len <- lm(data=random_set_50,formula=form_v_len)
+           model_subset_50_th_nb <- lm(data=random_set_50,formula=form_th_nb)
+           model_subset_50_lws_y <- lm(data=random_set_50,formula=form_lws_y)
+
+           # for(i in 1:200){
+           #     E <- residuals(model_subset_100_elem_nb)
+           #     model_subset_100_elem_nb <- lm(data=random_set_100,formula=form_elem_nb,weight=h(E))
+           #     E <- residuals(model_subset_100_y_comp)
+           #     model_subset_100_y_comp <- lm(data=random_set_100,formula=form_y_comp,weight=h(E))
+           #     E <- residuals(model_subset_100_v_len)
+           #     model_subset_100_v_len <- lm(data=random_set_100,formula=form_v_len,weight=h(E))
+           #     E <- residuals(model_subset_100_th_nb)
+           #     model_subset_100_th_nb <- lm(data=random_set_100,formula=form_th_nb,weight=h(E))
+           #     E <- residuals(model_subset_100_lws_y)
+           #     model_subset_100_lws_y <- lm(data=random_set_100,formula=form_lws_y,weight=h(E))
+           # }
+
+           model_subset_100_elem_nb <- rq(data=random_set_100,formula=form_elem_nb,tau=.05)
+           model_subset_100_y_comp <- rq(data=random_set_100,formula=form_y_comp,tau=.05)
+           model_subset_100_v_len <- rq(data=random_set_100,formula=form_v_len,tau=.05)
+           model_subset_100_th_nb <- rq(data=random_set_100,formula=form_th_nb,tau=.05)
+           model_subset_100_lws_y <- rq(data=random_set_100,formula=form_lws_y,tau=.05)
+
+           sum_elem_nb_100 <- sum_elem_nb_100 + predict(model_subset_100_elem_nb,data.frame(elements_number=elements_number_val),interval="none")
+           sum_y_comp_100 <- sum_y_comp_100 + predict(model_subset_100_y_comp,data.frame(y_component_number=y_component_number_val),interval="none")
+           sum_v_len_100 <- sum_v_len_100 + predict(model_subset_100_v_len,data.frame(vector_length=vector_length_val),interval="none")
+           sum_th_nb_100 <- sum_th_nb_100 + predict(model_subset_100_th_nb,data.frame(threads_number=threads_number_val),interval="none")
+           sum_lws_y_100 <- sum_lws_y_100 + predict(model_subset_100_lws_y,data.frame(lws_y=lws_y_val),interval="none")
+
+           for(i in 1:20){
+               E <- residuals(model_subset_50_elem_nb)
+               model_subset_50_elem_nb <- lm(data=random_set_50,formula=form_elem_nb,weight=h(E))
+               E <- residuals(model_subset_50_y_comp)
+               model_subset_50_y_comp <- lm(data=random_set_50,formula=form_y_comp,weight=h(E))
+               E <- residuals(model_subset_50_v_len)
+               model_subset_50_v_len <- lm(data=random_set_50,formula=form_v_len,weight=h(E))
+               E <- residuals(model_subset_50_th_nb)
+               model_subset_50_th_nb <- lm(data=random_set_50,formula=form_th_nb,weight=h(E))
+               E <- residuals(model_subset_50_lws_y)
+               model_subset_50_lws_y <- lm(data=random_set_50,formula=form_lws_y,weight=h(E))
+           }
+
+           # model_subset_50_elem_nb <- rq(data=random_set_50,formula=form_elem_nb,tau=.05)
+           # model_subset_50_y_comp <- rq(data=random_set_50,formula=form_y_comp,tau=.05)
+           # model_subset_50_v_len <- rq(data=random_set_50,formula=form_v_len,tau=.05)
+           # model_subset_50_th_nb <- rq(data=random_set_50,formula=form_th_nb,tau=.05)
+           # model_subset_50_lws_y <- rq(data=random_set_50,formula=form_lws_y,tau=.05)
+
+           sum_elem_nb_50 <- sum_elem_nb_50 + predict(model_subset_50_elem_nb,data.frame(elements_number=elements_number_val),interval="none")
+           sum_y_comp_50 <- sum_y_comp_50 + predict(model_subset_50_y_comp,data.frame(y_component_number=y_component_number_val),interval="none")
+           sum_v_len_50 <- sum_v_len_50 + predict(model_subset_50_v_len,data.frame(vector_length=vector_length_val),interval="none")
+           sum_th_nb_50 <- sum_th_nb_50 + predict(model_subset_50_th_nb,data.frame(threads_number=threads_number_val),interval="none")
+           sum_lws_y_50 <- sum_lws_y_50 + predict(model_subset_50_lws_y,data.frame(lws_y=lws_y_val),interval="none")
+       }
+
+       avg_elem_nb_100 <- sum_elem_nb_100 / runs
+       avg_y_comp_100 <- sum_y_comp_100 / runs 
+       avg_v_len_100 <- sum_v_len_100 / runs 
+       avg_th_nb_100 <- sum_th_nb_100 / runs 
+       avg_lws_y_100 <- sum_lws_y_100 / runs 
+
+       avg_elem_nb_50 <- sum_elem_nb_50 / runs
+       avg_y_comp_50 <- sum_y_comp_50 / runs 
+       avg_v_len_50 <- sum_v_len_50 / runs 
+       avg_th_nb_50 <- sum_th_nb_50 / runs 
+       avg_lws_y_50 <- sum_lws_y_50 / runs 
+           
+     #+end_src
+
+     #+RESULTS:
+     :  Warning message:
+     : In rq.fit.br(x, y, tau = tau, ...) : Solution may be nonunique
+
+
+     #+begin_src R :results output :session :exports both
+     summary()
+     #+end_src
+
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/random_nb_points_comparison.png :exports both :width 800 :height 600 :session
+       library(grid)
+       library(gridExtra)
+       library(ggplot2)
+
+       p1 <- qplot() +
+           coord_cartesian(ylim=c(0,2e-9)) +
+           geom_point(aes(x=df$elements_number,y=df$time_per_pixel),alpha=0.05) +
+           geom_line( aes(x=elements_number_val, y=predict(model_elem_nb,data.frame(elements_number=elements_number_val),interval="none")),color="red") +
+           geom_line(aes(x=elements_number_val,y=avg_elem_nb_100),color="green") + 
+           geom_line(aes(x=elements_number_val,y=avg_elem_nb_50), color="blue") 
+
+       p2 <- qplot() +
+           coord_cartesian(ylim=c(0,2e-9)) +  
+           geom_point(aes(x=df$y_component_number,y=df$time_per_pixel),alpha=0.05) +
+           geom_line( aes(x=y_component_number_val, y=predict(model_y_comp,data.frame(y_component_number=y_component_number_val),interval="none")),color="red") +
+           geom_line(aes(x=y_component_number_val,y=avg_y_comp_100),color="green") + 
+           geom_line(aes(x=y_component_number_val,y=avg_y_comp_50), color="blue") 
+
+       p3 <- qplot() +
+           coord_cartesian(ylim=c(0,2e-9)) +  
+           geom_point(aes(x=df$vector_length,y=df$time_per_pixel),alpha=0.05) +
+           geom_line( aes(x=vector_length_val, y=predict(model_v_len,data.frame(vector_length=vector_length_val),interval="none")),color="red") +
+           geom_line(aes(x=vector_length_val,y=avg_v_len_100),color="green") + 
+           geom_line(aes(x=vector_length_val,y=avg_v_len_50), color="blue") 
+
+       p4 <- qplot() +
+           coord_cartesian(ylim=c(0,2e-9)) +  
+           geom_point(aes(x=df$threads_number,y=df$time_per_pixel),alpha=0.05) +
+           geom_line( aes(x=threads_number_val, y=predict(model_th_nb,data.frame(threads_number=threads_number_val),interval="none")),color="red") +
+           geom_line(aes(x=threads_number_val,y=avg_th_nb_100),color="green") + 
+           geom_line(aes(x=threads_number_val,y=avg_th_nb_50), color="blue") 
+
+       p5 <- qplot() +
+           coord_cartesian(ylim=c(0,1e-8)) +  
+           geom_point(aes(x=df$lws_y,y=df$time_per_pixel),alpha=0.05) +
+           geom_line( aes(x=lws_y_val, y=predict(model_lws_y,data.frame(lws_y=lws_y_val),interval="none")),color="red") +
+           geom_line(aes(x=lws_y_val,y=avg_lws_y_100),color="green") + 
+           geom_line(aes(x=lws_y_val,y=avg_lws_y_50), color="blue") 
+
+
+       grid.arrange(p1, p2, p3, p4, p5,  ncol=3, top=textGrob("Regression comparison")) 
+
+     #+end_src
+
+     #+RESULTS:
+     [[file:img/20160402/pilipili2/random_nb_points_comparison.png]]
+
+** 2016-05-23
+*** TODO Plot error / prediction to see if we can use it to check model
