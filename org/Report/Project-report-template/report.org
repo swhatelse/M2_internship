@@ -123,7 +123,7 @@ Text
 
 * Plan 
 ** Introduction [3/3]
-*** Why is performance optimization difficult
+*** Why is performance optimization difficult?
    - In HPC code optimization crucial to exploit very complex hardware.
      Cannot wait for the next generation to bring speedup because it
      does not (Frequency not higher but more cores and henanced ISA). 
@@ -173,16 +173,27 @@ Text
         possible de faire mieux, tu sais pas vraiment où, comment( cf
         of genetic algo on the full search space), ...
 *** Our goal
+    Many approaches in code generation/transformation. It's possible
+    to start from high-level codes (e.g., pytran) but the most
+    optimized codes are obtained from specific tools (FFT, BLAS,...).
+
+    We decided to evaluate an intermediate approach by relying on
+    BOAST, a metaprogramming... (Semi automatic approach \to gives back
+    power to the user, framework ruby generating portable code in C,
+    Fortran, OpenCL. DSL) and investigate various statistical
+    techniques inspired from the design of expeirments field that
+    emphasizes on reducing experiment cost.
+
     Investigate the design of a semi-automatic optimization framework,
     where the applicaiton developer has control and understands how
     the optimization works and guides it.
-
-    We relied on BOAST, a metaprogramming... (Semi automatic approach
-     \to gives back power to the user, framework ruby generating
-     portable code in C, Fortran, OpenCL. DSL)  and investigate various
-     statistical techniques inspired from the design of expeirments
-     field that emphasizes on reducing experiment cost.
 *** My contribution
+    - Related work on auto-tuning
+    - Proposal based on DoE
+    - Evaluation
+      - Comparison with state of the art
+      - Analyze
+
     - (Complex methods used but no explanation on why they work)
     - Prevent biased measurement
     - Try a simple approach and try to understand it deeply
@@ -243,9 +254,21 @@ Text
       - ILP \to break instruction dependencies
     - Architecture \ne from a HPC to another
       Specialized code \to not portable
-*** Compilation
-*** Auto-tuning
-*** BOAST
+*** Obtaining efficient code
+**** Compilation
+     Il fait ce qu'il peut mais pas de vision globale du code. Archi
+     compliquée donc dur: Grigori Fursin.
+**** Source-to-source transformation (C vers C ou FORTRAN vers FORTRAN)
+     - orio, PIPS,  cloog \to ensure that the semantic is correct 
+
+       How is it used
+      - pluto (automatic parallelization)
+      - pytran
+      - auto-tuning on top of orio
+
+     Pros and cons:
+**** Meta-programming: BOAST
+*** Recap
 ** State of the art on Autotuning [2/4]
    - What is autotuning
      paramters \to represents different version/implementation
@@ -326,7 +349,8 @@ Text
     - Brewer \to linear regression for the modelization to predict
       objective function and root finding  or kind of greedy
       descent for the optimization.
-      Find correct model automatically
+      Find correct model automatically on platform CM-5, simulated
+      version of Intel Paragon and network of station based on FORE ATM. 
       Not recent paper \to architecture have evolved. Is linear
       regression still ok?
 ** State of the art design of experiments [0/2]
@@ -361,18 +385,24 @@ Text
       - 23100 combinations
       - Minimization
       - Test 5 sizes of images \to mean
-**** Matrix product?
+**** Matrix product?                                               :noexport:
       - Optimizations explanation
+**** Laplacian
+**** Search space characteristics
+     - Qualitative observation in term of speed up
+**** Comparison with random and genetic algo
+**** Experiments [0/10]
+     - Bench min of 4 runs \to warm up effect
 
-** Contribution [0/12]
-*** Envisioned general approach[0/1]
+** Contribution [0/22]                                             :noexport:
+** Envisioned general approach[0/1]
     1. DoE
        - Sampling the space wisely
        - Use linear regression OLS:
          - remove factors from the model
          - model and optimize
     2. Loop back to 1 to refine the model
-*** Controlling measurement [0/1]
+** Controlling measurement [0/1]
     - Time per pixel \to total time / number of pixel. Because we test
       different size of image.
     - min(x_1,...,x_10) ? how to protect against potential warm-up
@@ -381,7 +411,27 @@ Text
       - 4 runs \to take the minimum
     - randomizing to protect against bias, even for full search
       space. But run and image size not randomized.
-*** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
+** Results [0/6]
+    Considering speedup with regard to the best.
+    Comparison:
+    - GA \to not tuned \to would have take time to tune it
+    - Greedy
+    - Random
+    - LM
+      - Uniform
+      - LHS
+      - D-Opt
+    - Rq \to Another way of doing linear regression
+      - Uniform
+      - LHS
+      - D-Opt
+   | Histogram of solutions | Cost |
+
+** DONE Characteristics of the search space [0/0]
+   - Repartition of good combinations
+   - Lot of local optimum \to local search failed
+   - Heteroscedasticity
+** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
 **** Least Squared regression and non uniform noise  
     - Assumptions:
       - homoscedasticity but pb we have heteroscedasticity
@@ -411,7 +461,7 @@ Text
        - Iterated weighted least squares 
          - But optimist R-squared
          - Don't know how to interpret the standard error
-*** Model choice and refinement [0/2]
+** Model choice and refinement [0/2]
     - Hypothesis based on the kernel
       The expert knows his kernel and have hypothesis of how the
       optimization will influence the performances.
@@ -437,10 +487,10 @@ Text
         the same than one regression including all the factors. But we
         could optimize each parameters independently.
       
-*** Importance of the search space expression [0/1]
+** Importance of the search space expression [0/1]
     - Easier modelization
     - Better capture of the search space features
-*** Using less point as possible [0/4]
+** Using less point as possible [0/4]
     - Design of experiment
       - Random
       - Screenning design
@@ -460,12 +510,6 @@ Text
         which points are choosen.
         Usefull to make refinement \to when the model is already known.
     - Copying with constraints
-** Experiments [0/10]
-   - Bench min of 4 runs \to warm up effect
-*** Laplacian
-**** Search space characteristics
-     - Qualitative observation in term of speed up
-**** Comparison with random and genetic algo
 ** Future work [0/2]
    - Find more suited design of experiments technics
    - Validate approach on more complex kernel and different
@@ -773,7 +817,17 @@ Text
    In general auto-tuners exclude the user from the optimization
    process. It means that it is difficult for him to know if the
    result can be further improved, and has no clue about the quality
-   of the solution.
+   of the solution. Our goal is to give more feedback and control
+   through an semi-automatic and interactive approach to
+   the user to guide him in the tuning the his application. Our
+   approach is global and allow the user to evaluate the relevance of
+   his hypothesis. We the feedback provided he is able to prune the
+   search space to allow very low cost optimization.
+
+   In the past a similar approach have been tempted by
+   Brewer\cite{Brewer:1995:HOV:209937.209946} where linear regression
+   of expectation have been used for the modelization to predict the
+   objective function. It worked on old hardware, 
 
 ** Design of experiments
 * Methods
@@ -875,6 +929,317 @@ Text
    #+RESULTS:
    [[file:img/warm_up.png]]
 
+** Results
+***                                                                :noexport:
+**** Random search
+   #+begin_src sh :results output :exports none
+       ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+   #+end_src  
+
+   #+begin_src R :results output :session :exports none
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+     speedup <- c()
+     for (i in 1:100){
+         s <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+         speedup[i] <-  min(df$time_per_pixel) / min(s$time_per_pixel)
+     }
+     random <- data.frame(speedup)
+   #+end_src
+
+   #+RESULTS:
+
+**** Gradient search
+***** Implementation   
+   #+begin_src R :results output :session :exports none
+        kernel_size <- function(point) {
+            vector_number <- ceiling((point$elements_number / point$y_component_number) / point$vector_length)
+            
+            tempload <- (1 - point$load_overlap) * (vector_number * point$vector_length) / point$vector_length * point$vector_length
+            temp <-  point$load_overlap * 3 * vector_number * (point$y_component_number+2) * point$vector_length
+            res <- vector_number * point$y_component_number * point$vector_length
+            tempc <- 3 * vector_number * (point$y_component_number + 2) * point$temporary_size * point$vector_length
+            out_vec = (1 - point$load_overlap) * tempc
+            resc <- vector_number * point$y_component_number * point$temporary_size * point$vector_length
+
+            tot <- (tempload + temp + res + tempc + out_vec + resc) * point$threads_number
+        }
+
+        check_constraint <- function(point){
+            res <- if(point$load_overlap %in% 0:1 &
+                      point$lws_y <= point$threads_number &
+                      point$elements_number %% point$y_component_number == 0 &
+                      point$elements_number %/% point$y_component_number <= 4 &
+                      kernel_size(point) < kernel_size(data.frame(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024))
+                      ) T else F
+        }
+
+        point_equal <- function(p1,p2){
+            res <- if(p1$elements_number == p2$elements_number &
+                      p1$y_component_number == p2$y_component_number &
+                      p1$vector_length == p2$vector_length &
+                      p1$temporary_size == p2$temporary_size &
+                      p1$load_overlap == p2$load_overlap &
+                      p1$threads_number == p2$threads_number) T else F
+        }
+
+        gradient_descent <- function(point, limit=100){
+            elements_number    <- c(1,0,0,0,0,0,0,-1,0,0,0,0,0,0)
+            y_component_number <- c(0,1,0,0,0,0,0,0,-1,0,0,0,0,0)
+            vector_length      <- c(0,0,1,0,0,0,0,0,0,-1,0,0,0,0)
+            temporary_size     <- c(0,0,0,1,0,0,0,0,0,0,-1,0,0,0)
+            load_overlap       <- c(0,0,0,0,1,0,0,0,0,0,0,-1,0,0)
+            threads_number     <- c(0,0,0,0,0,1,0,0,0,0,0,0,-1,0)
+            lws_y              <- c(0,0,0,0,0,0,1,0,0,0,0,0,0,-1)
+
+            factors <- list(elements_number = as.numeric(levels(as.factor(df$elements_number))), 
+                                  y_component_number = as.numeric(levels(as.factor(df$y_component_number))), 
+                                  vector_length = as.numeric(levels(as.factor(df$vector_length))), 
+                                  temporary_size = as.numeric(levels(as.factor(df$temporary_size))), 
+                                  threads_number= as.numeric(levels(as.factor(df$threads_number))), 
+                                  lws_y= as.numeric(levels(as.factor(df$lws_y)))) 
+
+            directions <- data.frame(elements_number, y_component_number, vector_length, temporary_size, load_overlap, threads_number, lws_y)
+            count <- 0
+
+            repeat{
+                old_point <- point
+                candidates <- data.frame()
+
+                for(i in 1:nrow(directions)){
+                    idx_elements_number = match(point$elements_number, factors$elements_number) + directions[i,]$elements_number
+                    idx_y_component_number = match(point$y_component_number, factors$y_component_number) + directions[i,]$y_component_number
+                    idx_vector_length = match(point$vector_length, factors$vector_length) + directions[i,]$vector_length
+                    idx_temporary_size = match(point$temporary_size, factors$temporary_size) + directions[i,]$temporary_size
+                    idx_threads_number = match(point$threads_number, factors$threads_number) + directions[i,]$threads_number
+                    idx_lws_y = match(point$lws_y, factors$lws_y) + directions[i,]$lws_y
+
+                    if(!(idx_elements_number %in% 1:length(levels(as.factor(df$elements_number))))) next
+                    if(!(idx_y_component_number %in% 1:length(levels(as.factor(df$y_component_number))))) next
+                    if(!(idx_vector_length %in% 1:length(levels(as.factor(df$vector_length))))) next
+                    if(!(idx_temporary_size %in% 1:length(levels(as.factor(df$temporary_size))))) next
+                    if(!(idx_threads_number %in% 1:length(levels(as.factor(df$threads_number))))) next
+                    if(!(idx_lws_y %in% 1:length(levels(as.factor(df$lws_y))))) next
+
+                    p <- data.frame(elements_number = factors$elements_number[idx_elements_number],
+                                    y_component_number = factors$y_component_number[idx_y_component_number],
+                                    vector_length = factors$vector_length[idx_vector_length],
+                                    temporary_size = factors$temporary_size[idx_temporary_size],
+                                    load_overlap = if(point$load_overlap == "true") 1 + directions[i,]$load_overlap else 0 + directions[i,]$load_overlap,
+                                    threads_number = factors$threads_number[idx_threads_number],
+                                    lws_y = factors$lws_y[idx_lws_y]
+                                    )
+
+                    if(check_constraint(p) == T){
+                        p <- df[df$elements_number == p$elements_number & 
+                                df$y_component_number == p$y_component_number & 
+                                df$vector_length == p$vector_length &
+                                df$temporary_size == p$temporary_size &
+                                df$load_overlap == (if (p$load_overlap == 0) "false" else "true") &
+                                #df$load_overlap == "true" &
+                                df$threads_number == p$threads_number &
+                                df$lws_y == p$lws_y,]
+                        candidates <- rbind(p, candidates)
+                    }
+                }
+                
+                if(candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]$time_per_pixel < point$time_per_pixel){
+                    point <- candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]
+                }
+
+                count <- count + 1
+                if(count >= 100 | point_equal(old_point,point) == T){
+                    break
+                }
+            }
+            
+            point
+        }
+
+        row_to_coordinate <- function(row){
+            drops <- c("time_per_pixel", "vector_recompute")
+            row[, !(names(row) %in% drops)]
+         }
+   #+end_src
+
+   #+RESULTS:
+
+***** Run search
+      #+begin_src sh :results output :exports none
+        ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+      #+end_src  
+
+      #+RESULTS:
+
+      #+begin_src R :results output :session :exports none
+        options(width=150)
+        grad <- data.frame()
+        grad_start <- data.frame()
+        for(i in 1:100){
+            p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
+            grad_start <- rbind(grad_start,p)  
+            grad <- rbind(grad,gradient_descent(p,1e5))
+        }
+
+        speedup <- c()
+        for (i in 1:nrow(grad)){
+            speedup[i] <-  min(df$time_per_pixel) / grad[i,]$time_per_pixel
+        }
+        grad <- data.frame(speedup)
+      #+end_src
+
+      #+RESULTS:
+
+**** Genetic Algorithm
+   #+begin_src sh :results output :exports none
+     ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml 
+   #+end_src
+
+   #+RESULTS:
+
+   #+begin_src R :results output :session :exports none
+     ga_res <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+
+     library(ggplot2)
+     speedup <- c()
+     for (i in 1:nrow(ga_res)){
+         speedup[i] <-  min(df$time_per_pixel) / ga_res[i,]$time_per_pixel
+     }
+     ga <- data.frame(speedup)
+   #+end_src
+
+   #+RESULTS:
+
+**** Linear regression of expectation
+***** Random
+***** LHS
+***** D-Optimal
+**** Quantile regression
+***** Random
+***** LHS
+***** D-Optimal
+*** 
+   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 600 :height 400 :session
+     # ggplot(data) +
+     #     aes(speedup) +
+     #     theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+     #     geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+     #     geom_histogram(color="white", fill="gray1")
+
+     library(ggplot2)
+     library(grid)
+     library(gridExtra)
+
+     p1 <- qplot(data=random) +
+         geom_histogram(aes(x=speedup,y=..density.. * 1e-9), binwidth=1e-9, color="white") +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(df$time_per_pixel), color="green", linetype=2) +
+         geom_vline(xintercept = mean(df$time_per_pixel), color="red", linetype=2) +
+         geom_vline(xintercept = quantile(df$time_per_pixel, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         ggtitle("Density of speedup for the random search") +
+         labs(y="Density", x="Speedup")
+
+     p2 <- qplot(data=grad) +
+         geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=.05, color="white") +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(speedup), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(speedup), color="red", linetype=2) +
+         ggtitle("Density of the speedup for the gradient descent") +
+         labs(y="Density", x="Speedup")
+
+     p3 <- qplot(data=ga) +
+         geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=.05, color="white") +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(speedup), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(speedup), color="red", linetype=2) +
+         ggtitle("Density of the speedup for the genetic algorithm") +
+         labs(y="Density", x="Speedup")
+         
+       grid.arrange(p1, p2, p3, ncol=2, top=textGrob("Repartition of the performance combination")) 
+   #+end_src
+
+** Characteristics of the search space
+   #+begin_src sh :results output :exports none
+       ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+   #+end_src
+
+   #+begin_src sh :results output :exports none
+     ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+   #+end_src
+
+   #+RESULTS:
+
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_speedup.png :exports results :width 800 :height 600 :session
+     library(ggplot2)
+     library(grid)
+     library(gridExtra)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+     speedup <- c()
+     for(i in 1:nrow(df)){
+         speedup[i] <- min(df$time_per_pixel) / df[i,]$time_per_pixel      
+     }
+     df$speedup <- speedup
+
+     p1 <- qplot(data=df) +
+         geom_histogram(aes(x=time_per_pixel,y=..density.. * 1e-9), binwidth=1e-9, color="white") +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(df$time_per_pixel), color="green", linetype=2) +
+         geom_vline(xintercept = mean(df$time_per_pixel), color="red", linetype=2) +
+         geom_vline(xintercept = quantile(df$time_per_pixel, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         ggtitle("Density of the of performances combinations") +
+         labs(y="Density", x="Time per pixel")
+
+     p2 <- qplot(data=df) +
+         geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=.05, color="white") +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(speedup), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(speedup), color="red", linetype=2) +
+         ggtitle("Density of the combinations speedup compared to the best") +
+         labs(y="Density", x="Speedup")
+         
+       grid.arrange(p1, p2,  ncol=2, top=textGrob("Repartition of the performance combination")) 
+   #+end_src
+
+   #+RESULTS:
+   [[file:./img/search_combination_rep_speedup.png]]
+
+   #+begin_src sh :results output :exports none
+     ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
+   #+end_src
+
+   #+RESULTS:
+
+   #+begin_src R :results output graphics :file ./img/heteroscedasticity.png :exports results :width 700 :height 400 :session
+     library(ggplot2)
+     library(grid)
+     library(gridExtra)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+      p1 <- qplot() + 
+          geom_point( aes(x=df$vector_length, y=df$time_per_pixel), alpha=0.1 ) + 
+          ggtitle("Impact of the vector length") +
+          labs(y="time per pixel in seconds", x="vector length") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+      p2 <- qplot() + 
+          geom_point(aes(x=df$x_component_number, y=df$time_per_pixel),alpha=0.1) + 
+          ggtitle("Impact of number of component on the x-axis") +
+          labs(y="time per pixel in seconds", x="x component number") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+
+     grid.arrange(p1,p2,  ncol=2, top="") 
+
+   #+end_src
+
+   #+RESULTS:
+   [[file:./img/heteroscedasticity.png]]
+
 ** Linear regression of expectation: why it cannot work and how it can be circumvented
    #+begin_src sh :results output :exports none
        ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
@@ -963,7 +1328,7 @@ Text
    regression cannot lead to the global optimum and we need another
    estimator for the minimum. 
 
-** The choise of quantile regression
+** The choice of quantile regression
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
