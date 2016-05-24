@@ -16523,7 +16523,55 @@ h[g.name.to_sym] = 1024
        Residual standard error: 2.649e-09 on 23107 degrees of freedom
        Multiple R-squared:  0.4919,	Adjusted R-squared:  0.4916 
        F-statistic:  1864 on 12 and 23107 DF,  p-value: < 2.2e-16
-#+end_example
+       #+end_example
+
+       Now we that the best value for elements number is six(from the
+       previous figure) let's what remains:
+       #+begin_src R :results output :session :exports both
+         subset <- df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1, ]
+         model <- time_per_pixel ~ load_overlap + temporary_size
+
+         fit <- lm(data=subset,formula=model)
+         summary(fit)
+       #+end_src
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         subset <- df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1, ]
+         model <- time_per_pixel ~ load_overlap
+         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+         g <- function(x) { f(x)/x^2 }
+         h <- function(x) {pmin(g(x),1e15)}
+         fit <- lm(data=subset,formula=model)
+         for(i in 1:100){
+             E <- residuals(fit)
+             fit <- lm(data=subset,formula=model,weights=g(E))
+         } 
+
+         plot(x=subset$load_overlap,y=subset$time_per_pixel)
+         abline(fit,col=2)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-3585yF_/figure3585kfy.png]]
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         subset <- df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1, ]
+         model <- time_per_pixel ~ temporary_size
+                                                 # fit <- rq(data=subset,formula=model,tau=0.05)
+         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+         g <- function(x) { f(x)/x^2 }
+         h <- function(x) {pmin(g(x),1e15)}
+         fit <- lm(data=subset,formula=model)
+         for(i in 1:100){
+             E <- residuals(fit)
+             fit <- lm(data=subset,formula=model,weights=g(E))
+         } 
+         plot(x=subset$temporary_size,y=subset$time_per_pixel)
+         abline(fit,col=2)
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-3585yF_/figure3585XVs.png]]
 
 ******* TODO What about factors with 2 values?
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -20600,72 +20648,12 @@ h[g.name.to_sym] = 1024
 #+end_example
 
 ******* TODO Exhaustive search
+******** Let's try with all the factors
+          #+begin_src R :results output :session :exports both
+          
+          #+end_src
+******** With only relevant factors
          #+begin_src R :results output :session :exports both
-           # kernel_size <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) {
-           #                                         # load_overlap <- if (load_overlap == "true") 1 else 0
-           #     vector_number <- ceiling((elements_number / y_component_number) / vector_length)
-               
-           #     tempload <- (1 - load_overlap) * (vector_number * vector_length) / vector_length * vector_length
-           #     temp <-  load_overlap * 3 * vector_number * (y_component_number+2) * vector_length
-           #     res <- vector_number * y_component_number * vector_length
-           #     tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
-           #     out_vec = (1 - load_overlap) * tempc
-           #     resc <- vector_number * y_component_number * temporary_size * vector_length
-
-           #     tot <- (tempload + temp + res + tempc + out_vec + resc) * threads_number
-           # }
-
-           # check_constraint <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap){
-           #     res <- if(#load_overlap %in% 0:1 &
-           #         lws_y <= threads_number &
-           #         elements_number %% y_component_number == 0 &
-           #         elements_number %/% y_component_number <= 4 &
-           #         kernel_size(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) < kernel_size(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024)
-           #     ) T else F
-           # }
-
-           # elements_number_values <- as.numeric(levels(as.factor(df$elements_number)))
-           # y_component_number_values <- as.numeric(levels(as.factor(df$y_component_number)))
-           # vector_length_values <- as.numeric(levels(as.factor(df$vector_length)))
-           # load_overlap_values <- c(0,1) # levels(df$load_overlap)
-           # threads_number_values <- as.numeric(levels(as.factor(df$threads_number)))
-           # temporary_sizes_values <- as.numeric(levels(as.factor(df$temporary_size)))
-           # lws_y_values <- as.numeric(levels(as.factor(df$lws_y)))
-
-           # elements_number <- c()
-           # y_component_number <- c()
-           # vector_length <- c()
-           # threads_number <- c()
-           # lws_y <- c()
-           # temporary_size <- c()
-           # load_overlap <- c()
-
-           # for(e in elements_number_values){
-           #     for(y in y_component_number_values){
-           #         for(v in vector_length_values){
-           #             for(t in threads_number_values){
-           #                 for(l in lws_y_values) {
-           #                     for(s in temporary_sizes_values){
-           #                         for(o in load_overlap_values){
-           #                             if(check_constraint(elements_number=e, y_component_number=y, vector_length=v, threads_number=t, lws_y=l, temporary_size=s, load_overlap=o)){
-           #                                 elements_number[length(elements_number)+1] <- e
-           #                                 y_component_number[length(y_component_number)+1] <- y
-           #                                 vector_length[length(vector_length)+1] <- v
-           #                                 threads_number[length(threads_number)+1] <- t
-           #                                 lws_y[length(lws_y)+1] <- l
-           #                                 temporary_size[length(temporary_size)+1] <- s
-           #                                 load_overlap[length(load_overlap)+1] <- o
-           #                             }
-           #                         }
-           #                     }
-           #                 }
-           #             }
-           #         }
-           #     }
-           # }
-
-           # complete_set <- data.frame(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap)
-
            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
            g <- function(x) { f(x)/x^2 }
            h <- function(x) {pmin(g(x),1e15)}
@@ -20675,10 +20663,8 @@ h[g.name.to_sym] = 1024
                vector_length + 
                threads_number + I(1/threads_number) + 
                lws_y + 
-               load_overlap +
-               temporary_size +
                elements_number:y_component_number +
-               threads_number:lws_y +
+               threads_number:lws_y
                threads_number:elements_number
 
            fit <- lm(data=df,formula=model)
@@ -20692,25 +20678,445 @@ h[g.name.to_sym] = 1024
                                                  y_component_number=x$y_component_number, 
                                                  vector_length=x$vector_length, 
                                                  threads_number=x$threads_number, 
-                                                 lws_y=x$lws_y,interval="none"))
+                                                 lws_y=x$lws_y,interval="none")))
            }
 
            best <- data.frame(time_per_pixel=Inf)
            for(i in 1:nrow(df)){
-             if(f(i) < best$time_per_pixel){
-                 best <- data.frame(elements_number=i$elements_number, 
-                                    y_component_number=i$y_component_number,
-                                    vector_length=i$vector_length, 
-                                    threads_number=i$threads_number, 
-                                    lws_y=i$lws_y,
-                                    time_per_pixel=f(i))
+             if(f(df[i,c(1,2,3,7,8)]) < best$time_per_pixel){
+                 best <- data.frame(elements_number=df[i,c(1,2,3,7,8)]$elements_number, 
+                                    y_component_number=df[i,c(1,2,3,7,8)]$y_component_number,
+                                    vector_length=df[i,c(1,2,3,7,8)]$vector_length, 
+                                    threads_number=df[i,c(1,2,3,7,8)]$threads_number, 
+                                    lws_y=df[i,c(1,2,3,7,8)]$lws_y,
+                                    time_per_pixel=f(df[i,c(1,2,3,7,8)]))
+             } 
+           }
+           best
+         #+end_src
+********  Without elements number:
+********* Manual
+         #+begin_src R :results output :session :exports both
+           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+         #+end_src
+
+         #+RESULTS:
+
+          #+begin_src R :results output :session :exports both
+           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           h <- function(x) {pmin(g(x),1e15)}
+          #+end_src
+
+          #+RESULTS:
+
+          Let's fix factors:
+         #+begin_src R :results output :session :exports both
+           model <- time_per_pixel ~ # elements_number + I(1/elements_number) + 
+               y_component_number + I(1/y_component_number) + 
+               vector_length + 
+               threads_number + I(1/threads_number) + 
+               lws_y + 
+               # elements_number:y_component_number +
+               threads_number:lws_y
+               # threads_number:elements_number
+
+           fit <- lm(data=df,formula=model)
+           for(i in 1:200){
+               E <- residuals(fit)
+               fit <- lm(data=df,formula=model,weight=g(E))
+           }
+
+           f <- function(x){
+               as.numeric(predict(fit,data.frame(#elements_number=x$elements_number, 
+                                                 y_component_number=x$y_component_number, 
+                                                 vector_length=x$vector_length, 
+                                                 threads_number=x$threads_number, 
+                                                 lws_y=x$lws_y,interval="none")))
+           }
+
+           best <- data.frame(time_per_pixel=Inf)
+           for(i in 1:nrow(df)){
+             if(f(df[i,c(2,3,7,8)]) < best$time_per_pixel){
+                 best <- data.frame(#elements_number=df[i,c(1,2,3,7,8)]$elements_number, 
+                                    y_component_number=df[i,c(2,3,7,8)]$y_component_number,
+                                    vector_length=df[i,c(2,3,7,8)]$vector_length, 
+                                    threads_number=df[i,c(2,3,7,8)]$threads_number, 
+                                    lws_y=df[i,c(2,3,7,8)]$lws_y,
+                                    time_per_pixel=f(df[i,c(2,3,7,8)]))
              } 
            }
            best
          #+end_src
 
          #+RESULTS:
+         :   y_component_number vector_length threads_number lws_y time_per_pixel
+         : 1                  6             1           1024     1  -3.206724e-11
+          
+          Now we know the values the factors let's fix elements number and make a
+          regression on what remains:
+          #+begin_src R :results output :session :exports both
+            subset <- df[df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1, ]
+            model <- time_per_pixel ~ elements_number + I(elements_number^2)
 
+            fit <- lm(data=subset,formula=model)
+            for(i in 1:100){
+              E <- residuals(fit)
+              fit <- lm(data=subset,formula=model,weights=h(E))
+            }
+
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(elements_number=x, interval="none")))
+            }
+
+            best <- data.frame(time_per_pixel=Inf)
+            for(i in 1:nrow(subset)){
+                if(f(subset[i,1]) < best$time_per_pixel){
+                    best <- data.frame(elements_number=subset[i,1], 
+                                       y_component_number=6,
+                                       vector_length=1, 
+                                       threads_number=1024, 
+                                       lws_y=1,
+                                       time_per_pixel=f(subset[i,1]))
+                }
+            } 
+            best
+          #+end_src
+
+          #+RESULTS:
+          :  Error in eval(expr, envir, enclos) (from #2) : objet 'elements_number' introuvable
+          :   elements_number y_component_number vector_length threads_number lws_y
+          : 1               6                  6             1           1024     1
+          :   time_per_pixel
+          : 1   1.244995e-10
+
+          - Now we have to fix load overlap:
+            #+begin_src R :results output :session :exports both
+            subset <- df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1, ]
+            model <- time_per_pixel ~ load_overlap
+
+            fit <- lm(data=subset,formula=model)
+            for(i in 1:100){
+              E <- residuals(fit)
+              fit <- lm(data=subset,formula=model,weights=h(E))
+            }
+            summary(fit)
+            #+end_src
+
+            #+RESULTS:
+            #+begin_example
+             Error in eval(expr, envir, enclos) (from #2) : objet 'load_overlap' introuvable
+
+            Call:
+            lm(formula = model, data = subset)
+
+            Residuals:
+                 14403      19156      19245      19807 
+            -2.019e-12 -1.648e-12  2.019e-12  1.648e-12 
+
+            Coefficients:
+                              Estimate Std. Error t value Pr(>|t|)    
+            (Intercept)      1.270e-10  1.842e-12  68.940  0.00021 ***
+            load_overlaptrue 6.270e-13  2.606e-12   0.241  0.83225    
+            ---
+            Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+            Residual standard error: 2.606e-12 on 2 degrees of freedom
+            Multiple R-squared:  0.02814,	Adjusted R-squared:  -0.4578 
+            F-statistic: 0.05791 on 1 and 2 DF,  p-value: 0.8323
+            #+end_example
+
+            #+begin_src R :results output :session :exports both
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(load_overlap=x, interval="none")))
+            }
+
+            best <- data.frame(time_per_pixel=Inf)
+            for(i in 1:nrow(subset)){
+                if(f(subset[i,6]) < best$time_per_pixel){
+                    best <- data.frame(elements_number=6, 
+                                       y_component_number=6,
+                                       vector_length=1, 
+                                       threads_number=1024, 
+                                       lws_y=1,
+                                       load_overlap=subset[i,6],
+                                       time_per_pixel=f(subset[i,6]))
+                }
+            } 
+            best
+            #+end_src
+
+            #+RESULTS:
+            :   elements_number y_component_number vector_length threads_number lws_y
+            : 1               6                  6             1           1024     1
+            :   load_overlap time_per_pixel
+            : 1        false   1.270216e-10
+
+          - And now temporary size
+            #+begin_src R :results output :session :exports both
+            subset <- df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1, ]
+            model <- time_per_pixel ~ temporary_size
+
+            fit <- lm(data=subset,formula=model)
+            for(i in 1:100){
+              E <- residuals(fit)
+              fit <- lm(data=subset,formula=model,weights=h(E))
+            }
+            summary(fit)
+            #+end_src
+
+            #+RESULTS:
+          #+begin_example
+           Error in eval(expr, envir, enclos) (from #2) : objet 'temporary_size' introuvable
+
+          Call:
+          lm(formula = model, data = subset)
+
+          Residuals:
+               14403      19156      19245      19807 
+          -1.520e-12 -2.147e-12  2.147e-12  1.520e-12 
+
+          Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)   
+          (Intercept)    1.268e-10  4.159e-12  30.486  0.00107 **
+          temporary_size 1.855e-13  1.315e-12   0.141  0.90073   
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 2.63e-12 on 2 degrees of freedom
+          Multiple R-squared:  0.009855,	Adjusted R-squared:  -0.4852 
+          F-statistic: 0.01991 on 1 and 2 DF,  p-value: 0.9007
+         #+end_example
+            He we need a higher bound other wise the regression is on
+            the bad quantile:
+            #+begin_src R :results output :session :exports both
+            subset <- df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1, ]
+            model <- time_per_pixel ~ temporary_size
+
+            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+            g <- function(x) { f(x)/x^2 }
+            h <- function(x) {pmin(g(x),1e20)}
+
+            fit <- lm(data=subset,formula=model)
+            for(i in 1:200){
+                E <- residuals(fit)
+                fit <- lm(data=subset,formula=model,weights=h(E))
+            }
+            summary(fit)
+            #+end_src
+
+            #+RESULTS:
+            #+begin_example
+
+          Call:
+          lm(formula = model, data = subset, weights = h(E))
+
+          Weighted Residuals:
+               14403      19156      19245      19807 
+          -5.000e-12 -5.000e-12  4.633e-07  3.898e-07 
+
+          Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)     1.259e-10  9.574e-17 1314910 5.78e-13 ***
+          temporary_size -1.280e-13  3.027e-17   -4227 5.60e-08 ***
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 4.282e-07 on 2 degrees of freedom
+          Multiple R-squared:      1,	Adjusted R-squared:      1 
+          F-statistic: 1.787e+07 on 1 and 2 DF,  p-value: 5.596e-08
+#+end_example
+
+            #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+            plot(subset$temporary_size,subset$time_per_pixel)
+            abline(fit,col=2)
+          #+end_src
+
+            #+RESULTS:
+          [[file:/tmp/babel-3585yF_/figure3585wEC.png]]
+
+            #+begin_src R :results output :session :exports both
+              f <- function(x){
+                  as.numeric(predict(fit,data.frame(temporary_size=x, interval="none")))
+              }
+
+              best <- data.frame(time_per_pixel=Inf)
+              for(i in 1:nrow(subset)){
+                  if(f(subset[i,]$temporary_size) < best$time_per_pixel){
+                      best <- data.frame(elements_number=6, 
+                                         y_component_number=6,
+                                         vector_length=1, 
+                                         threads_number=1024, 
+                                         lws_y=1,
+                                         temporary_size=subset[i,]$temporary_size,
+                                         time_per_pixel=f(subset[i,]$temporary_size))
+                  }
+              } 
+              best
+            #+end_src
+
+            #+RESULTS:
+            :   elements_number y_component_number vector_length threads_number lws_y
+            : 1               6                  6             1           1024     1
+            :   temporary_size time_per_pixel
+            : 1              4    1.25374e-10
+ 
+            Finally the best combination found is. We achieve 93% of
+            the maximal speed. Our model is not perfect and fail to
+            find the best value for lws_y:
+            #+begin_src R :results output :session :exports both
+              df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1 & df$load_overlap == "false" & df$temporary_size == 4, ]
+              df[df$time_per_pixel == min(df$time_per_pixel),]
+
+              df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel / df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024 & df$lws_y == 1 & df$load_overlap == "false" & df$temporary_size == 4, ]$time_per_pixel
+            #+end_src
+
+            #+RESULTS:
+            :       elements_number y_component_number vector_length temporary_size
+            : 19156               6                  6             1              4
+            :       vector_recompute load_overlap threads_number lws_y time_per_pixel
+            : 19156             true        false           1024     1    1.25374e-10
+            :       elements_number y_component_number vector_length temporary_size
+            : 13752               6                  6             1              2
+            :       vector_recompute load_overlap threads_number lws_y time_per_pixel
+            : 13752             true         true           1024     2   1.165013e-10
+            : [1] 0.9292303
+
+            To have the best value for lws_y we need this kind of model:
+            #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+              # subset <- df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 1024,]
+              model <- time_per_pixel ~ lws_y + I(1/lws_y)
+              fit <- lm(data=df, formula= model )
+              for(i in 1:200){
+                E <- residuals(fit)
+                fit <- lm(data=df, formula= model, weights=h(E) )
+              }
+              # library(quantreg)
+              # fit <- rq(data=df, formula= time_per_pixel ~ lws_y + I(1/lws_y),tau=.05 )
+              plot(df$lws_y,df$time_per_pixel, ylim=c(0,2e-10))
+              lines(c(1,2,4,8,16,32,64,128,256,512,1024), predict(fit,data.frame( lws_y=c(1,2,4,8,16,32,64,128,256,512,1024)), interval="none"),col=2)      
+            #+end_src
+
+            #+RESULTS:
+            [[file:/tmp/babel-3585yF_/figure3585m2c.png]]
+
+
+
+********* Auto
+          #+begin_src R :results output :session :exports both
+            model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+                vector_length + 
+                threads_number + I(1/threads_number) + 
+                lws_y + I(1/lws_y) +
+                threads_number:lws_y
+
+            fit <- lm(data=df,formula=model)
+            for(i in 1:200){
+                E <- residuals(fit)
+                fit <- lm(data=df,formula=model,weight=g(E))
+            }
+
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
+                                                  vector_length=x$vector_length, 
+                                                  threads_number=x$threads_number, 
+                                                  lws_y=x$lws_y,interval="none")))
+            }
+
+            best <- data.frame(time_per_pixel=Inf)
+            for(i in 1:nrow(df)){
+              if(f(df[i,c(2,3,7,8)]) < best$time_per_pixel){
+                  best <- data.frame(y_component_number=df[i,c(2,3,7,8)]$y_component_number,
+                                     vector_length=df[i,c(2,3,7,8)]$vector_length, 
+                                     threads_number=df[i,c(2,3,7,8)]$threads_number, 
+                                     lws_y=df[i,c(2,3,7,8)]$lws_y,
+                                     time_per_pixel=f(df[i,c(2,3,7,8)]))
+              } 
+            }
+
+            subset <- df[df$y_component_number == best$y_component_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number & df$lws_y == df$lws_y, ]
+            model <- time_per_pixel ~ elements_number + I(elements_number^2)
+
+            fit <- lm(data=subset,formula=model)
+            for(i in 1:100){
+              E <- residuals(fit)
+              fit <- lm(data=subset,formula=model,weights=h(E))
+            }
+
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(elements_number=x, interval="none")))
+            }
+
+            best <- data.frame(time_per_pixel=Inf)
+            for(i in 1:nrow(subset)){
+                if(f(subset[i,]$elements_number) < best$time_per_pixel){
+                    best <- data.frame(elements_number=subset[i,]$elements_number, 
+                                       y_component_number=subset[i,]$y_component_number,
+                                       vector_length=subset[i,]$vector_length, 
+                                       threads_number=subset[i,]$threads_number, 
+                                       lws_y=subset[i,]$lws_y,
+                                       time_per_pixel=f(subset[i,]$elements_number))
+                }
+            } 
+
+            subset <- df[df$elements_number == best$elements_number  & df$y_component_number == best$elements_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number & df$lws_y == df$lws_y, ]
+            model <- time_per_pixel ~ load_overlap
+
+            fit <- lm(data=subset,formula=model)
+            for(i in 1:100){
+              E <- residuals(fit)
+              fit <- lm(data=subset,formula=model,weights=h(E))
+            }
+            
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(load_overlap=x, interval="none")))
+            }
+
+            best_lo <- data.frame(time_per_pixel=Inf)
+            for(i in 1:nrow(subset)){
+                if(f(subset[i,]$load_overlap) < best_lo$time_per_pixel){
+                    best_lo <- data.frame(elements_number=subset[i,]$elements_number, 
+                                       y_component_number=subset[i,]$y_component_number,
+                                       vector_length=subset[i,]$vector_length, 
+                                       threads_number=subset[i,]$threads_number, 
+                                       lws_y=subset[i,]$lws_y,
+                                       load_overlap=subset[i,]$load_overlap,
+                                       time_per_pixel=f(subset[i,]$load_overlap))
+                }
+            } 
+
+            model <- time_per_pixel ~ temporary_size
+
+            h <- function(x) {pmin(g(x),1e20)}
+
+            fit <- lm(data=subset,formula=model)
+            for(i in 1:200){
+                E <- residuals(fit)
+                fit <- lm(data=subset,formula=model,weights=h(E))
+            } 
+
+            f <- function(x){
+                  as.numeric(predict(fit,data.frame(temporary_size=x, interval="none")))
+              }
+
+              best_tmp <- data.frame(time_per_pixel=Inf)
+              for(i in 1:nrow(subset)){
+                  if(f(subset[i,]$temporary_size) < best_tmp$time_per_pixel){
+                      best_tmp <- data.frame(elements_number=subset[i,]$elements_number, 
+                                             y_component_number=subset[i,]$y_component_number,
+                                             vector_length=subset[i,]$vector_length, 
+                                             threads_number=subset[i,]$threads_number, 
+                                             lws_y=subset[i,]$lws_y,
+                                             temporary_size=subset[i,]$temporary_size,
+                                             time_per_pixel=f(subset[i,]$temporary_size))
+                  }
+              } 
+
+             best <- df[df$elements_number == best$elements_number  & df$y_component_number == best$elements_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number & df$lws_y == df$lws_y & df$temporary_size == best_tmp$temporary_size & df$load_overlap == best_lo$load_overlap, ]
+             df[df$time_per_pixel == min(df$time_per_pixel),]
+             subset$time_per_pixel / best$time_per_pixel
+          #+end_src
+          
 * Mai
 ** 2016-05-02
 *** Device partitionning                                               :Ruby:
