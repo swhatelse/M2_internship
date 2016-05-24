@@ -20376,6 +20376,18 @@ h[g.name.to_sym] = 1024
 #+end_example
          
 ******* TODO Deal with constraint / non-continuous functions
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output :session :exports both
+          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        #+end_src
+
+        #+RESULTS:
+
         Constraint can be taken into account in the objective
         function.
         Fictive value to hide non-continuous.
@@ -20401,7 +20413,8 @@ h[g.name.to_sym] = 1024
            check_constraint <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap){
                res <- if(#load_overlap %in% 0:1 &
                          lws_y <= threads_number &
-                         elements_number %% y_component_number == 0 &
+                         # elements_number %% y_component_number == 0 & # multiple of 4 and can be rewritten as follow
+                         elements_number <= y_component_number * 4 &
                          elements_number %/% y_component_number <= 4
                          # kernel_size(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) < kernel_size(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024)
                          ) T else F
@@ -20424,7 +20437,7 @@ h[g.name.to_sym] = 1024
             }
             
             fit$coefficients <- fit$coefficients*1e11
-            func <- function(x){
+            f <- function(x){
                 if(check_constraint(x[1],x[2],x[3],x[4],x[5])){
                     as.numeric(predict(fit,data.frame(elements_number=x[1], y_component_number=x[2], vector_length=x[3], threads_number=x[4], lws_y=x[5]),interval="none"))
                 }
@@ -20433,7 +20446,11 @@ h[g.name.to_sym] = 1024
                 }
             }
 
-            optim(c(6,6,2,256,2),func,method="L-BFGS-B",lower=c(1,1,1,32,1),upper=c(24,6,16,1024,1024))
+            g <- function(x){
+                
+            }
+
+            optim(c(6,6,2,256,2),f,method="L-BFGS-B",lower=c(1,1,1,32,1),upper=c(24,6,16,1024,1024))
          #+end_src
 
          #+RESULTS:
@@ -20453,8 +20470,99 @@ h[g.name.to_sym] = 1024
 
          $message
          [1] "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
-#+end_example
+         #+end_example
 
+        Let's see how the search space look like with constraint in 3D:
+        #+begin_src R :results output :session :exports both
+            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+            g <- function(x) { f(x)/x^2 }
+            h <- function(x) {pmin(g(x),1e15)}
+
+          model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+              y_component_number + I(1/y_component_number)
+              # vector_length + 
+              # threads_number + I(1/threads_number) + 
+              # lws_y + 
+              # elements_number:y_component_number +
+              # threads_number:lws_y +
+              # threads_number:elements_number
+
+          fit <- lm(data=df,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              fit <- lm(data=df,formula=model,weight=g(E))
+          }
+
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/model_3D_elem_y_comp.png :exports both :width 600 :height 400 :session
+          library(plot3D)
+          f <- function(x){
+              as.numeric(predict(fit,data.frame(elements_number=x[1], y_component_number=x[2]),interval="none"))
+          }
+          combinations <- matrix(NA,nrow=24,ncol=6)
+          for(i in 1:24){
+              for(j in 1:6){
+                combinations[i,j] <- f(c(i,j))
+              }
+          }
+
+          persp3D(z=combinations, phi=20, theta=160)   
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/model_3D_elem_y_comp.png]]
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/model_3D_elem_y_comp_constraint.png :exports both :width 600 :height 400 :session     
+          g <- function(x){
+              ifelse(x[1] <= x[2] * 4, f(x), 0)
+          }
+
+          # combinations <- matrix(NA,nrow=24,ncol=6)
+          # for(i in 1:24){
+          #     for(j in 1:6){
+          #       combinations[i,j] <- g(c(i,j))
+          #     }
+          # }
+          resi = 5
+          resj = 5
+          offi = 3
+          offj = 3
+          combinations <- matrix(NA,nrow=24*resi,ncol=6*resj)
+          for(i in 1:(24*resi)){
+              for(j in 1:(6*resj)){
+                combinations[i,j] <- g(c((i+offi)/resi,(j+offj)/resj))
+              }
+          }
+
+          persp3D(z=combinations, phi=20, theta=220)
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/model_3D_elem_y_comp_constraint.png]]
+
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/model_3D_elem_y_comp_barrier.png :exports both :width 600 :height 400 :session
+          h <- function(x){
+            # x <- c(x[1], )
+            ifelse(x[1] <= x[2] * 4, f(x), (1 + .1*abs(x[1]-4*x[2]) ) * f(x))
+          }
+
+          combinations <- matrix(NA,nrow=24,ncol=6)
+          for(i in 1:24){
+              for(j in 1:6){
+                combinations[i,j] <- h(c(i,j))
+              }
+          }
+
+
+          persp3D(z=combinations, phi=20, theta=190)
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/model_3D_elem_y_comp_barrier.png]]
+      
 ******* Playing with optim 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          p <- poly.calc(-1:5)
@@ -20490,6 +20598,118 @@ h[g.name.to_sym] = 1024
        $message
        [1] "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
 #+end_example
+
+******* TODO Exhaustive search
+         #+begin_src R :results output :session :exports both
+           # kernel_size <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) {
+           #                                         # load_overlap <- if (load_overlap == "true") 1 else 0
+           #     vector_number <- ceiling((elements_number / y_component_number) / vector_length)
+               
+           #     tempload <- (1 - load_overlap) * (vector_number * vector_length) / vector_length * vector_length
+           #     temp <-  load_overlap * 3 * vector_number * (y_component_number+2) * vector_length
+           #     res <- vector_number * y_component_number * vector_length
+           #     tempc <- 3 * vector_number * (y_component_number + 2) * temporary_size * vector_length
+           #     out_vec = (1 - load_overlap) * tempc
+           #     resc <- vector_number * y_component_number * temporary_size * vector_length
+
+           #     tot <- (tempload + temp + res + tempc + out_vec + resc) * threads_number
+           # }
+
+           # check_constraint <- function(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap){
+           #     res <- if(#load_overlap %in% 0:1 &
+           #         lws_y <= threads_number &
+           #         elements_number %% y_component_number == 0 &
+           #         elements_number %/% y_component_number <= 4 &
+           #         kernel_size(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap) < kernel_size(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024)
+           #     ) T else F
+           # }
+
+           # elements_number_values <- as.numeric(levels(as.factor(df$elements_number)))
+           # y_component_number_values <- as.numeric(levels(as.factor(df$y_component_number)))
+           # vector_length_values <- as.numeric(levels(as.factor(df$vector_length)))
+           # load_overlap_values <- c(0,1) # levels(df$load_overlap)
+           # threads_number_values <- as.numeric(levels(as.factor(df$threads_number)))
+           # temporary_sizes_values <- as.numeric(levels(as.factor(df$temporary_size)))
+           # lws_y_values <- as.numeric(levels(as.factor(df$lws_y)))
+
+           # elements_number <- c()
+           # y_component_number <- c()
+           # vector_length <- c()
+           # threads_number <- c()
+           # lws_y <- c()
+           # temporary_size <- c()
+           # load_overlap <- c()
+
+           # for(e in elements_number_values){
+           #     for(y in y_component_number_values){
+           #         for(v in vector_length_values){
+           #             for(t in threads_number_values){
+           #                 for(l in lws_y_values) {
+           #                     for(s in temporary_sizes_values){
+           #                         for(o in load_overlap_values){
+           #                             if(check_constraint(elements_number=e, y_component_number=y, vector_length=v, threads_number=t, lws_y=l, temporary_size=s, load_overlap=o)){
+           #                                 elements_number[length(elements_number)+1] <- e
+           #                                 y_component_number[length(y_component_number)+1] <- y
+           #                                 vector_length[length(vector_length)+1] <- v
+           #                                 threads_number[length(threads_number)+1] <- t
+           #                                 lws_y[length(lws_y)+1] <- l
+           #                                 temporary_size[length(temporary_size)+1] <- s
+           #                                 load_overlap[length(load_overlap)+1] <- o
+           #                             }
+           #                         }
+           #                     }
+           #                 }
+           #             }
+           #         }
+           #     }
+           # }
+
+           # complete_set <- data.frame(elements_number,y_component_number,vector_length,threads_number,lws_y,temporary_size,load_overlap)
+
+           f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+           g <- function(x) { f(x)/x^2 }
+           h <- function(x) {pmin(g(x),1e15)}
+
+           model <- time_per_pixel ~ elements_number + I(1/elements_number) + 
+               y_component_number + I(1/y_component_number) + 
+               vector_length + 
+               threads_number + I(1/threads_number) + 
+               lws_y + 
+               load_overlap +
+               temporary_size +
+               elements_number:y_component_number +
+               threads_number:lws_y +
+               threads_number:elements_number
+
+           fit <- lm(data=df,formula=model)
+           for(i in 1:200){
+               E <- residuals(fit)
+               fit <- lm(data=df,formula=model,weight=g(E))
+           }
+
+           f <- function(x){
+               as.numeric(predict(fit,data.frame(elements_number=x$elements_number, 
+                                                 y_component_number=x$y_component_number, 
+                                                 vector_length=x$vector_length, 
+                                                 threads_number=x$threads_number, 
+                                                 lws_y=x$lws_y,interval="none"))
+           }
+
+           best <- data.frame(time_per_pixel=Inf)
+           for(i in 1:nrow(df)){
+             if(f(i) < best$time_per_pixel){
+                 best <- data.frame(elements_number=i$elements_number, 
+                                    y_component_number=i$y_component_number,
+                                    vector_length=i$vector_length, 
+                                    threads_number=i$threads_number, 
+                                    lws_y=i$lws_y,
+                                    time_per_pixel=f(i))
+             } 
+           }
+           best
+         #+end_src
+
+         #+RESULTS:
 
 * Mai
 ** 2016-05-02
