@@ -20653,6 +20653,12 @@ h[g.name.to_sym] = 1024
           
           #+end_src
 ******** With only relevant factors
+          #+begin_src R :results output :session :exports both
+            df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          #+end_src
+
+          #+RESULTS:
+
          #+begin_src R :results output :session :exports both
            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
            g <- function(x) { f(x)/x^2 }
@@ -20662,15 +20668,15 @@ h[g.name.to_sym] = 1024
                y_component_number + I(1/y_component_number) + 
                vector_length + 
                threads_number + I(1/threads_number) + 
-               lws_y + 
+               lws_y + I(1/lws_y) + 
                elements_number:y_component_number +
-               threads_number:lws_y
+               threads_number:lws_y +
                threads_number:elements_number
 
            fit <- lm(data=df,formula=model)
            for(i in 1:200){
                E <- residuals(fit)
-               fit <- lm(data=df,formula=model,weight=g(E))
+               fit <- lm(data=df,formula=model,weight=h(E))
            }
 
            f <- function(x){
@@ -20681,19 +20687,35 @@ h[g.name.to_sym] = 1024
                                                  lws_y=x$lws_y,interval="none")))
            }
 
-           best <- data.frame(time_per_pixel=Inf)
-           for(i in 1:nrow(df)){
-             if(f(df[i,c(1,2,3,7,8)]) < best$time_per_pixel){
-                 best <- data.frame(elements_number=df[i,c(1,2,3,7,8)]$elements_number, 
-                                    y_component_number=df[i,c(1,2,3,7,8)]$y_component_number,
-                                    vector_length=df[i,c(1,2,3,7,8)]$vector_length, 
-                                    threads_number=df[i,c(1,2,3,7,8)]$threads_number, 
-                                    lws_y=df[i,c(1,2,3,7,8)]$lws_y,
-                                    time_per_pixel=f(df[i,c(1,2,3,7,8)]))
-             } 
-           }
-           best
+           best <- df[f(df[,c(1,2,3,7,8)]) == min(f(df[,c(1,2,3,7,8)])), c(1,2,3,7,8)][1,]
          #+end_src
+
+         #+RESULTS:
+==         
+         #+begin_src R :results output :session :exports both
+           subset <- df[df$elements_number == best$elements_number & df$y_component_number == best$y_component_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number, ]           
+           model <- time_per_pixel ~ load_overlap + temporary_size
+
+           h <- function(x) {pmin(g(x),1e15)}
+
+           fit <- lm(data=subset,formula=model)
+           for(i in 1:50){
+               E <- residuals(fit)
+               fit <- lm(data=subset,formula=model,weight=h(E))
+           }
+
+           f <- function(x){
+               as.numeric(predict(fit,data.frame(temporary_size=x$temporary_size, 
+                                                 load_overlap=x$load_overlap, interval="none")))
+           }
+
+           # best <- subset[f(subset[,c(4,6)]) == min(f(subset[,c(4,6)])), c(4,6)][1,]
+           #+end_src
+
+         #+RESULTS:
+         :  Error in x$elements_number (from #2) : $ operator is invalid for atomic vectors
+
+
 ********  Without elements number:
 ********* Manual
          #+begin_src R :results output :session :exports both
@@ -21004,23 +21026,33 @@ h[g.name.to_sym] = 1024
 
 ********* Auto
           #+begin_src R :results output :session :exports both
+            df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          #+end_src
+
+          #+RESULTS:
+
+
+          #+begin_src R :results output :session :exports both
+            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+            g <- function(x) { f(x)/x^2 }
+            h <- function(x) {pmin(g(x),1e15)}
             model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
                 vector_length + 
-                threads_number + I(1/threads_number) + 
                 lws_y + I(1/lws_y) +
-                threads_number:lws_y
+                threads_number + I(1/threads_number)
 
             fit <- lm(data=df,formula=model)
             for(i in 1:200){
                 E <- residuals(fit)
-                fit <- lm(data=df,formula=model,weight=g(E))
+                fit <- lm(data=df,formula=model,weight=h(E))
             }
 
             f <- function(x){
                 as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
                                                   vector_length=x$vector_length, 
-                                                  threads_number=x$threads_number, 
-                                                  lws_y=x$lws_y,interval="none")))
+                                                  threads_number=x$threads_number,
+                                                  lws_y=x$lws_y,
+                                                  interval="none")))
             }
 
             best <- data.frame(time_per_pixel=Inf)
@@ -21029,13 +21061,46 @@ h[g.name.to_sym] = 1024
                   best <- data.frame(y_component_number=df[i,c(2,3,7,8)]$y_component_number,
                                      vector_length=df[i,c(2,3,7,8)]$vector_length, 
                                      threads_number=df[i,c(2,3,7,8)]$threads_number, 
-                                     lws_y=df[i,c(2,3,7,8)]$lws_y,
+                                     lws_y=df[i,c(2,3,7,8)]$lws_y, 
                                      time_per_pixel=f(df[i,c(2,3,7,8)]))
               } 
             }
+          #+end_src
 
-            subset <- df[df$y_component_number == best$y_component_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number & df$lws_y == df$lws_y, ]
+          #+RESULTS:
+
+          #+begin_src R :results output :session :exports both
+            subset <- df[df$y_component_number == best$y_component_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number, ]
+            model <- time_per_pixel ~ lws_y + I(1/lws_y)
+
+            fit <- lm(data=df,formula=model)
+            for(i in 1:200){
+                E <- residuals(fit)
+                fit <- lm(data=df,formula=model,weight=h(E))
+            }
+
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(lws_y=x, interval="none")))
+            }
+
+            best <- data.frame(time_per_pixel=Inf)
+            for(i in 1:nrow(df)){
+              if(f(subset[i,]$lws_y) < best$time_per_pixel){
+                  best <- data.frame(y_component_number=subset[i,]$y_component_number,
+                                     vector_length=subset[i,]$vector_length, 
+                                     threads_number=subset[i,]$threads_number, 
+                                     lws_y=subset[i,]$lws_y,
+                                     time_per_pixel=f(subset[i,]$lws_y))
+              } 
+            }
+
+          #+end_src
+
+          #+begin_src R :results output :session :exports both
+            subset <- df[df$y_component_number == best$y_component_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number & df$lws_y == best$lws_y, ]
             model <- time_per_pixel ~ elements_number + I(elements_number^2)
+
+            h <- function(x) {pmin(g(x),1e10)}
 
             fit <- lm(data=subset,formula=model)
             for(i in 1:100){
@@ -21058,9 +21123,16 @@ h[g.name.to_sym] = 1024
                                        time_per_pixel=f(subset[i,]$elements_number))
                 }
             } 
+            #+end_src
 
+          #+RESULTS:
+
+
+            #+begin_src R :results output :session :exports both
             subset <- df[df$elements_number == best$elements_number  & df$y_component_number == best$elements_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number & df$lws_y == df$lws_y, ]
-            model <- time_per_pixel ~ load_overlap
+            model <- time_per_pixel ~ as.numeric(load_overlap)
+
+            h <- function(x) {pmin(g(x),1e5)}
 
             fit <- lm(data=subset,formula=model)
             for(i in 1:100){
@@ -21084,7 +21156,12 @@ h[g.name.to_sym] = 1024
                                        time_per_pixel=f(subset[i,]$load_overlap))
                 }
             } 
+          #+end_src
 
+            #+RESULTS:
+
+
+          #+begin_src R :results output :session :exports both
             model <- time_per_pixel ~ temporary_size
 
             h <- function(x) {pmin(g(x),1e20)}
@@ -21116,6 +21193,26 @@ h[g.name.to_sym] = 1024
              df[df$time_per_pixel == min(df$time_per_pixel),]
              subset$time_per_pixel / best$time_per_pixel
           #+end_src
+
+          #+RESULTS:
+          #+begin_example
+           Error in x$y_component_number (from #2) : $ operator is invalid for atomic vectors
+           Error in eval(expr, envir, enclos) (from #2) : objet 'load_overlap' introuvable
+           Error in eval(expr, envir, enclos) (from #2) : objet 'temporary_size' introuvable
+                elements_number y_component_number vector_length temporary_size
+          13752               6                  6             1              2
+                vector_recompute load_overlap threads_number lws_y time_per_pixel
+          13752             true         true           1024     2   1.165013e-10
+           [1]  1.00000000  3.33137974  1.06262224  1.97206081  0.99593646  1.00550523
+           [7] 16.10916575 31.18455689  1.88170330  0.28113301  0.03141699  0.06835585
+          [13]  1.81163108  0.96482123  0.13410078  1.03153270  1.01698978  0.49854794
+          [19]  7.40134273  7.11559130  4.16468229  0.03156525  0.07146158  3.29936289
+          [25]  0.96943121  0.13236658  3.65292194  1.97872591  1.00244607  1.00000000
+          [31]  7.22089093  2.11690507  0.03252928  0.07428958  0.96345376  1.05884580
+          [37]  0.14594800  3.61119187  0.99615295  0.55061826 14.79409118 29.87727618
+          [43]  0.30009774  1.00000000
+#+end_example
+
           
 * Mai
 ** 2016-05-02
