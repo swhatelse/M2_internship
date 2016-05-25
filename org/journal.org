@@ -20652,9 +20652,50 @@ h[g.name.to_sym] = 1024
         _Warning: in this part we use rq because I have some trouble_
         _using lm with the weights optiions multiple time._
 ******** Let's try with all the factors
+          Only 54% of speedup
           #+begin_src R :results output :session :exports both
-          
+            library(quantreg) 
+            model <- formula(time_per_pixel ~ elements_number + I(1/elements_number) + 
+               y_component_number + I(1/y_component_number) + 
+               vector_length + 
+               threads_number + I(1/threads_number) + 
+               lws_y + I(1/lws_y) + 
+               elements_number:y_component_number +
+               threads_number:lws_y +
+               threads_number:elements_number +
+               load_overlap +
+               temporary_size)
+
+           fit1 <- rq(data=df,formula=model,tau=.05)
+
+           f <- function(x){
+               as.numeric(predict(fit1,data.frame(elements_number=x$elements_number, 
+                                                 y_component_number=x$y_component_number, 
+                                                 vector_length=x$vector_length, 
+                                                 threads_number=x$threads_number,
+                                                 load_overlap=x$load_overlap,
+                                                 temporary_size=x$temporary_size, 
+                                                 lws_y=x$lws_y,interval="none")))
+           }
+
+           best <- df[f(df[,c(1,2,3,4,6,7,8)]) == min(f(df[,c(1,2,3,4,6,7,8)])), c(1,2,3,4,6,7,8)][1,]
+           sol <- df[df$elements_number == best$elements_number & df$y_component_number == best$y_component_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number & df$lws_y == best$lws_y & df$temporary_size == best$temporary_size & df$load_overlap == best$load_overlap, ]           
+           sol
+           df[df$time_per_pixel == min(df$time_per_pixel),]   
+           df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel / sol$time_per_pixel                       
           #+end_src
+
+          #+RESULTS:
+          :       elements_number y_component_number vector_length temporary_size
+          : 14759              16                  4             1              4
+          :       vector_recompute load_overlap threads_number lws_y time_per_pixel
+          : 14759             true        false           1024     1   2.140347e-10
+          :       elements_number y_component_number vector_length temporary_size
+          : 13752               6                  6             1              2
+          :       vector_recompute load_overlap threads_number lws_y time_per_pixel
+          : 13752             true         true           1024     2   1.165013e-10
+          : [1] 0.5443105
+
 ******** With only relevant factors
           #+begin_src sh :results output :exports both
            ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -20743,7 +20784,8 @@ h[g.name.to_sym] = 1024
          :      temporary_size load_overlap
          : 9455              4         true
 
-         Here we only get a speedup of 54%:
+         Here we only get a speedup of 54% like previously without
+         removing useless factors:
          #+begin_src R :results output :session :exports both
            sol <- df[df$elements_number == best$elements_number & df$y_component_number == best$y_component_number & df$vector_length == best$vector_length & df$threads_number == best$threads_number & df$lws_y == best$lws_y & df$temporary_size == best2$temporary_size & df$load_overlap == best2$load_overlap, ]           
            sol
@@ -21250,6 +21292,93 @@ h[g.name.to_sym] = 1024
 #+end_example
 
 ********** Rq version 
+*********** Independent elements number
+          #+begin_src R :results output :session :exports both
+            df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          #+end_src
+
+          #+RESULTS:
+
+           We obtain 92% of speedup:
+          #+begin_src R :results output :session :exports both
+            library(quantreg)
+
+            model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+                                      vector_length + 
+                                      lws_y + I(1/lws_y) +
+                                      threads_number + I(1/threads_number)
+
+            fit <- rq(data=df,formula=model,tau=.05)
+
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
+                                                  vector_length=x$vector_length, 
+                                                  threads_number=x$threads_number,
+                                                  lws_y=x$lws_y,
+                                                  interval="none")))
+            }
+
+           best1 <- df[f(df[,c(2,3,7,8)]) == min(f(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+
+            subset1 <- df[df$y_component_number == best1$y_component_number & df$vector_length == best1$vector_length & df$threads_number == best1$threads_number & df$lws_y == best1$lws_y, ]
+            model <- time_per_pixel ~ elements_number + I(elements_number^2)
+
+            h <- function(x) {pmin(g(x),1e10)}
+
+            fit <- rq(data=subset1,formula=model,tau=.05)
+
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(elements_number=x, interval="none")))
+            }
+
+            best2 <- subset1[f(subset1$elements_number) == min(f(subset1$elements_number)),][1,]$elements_number
+
+            subset2 <- subset1[subset1$elements_number == best2  & subset1$y_component_number == best1$y_component_number & subset1$vector_length == best1$vector_length & subset1$threads_number == best1$threads_number, ]
+            model <- time_per_pixel ~ load_overlap
+
+            fit <- rq(data=subset,formula=model,tau=.05)
+            
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(load_overlap=x, interval="none")))
+            }
+
+            best3 <- subset2[f(subset2$load_overlap) == min(f(subset2$load_overlap)),][1,]$load_overlap
+            best3
+
+            model <- time_per_pixel ~ temporary_size
+
+            fit <- rq(data=subset,formula=model,tau=.05)
+
+            f <- function(x){
+                  as.numeric(predict(fit,data.frame(temporary_size=x, interval="none")))
+            }
+
+            best4 <- subset2[f(subset2$temporary_size) == min(f(subset2$temporary_size)),][1,]$temporary_size
+            best4
+
+            sol <- subset2[subset2$load_overlap == best3 & subset2$temporary_size == best4,]
+            sol
+            df[df$time_per_pixel == min(df$time_per_pixel),]
+            df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel / sol$time_per_pixel           
+           #+end_src
+
+           #+RESULTS:
+           #+begin_example
+           [1] true
+           Levels: false true
+           [1] 2
+                 elements_number y_component_number vector_length temporary_size
+           14403               6                  6             1              2
+                 vector_recompute load_overlap threads_number lws_y time_per_pixel
+           14403             true         true           1024     1     1.2563e-10
+                 elements_number y_component_number vector_length temporary_size
+           13752               6                  6             1              2
+                 vector_recompute load_overlap threads_number lws_y time_per_pixel
+           13752             true         true           1024     2   1.165013e-10
+           [1] 0.9273371
+           #+end_example
+
+*********** Independent lws y + elements number
           #+begin_src R :results output :session :exports both
             df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
           #+end_src
