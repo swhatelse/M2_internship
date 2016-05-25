@@ -21403,38 +21403,65 @@ h[g.name.to_sym] = 1024
                                                   interval="none")))
             }
 
-           best1 <- df[f(df[,c(2,3,7,8)]) == min(f(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
-           best1
+           best_base <- df[f(df[,c(2,3,7,8)]) == min(f(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+           best_base
           #+end_src
 
           #+RESULTS:
           :      y_component_number vector_length threads_number lws_y
           : 7103                  6             1           1024     1
 
+         #+begin_src R :results output :session :exports both
+            subset1 <- df[df$y_component_number == best_base$y_component_number & df$vector_length == best_base$vector_length & df$threads_number == best_base$threads_number, ]
+            model <- time_per_pixel ~ lws_y + I(1/lws_y)
+
+            h <- function(x) {pmin(g(x),1e10)}
+
+            fit <- rq(data=subset1,formula=model,tau=.05)
+
+            f <- function(x){
+                as.numeric(predict(fit,data.frame(lws_y=x, interval="none")))
+            }
+
+            best_lws_y <- subset1[f(subset1$lws_y) == min(f(subset1$lws_y)),][1,]$lws_y
+            best_lws_y
+          #+end_src
+
+         #+RESULTS:
+         : [1] 8
+
+           #+begin_src R :results output graphics :file img/20160402/pilipili2/why_we_cant_get_better_lws_y.png :exports both :width 600 :height 400 :session
+             plot(subset1$lws_y,subset1$time_per_pixel,xlim=c(1,50), ylim=c(0,2e-10))
+             lines(seq(1,1024,0.1),f(seq(1,1024,0.1)),col="green")
+             abline(min(df$time_per_pixel),0,col=2,lty=2)
+           #+end_src
+
+           #+RESULTS:
+           [[file:img/20160402/pilipili2/why_we_cant_get_better_lws_y.png]]
+
+
           #+begin_src R :results output :session :exports both
-            subset <- df[df$y_component_number == best1$y_component_number & df$vector_length == best1$vector_length & df$threads_number == best1$threads_number, ]
+            subset2 <- subset1[subset1$lws_y == best_lws_y, ]
             model <- time_per_pixel ~ elements_number + I(elements_number^2)
 
             h <- function(x) {pmin(g(x),1e10)}
 
-            fit <- rq(data=subset,formula=model,tau=.05)
+            fit <- rq(data=subset1,formula=model,tau=.05)
 
             f <- function(x){
                 as.numeric(predict(fit,data.frame(elements_number=x, interval="none")))
             }
 
-            best2 <- subset[f(subset$elements_number) == min(f(subset$elements_number)),][1,]$elements_number
-            best2
-            #+end_src
+            best_elements_number <- subset1[f(subset1$elements_number) == min(f(subset1$elements_number)),][1,]$elements_number
+            best_elements_number
+          #+end_src
+
 
           #+RESULTS:
           : [1] 6
 
-           #+RESULTS:
-           [[file:/tmp/babel-3905hlV/figure3905A2M.png]]
-
-            #+begin_src R :results output :session :exports both
-            subset <- df[df$elements_number == best2  & df$y_component_number == best1$y_component_number & df$vector_length == best1$vector_length & df$threads_number == best1$threads_number, ]
+          #+begin_src R :results output :session :exports both
+            subset3 <- subset2[subset2$elements_number == best_elements_number, ]
             model <- time_per_pixel ~ load_overlap
 
             fit <- rq(data=subset,formula=model,tau=.05)
@@ -21443,65 +21470,37 @@ h[g.name.to_sym] = 1024
                 as.numeric(predict(fit,data.frame(load_overlap=x, interval="none")))
             }
 
-            best3 <- subset[f(subset$load_overlap) == min(f(subset$load_overlap)),][1,]$load_overlap
-            best3
+            best_load_overlap <- subset3[f(subset3$load_overlap) == min(f(subset3$load_overlap)),][1,]$load_overlap
+            best_load_overlap
           #+end_src
 
-            #+RESULTS:
-            : [1] true
-            : Levels: false true
-
-           Here we cannot get the best value for lws_y
-           #+begin_src R :results output :session :exports both
-            subset <- subset[subset$load_overlap == best3, ]
-            model <- time_per_pixel ~ lws_y + I(1/lws_y) 
-
-            fit <- rq(data=subset,formula=model,tau=.05)
-
-            f <- function(x){
-                as.numeric(predict(fit,data.frame(lws_y=x, interval="none")))
-            }
-
-            best_lws_y <- df[f(df$lws_y) == min(f(df$lws_y)),][1,]$lws_y
-            best_lws_y
-          #+end_src
-
-           #+RESULTS:
-           : [1] 8
-
-           #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-           # plot(df$lws_y,df$time_per_pixel, xlim=c(1,4), ylim=c(1e-10,1.5e-10))
-             plot(subset$lws_y,subset$time_per_pixel,xlim=c(1,20), ylim=c(0,2e-10))
-             lines(seq(1,1024,0.1),f(seq(1,1024,0.1)),col="green")
-             abline(min(df$time_per_pixel),0,col=2,lty=2)
-           #+end_src
-
-           #+RESULTS:
-           [[file:/tmp/babel-3905hlV/figure3905NAT.png]]
-
+          #+RESULTS:
+          : [1] true
+          : Levels: false true
 
           #+begin_src R :results output :session :exports both
             model <- time_per_pixel ~ temporary_size
 
-            fit <- rq(data=subset,formula=model,tau=.05)
+            fit <- rq(data=subset3,formula=model,tau=.05)
 
             f <- function(x){
                   as.numeric(predict(fit,data.frame(temporary_size=x, interval="none")))
             }
 
-            best4 <- subset[f(subset$temporary_size) == min(f(subset$temporary_size)),][1,]$temporary_size
-            best4
+            best_temporary_size <- subset3[f(subset3$temporary_size) == min(f(subset3$temporary_size)),][1,]$temporary_size
+            best_temporary_size
 
           #+end_src
 
           #+RESULTS:
           : [1] 2
 
-           We obtain 98% of speedup:
+           We obtain 98% of speedup, because we fail (to model) to
+           predict the best value for lws y:
            #+begin_src R :results output :session :exports both
-            best <- subset[subset$load_overlap == best3 & subset$temporary_size == best4 & subset$lws_y == best_lws_y,]
+            sol <- subset3[subset3$load_overlap == best_load_overlap & subset3$temporary_size == best_temporary_size,]
             df[df$time_per_pixel == min(df$time_per_pixel),]
-            df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel / best$time_per_pixel           
+            df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel / sol$time_per_pixel           
            #+end_src
 
            #+RESULTS:
@@ -22172,6 +22171,111 @@ h[g.name.to_sym] = 1024
 *** TODO Check many points we lose with constraints.
 *** TODO Optim and constraints
 ** 2016-05-20
+*** TODO Evaluation prediction with DoE
+**** Independent lws y + elements number
+          #+begin_src R :results output :session :exports both
+            df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+          #+end_src
+
+          #+RESULTS:
+
+          #+begin_src R :results output :session :exports both
+            library(quantreg)
+
+            model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+                vector_length + 
+                lws_y + I(1/lws_y) +
+                threads_number + I(1/threads_number)
+            set.seed(1) 
+
+
+                random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+
+                fit <- rq(data=random_set,formula=model,tau=.05)
+
+                f <- function(x){
+                    as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
+                                                      vector_length=x$vector_length, 
+                                                      threads_number=x$threads_number,
+                                                      lws_y=x$lws_y,
+                                                      interval="none")))
+                }
+
+                best_base <- random_set[f(random_set[,c(2,3,7,8)]) == min(f(random_set[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+
+                subset1 <- random_set[random_set$y_component_number == best_base$y_component_number & random_set$vector_length == best_base$vector_length & random_set$threads_number == best_base$threads_number, ]
+                model <- time_per_pixel ~ lws_y + I(1/lws_y)
+
+                h <- function(x) {pmin(g(x),1e10)}
+
+                fit <- rq(data=subset1,formula=model,tau=.05)
+
+                f <- function(x){
+                    as.numeric(predict(fit,data.frame(lws_y=x, interval="none")))
+                }
+
+                best_lws_y <- subset1[f(subset1$lws_y) == min(f(subset1$lws_y)),][1,]$lws_y
+
+                subset2 <- subset1[subset1$lws_y == best_lws_y, ]
+                model <- time_per_pixel ~ elements_number + I(elements_number^2)
+
+                h <- function(x) {pmin(g(x),1e10)}
+
+                fit <- rq(data=subset1,formula=model,tau=.05)
+
+                f <- function(x){
+                    as.numeric(predict(fit,data.frame(elements_number=x, interval="none")))
+                }
+
+                best_elements_number <- subset1[f(subset1$elements_number) == min(f(subset1$elements_number)),][1,]$elements_number
+
+                subset3 <- subset2[subset2$elements_number == best_elements_number, ]
+                model <- time_per_pixel ~ load_overlap
+
+                fit <- rq(data=subset,formula=model,tau=.05)
+                
+                f <- function(x){
+                    as.numeric(predict(fit,data.frame(load_overlap=x, interval="none")))
+                }
+
+                best_load_overlap <- subset3[f(subset3$load_overlap) == min(f(subset3$load_overlap)),][1,]$load_overlap
+    
+                model <- time_per_pixel ~ temporary_size
+
+                fit <- rq(data=subset3,formula=model,tau=.05)
+
+                f <- function(x){
+                    as.numeric(predict(fit,data.frame(temporary_size=x, interval="none")))
+                }
+
+                best_temporary_size <- subset3[f(subset3$temporary_size) == min(f(subset3$temporary_size)),][1,]$temporary_size
+                
+                sol <- subset3[subset3$load_overlap == best_load_overlap & subset3$temporary_size == best_temporary_size,]
+     
+            sol    
+            df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel / sol$time_per_pixel 
+           #+end_src
+     
+     Let's try put the process in a function. Maybe we need some
+     meta-programming here
+     #+begin_src R :results output :session :exports both
+       reduce <- function(dat,model){
+           fit <- rq(data=dat,formula=model,tau=.05)
+
+                  f <- function(x){
+                      as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
+                                                        vector_length=x$vector_length, 
+                                                        threads_number=x$threads_number,
+                                                        lws_y=x$lws_y,
+                                                        interval="none")))
+                  }
+
+                  best_base <- random_set[f(random_set[,c(2,3,7,8)]) == min(f(random_set[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+
+                  subset1 <- random_set[random_set$y_component_number == best_base$y_component_number & random_set$vector_length == best_base$vector_length & random_set$threads_number == best_base$threads_number, ]
+       }
+     #+end_src
+
 *** TODO Combining Design of experiments
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
