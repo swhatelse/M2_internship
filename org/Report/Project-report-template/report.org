@@ -871,19 +871,40 @@ Text
    suited. They vary many parameters at the same time, hence
    interactions can be trapped, the estimate of the impact of the
    factors is more precise with a lower experiment cost.
+  
+   There are different kind of factorial designs. The first one is the
+   full factorial design which consider the entire space. The simplest
+   way of doing full factorial design is to chose points in the space 
+   uniformly\ref{fig:doe-examples}. The drawback is that the points
+   are not well distributed, there are part of space where there are
+   lots of points and some other where there just few. The Latin
+   Hyper-cube Sampling design provides a better coverage of the space
+   by dividing the space into pieces of equal sizes and taking the
+   same number of points at random in these areas. This method is made
+   for continuous factors.  
 
-   The simplest factorial design is to chose a point in the space
-   uniformly\ref{fig:doe-examples}. The drawback is that there are
-   part of space where there are lots of points and some other where
-   there just few. The Latin Hyper-cube Sampling design provides a
-   better coverage of the space by dividing the space into pieces of
-   equals size and taking the same number of points at random in this
-   area and it made for continuous factors. 
+   On other kind of factorial designs is the fractional factorial
+   designs. Instead of considering the whole space it consider only a
+   part of it. This part is chosen according to the statement that
+   main effect and low order interactions (Sparsity of effect
+   principle) are enough to explain the system. One of them is the
+   screening design that consider only the lowest and highest values
+   for factors.
+
+   Optimal design is another category of factorial design. It samples
+   the space such way that the variance is minimum, hence the
+   estimation of the factors as the minimum bias. The points are taken
+   according statistical model that means that means that the model
+   must be already known. The advantage of optimal designs over
+   non-optimal is that the need less experiment, as the sampling is
+   localized. The D-Optimal design is one of them, it chooses the
+   points such that the generalized variances of the least squares
+   estimate of a model is minimized.
     
-   Tuning of applications is in fact running multiple experiences in an
+   The tuning of applications is in fact running multiple experiences in an
    automated or semi-automatic process. We thing that techniques from
-   experimental design can help us to achieve the optimization with low
-   experimental cost.
+   experimental design can help us to sample the space efficiently to
+   achieve the optimization with low experimental cost.
 
    #+CAPTION: Space coverage by different DoE
    #+LABEL: fig:doe-examples
