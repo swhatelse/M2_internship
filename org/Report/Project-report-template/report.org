@@ -77,7 +77,7 @@ option \optionB  \end{center}\vfill}
 \jury{
 Research project performed at $<$lab-name$>$ \\\medskip
 Under the supervision of:\\
-$<$supervisor's first-name and last-name, supervisor's institution$>$\\\medskip
+$<$Arnaud Legrand, CNRS$>$\\\medskip
 Defended before a jury composed of:\\
 $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
 $[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
@@ -353,25 +353,37 @@ Text
       version of Intel Paragon and network of station based on FORE ATM. 
       Not recent paper \to architecture have evolved. Is linear
       regression still ok?
-** State of the art design of experiments [0/2]
-   - Using less point as possible:
-     - LHS
-       For continuous space
-     - D-Optimal
-       Require to know the model
-     - Fractional design
-       Screening design \to Take the extreme values
+** State of the art design of experiments [1/2]
+   - Study phenomenon \to behavior of a system
+     - Acting on many factor at a time instead of one
+     - Get information on how the factors impact the system and
+       interactions \to not possible with OFAT (one factor at a time) \to
+       factorial design
+     - Identify interaction without trying all range of values.
+     - Define explanatory variable.
+   - DoE:
+     - OFAT
+     -Factorial
+       - Random
+       - LHS
+         For continuous space
+         Provide Better coverage of the space
+       - Fractional design
+         Screening design \to Take the extreme values
+       - Optimal design
+         - D-Optimal
+           Require to know the model
+           Select points according to a model.
+         - I-Optimal
+         - A-Optimal
 ** Methods and material [0/2]
-  - Reproducible work
+*** Reproducible work
     - Lab book on github  
     - Literate programming 
     - org mode
-  - OpenCL
-  - Result validation against bruteforce
-  - Comparison with random, gradiant search, and genetic algorithm
 *** Case study
-    # Maybe this should go in experiments
 ****  Laplacian
+      - OpenCL
       - Optimizations explanation
         - Vectorization \to vector length
         - Synthetize loading \to load overlap
@@ -385,14 +397,13 @@ Text
       - 23100 combinations
       - Minimization
       - Test 5 sizes of images \to mean
-**** Matrix product?                                               :noexport:
-      - Optimizations explanation
-**** Laplacian
+**** Experimental protocol  
+    - Result validation against bruteforce
+    - Comparison with random, gradiant search, and genetic algorithm
+    - Bench min of 4 runs \to warm up effect
 **** Search space characteristics
      - Qualitative observation in term of speed up
 **** Comparison with random and genetic algo
-**** Experiments [0/10]
-     - Bench min of 4 runs \to warm up effect
 
 ** Contribution [0/22]                                             :noexport:
 ** Envisioned general approach[0/1]
@@ -411,27 +422,32 @@ Text
       - 4 runs \to take the minimum
     - randomizing to protect against bias, even for full search
       space. But run and image size not randomized.
-** Results [0/6]
+** Results [0/2]
     Considering speedup with regard to the best.
     Comparison:
     - GA \to not tuned \to would have take time to tune it
     - Greedy
     - Random
     - LM
+      - Full \to evaluate the quality of the model \to maybe in the
+        analysis to explain why we don't have the best
       - Uniform
       - LHS
       - D-Opt
     - Rq \to Another way of doing linear regression
+      - Full \to evaluate the quality of the model \to maybe in the
+        analysis to explain why we don't have the best
       - Uniform
       - LHS
       - D-Opt
    | Histogram of solutions | Cost |
 
-** DONE Characteristics of the search space [0/0]
+** Analysis [0/14]
+*** Characteristics of the search space [0/2]
    - Repartition of good combinations
    - Lot of local optimum \to local search failed
    - Heteroscedasticity
-** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
+*** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
 **** Least Squared regression and non uniform noise  
     - Assumptions:
       - homoscedasticity but pb we have heteroscedasticity
@@ -461,7 +477,7 @@ Text
        - Iterated weighted least squares 
          - But optimist R-squared
          - Don't know how to interpret the standard error
-** Model choice and refinement [0/2]
+*** Model choice and refinement [0/2]
     - Hypothesis based on the kernel
       The expert knows his kernel and have hypothesis of how the
       optimization will influence the performances.
@@ -487,10 +503,15 @@ Text
         the same than one regression including all the factors. But we
         could optimize each parameters independently.
       
-** Importance of the search space expression [0/1]
+*** Model Optimization [0/2]
+   - Non-convex optimization 
+     Constraint \to unfeasible points
+     Barrier approach
+   - Exhaustive search
+*** Importance of the search space expression [0/1]
     - Easier modelization
     - Better capture of the search space features
-** Using less point as possible [0/4]
+*** Using less point as possible [0/4]
     - Design of experiment
       - Random
       - Screenning design
@@ -511,7 +532,8 @@ Text
         Usefull to make refinement \to when the model is already known.
     - Copying with constraints
 ** Future work [0/2]
-   - Find more suited design of experiments technics
+   - Constraints
+   - Find more suited design of experiments techniques
    - Validate approach on more complex kernel and different
      architectures
    - Automatization
@@ -827,9 +849,75 @@ Text
    In the past a similar approach have been tempted by
    Brewer\cite{Brewer:1995:HOV:209937.209946} where linear regression
    of expectation have been used for the modelization to predict the
-   objective function. It worked on old hardware, 
+   objective function. It worked fine platform CM-5, simulated version
+   of Intel Paragon and network of station based on FORE ATM, but
+   these platforms are pretty old. To our knowledge this approach has
+   not been used recently in the tuning of applications, we wanted to
+   understand why and see if it is suited to the complexity of the
+   current platforms.
 
 ** Design of experiments
+   When there are lots of factors, covering the entire space of
+   possible values is prohibitive. The goal experimental design is to
+   build experiments in order to study the behavior of a system for a
+   low experiments cost. For this reason many techniques has been
+   developed to sample the space wisely.
+ 
+   The efficiency of One-Factors-At-a-Time (OFAT) is the method of
+   changing one factor at a time when the others are kept fixed. It is
+   very limited when there are many factors, because it requires high
+   number of experiments and it cannot find interactions between 
+   factors. For these reasons factorial designs are generally more
+   suited. They vary many parameters at the same time, hence
+   interactions can be trapped, the estimate of the impact of the
+   factors is more precise with a lower experiment cost.
+
+   The simplest factorial design is to chose a point in the space
+   uniformly\ref{fig:doe-examples}. The drawback is that there are
+   part of space where there are lots of points and some other where
+   there just few. The Latin Hyper-cube Sampling design provides a
+   better coverage of the space by dividing the space into pieces of
+   equals size and taking the same number of points at random in this
+   area and it made for continuous factors. 
+    
+   Tuning of applications is in fact running multiple experiences in an
+   automated or semi-automatic process. We thing that techniques from
+   experimental design can help us to achieve the optimization with low
+   experimental cost.
+
+   #+CAPTION: Space coverage by different DoE
+   #+LABEL: fig:doe-examples
+   #+begin_src R :results output graphics :file img/DoE_examples.png :exports results :width 600 :height 400 :session
+     library(DoE.base)   
+     library(DoE.wrapper)   
+     library(ggplot2)
+
+     library(grid)
+     library(gridExtra)
+
+     random <- data.frame(X1=runif(200,0,4),X2=runif(200,0,4))
+     lhs <- lhs.design( type= "maximin" , nruns= 200 ,nfactors= 2 ,digits= NULL ,seed=20049 , factor.names=list(X1=c(0,4), X2=c(1,4) ) )
+     Dopt <- Dopt.design(50, data=lhs, formula="~ X1 + X2 + I(1/X2)", nRepeat=5, randomize=TRUE)
+
+     p1 <- qplot(data=random) +
+         geom_point(aes(x=X1,y=X2)) +
+         ggtitle("Random")
+
+     p2 <- qplot(data=lhs) +
+         geom_point(aes(x=X1,y=X2)) +
+         ggtitle("lhs")
+
+     p3 <- qplot(data=Dopt) +
+         geom_point(aes(x=X1,y=X2)) +
+         ggtitle("lhs")
+         
+     grid.arrange(p1, p2, p3, ncol=2, top=textGrob("")) 
+
+   #+end_src
+
+   #+RESULTS:
+   [[file:img/DoE_examples.png]]
+
 * Methods
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
@@ -1156,7 +1244,7 @@ Text
    #+end_src
 
    #+RESULTS:
-   [[file:/tmp/babel-42001Fq/figure42008nS.png]]
+   [[file:/tmp/babel-3905hlV/figure39052nn.png]]
 
 ** Characteristics of the search space
    #+begin_src sh :results output :exports none
