@@ -247,9 +247,17 @@ Text
 *** HPC/architectures     
     - Crucial for science and business
     - To get performance \to exploit hardware \to take characteristics into account
-      - Many cores
-      - GPUs
+      - Many cores \to aims low idle time
+        Thinking parallel
+        Right number of threads \to because overhead in thread
+        management.
+        Less synchro as possible
+      - GPUs \to suited to a certain type of computation \to can bring
+        lots of performances.
       - vector support
+        Data pipelining
+        Share the same instruction on multiple data \to save decoding
+        
       - cache levels
       - ILP \to break instruction dependencies
     - Architecture \ne from a HPC to another
@@ -544,7 +552,7 @@ Text
 ** Why is performance optimization difficult?
   From genome sequencing to [...] including climate modeling, [...]
   all this problematic have something in common, the need of huge
-  power of computation. And High Performance Computing (HPC) is
+  power of computation. For this High Performance Computing (HPC) is
   the most effective solution. It has brought the science to another
   level and now it is a tool that scientists cannot live without like
   for example to simulate [...] or to analyze peta-octets of data. The
@@ -558,9 +566,9 @@ Text
   increase anymore and in contrary tends to decrease. Specifically
   because we went from multi-cores to many-cores architectures and
   for 2020 exascale platforms, supercomputers with millions of cores,
-  are expected in order to reach the exaflops. Thus, scientists have
+  are expected in order to reach the exaflops. Thus, developers have
   to take into account this massive parallelism when writing
-  programs. Furthermore, he also has to take care about the
+  programs. Furthermore, they also have to take care about the
   dependencies of the instructions to fully occupy the pipeline. If
   there is any vector support he should adapt his code to work on
   vector instead single variable. In addition the architecture provide
@@ -714,6 +722,46 @@ Text
 * Problem analysis
 * Context
 ** HPC architectures
+  HPCs are complex machines and it is not straightforward to use them
+  correctly. Indeed with a not carefully tuned application it is
+  likely to have poor performances. Optimizing the code correctly in
+  order to take into account the characteristic can bring major
+  speedup and increasing the performance x10 is not rare. The current
+  trend in HPCs is to have CPUs with an ever increasing amount of
+  cores and a tendency to reduce the frequency in order to reduce the
+  power consumption and the heat. Thus to get performances it is
+  mandatory to exploit correctly the parallelism of the platform. The
+  computation has to be described in a parallel way. Traducing
+  directly a sequential application into a parallel one generally
+  bring poor performances. Hence, the developer has to define which
+  parts can be performed in parallel and how they are
+  parallelized. The code has to be written in a way such the work is
+  distributed among all the cores available and keep them busy when
+  I/Os occur to have the less possible cores idle. It is important to
+  use the correct amount threads. Too many threads can bring more
+  overhead due to the management of the threads. Too little and all
+  the cores are not exploited correctly. Also the more the threads are 
+  independent from each other, the better, which means there should be
+  less synchronization. 
+
+  Pipelining is another kind of parallelism in which the treatment of
+  instructions is split into a sequence of steps (fetch, decode,
+  execute, etc...) and goes through a pipeline. Multiple instructions
+  can be in the pipeline at the same time but only at different state
+  of the processing. A correct scheduling of the instructions in the
+  pipeline leads to a better occupancy of it. Instruction Level
+  Parallelism is a mechanism that can change the order of the
+  instructions to have a better overlapping of the instructions in the
+  pipeline.
+
+  In addition some CPUs have vector support. Such processors can
+  manipulate not only scalar variables but also vector variables. The
+  vector is loaded in a vector register and the same instruction is
+  applied. This the save cost of decoding the same instruction
+  multiple time. 
+
+  
+
 ** Compilation
 ** BOAST
 * State of the art
