@@ -20836,11 +20836,17 @@ h[g.name.to_sym] = 1024
            }
 
            f <- function(x){
-               as.numeric(predict(fit,data.frame(#elements_number=x$elements_number, 
-                                                 y_component_number=x$y_component_number, 
-                                                 vector_length=x$vector_length, 
-                                                 threads_number=x$threads_number, 
-                                                 lws_y=x$lws_y,interval="none")))
+                                                    as.numeric(predict(fit,data.frame(y_component_number = x$y_component_number, 
+                                                                                      vector_length = x$vector_length, 
+                                                                                      threads_number = x$threads_number, 
+                                                                                      lws_y = x$lws_y),
+                                                                                      interval="none"))
+
+               # as.numeric(predict(fit,data.frame(y_component_number = x[,"y_component_number"], 
+               #                                   vector_length = x[,"vector_length"], 
+               #                                   threads_number = x[,"threads_number"], 
+               #                                   lws_y = x[,"lws_y"]),
+               #                                   interval="none"))
            }
 
            best <- df[f(df[,c(2,3,7,8)]) == min(f(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
@@ -20848,10 +20854,13 @@ h[g.name.to_sym] = 1024
          #+end_src
 
          #+RESULTS:
-         :  Error in eval(expr, envir, enclos) (from #2) : 
-         :   objet 'y_component_number' introuvable
+         :  Error in x[, "y_component_number"] (from #8) : nombre de dimensions incorrect
          :      y_component_number vector_length threads_number lws_y
          : 7136                  5             1            512     1
+
+          #+begin_src R :results output :session :exports both
+          
+          #+end_src
 
 
           Now we know the values the factors let's fix elements number and make a
@@ -22721,29 +22730,52 @@ h[g.name.to_sym] = 1024
     #+RESULTS:
 
     #+begin_src R :results output :session :exports both
-          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
-          g <- function(x) { f(x)/x^2 }
-          h <- function(x) {pmin(g(x),1e10)}
-          iwr <- function(d, form) { 
-              fit <- lm(data=d,formula=form)
-              for(i in 1:50){
-                  print(exists("fit"))
-                  residus <- residuals(fit)
-                  print(exists("residus"))
-                  #fit <- lm( data=d, formula=form, weight=h(residus) )
-                  fit <- lm( data=d, formula=form, weight=h(residuals(fit)) )
-              }              
+      f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+      g <- function(x) { f(x)/x^2 }
+      h <- function(x) {pmin(g(x),1e10)}
+
+      iwr <- function(d, form) {
+          form <- formula(form, env=.env) 
+          fit <- lm(data=d,formula=form)
+          for(i in 1:50){
               print(exists("fit"))
-              print(exists("residuals"))
-              return(fit)
-          }
-          fit <- iwr(df,time_per_pixel ~ elements_number)
-          summary(fit)
+              residus <- residuals(fit)
+              print(exists("residus"))
+              fit <- lm( data=d, formula=form, weight=h(residus) )
+              # fit <- lm( data=d, formula=form, weight=h(residuals(fit)) )
+          }              
+          print(exists("fit"))
+          print(exists("residuals"))
+          return(fit)
+      }
+      fit <- iwr(df,formula(time_per_pixel ~ elements_number))
+      summary(fit)
     #+end_src
 
     #+RESULTS:
-    : [1] TRUE
-    : [1] TRUE
-    : Error in residuals(fit) (from #1) : objet 'fit' introuvable
-    : Error in summary(fit) : objet 'fit' introuvable
+    #+begin_example
+    [1] TRUE
+    [1] TRUE
+    Error in f(x) (from #1) : objet 'residus' introuvable
+
+    Call:
+    lm(formula = model, data = subset, weights = h(E))
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -8.823e-07 -5.479e-07 -2.599e-08  5.724e-07  1.067e-06 
+
+    Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)           6.505e-11  9.656e-12   6.737 1.39e-05 ***
+    elements_number       1.318e-11  1.762e-12   7.481 4.63e-06 ***
+    I(elements_number^2) -3.902e-13  6.937e-14  -5.626 8.26e-05 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 6.937e-07 on 13 degrees of freedom
+    Multiple R-squared:  0.9219,	Adjusted R-squared:  0.9098 
+    F-statistic: 76.68 on 2 and 13 DF,  p-value: 6.367e-08
+#+end_example
+
 
