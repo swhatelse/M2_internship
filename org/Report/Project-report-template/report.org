@@ -723,40 +723,40 @@ Text
 * Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
-  correctly. Indeed with a not carefully tuned application it is
-  likely to have poor performances. Optimizing the code correctly in
-  order to take into account the characteristic can bring major
-  speedup and increasing the performance x10 is not rare. The current
-  trend in HPCs is to have CPUs with an ever increasing amount of
-  cores and a tendency to reduce the frequency in order to reduce the
-  power consumption and the heat. Thus to get performances it is
-  mandatory to exploit correctly the parallelism of the platform. The
-  computation has to be described in a parallel way. Traducing
-  directly a sequential application into a parallel one generally
-  bring poor performances. Hence, the developer has to define which
-  parts can be performed in parallel and how they are
-  parallelized. The code has to be written in a way such the work is
-  distributed among all the cores available and keep them busy when
-  I/Os occur to have the less possible cores idle. It is important to
-  use the correct amount threads. Too many threads can bring more
-  overhead due to the management of the threads. Too little and all
-  the cores are not exploited correctly. Also the more the threads are 
-  independent from each other, the better, which means there should be
-  less synchronization. 
+  correctly. Indeed with a not carefully tuned code it is likely to
+  have poor performances. Optimizing the code correctly by taking into
+  account the characteristic can bring major speedup and increasing
+  the performance x10 is not rare. The current trend in HPCs is to
+  have CPUs with an ever increasing amount of cores and a tendency to
+  reduce the frequency in order to reduce the power consumption and
+  the heat. Thus to get performances it is mandatory to exploit
+  correctly the parallelism of the platform. The computation has to be
+  described in a parallel way. Traducing directly a sequential
+  application into a parallel one generally bring poor
+  performances. Hence, the developer has to define which are the parts that
+  can be performed in parallel and how they are parallelized. The code
+  has to be written in a way such the work is distributed among all
+  the cores available and keep them busy when I/Os occur to have the
+  less possible cores idle. It is important to use the correct amount
+  threads. Too many threads can bring more overhead due to the
+  management of the threads. Too little and all the cores are not
+  exploited correctly. Also the more the threads are independent from
+  each other, the better, which means there should be less
+  synchronization as possible.  
 
   Pipelining is another kind of parallelism in which the treatment of
   instructions is split into a sequence of steps (fetch, decode,
   execute, etc...) and goes through a pipeline. Multiple instructions
   can be in the pipeline at the same time but only at different state
-  of the processing. A correct scheduling of the instructions in the
-  pipeline leads to a better occupancy of it. Instruction Level
-  Parallelism is a mechanism that can change the order of the
-  instructions to have a better overlapping of the instructions in the
-  pipeline. In addition some CPUs have vector support. Such processors
-  can manipulate not only scalar variables but also vector
-  variables. The vector is loaded into a vector register and the same
-  instruction is applied on the entire. This the save cost of decoding
-  the same instruction multiple times. 
+  of the processing, like in an assembly line. A correct scheduling of
+  the instructions in the pipeline leads to a better occupancy of
+  it. Instruction Level Parallelism is a mechanism that can change the
+  order of the instructions to have a better overlapping of the
+  instructions in the pipeline. In addition some CPUs have vector
+  support. Such processors can manipulate not only scalar variables
+  but also vector variables. The vector is loaded into a vector
+  register and the same instruction is applied on the entire. This the
+  save cost of decoding the same instruction multiple times. 
 
   Today, CPUs have become so fast that one of the main bottleneck is
   the memory. Thus accessing data in memory is much more expensive than
@@ -771,7 +771,15 @@ Text
   Thus the pattern to data access have to be chosen carefully so that
   the most used stay close to the computation units.
 
-
+  Another recent characteristic of HPCs is the increasing use of
+  GPUs because for computation that can be well parallelized like it
+  is the case generally the with case with scientific computation they
+  are faster than GPUs. However the architectures of the GPUs is
+  different from the one of the CPUs, the amount of cache memory is
+  limited and there are more compute units (for example the Nvidia
+  Tesla K40 has 2,880 cores). Thus optimizations that bring good
+  performances on CPUs may bring poor performances on GPUs such the
+  size of the vectors or the number of threads.
 
 ** Compilation
 ** BOAST

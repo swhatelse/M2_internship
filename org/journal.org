@@ -22376,12 +22376,12 @@ h[g.name.to_sym] = 1024
       Results seems pretty good expect that we able to get very bad
       ones. How is it possible? Maybe because the point choosen are
       random are not correctly chosen...
-      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      #+begin_src R :results output graphics :file img/20160402/pilipili2/lm_bench_random_100.png :exports both :width 600 :height 400 :session
         hist(speedup)
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-6925pmC/figure6925sZr.png]]
+      [[file:img/20160402/pilipili2/lm_bench_random_100.png]]
 
      
 **** Quantile regression
