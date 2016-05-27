@@ -22173,6 +22173,62 @@ h[g.name.to_sym] = 1024
 *** TODO Check many points we lose with constraints.
 *** TODO Optim and constraints
 ** 2016-05-20
+*** TODO Converage comparison LHS vs Uniform
+    #+begin_src R :results output :session :exports both
+      library(DoE.wrapper)
+
+      elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+      y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+      vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+      threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+      lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+      temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+      load_overlap_val <- levels(df$load_overlap)
+
+      Design.1 <- lhs.design( type= "maximin" , nruns= 20041 ,nfactors= 7 ,digits= NULL ,seed=2004 , factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
+                                                                                                                      idx_y_component_number = c(1,length(y_component_number_val)),
+                                                                                                                      idx_vector_length = c(1,length(vector_length_val)), 
+                                                                                                                      idx_threads_number = c(1,length(threads_number_val)),
+                                                                                                                      idx_temporary_size = c(1,length(temporary_size_val)), 
+                                                                                                                      idx_lws_y = c(1,length(lws_y_val)), 
+                                                                                                                      idx_load_overlap = c(1,length(load_overlap_val)) 
+                                                                                                                      ) 
+                             )
+
+      Design.1.rounded <- round(Design.1)
+
+      lhs_set <- data.frame()
+      for(i in 1:nrow(Design.1)){
+          lhs_set <- rbind(lhs_set, df[ df$elements_number == elements_number_val[Design.1$idx_elements_number[i]]
+                               & df$y_component_number == y_component_number_val[Design.1$idx_y_component_number[i]]
+                               & df$vector_length == vector_length_val[Design.1$idx_vector_length[i]]
+                               & df$threads_number == threads_number_val[Design.1$idx_threads_number[i]]
+                               & df$lws_y == lws_y_val[Design.1$idx_lws_y[i]]
+                               & df$temporary_size == temporary_size_val[Design.1$idx_temporary_size[i]]
+                               & df$load_overlap == load_overlap_val[Design.1$idx_load_overlap[i]], ])
+      }
+
+      random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      plot(random_set[,c(1,2,3,4,5,6,7,8)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-6925pmC/figure6925thm.png]]
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      plot(lhs_set[,c(1,2,3,4,5,6,7,8)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-6925pmC/figure6925geU.png]]
+
+
 *** TODO Evaluation prediction with DoE
 **** LM
 ***** Independent lws y + elements number
@@ -22677,7 +22733,7 @@ h[g.name.to_sym] = 1024
            model_subset_100_th_nb <- lm(data=random_set_100,formula=form_th_nb)
            model_subset_100_lws_y <- lm(data=random_set_100,formula=form_lws_y)
 
-           random_set_50 <- df[sample(1:nrow(df), size = 10, replace = FALSE),]
+           random_set_50 <- df[sample(1:nrow(df), size = 20, replace = FALSE),]
            model_subset_50_elem_nb <- lm(data=random_set_50,formula=form_elem_nb)
            model_subset_50_y_comp <- lm(data=random_set_50,formula=form_y_comp)
            model_subset_50_v_len <- lm(data=random_set_50,formula=form_v_len)
@@ -22753,11 +22809,7 @@ h[g.name.to_sym] = 1024
      :  Warning message:
      : In rq.fit.br(x, y, tau = tau, ...) : Solution may be nonunique
 
-
-     #+begin_src R :results output :session :exports both
-     summary()
-     #+end_src
-
+     Maybe starting with 20 points at random seems to be a good start:
      #+begin_src R :results output graphics :file img/20160402/pilipili2/random_nb_points_comparison.png :exports both :width 800 :height 600 :session
        library(grid)
        library(gridExtra)
@@ -22805,6 +22857,289 @@ h[g.name.to_sym] = 1024
 
      #+RESULTS:
      [[file:img/20160402/pilipili2/random_nb_points_comparison.png]]
+
+     Let's try it and find the relevant factors:
+     #+begin_src R :results output :session :exports both
+     set.seed(18)
+     random_set <- df[sample(1:nrow(df), size = 20, replace = FALSE),]
+     model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + temporary_size + load_overlap
+     fit <- lm(data=random_set,formula=model)
+     for( i in 1:100 ){
+       E <- residuals(fit)
+       fit <- lm(data=random_set,formula=model,weights=h(E)) 
+     }
+     summary(fit)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+
+     Call:
+     lm(formula = model, data = random_set, weights = h(E))
+
+     Weighted Residuals:
+            Min         1Q     Median         3Q        Max 
+     -2.047e-06 -4.181e-07  2.798e-06  5.647e-06  1.154e-05 
+
+     Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)         1.160e-10  2.085e-10   0.556   0.5882    
+     elements_number    -7.540e-11  3.471e-11  -2.172   0.0506 .  
+     y_component_number  1.175e-10  6.949e-11   1.691   0.1165    
+     vector_length       9.704e-11  7.527e-12  12.892 2.17e-08 ***
+     threads_number     -1.710e-12  2.818e-13  -6.068 5.60e-05 ***
+     lws_y               8.519e-12  4.738e-13  17.980 4.82e-10 ***
+     temporary_size      4.850e-11  3.666e-11   1.323   0.2105    
+     load_overlaptrue   -2.115e-11  6.742e-11  -0.314   0.7591    
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 6.124e-06 on 12 degrees of freedom
+     Multiple R-squared:  0.9949,	Adjusted R-squared:  0.992 
+     F-statistic: 336.9 on 7 and 12 DF,  p-value: 8.298e-13
+#+end_example
+
+     Now let's remove useless factors and look for interactions. It
+     seems that only the interaction between threads number and lws y
+     is relevant. Maybe vector length can interact with threads number
+     because bigger vectors means more ressource used by a threads and
+     thus the number of the thread in the work group (have to check in
+     full space). But There is not reason why vector length would
+     interact with the lws y. 
+     #+begin_src R :results output :session :exports both
+     model <- time_per_pixel ~ (vector_length + threads_number + lws_y)^2
+     fit <- lm(data=random_set,formula=model)
+     for( i in 1:100 ){
+       E <- residuals(fit)
+       fit <- lm(data=random_set,formula=model,weights=h(E)) 
+     }
+     summary(fit)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+
+     Call:
+     lm(formula = model, data = random_set, weights = h(E))
+
+     Weighted Residuals:
+            Min         1Q     Median         3Q        Max 
+     -4.243e-06 -5.800e-08  2.546e-06  4.979e-06  1.065e-05 
+
+     Coefficients:
+                                    Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)                  -6.473e-10  1.425e-10  -4.542 0.000553 ***
+     vector_length                 1.437e-10  1.209e-11  11.889 2.34e-08 ***
+     threads_number                1.042e-12  1.445e-13   7.216 6.78e-06 ***
+     lws_y                         1.388e-11  1.091e-12  12.729 1.03e-08 ***
+     vector_length:threads_number -2.057e-13  1.604e-14 -12.820 9.42e-09 ***
+     vector_length:lws_y           4.831e-14  3.155e-13   0.153 0.880653    
+     threads_number:lws_y         -7.063e-15  1.771e-15  -3.987 0.001549 ** 
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 5.517e-06 on 13 degrees of freedom
+     Multiple R-squared:  0.9951,	Adjusted R-squared:  0.9928 
+     F-statistic: 436.3 on 6 and 13 DF,  p-value: 3.233e-14
+#+end_example
+
+     Let's try our hypothesis. But here again we can not trust the
+     standard error or the R^2:
+     #+begin_src R :results output :session :exports both
+     model <- time_per_pixel ~ vector_length + 
+                               lws_y + I(1/lws_y) +
+                               threads_number + I(1/threads_number) +
+                               threads_number:vector_length +
+                               threads_number:lws_y
+
+     fit <- lm(data=random_set,formula=model)
+     for( i in 1:100 ){
+       E <- residuals(fit)
+       fit <- lm(data=random_set,formula=model,weights=h(E)) 
+     }
+     summary(fit)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+
+     Call:
+     lm(formula = model, data = random_set, weights = h(E))
+
+     Weighted Residuals:
+            Min         1Q     Median         3Q        Max 
+     -2.814e-06 -1.830e-07  1.647e-06  3.878e-06  9.721e-06 
+
+     Coefficients:
+                                    Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)                  -4.726e-10  9.981e-11  -4.735 0.000484 ***
+     vector_length                 1.081e-10  6.508e-12  16.608 1.21e-09 ***
+     lws_y                         1.177e-11  1.031e-12  11.418 8.40e-08 ***
+     I(1/lws_y)                   -2.046e-10  1.021e-10  -2.004 0.068129 .  
+     threads_number                1.013e-12  1.156e-13   8.764 1.46e-06 ***
+     I(1/threads_number)           2.571e-08  3.414e-09   7.532 6.93e-06 ***
+     vector_length:threads_number -1.523e-13  1.228e-14 -12.404 3.34e-08 ***
+     lws_y:threads_number         -5.232e-15  9.366e-16  -5.586 0.000119 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 5.015e-06 on 12 degrees of freedom
+     Multiple R-squared:  0.9966,	Adjusted R-squared:  0.9946 
+     F-statistic: 498.1 on 7 and 12 DF,  p-value: 8.056e-14
+#+end_example
+
+     #+begin_src R :results output :session :exports both
+     model_vector_length <- time_per_pixel ~ vector_length
+     model_lws_y <- time_per_pixel ~ lws_y + I(1/lws_y)
+     model_threads_number <- time_per_pixel ~ threads_number + I(1/threads_number)
+
+     fit_vector_length <- lm(data=random_set,formula=model_vector_length)
+     fit_lws_y <- lm(data=random_set,formula=model_lws_y)
+     fit_threads_number <- lm(data=random_set,formula=model_threads_number)
+
+     for( i in 1:100 ){
+       E <- residuals(fit_vector_length)
+       fit_vector_length <- lm(data=random_set,formula=model_vector_length,weights=h(E)) 
+
+       E <- residuals(fit_lws_y)
+       fit_lws_y <- lm(data=random_set,formula=model_lws_y,weights=h(E)) 
+
+       E <- residuals(fit_threads_number)
+       fit_threads_number <- lm(data=random_set,formula=model_threads_number,weights=h(E)) 
+     }
+     #+end_src
+
+     #+RESULTS:
+
+     Ok It seems that we are good for this factors:
+     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 400 :session
+       library(ggplot2)
+       library(grid)
+       library(gridExtra)
+
+       p1 <- qplot() +
+           coord_cartesian(ylim=c(0,2e-9), xlim=c(1,20)) +  
+           geom_point(aes(x=df$lws_y,y=df$time_per_pixel),alpha=0.05) +
+           geom_line( aes(x=seq(1,1024), y=predict(fit_lws_y,data.frame(lws_y=seq(1,1024)),interval="none")),color="red")
+
+       p2 <- qplot() +
+           coord_cartesian(ylim=c(0,2e-9)) +  
+           geom_point(aes(x=df$vector_length,y=df$time_per_pixel),alpha=0.05) +
+           geom_line( aes(x=seq(1,16), y=predict(fit_vector_length,data.frame(vector_length=seq(1,16)),interval="none")),color="red")
+
+       p3 <- qplot() +
+           coord_cartesian(ylim=c(0,1e-8)) +  
+           geom_point(aes(x=df$threads_number,y=df$time_per_pixel),alpha=0.05) +
+           geom_line( aes(x=seq(32,1024), y=predict(fit_threads_number,data.frame(threads_number=seq(32,1024)),interval="none")),color="red")
+
+       grid.arrange(p1,p2,p3,  ncol=3, top=textGrob("")) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:/tmp/babel-6925pmC/figure692554N.png]]
+
+     Maybe we need more points::
+     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 400 :session
+       library(ggplot2)
+       library(grid)
+       library(gridExtra)
+
+       p1 <- qplot() +
+           # coord_cartesian(ylim=c(0,2e-9)) +  
+           geom_point(aes(x=random_set$lws_y,y=random_set$time_per_pixel),alpha=1) +
+           geom_line( aes(x=seq(1,1024), y=predict(fit_lws_y,data.frame(lws_y=seq(1,1024)),interval="none")),color="red")
+
+       p2 <- qplot() +
+           # coord_cartesian(ylim=c(0,2e-9)) +  
+           geom_point(aes(x=random_set$vector_length,y=random_set$time_per_pixel),alpha=1) +
+           geom_line( aes(x=seq(1,16), y=predict(fit_vector_length,data.frame(vector_length=seq(1,16)),interval="none")),color="red")
+
+       p3 <- qplot() +
+           # coord_cartesian(ylim=c(0,1e-8)) +  
+           geom_point(aes(x=random_set$threads_number,y=random_set$time_per_pixel),alpha=1) +
+           geom_line( aes(x=seq(32,1024), y=predict(fit_threads_number,data.frame(threads_number=seq(32,1024)),interval="none")),color="red")
+
+       grid.arrange(p1,p2,p3,  ncol=3, top=textGrob("")) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:/tmp/babel-6925pmC/figure6925GDU.png]]
+
+     Too bad I cannot augment my random set. I should try with lhs instead:
+     #+begin_src R :results output :session :exports both
+       library(DoE.wrapper)
+
+       augemented_random_set <- Dopt.augment(random_set, 10, formula=model, candidates=df)
+     #+end_src
+
+     #+RESULTS:
+     : Error in Dopt.augment(random_set, 10, formula = model, candidates = df) : 
+     :   design must be of class design
+
+     Lets's fix those parameters, but we end up with an empty set:
+     #+begin_src R :results output :session :exports both
+       get_lws_y <- function(x){
+                 as.numeric(predict(fit_lws_y,data.frame(lws_y=x,interval="none")))
+       }
+
+       get_vector_length <- function(x){
+                 as.numeric(predict(fit_vector_length,data.frame(vector_length=x,interval="none")))
+       }
+
+       get_threads_number <- function(x){
+                 as.numeric(predict(fit_threads_number,data.frame(threads_number=x,interval="none")))
+       }
+
+       best_lws_y <- df[get_lws_y(df$lws_y) == min(get_lws_y(df$lws_y)),]$lws_y[1]
+       best_vector_length <- df[get_vector_length(df$vector_length) == min(get_vector_length(df$vector_length)),]$vector_length[1]
+       best_threads_number <- df[get_threads_number(df$threads_number) == min(get_threads_number(df$threads_number)),]$threads_number[1]
+
+       best_lws_y 
+       best_vector_length
+       best_threads_number
+
+       pruned_random_set <- random_set[random_set$lws_y == best_lws_y & random_set$vector_length == best_vector_length & random_set$threads_number == best_threads_number,]
+       pruned_random_set
+     #+end_src
+
+     #+RESULTS:
+     : [1] 8
+     : [1] 1
+     : [1] 512
+     : [1] elements_number    y_component_number vector_length      temporary_size    
+     : [5] vector_recompute   load_overlap       threads_number     lws_y             
+     : [9] time_per_pixel    
+     : <0 lignes> (ou 'row.names' de longueur nulle)
+
+     
+    We need to had new points but before let's look at what looks like elements number and y component number:
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 400 :session
+       library(ggplot2)
+       library(grid)
+       library(gridExtra)
+
+       p1 <- qplot() +
+           # coord_cartesian(ylim=c(0,2e-9)) +  
+           geom_point(aes(x=random_set$elements_number,y=random_set$time_per_pixel),alpha=1)
+
+       p2 <- qplot() +
+           # coord_cartesian(ylim=c(0,2e-9)) +  
+           geom_point(aes(x=random_set$y_component_number,y=random_set$time_per_pixel),alpha=1)
+
+       grid.arrange(p1,p2, ncol=2, top=textGrob("")) 
+     #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-6925pmC/figure6925TGm.png]]
+
+   We can guess a slight asymptotic shape for the elements number and
+   maybe the same for y component number this would validate our hypothesis.
+    #+begin_src R :results output :session :exports both
+    library(DoE.wrapper)
+
+    
+    
+    #+end_src
 
 ** 2016-05-23
 *** TODO Plot error / prediction to see if we can use it to check model
