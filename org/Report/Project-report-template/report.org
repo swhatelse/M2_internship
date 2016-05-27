@@ -608,7 +608,8 @@ Text
   other opportunities to perform optimizations but it is to difficult
   to exploit them automatically. Moreover, it is sometimes necessary
   to rewrite the code in a slightly different way to enable the
-  compiler to be effective. That is why frameworks such Orio\cite{}
+  compiler to be effective. That is why frameworks such
+  Orio\cite{Hartono:2009:AEP:1586640.1587666} 
   for source-to-source transformation have been developed. This
   approach generally use annotations to describe the optimizations. It
   allows to bring user's knowledge in the process of generation of an
@@ -781,8 +782,13 @@ Text
   performances on CPUs may bring poor performances on GPUs such the
   size of the vectors or the number of threads.
 
-** Compilation
-** BOAST
+** Obtaining efficient code
+*** Compilation
+    Many works have been done around optimizing compilers. They are
+    able to perform some code optimization automatically
+*** Source-to-source transformation
+*** BOAST
+** Summary
 * State of the art
 ** Auto-tuning
    In auto-tuning one can find two major categories of
@@ -1012,7 +1018,7 @@ Text
   github\footnote{https://github.com/swhatelse/M2\_internship}. It
   contains detailed about installation and configuration steps. It
   keeps tracks of every experiments including their description and
-  analysis. It is structure in a chronological way and thus follows
+  analysis. It is structured in a chronological way and thus follows
   the natural evolution of the work. This gives the possibility to
   easily understand what have been done at each step and why.
   Every pieces of codes is explained using literate programming which
