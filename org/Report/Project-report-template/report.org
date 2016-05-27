@@ -752,15 +752,26 @@ Text
   pipeline leads to a better occupancy of it. Instruction Level
   Parallelism is a mechanism that can change the order of the
   instructions to have a better overlapping of the instructions in the
-  pipeline.
+  pipeline. In addition some CPUs have vector support. Such processors
+  can manipulate not only scalar variables but also vector
+  variables. The vector is loaded into a vector register and the same
+  instruction is applied on the entire. This the save cost of decoding
+  the same instruction multiple times. 
 
-  In addition some CPUs have vector support. Such processors can
-  manipulate not only scalar variables but also vector variables. The
-  vector is loaded in a vector register and the same instruction is
-  applied. This the save cost of decoding the same instruction
-  multiple time. 
+  Today, CPUs have become so fast that one of the main bottleneck is
+  the memory. Thus accessing data in memory is much more expensive than
+  performing computations. To deal with this problem the solution
+  found is to use different hierarchy of memory. The statement is that
+  a data that is currently used is more likely to be re-used in a near
+  future. Hence the idea is to keep that are the most frequently used
+  data as close as possible to the CPUs, that is why CPUs embeds cache
+  memories. In a processors there can be up to 4 level of cache
+  (the registers, L1, L2, L3) and the fastest are the closest to the
+  CPU to have the lowest latency possible but they also are the smallest.
+  Thus the pattern to data access have to be chosen carefully so that
+  the most used stay close to the computation units.
 
-  
+
 
 ** Compilation
 ** BOAST
