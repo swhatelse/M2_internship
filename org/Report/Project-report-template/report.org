@@ -264,8 +264,10 @@ Text
       Specialized code \to not portable
 *** Obtaining efficient code
 **** Compilation
-     Il fait ce qu'il peut mais pas de vision globale du code. Archi
-     compliquée donc dur: Grigori Fursin.
+     Il fait ce qu'il peut mais pas de vision globale du code \to local
+     optimization (intra block)
+     
+     Archi compliquée donc dur: Grigori Fursin.
 **** Source-to-source transformation (C vers C ou FORTRAN vers FORTRAN)
      - orio, PIPS,  cloog \to ensure that the semantic is correct 
 
@@ -784,10 +786,11 @@ Text
 
 ** Obtaining efficient code
 *** Compilation
-    Many works have been done around optimizing compilers. They are
-    able to perform some code optimization automatically
+    Many works have been made around optimizing compilers to optimize
+    the code automatically. They are able to replace, re-order
+    instructions 
 *** Source-to-source transformation
-*** BOAST
+*** Meta-programming: BOAST
 ** Summary
 * State of the art
 ** Auto-tuning
