@@ -22173,53 +22173,26 @@ h[g.name.to_sym] = 1024
 *** TODO Check many points we lose with constraints.
 *** TODO Optim and constraints
 ** 2016-05-20
-*** TODO Converage comparison LHS vs Uniform
-    #+begin_src R :results output :session :exports both
-      library(DoE.wrapper)
+*** TODO Converage comparison LHS vs Uniform vs DOpt
+     #+begin_src sh :results output :exports both
+       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
 
-      elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
-      y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
-      vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
-      threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
-      lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
-      temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
-      load_overlap_val <- levels(df$load_overlap)
+     #+RESULTS:
 
-      Design.1 <- lhs.design( type= "maximin" , nruns= 20041 ,nfactors= 7 ,digits= NULL ,seed=2004 , factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
-                                                                                                                      idx_y_component_number = c(1,length(y_component_number_val)),
-                                                                                                                      idx_vector_length = c(1,length(vector_length_val)), 
-                                                                                                                      idx_threads_number = c(1,length(threads_number_val)),
-                                                                                                                      idx_temporary_size = c(1,length(temporary_size_val)), 
-                                                                                                                      idx_lws_y = c(1,length(lws_y_val)), 
-                                                                                                                      idx_load_overlap = c(1,length(load_overlap_val)) 
-                                                                                                                      ) 
-                             )
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+     #+end_src
 
-      Design.1.rounded <- round(Design.1)
-
-      lhs_set <- data.frame()
-      for(i in 1:nrow(Design.1)){
-          lhs_set <- rbind(lhs_set, df[ df$elements_number == elements_number_val[Design.1$idx_elements_number[i]]
-                               & df$y_component_number == y_component_number_val[Design.1$idx_y_component_number[i]]
-                               & df$vector_length == vector_length_val[Design.1$idx_vector_length[i]]
-                               & df$threads_number == threads_number_val[Design.1$idx_threads_number[i]]
-                               & df$lws_y == lws_y_val[Design.1$idx_lws_y[i]]
-                               & df$temporary_size == temporary_size_val[Design.1$idx_temporary_size[i]]
-                               & df$load_overlap == load_overlap_val[Design.1$idx_load_overlap[i]], ])
-      }
-
-      random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
-
-    #+end_src
-
-    #+RESULTS:
+     #+RESULTS:
 
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
       plot(random_set[,c(1,2,3,4,5,6,7,8)])
     #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-6925pmC/figure6925thm.png]]
+    [[file:/tmp/babel-31440xR/figure3144DDW.png]]
 
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
       plot(lhs_set[,c(1,2,3,4,5,6,7,8)])
@@ -22227,6 +22200,58 @@ h[g.name.to_sym] = 1024
 
     #+RESULTS:
     [[file:/tmp/babel-6925pmC/figure6925geU.png]]
+
+    #+begin_src R :results output :session :exports both
+      library(DoE.wrapper)
+      Dopt_set <- Dopt.design( 100 , data=df, formula="~elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size + load_overlap" , nRepeat= 20 ,randomize= TRUE)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+    Le chargement a nécessité le package : FrF2
+    Le chargement a nécessité le package : DoE.base
+    Le chargement a nécessité le package : grid
+    Le chargement a nécessité le package : conf.design
+
+    Attachement du package : ‘DoE.base’
+
+    The following objects are masked from ‘package:stats’:
+
+        aov, lm
+
+    The following object is masked from ‘package:graphics’:
+
+        plot.design
+
+    The following object is masked from ‘package:base’:
+
+        lengths
+
+    Le chargement a nécessité le package : rsm
+   #+end_example
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      plot(Dopt_set[,c(1,2,3,4,5,6,7,8)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-31440xR/figure3144ckD.png]]
+
+    Only extremal points are chosen. Maybe it is not enough to find
+    all relevant factors 
+    #+begin_src R :results output :session :exports both
+      library(DoE.wrapper)
+      Dopt_set <- Dopt.design( 100 , data=df, formula="~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size + load_overlap)^2" , nRepeat= 20 ,randomize= TRUE)
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      plot(Dopt_set[,c(1,2,3,4,5,6,7,8)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-31440xR/figure3144QNc.png]]
 
 
 *** TODO Evaluation prediction with DoE
@@ -22277,10 +22302,10 @@ h[g.name.to_sym] = 1024
       F-statistic: 15.45 on 5 and 94 DF,  p-value: 4.51e-11
 #+end_example
      
-     In fact we cannot not consider that we found the value for a
-     factor if there remain only onbe point. We need to add points in
-     order to make the regression and predict the value:
-     #+begin_src R :results output :session :exports both
+      In fact we cannot not consider that we found the value for a
+      factor if there remain only onbe point. We need to add points in
+      order to make the regression and predict the value:
+      #+begin_src R :results output :session :exports both
        set.seed(1) 
        runs = 100
        speedup <- c()
@@ -22406,8 +22431,8 @@ h[g.name.to_sym] = 1024
        }
        speedup
      #+end_src
-
-     #+RESULTS:
+      
+      #+RESULTS:
      #+begin_example
       There were 26 warnings (use warnings() to see them)
        [1] 0.98602132 0.85284079 0.97373239 0.83496678 0.85318472 0.99029946
@@ -22428,14 +22453,14 @@ h[g.name.to_sym] = 1024
       [91] 0.85318472 0.72523279 0.98533641 0.90553007 0.99029946 0.98533641
       [97] 0.72523279 1.00000000 0.97373239 0.91022588
      #+end_example
-
+      
       Results seems pretty good expect that we able to get very bad
       ones. How is it possible? Maybe because the point choosen are
       random are not correctly chosen...
       #+begin_src R :results output graphics :file img/20160402/pilipili2/lm_bench_random_100.png :exports both :width 600 :height 400 :session
         hist(speedup)
       #+end_src
-
+      
       #+RESULTS:
       [[file:img/20160402/pilipili2/lm_bench_random_100.png]]
 
