@@ -22627,11 +22627,14 @@ h[g.name.to_sym] = 1024
         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
         g <- function(x) { f(x)/x^2 }
         h <- function(x) {pmin(g(x),1e15)}
+       
+        library(quantreg)
+        
         set.seed(1) 
-        runs = 1000
+        runs = 100
         speedup <- c()
         for(i in 1:runs){
-            random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+            random_set <- df[sample(1:nrow(df), size = 20, replace = FALSE),]
             model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
                                       vector_length + 
                                       lws_y + I(1/lws_y) +
@@ -22655,7 +22658,7 @@ h[g.name.to_sym] = 1024
             ###########################################
         
             if(nrow(subset) < 5 ){
-              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 20, replace = FALSE),])
             }
         
             model <- time_per_pixel ~ lws_y + I(1/lws_y)
@@ -22674,7 +22677,7 @@ h[g.name.to_sym] = 1024
             ###########################################
         
             if(nrow(subset) < 5 ){
-              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = nrow(pruned_full_space), replace = FALSE),])
             }
         
             model <- time_per_pixel ~ elements_number + I(elements_number^2)
@@ -22754,10 +22757,19 @@ h[g.name.to_sym] = 1024
      #+end_src
 
       #+RESULTS:
-      :  Error in rq.fit.br(x, y, tau = tau, ...) (from #50) : Singular design matrix
-      : In addition: Warning message:
-      : In rq.fit.br(x, y, tau = tau, ...) : Solution may be nonunique
-      : [1] 0.9902995 0.8531847 0.8531847 0.9320644 0.9902995
+      :  Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) (from #69) : 
+      :   contrasts can be applied only to factors with 2 or more levels
+      :  [1] 0.8528408 0.9277830 0.9902995 0.5116873 0.8531847 0.9902995 0.9944684
+      :  [8] 0.9320644 0.2125867 0.9902995 0.9521134 0.9902995 0.7252328 0.9902995
+      : [15] 0.8531847 0.9311948 0.9320644 0.8531847 0.7443620 0.9277830
+
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       hist(speedup)xs
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-319821o/figure3198ryg.png]]
 
        It seems that it comes from that value are "binned" lots of
      observation for a factor... let's try to "jitter" them. But it is
@@ -22768,7 +22780,7 @@ h[g.name.to_sym] = 1024
      #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-4085JJp/figure4085mQe.png]]
+     [[file:/tmp/babel-319821o/figure3198eoa.png]]
 
      
      Let's try put the process in a function. Maybe we need some
@@ -22777,7 +22789,7 @@ h[g.name.to_sym] = 1024
        gen_reduce <- function(factors){
            assign("reduce", eval(substitute(function(dat,model,factors){
                fit <- rq(data=dat,formula=model,tau=.05)
-
+       
                f <- function(x){
                    as.numeric(predict(fit,data.frame(
                                               for( i in 1:length(factors)){
@@ -22786,9 +22798,9 @@ h[g.name.to_sym] = 1024
                                                      factors[4] = x[,lws_y],
                                                      interval="none")))
                }
-
+       
                best_base <- random_set[f(random_set[,factors) == min(f(random_set[,factors])), factors][1,]
-
+       
                subset1 <- random_set[random_set$y_component_number == best_base$y_component_number & random_set$vector_length == best_base$vector_length & random_set$threads_number == best_base$threads_number, ]
            })), envir=parent.frame())
        }
