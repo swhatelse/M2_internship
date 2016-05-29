@@ -234,15 +234,6 @@ Text
             - Add point with hypothesis \to D-Opt
             
 *** Structure of the report
-** Problem analysis [0/2]
-   - Huge search space \to need to explore only part of it \to
-     optimization problem.
-   - Interactions between parameters
-   - Non-smooth and empirical objective function
-   - Combination of discrete and continuous parameters
-   - Constraint optimizations
-     Represent unfeasible points.
-        
 ** Context [0/2]
 *** HPC/architectures     
     - Crucial for science and business
@@ -265,7 +256,20 @@ Text
 *** Obtaining efficient code
 **** Compilation
      Il fait ce qu'il peut mais pas de vision globale du code \to local
-     optimization (intra block)
+     optimization (intra procedure) \to because more easier no control
+     flow
+     - code re-ordering \to instruction scheduling find the best
+       sequence for the pipeline \to reduce instruction conflict
+       (dependencies between instructions) 
+     - Register allocation
+     - loop transformation \to parallelization and data locality \to 
+       finding parallelism into loops \to loop nest transformation /
+       unroll. 
+     - Automatic parallelism \to multi-threaded, vectorized 
+       Pb with shared/global variable, IO, indirect addressing, etc...
+   
+     Limited because stuck by semantic rules, not enough information
+     at compile time, etc...
      
      Archi compliquée donc dur: Grigori Fursin.
 **** Source-to-source transformation (C vers C ou FORTRAN vers FORTRAN)
@@ -279,6 +283,15 @@ Text
      Pros and cons:
 **** Meta-programming: BOAST
 *** Recap
+** Problem analysis [0/2]
+   - Huge search space \to need to explore only part of it \to
+     optimization problem.
+   - Interactions between parameters
+   - Non-smooth and empirical objective function
+   - Combination of discrete and continuous parameters
+   - Constraint optimizations
+     Represent unfeasible points.
+        
 ** State of the art on Autotuning [2/4]
    - What is autotuning
      paramters \to represents different version/implementation
@@ -518,10 +531,11 @@ Text
      Constraint \to unfeasible points
      Barrier approach
    - Exhaustive search
-*** Importance of the search space expression [0/1]
+*** Importance of the search space expression [0/1]              :deprecated:
+    # Will see if I have more time to dig the subject
     - Easier modelization
     - Better capture of the search space features
-*** Using less point as possible [0/4]
+*** Using as little points as possible [0/4]
     - Design of experiment
       - Random
       - Screenning design
@@ -722,7 +736,6 @@ Text
    and materials. The fiveth part presents my contribution during the
    internship. The sixth shows some results. And the last part
    presents the future work.
-* Problem analysis
 * Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
@@ -786,12 +799,26 @@ Text
 
 ** Obtaining efficient code
 *** Compilation
-    Many works have been made around optimizing compilers to optimize
-    the code automatically. They are able to replace, re-order
-    instructions 
+    Many works have been made around compilers to optimize the code
+    automatically. They are able to modify the order of the
+    instructions to find better sequences to maximize the occupancy
+    of the pipeline. In addition, automatic parallelism techniques
+    are able to find sequential code that can be vectorized or
+    multi-threaded. They can also perform loop transformation to
+    reduce the overhead of loops, henance data locality and facilitate
+    the parallelization using loop unroll / nest transformation
+    techniques. But this require to still write the code with care to
+    ease the job of the computer. For instance automatic parallelism
+    is difficult to apply when there are global or shared variable,
+    indirect address are used, etc... Further more generally compilers
+    do not have global vision of the code and perform local
+    optimization, they are limited by semantic rules and do not have
+    enough information at compile time and more opportunities to
+    optimize are missed.
 *** Source-to-source transformation
 *** Meta-programming: BOAST
 ** Summary
+* Problem analysis
 * State of the art
 ** Auto-tuning
    In auto-tuning one can find two major categories of
@@ -1075,8 +1102,7 @@ Text
 
    All theses optimizations give us search space of 23100 combinations
    to minimize the time to compute one pixel.
-* Contribution
-** Envisioned general approach
+* Envisioned general approach
    #+BEGIN_LaTeX
    \begin{figure}[tbh]
    \centering
@@ -1084,7 +1110,7 @@ Text
    \caption{\label{fig:1}Workflow}
    \end{figure}
    #+END_LaTeX
-** Controlling measurement
+* Controlling measurement
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
    #+end_src
@@ -1114,7 +1140,7 @@ Text
    #+RESULTS:
    [[file:img/warm_up.png]]
 
-** Results
+* Results
 ***                                                                :noexport:
 **** Random search
    #+begin_src sh :results output :exports none
@@ -1343,6 +1369,7 @@ Text
    #+RESULTS:
    [[file:/tmp/babel-3905hlV/figure39052nn.png]]
 
+* Analysis
 ** Characteristics of the search space
    #+begin_src sh :results output :exports none
        ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
@@ -1512,7 +1539,7 @@ Text
    regression cannot lead to the global optimum and we need another
    estimator for the minimum. 
 
-** The choice of quantile regression
+*** The choice of quantile regression
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
@@ -1541,8 +1568,10 @@ Text
    #+RESULTS:
    [[file:img/why_we_choose_quantile_reg.png]]
 
-   In our case 
-* Experiments
+   In our case
+** Model choice and refinement
+** Model optimization
+** Using less point as possible: sampling strategy
 * Future work
 * Conclusion
 #+LaTeX: \nocite{*}
