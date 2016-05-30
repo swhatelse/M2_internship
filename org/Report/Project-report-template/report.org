@@ -576,28 +576,30 @@ Text
 
 * Introduction
 ** Why is performance optimization difficult?
-  From genome sequencing to [...] including climate modeling, [...]
-  all this problematic have something in common, the need of huge
-  power of computation. For this High Performance Computing (HPC) is
+  From genome sequencing to molecular dynamics, including climate or
+  earthquake modeling, or aerodynamics,
+  all this problematics have something in common, the need of huge
+  power of computation. For this purpose, High Performance Computing (HPC) is
   the most effective solution. It has brought the science to another
   level and now it is a tool that scientists cannot live without like
-  for example to simulate [...] or to analyze peta-octets of data. The
-  expectations of scientists in term of performances are higher and
-  higher as they need to run more and more heavy computations. To take
-  advantage of the power of an HPC it is mandatory to correctly tune
-  an application. This is a every complicated task because today's HPCs
-  are extremely complex machines. Moreover It is not possible to wait for
+  for example to simulate nuclear explosion or to analyze peta-octets of
+  data. The expectations of scientists in term of performances are
+  higher and higher as they need to run more and more heavy and complex
+  computations. To take advantage of the power of an HPC it is
+  mandatory to correctly optimize an application. This is a very
+  complicated task because today's HPCs are extremely complex
+  machines. Moreover It is not possible to wait for 
   the next generation of hardware to bring automatically a speedup as
-  it was the case at the beginning because the frequency doesn't
+  it was the case at the beginning because the frequency does not
   increase anymore and in contrary tends to decrease. Specifically
   because we went from multi-cores to many-cores architectures and
   for 2020 exascale platforms, supercomputers with millions of cores,
   are expected in order to reach the exaflops. Thus, developers have
   to take into account this massive parallelism when writing
-  programs. Furthermore, they also have to take care about the
-  dependencies of the instructions to fully occupy the pipeline. If
-  there is any vector support he should adapt his code to work on
-  vector instead single variable. In addition the architecture provide
+  programs. Furthermore, they also have to take care about things such
+  the dependencies of the instructions to fully occupy the pipeline. If
+  there is any vector support the developer should adapt his code to work on
+  vectors instead single variables. In addition the architecture provide
   different cache hierarchy and it is crucial to use them efficiently to
   exploit data locality.
 
@@ -619,20 +621,21 @@ Text
 
   Finally to add a little more complexity we also use GPUs require
   which are totally different from the CPUs. As a result performance 
-  optimization is difficult to achieve adding to that there are many
-  HPCs platforms with different hardware hence one end up with 
+  optimization is difficult to achieve. In addition there are many
+  HPCs platforms with different hardware, hence one end up with 
   optimizations working well on one supercomputer and bad on another
-  one. The code must be specific to the platform target and porting
-  applications is very time consumming and can also be very tricky.
+  one as the code is specific to one platform and porting applications
+  is very time consumming and can also be very tricky. 
 ** Code generation and opportunities  
   In the last decade many attempt have been made to automate the
   generation of optimized code. The first approach is to rely on the
   compiler to perform the optimizations. Compilers are capable of
   detecting instructions that can be vectorized or parallelized. They
   are also capable of many loop optimizations such  loop unrolling,
-  nest transformation, software pipelining, etc... Yet it exists many
+  nest transformation, etc... Yet it exists many
   other opportunities to perform optimizations but it is to difficult
-  to exploit them automatically. Moreover, it is sometimes necessary
+  to exploit them automatically because the compiler does not have the
+  necessary information at compile time. Moreover, it is sometimes necessary
   to rewrite the code in a slightly different way to enable the
   compiler to be effective. That is why frameworks such
   Orio\cite{Hartono:2009:AEP:1586640.1587666} 
@@ -648,7 +651,7 @@ Text
   abstraction. It consists in using high level languages to
   descriptions the computation and the optimizations. This allow the
   programmer to propose optimizations that the compiler would not be
-  allowed to do.[...] But it requires to rewrite the application.  
+  allowed to do. But it requires to rewrite the application.  
 ** Optimizing: the auto-tuning approach
   The problem is, usually there are many optimization options, there
   are the compiler flags, code generation parameters (e.g. the size of
@@ -674,7 +677,7 @@ Text
    the design of semi-automatic optimization framework, where the
    application developer has control and understands how the 
    optimizations works and guides it. For this, we relied on
-   BOAST\cite{}, a metaprogramming from framework in ruby that can
+   BOAST\cite{}, a metaprogramming framework in ruby that can
    generate portable code in C, Fortran and OpenCL. It provides a
    domain specific language to describe the kernel and the
    optimizations and embeds a complete chain of tools to compile, run,
@@ -697,55 +700,59 @@ Text
    4. Back to 1 until we are able to fix all the factors values.
    
    In the first time, we wanted to see if the linear regression was
-   suited to modeling the problem of code optimization. For modeling
-   computer phenomena, linear models are generally enough to get
-   accurate prediction because the models are not too 
-   complex. We tested this approach on a simple kernel that compute 
-   the Laplacian of an image. We found that the linear regression is
-   able to be accurate enough while having simple models that traduce
-   how the different optimization parameters can acts. However we also
-   figured out regression of expectation is not suited with current
-   architectures as it was the case two decades ago\cite{}. Regression
-   of expectation suppose that our data are homoscedastics and follows
-   the same error law. There are no guaranty about it, thus there are
-   cases where the minimum does not follow the same evolution as the
-   mean. As we are interested at the minimum value the regression of
-   expectation cannot  be used to model the evolution of the minimum
-   when the data are heteroscedastics and do not follow the same error
-   law. Hence to circumvent this burden, quantile regression seemed
-   more suited, and we tried to use it in our initial approach. 
-   Quantile regression created some additional difficulties compared
-   to the standard linear regression. We use the iterated weighted
-   least squared to compute it. Even if the coefficient computed are
-   accurate, the main concern with this methods is that it is
-   difficult to make inferences because we have biased 
-   R-squared and standard error. This was mainly problematic for the
-   validation and refinement of the model.
+   suited to modeling the problem of code optimization and if we could
+   achieve to have a model that is simple and close to the reality. 
+   # To model 
+   # computer phenomena, linear models are generally enough to get
+   # accurate prediction because the models are not too 
+   # complex. 
+   We tested this approach on a simple kernel that compute 
+   the Laplacian of an image. 
+   # We found that the linear regression is
+   # able to be accurate enough while having simple models that traduce
+   # how the different optimization parameters can acts. However we also
+   # figured out regression of expectation is not suited with current
+   # architectures as it was the case two decades ago\cite{}. Regression
+   # of expectation suppose that our data are homoscedastics and follows
+   # the same error law. There are no guaranty about it, thus there are
+   # cases where the minimum does not follow the same evolution as the
+   # mean. As we are interested at the minimum value the regression of
+   # expectation cannot  be used to model the evolution of the minimum
+   # when the data are heteroscedastics and do not follow the same error
+   # law. Hence to circumvent this burden, quantile regression seemed
+   # more suited, and we tried to use it in our initial approach. 
+   # Quantile regression created some additional difficulties compared
+   # to the standard linear regression. We use the iterated weighted
+   # least squared to compute it. Even if the coefficient computed are
+   # accurate, the main concern with this methods is that it is
+   # difficult to make inferences because we have biased 
+   # R-squared and standard error. This was mainly problematic for the
+   # validation and refinement of the model.
 
-   In the second time, we try find a way to build simple and accurate
-   model. To do so, sampling the search space correctly is crucial,
-   that is why, we investigated to find what are the most suited
-   design of experiments and how to use them efficiently. We tested
-   different sampling strategies: 
-   - Random
-   - LHS
-   - Screening design
-   - D-Optimal design
-   One important point to find correct model is that the model and the
-   sampling should start with the least underlying hypothesis as
-   possible because over-specification could induce some biais. The
-   idea is to start with generic model and strategy such a LHS design
-   and when we have some certainty about the model, try more specific
-   sample by adding point with a D-Optimal design.
+   In the second time, we try find a way reduce the number of points
+   need for the model and yet being accurate. To do so, sampling the
+   search space correctly is crucial, that is why, we investigated to
+   find how we can use efficiently techniques inspired from design of
+   experiments.  
+
+   # One important point to find correct model is that the model and the
+   # sampling should start with the least underlying hypothesis as
+   # possible because over-specification could induce some biais. The
+   # idea is to start with generic model and strategy such a LHS design
+   # and when we have some certainty about the model, try more specific
+   # sample by adding point with a D-Optimal design.
 
 ** Structure  of the report
-   The second part of this report expose the problem of the
-   optimization auto-tuning problem. The third part is dedicated to
-   the study of the state of the art methods in auto-tuning and design
-   of experiments. The fourth part contain details about the methods
-   and materials. The fiveth part presents my contribution during the
-   internship. The sixth shows some results. And the last part
-   presents the future work.
+   The second part of this report exposes context of this work. The
+   third part describes the problem of the optimization auto-tuning
+   problem. The fourt part presents the state of the in auto-tuning
+   and design of experiments. The fiveth part exposes the how this
+   work was made. The sixth part explains the approach we used. 
+   The seventh part explains how measurements was made. The eigth part
+   shows the results we manage to have compared to other
+   techniques. The nineth part provide a detailed analysis of the
+   results. And finally the tenth part show what can be done to
+   improve our process and results.
 * Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
