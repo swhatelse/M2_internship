@@ -748,6 +748,17 @@
  keywords = {BLAS, code generation, high performance, linear algebra, optimization, tuning},
 } 
     #+END_SRC
+** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/pluto.pdf][pluto]] ] A Practical Automatic Polyhedral Parallelizer and Locality Optimizer
+*** Summary
+  - For loop transformation \to nested loop parallelization
+    Generate OpenMP parallel code.
+  - Based on polyhedric model.
+*** Link
+    http://drona.csa.iisc.ernet.in/~uday//publications/uday-pldi08.pdf
+*** Bibtex
+    #+BEGIN_SRC bibtex
+    
+    #+END_SRC
 * Mathematical notions
 ** Non-smooth
    Discontinous and non differentiable functions. 
