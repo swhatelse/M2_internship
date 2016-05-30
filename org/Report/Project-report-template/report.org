@@ -121,7 +121,7 @@ Text
 #   \newpage
 # #+END_abstract
 
-* Plan 
+* Plan
 ** Introduction [3/3]
 *** Why is performance optimization difficult?
    - In HPC code optimization crucial to exploit very complex hardware.
@@ -272,16 +272,25 @@ Text
      at compile time, etc...
      
      Archi compliquée donc dur: Grigori Fursin.
+     Sometime the platform the not well supported.
 **** Source-to-source transformation (C vers C ou FORTRAN vers FORTRAN)
-     - orio, PIPS,  cloog \to ensure that the semantic is correct 
-
+     - Relieve compiler \to deactivate optimization
+       Gives to the compiler the desired optimization
+     - Gives more expressiveness \to more information two performs
+       transformation \to ensure that the semantic is correct 
+     - Present the code correctly to allow the compiler to make his job.
+     - orio, PIPS,  cloog 
+       Generally annotation-based  
        How is it used
       - pluto (automatic parallelization)
       - pytran
       - auto-tuning on top of orio
 
      Pros and cons:
+     
 **** Meta-programming: BOAST
+     Less constraint by semantic rules but can be error prone \to not
+     correct transformation.
 *** Recap
 ** Problem analysis [0/2]
    - Huge search space \to need to explore only part of it \to
@@ -790,12 +799,25 @@ Text
   Another recent characteristic of HPCs is the increasing use of
   GPUs because for computation that can be well parallelized like it
   is the case generally the with case with scientific computation they
-  are faster than GPUs. However the architectures of the GPUs is
-  different from the one of the CPUs, the amount of cache memory is
-  limited and there are more compute units (for example the Nvidia
-  Tesla K40 has 2,880 cores). Thus optimizations that bring good
-  performances on CPUs may bring poor performances on GPUs such the
-  size of the vectors or the number of threads.
+  are faster than GPUs. However GPUs do not work exactlty the same as
+  CPUs and need to be programmed in a slighly different manner, the
+  cache and number of cores are different.
+  # the architectures of the GPUs is
+  # different from the one of the CPUs, the amount of cache memory is
+  # limited and there are more compute units (for example the Nvidia
+  # Tesla K40 has 2,880 cores). 
+  # Thus optimizations that bring good
+  # performances on CPUs may bring poor performances on GPUs such the
+  # size of the vectors or the number of threads.
+
+  As we saw, optimizing code for HPC applications can be very
+  chalenging but porting applications accross platforms is even
+  harder and highly time consuming as HPCs can be very
+  different. Optimization that gives good performance on one platform 
+  can be catastrophic on another. As developers cannot spend months to
+  port the application on another machine it is necessary to use tools
+  that facilitate the porting and the optimization of scientific
+  applications. 
 
 ** Obtaining efficient code
 *** Compilation
@@ -808,16 +830,45 @@ Text
     reduce the overhead of loops, henance data locality and facilitate
     the parallelization using loop unroll / nest transformation
     techniques. But this require to still write the code with care to
-    ease the job of the computer. For instance automatic parallelism
+    ease the job of the compiler. For instance automatic parallelism
     is difficult to apply when there are global or shared variable,
-    indirect address are used, etc... Further more generally compilers
-    do not have global vision of the code and perform local
-    optimization, they are limited by semantic rules and do not have
-    enough information at compile time and more opportunities to
-    optimize are missed.
+    indirect address are used, etc... Further more, compilers generally
+    do not have global vision of the code and lack informations of
+    compile time and thus perform only local optimization. In
+    addition, they also can be limited by semantic rules. As a result,
+    they are not able to evaluate which transformation to choose among
+    all correct transformations and they just take the one that is
+    semantically correct.
 *** Source-to-source transformation
+    Source-to-source transformation frameworks ease the task of both
+    the developer and the compiler by taking a source code, working on
+    Abstract Syntax Trees and applying transformation such automatic
+    parallelization to generate a modified version of the original
+    code. Unlike compiler the developer can specify how he wants the
+    transformation to be done and then the framework ensures that the
+    transformation is valid and generates a code that the compiler can
+    easily work with. This relieve the compiler from the complicated
+    task such the loop transform or the automatic parallelization and
+    this gives the possibity the user guide the transformation by
+    giving more information. The disadvantage of such tools it that
+    they generally target one language and one compiler and can be
+    still limited by semantic rules.  
 *** Meta-programming: BOAST
+    Meta-programming is a slightly different approach from
+    source-to-source transformation in which the developer use high
+    level language description of his kernel. The advantage is that
+    it is not linked to one output language or compiler. It also gives
+    more control to the user as there is no checker that verify the
+    correctness of the transformation, thus he can exactly specify how
+    the transformation is performed. Hence, the developer has to
+    know what he is doing and it can be error prone. 
+    In this work we used the meta-programming framework
+    BOAST\cite{}. BOAST gives the ability to user to meta-program his
+    kernels in ruby with a Description Specific Language (DSL), then
+    BOAST can generate it in many target languages (C, Fortran, Cuda,
+    OpenCL), compilate it and benchmark the resulting executable. 
 ** Summary
+  In a word, optimizing HPC applications is tricky and porting even is more difficult.
 * Problem analysis
 * State of the art
 ** Auto-tuning
@@ -1576,7 +1627,7 @@ Text
 * Conclusion
 #+LaTeX: \nocite{*}
 #+LaTeX: \def\raggedright{}
-\bibliographystyle{IEEEtran}
+\bibliographystyle{plain}
 \bibliography{../../biblio.bib}
 
 
