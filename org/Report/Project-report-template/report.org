@@ -889,13 +889,28 @@ Text
   vector or the best number of threads or what is the combination of
   compilation flags that brings the best speedup. This problem consist
   in tuning correctly the different optimization parameters of the
-  applications.  
+  applications. 
 
 * Problem analysis
   The tuning of applications is a non-trivial problem, because the
-  search space of the different combination of parameters can be
+  search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
-  testing all the combinations to find the best one is prohibitive.
+  testing all the combinations to find the best one, even if this
+  process is automated (auto-tuning). Thus it is formulated as a mathematical
+  optimzation problem where the optimization function gives metrics
+  of combination of parameters \vec{x}. 
+  
+  #+BEGIN_LaTeX
+  \( \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \)
+  #+END_LaTeX  
+
+  This function is empirical because to know the performances of a
+  combination cannot be computed, measurements have to be done to
+  evaluate the objective function at point x it needs to generate the
+  code variant, compile it and run it. Sometimes the problem can have
+  constraints because some points are unfeasible, this means they
+  cause the compilation to fail or the program to crash. In addition
+  parameters can be discrete and continuous. 
  
 * State of the art
 ** Auto-tuning
