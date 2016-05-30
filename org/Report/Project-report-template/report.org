@@ -1143,6 +1143,7 @@ Text
    [[file:img/DoE_examples.png]]
 
 * Methods
+** Reproducible research
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
   github\footnote{https://github.com/swhatelse/M2\_internship}. It
@@ -1157,11 +1158,8 @@ Text
   data used for experiments giving the possibility to anyone to re-run
   the same experiments using the same data.
 
-  The experiments are run on one machine with GPU Nvidia K40 using the
-  driver 340.32 and two CPUs Intel E5-2630.
 ** Case study
    # Maybe cite Brice paper for this part
-   
    In order to elaborate our approach, we took a very simple example
    which is a kernel that computes the Laplacian of an image. There
    are multiple optimization that can be done to enhance the
@@ -1202,6 +1200,9 @@ Text
 
    All theses optimizations give us search space of 23100 combinations
    to minimize the time to compute one pixel.
+
+   The experiments are run on one machine with GPU Nvidia K40 using the
+   driver 340.32 and two CPUs Intel E5-2630.
 * Envisioned general approach
    #+BEGIN_LaTeX
    \begin{figure}[tbh]
