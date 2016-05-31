@@ -613,9 +613,9 @@ Text
   consuming and can also be very tricky.  
 ** Code generation and opportunities  
   In the last decade many attempt have been made to automate the
-  generation of optimized code. The first approach is to rely on the
-  compiler to perform the optimizations. Compilers are capable of
-  detecting instructions that can be vectorized or parallelized. They
+  generation of optimized code. Performing optimization is one of the
+  primary functions of compiler. They are capable of detecting
+  instructions that can be vectorized or parallelized. They 
   are also capable of many loop optimizations such  loop unrolling,
   nest transformation, etc... Yet it exists many
   other opportunities to perform optimizations but it is to difficult
@@ -1127,7 +1127,7 @@ Text
    #+RESULTS:
    [[file:img/DoE_examples.png]]
 
-* DONE Methods
+* DONE Methodology
 ** DONE Reproducible research
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
