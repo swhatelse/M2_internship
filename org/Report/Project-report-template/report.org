@@ -1,6 +1,6 @@
-#+TITLE: Semi-Automatic Performance Optimization of HPC Kernels
+#+TITLE: 
 #+LANGUAGE: en
-#+Author: Steven QUINITO MASNADA
+#+Author: 
 #+TAGS: noexport(n) deprecated(d)
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
@@ -70,21 +70,21 @@ Master Math\'ematiques Informatique - sp\'ecialit\'e Informatique \\
 option \optionB  \end{center}\vfill}
 % End of title page formatting
 
-\option{$<$option-name$>$}
-%\title{ Project Title }%\\\vspace{-1ex}\rule{10ex}{0.5pt} \\sub-title} 
-\author{Author Name}
-\date{ $<$Defense Date$>$} % Delete this line to display the current date
+\option{$PDES$}
+\title{ Semi-Automatic Performance Optimization of HPC Kernels }%\\\vspace{-1ex}\rule{10ex}{0.5pt} \\sub-title} 
+\author{Steven QUINITO MASNADA}
+\date{ June 22th } % Delete this line to display the current date
 \jury{
 Research project performed at $<$lab-name$>$ \\\medskip
 Under the supervision of:\\
-$<$Arnaud Legrand, CNRS$>$\\\medskip
+Arnaud LEGRAND, Frederic DESPREZ, Brice VIDREAU, CNRS\\\medskip
 Defended before a jury composed of:\\
-$[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
-$[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
-$[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
-$[$Prof/Dr/Mrs/Mr$]$ $<$first-name last-name$>$\\
+Prof Noel DEPALMA\\
+Prof Martin HEUSSE\\
+Dr Thomas ROPARS\\
+Prof Olivier GRUBER\\
 }
-\session{$[$June$]$\hfill 2016}
+\session{$June$\hfill 2016}
 #+END_LaTeX
 
 #+BEGIN_LaTeX
@@ -574,7 +574,7 @@ Text
 ** Conclusion [0/2]
    And finally I saved the world...
 
-* Introduction
+* DONE Introduction
 ** Why is performance optimization difficult?
   From genome sequencing to molecular dynamics, including climate or
   earthquake modeling, or aerodynamics,
@@ -746,14 +746,14 @@ Text
    The second part of this report exposes context of this work. The
    third part describes the problem of the optimization auto-tuning
    problem. The fourt part presents the state of the in auto-tuning
-   and design of experiments. The fiveth part exposes the how this
+   and design of experiments. The fifth part exposes the how this
    work was made. The sixth part explains the approach we used. 
    The seventh part explains how measurements was made. The eigth part
    shows the results we manage to have compared to other
    techniques. The nineth part provide a detailed analysis of the
    results. And finally the tenth part show what can be done to
    improve our process and results.
-* Context
+* DONE Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
   correctly. Indeed with a not carefully tuned code it is likely to
@@ -898,7 +898,7 @@ Text
   in tuning correctly the different optimization parameters of the
   applications. 
 
-* Problem analysis
+* DONE Problem analysis
   The tuning of applications is a non-trivial problem, because the
   search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
@@ -919,7 +919,7 @@ Text
   cause the compilation to fail or the program to crash. In addition
   parameters can be discrete and continuous. 
  
-* State of the art
+* DONE State of the art
 ** Auto-tuning
    In auto-tuning one can find two major categories of
    approaches. Some has focus on the is of machine learning techniques
@@ -1143,7 +1143,7 @@ Text
    [[file:img/DoE_examples.png]]
 
 * Methods
-** Reproducible research
+** DONE Reproducible research
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
   github\footnote{https://github.com/swhatelse/M2\_internship}. It
@@ -1158,19 +1158,34 @@ Text
   data used for experiments giving the possibility to anyone to re-run
   the same experiments using the same data.
 
-** Case study
+** TODO Case study
    # Maybe cite Brice paper for this part
    In order to elaborate our approach, we took a very simple example
    which is a kernel that computes the Laplacian of an image. There
    are multiple optimization that can be done to enhance the
-   performance of this kernel. 
+   performance of this kernel. The parameters and their values we used
+   to tune this applications are the following:
 
-   The first optimization we can use is the vectorization, this allows
-   to take advantage of hardware capable of executing one instruction
-   on multiple data at a time and instead of computing one data, so
-   multiple data are computed for the same cost. Thus we can specify
-   the length of the vector and we must find what is the correct
-   length of the vector. 
+     | Parameters         | Values                            |
+     |--------------------+-----------------------------------|
+     | vector length      | 1,2,4,8,16                        |
+     | load overlap       | true,false                        |
+     | temporary size     | 2,4                               |
+     | elements number    | from 1 to 24                      |
+     | y component number | from 1 to 6                       |
+     | threads number     | 32,64,128,256,512,1024            |
+     | local work size y  | 1,2,4,8,16,32,64,128,256,512,1024 |
+
+   The first parameters vector length allow to specify the size of the
+   vectors used to performs the computation. The Laplacian can be
+   easily vectorized and on hardware that provides vector support 
+   it allows to save some decoding phase as the same instruction is
+   applied to the entire vector. As each architecture have different
+   size of vectors, and some do not provide vector support we need to
+   try the different values of vector size.
+
+   The second parameters is related to the vectorization. As vectors
+   are manipulated, when loading some data overlap. It is po
 
    To perform vectorization we need to load more data and some data
    overlap with each other, to reduce the number of load we can
@@ -1197,7 +1212,7 @@ Text
    defines the work distribution at coarse grain and have an impact on
    the threads scheduling, data sharing. This leads to better usage of
    the resources and it worth to tune it carefully.
-
+   
    All theses optimizations give us search space of 23100 combinations
    to minimize the time to compute one pixel.
 
