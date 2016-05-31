@@ -1,7 +1,7 @@
 #+TITLE:  LabBook
 #+AUTHOR: Steven QUINITO MASNADA
 #+BABEL: :tangle yes
-#+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r)
+#+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r) R(t)
 
 * TODO [10/15]
   - [X] Run brute force with load_overlap = [true,false]
@@ -23964,10 +23964,15 @@ h[g.name.to_sym] = 1024
     F-statistic: 76.68 on 2 and 13 DF,  p-value: 6.367e-08
 #+end_example
 
-
 ** 2016-05-30
 *** TODO LHS search
 
+** 2016-05-31
+*** Change display width of R                                             :R:
+   #+begin_src R :results output :session :exports both
+     options(width=150)
+   #+end_src
 * 
 Analyse en component principale / independent
 Weka
+

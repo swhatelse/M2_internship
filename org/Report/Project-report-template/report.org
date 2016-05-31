@@ -1158,13 +1158,14 @@ Text
   data used for experiments giving the possibility to anyone to re-run
   the same experiments using the same data.
 
-** TODO Case study
+** DONE Case study
    # Maybe cite Brice paper for this part
    In order to elaborate our approach, we took a very simple example
-   which is a kernel that computes the Laplacian of an image. There
-   are multiple optimization that can be done to enhance the
-   performance of this kernel. The parameters and their values we used
-   to tune this applications are the following:
+   which is a kernel that computes the Laplacian of an image. We want
+   the minimize the time to compute a pixel and there are multiple
+   optimization that can be done to enhance the performance of this
+   kernel. The parameters and their values we used to tune this
+   applications are the following: 
 
      | Parameters         | Values                            |
      |--------------------+-----------------------------------|
@@ -1197,8 +1198,9 @@ Text
    short (2). 
 
    The fourth parameter splits the image into pieces of the size of
-   elements number. This specifies the amount of work per thread and
-   as a consequence defines the number of threads used to perform the
+   elements number. This specifies the of component a threads will
+   process, that is the amount of work per thread, and as a
+   consequence defines the number of threads used to perform the 
    computation. More threads can lead to better parallelism but also
    more overhead due to the bigger number of threads to manage. 
    
@@ -1207,24 +1209,27 @@ Text
    organized by specifying the tiling. It gives how the components of
    the image are distributed in the y-axis.
 
-   The sixth and seventh parameters allow to tune two OpenCL parameters
-   and are common to any kernel using OpenCL and even Cuda. In OpenCL
-   and Cuda, threads are grouped by blocks. A block is the unit of
-   scheduling, which means that threads are not schedule individually
-   but by blocks and a block is schedule on a compute unit. Thus the
-   parameters threads number allow to specify the size of a group.
-   It is a
-   parameter threads number is used to determine
-   
-   There are also two parameters that are important for any
-   kernel. First we have the number of threads in work group and then
-   the organization of the threads in the work group. These parameters
-   defines the work distribution at coarse grain and have an impact on
-   the threads scheduling, data sharing. This leads to better usage of
-   the resources and it worth to tune it carefully.
-   
-   All theses optimizations give us search space of 23100 combinations
-   to minimize the time to compute one pixel.
+   Finally the two last parameters allow to tune two OpenCL/Cuda
+   parameters and describe the distribution of the work at coarse
+   grain. In OpenCL and Cuda, threads are grouped and scheduled 
+   by blocks on a compute unit. Which means that threads are not
+   scheduled individually but by blocks. Thus we use the parameter
+   threads number to specify the size of a group. The parameter local
+   work size y determines how the threads are organized in a block and
+   represent the number of threads in the y-axis. These parameters
+   have an impact on the scheduling, the data sharing and the
+   occupancy of the compute units. Thus they can lead to better usage
+   of the resources.
+
+   All the combinations of these parameters would gives a search space
+   of 190080 points. However some points are unfeasible. For instance,
+   having more component numbers in the y-axis (y component number)
+   than number of component (elements number) itself makes no
+   sense. We also have constraint the size of the kernel because it is
+   limited to the available resources on the device. Exceeding the
+   resources cause the kernel to crash. That is why use constraints to
+   reject all the that would produce a kernel to big or that is not
+   correct. Finally it remains 23100 points in the search space.
 
    The experiments are run on one machine with GPU Nvidia K40 using the
    driver 340.32 and two CPUs Intel E5-2630.
