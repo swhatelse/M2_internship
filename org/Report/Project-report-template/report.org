@@ -121,7 +121,7 @@ Text
 #   \newpage
 # #+END_abstract
 
-* Plan
+* Plan 
 ** Introduction [3/3]
 *** Why is performance optimization difficult?
    - In HPC code optimization crucial to exploit very complex hardware.
@@ -574,58 +574,43 @@ Text
 ** Conclusion [0/2]
    And finally I saved the world...
 
-* DONE Introduction
+* TODO Introduction
 ** Why is performance optimization difficult?
   From genome sequencing to molecular dynamics, including climate or
-  earthquake modeling, or aerodynamics,
-  all this problematics have something in common, the need of huge
-  power of computation. For this purpose, High Performance Computing (HPC) is
+  earthquake modeling, or aerodynamics, there is an ever increasing
+  need for computer power. For this purpose, High Performance Computing (HPC) is
   the most effective solution. It has brought the science to another
-  level and now it is a tool that scientists cannot live without like
+  level and now it is a tool that has became essential for scientists like
   for example to simulate nuclear explosion or to analyze peta-octets of
   data. The expectations of scientists in term of performances are
   higher and higher as they need to run more and more heavy and complex
-  computations. To take advantage of the power of an HPC it is
-  mandatory to correctly optimize an application. This is a very
+  computations. To take advantage of the power of a supercomputer it is
+  essential to correctly optimize the applications. This is a very
   complicated task because today's HPCs are extremely complex
-  machines. Moreover It is not possible to wait for 
-  the next generation of hardware to bring automatically a speedup as
-  it was the case at the beginning because the frequency does not
-  increase anymore and in contrary tends to decrease. Specifically
-  because we went from multi-cores to many-cores architectures and
+  machines. It is not possible to wait for the next generation of
+  hardware to bring automatically a speedup as 
+  it was the case up to the years 2000 because frequency cannot
+  increase anymore and in contrary even tends to decrease. For this
+  reason, we went from multi-cores to many-cores architectures and 
   for 2020 exascale platforms, supercomputers with millions of cores,
   are expected in order to reach the exaflops. Thus, developers have
   to take into account this massive parallelism when writing
   programs. Furthermore, they also have to take care about things such
   the dependencies of the instructions to fully occupy the pipeline. If
   there is any vector support the developer should adapt his code to work on
-  vectors instead single variables. In addition the architecture provide
-  different cache hierarchy and it is crucial to use them efficiently to
-  exploit data locality.
-
-  # Pas satisfait de cet partie...
-  # Hardware can also be of type Single Instruction Multiple DATA
-  # (SIMD) and provide the support for vector operations and additional
-  # operations can be performs for free. 
-  # If processors have quickly gotten
-  # faster the memory did not followed the same evolution and 
-  # has all the difficults to keep the pace. 
-  # Thus it is one of the most
-  # Another difficult the developer has to face is that memory is one of
-  # the most important bottleneck on current systems and and to
-  # circumvent this issue the developer has its disposal different cache
-  # hierarchies to reduce the memory access. To do so it has to exploit
-  # explicitly the data locality.
-  # The order of the instruction have all an impact in the execution
-  # pipeline. 
-
-  Finally to add a little more complexity we also use GPUs require
-  which are totally different from the CPUs. As a result performance 
-  optimization is difficult to achieve. In addition there are many
-  HPCs platforms with different hardware, hence one end up with 
-  optimizations working well on one supercomputer and bad on another
-  one as the code is specific to one platform and porting applications
-  is very time consumming and can also be very tricky. 
+  vectors instead of single variables. In addition the architecture provides
+  different cache hierarchy and it is crucial to exploit data locality
+  to use them efficiently. 
+  Finally to address the computer power need, GPUs have become very
+  popular. Unfortunately, this add a little more complexity as they
+  require a way of programming which is different from the CPUs. As a
+  result, performance optimization is difficult to achieve. To build
+  efficient HPC platforms, architects have to come up with unique
+  combinations of a variety of hardware, which complicates the
+  application optimization. Hence one end up with optimization working
+  well on one supercomputer and bad on another one as the code is
+  specific to one platform and porting applications is extremely time
+  consuming and can also be very tricky.  
 ** Code generation and opportunities  
   In the last decade many attempt have been made to automate the
   generation of optimized code. The first approach is to rely on the
@@ -753,7 +738,7 @@ Text
    techniques. The nineth part provide a detailed analysis of the
    results. And finally the tenth part show what can be done to
    improve our process and results.
-* DONE Context
+* TODO Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
   correctly. Indeed with a not carefully tuned code it is likely to
@@ -898,7 +883,7 @@ Text
   in tuning correctly the different optimization parameters of the
   applications. 
 
-* DONE Problem analysis
+* TODO Problem analysis
   The tuning of applications is a non-trivial problem, because the
   search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
@@ -919,7 +904,7 @@ Text
   cause the compilation to fail or the program to crash. In addition
   parameters can be discrete and continuous. 
  
-* DONE State of the art
+* TODO State of the art
 ** Auto-tuning
    In auto-tuning one can find two major categories of
    approaches. Some has focus on the is of machine learning techniques
@@ -1142,7 +1127,7 @@ Text
    #+RESULTS:
    [[file:img/DoE_examples.png]]
 
-* Methods
+* DONE Methods
 ** DONE Reproducible research
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
