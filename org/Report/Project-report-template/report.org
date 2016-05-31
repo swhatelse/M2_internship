@@ -419,7 +419,7 @@ Text
       - OpenCL
       - Optimizations explanation
         - Vectorization \to vector length
-        - Synthetize loading \to load overlap
+        - Synthetize loading \to load overlap \to for memory bound?
         - Tilling \to y component number
         - Number of threads \to elements number
         - Size of temporary results \to temporary size
@@ -1176,7 +1176,7 @@ Text
      | threads number     | 32,64,128,256,512,1024            |
      | local work size y  | 1,2,4,8,16,32,64,128,256,512,1024 |
 
-   The first parameters vector length allow to specify the size of the
+   The first parameter vector length allow to specify the size of the
    vectors used to performs the computation. The Laplacian can be
    easily vectorized and on hardware that provides vector support 
    it allows to save some decoding phase as the same instruction is
@@ -1184,28 +1184,38 @@ Text
    size of vectors, and some do not provide vector support we need to
    try the different values of vector size.
 
-   The second parameters is related to the vectorization. As vectors
-   are manipulated, when loading some data overlap. It is po
+   # Not satisfying yet
+   The second parameter is related to the vectorization. As vectors
+   are manipulated, when loading, some data overlap. Thus it is
+   possible to synthetize the load from other data and consequently
+   reduce the number of loads. 
 
-   To perform vectorization we need to load more data and some data
-   overlap with each other, to reduce the number of load we can
-   synthetize those data from other, this is the second optimization
-   we can have. 
+   The third parameter allows to specify the size of the variables used
+   for storing intermediary results. Using smaller type can reduce the
+   pressure on the registers but casting variable can also be
+   harmfull. Hence the default size is int (4) and we can also use
+   short (2). 
 
-   Another optimization to henance the performs of the kernel can be
-   to use smaller type for intermediary results, reducing the pressure
-   on the registers.
-
-   We also can determine the number of threads use to performs the
+   The fourth parameter splits the image into pieces of the size of
+   elements number. This specifies the amount of work per thread and
+   as a consequence defines the number of threads used to perform the
    computation. More threads can lead to better parallelism but also
-   more threads overhead. We do this by specifying the number of
-   component a thread will work on. We need know what is the correct
-   size of the job for a thread.
+   more overhead due to the bigger number of threads to manage. 
    
-   After specifying the quantity of work per thread we can specify how
-   this work is organized by specifying the tilling. It gives how the
-   components are distributed in the y axis.
+   # Not satisfying yet
+   The fifth parameter is used to specify how the work for a thread is
+   organized by specifying the tiling. It gives how the components of
+   the image are distributed in the y-axis.
 
+   The sixth and seventh parameters allow to tune two OpenCL parameters
+   and are common to any kernel using OpenCL and even Cuda. In OpenCL
+   and Cuda, threads are grouped by blocks. A block is the unit of
+   scheduling, which means that threads are not schedule individually
+   but by blocks and a block is schedule on a compute unit. Thus the
+   parameters threads number allow to specify the size of a group.
+   It is a
+   parameter threads number is used to determine
+   
    There are also two parameters that are important for any
    kernel. First we have the number of threads in work group and then
    the organization of the threads in the work group. These parameters
@@ -1707,7 +1717,7 @@ Text
 # eval:    (org-babel-do-load-languages 'org-babel-load-languages '( (sh . t) (R . t) (perl . t) (ditaa . t) ))
 # eval:    (setq org-confirm-babel-evaluate nil)
 # eval:    (unless (boundp 'org-latex-classes) (setq org-latex-classes nil))
-# eval:    (add-to-list 'org-latex-classes '("memoir" "\\documentclass[smallextended]{memoir} \n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n  \\usepackage{graphicx}\n  \\usepackage{hyperref}"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+# eval:    (add-to-list 'org-latex-classes '("memoir" "\\documentclass[smallextended]{memoir} \n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n  \\usepackage{graphicx}\n  \\usepackage{hyperref}" ("\\chapter{%s}" . "\\chapter*{%s}") ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 # eval:    (add-to-list 'org-latex-classes '("acm-proc-article-sp" "\\documentclass{acm_proc_article-sp}\n \[NO-DEFAULT-PACKAGES]\n \[EXTRA]\n"  ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}")                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")                       ("\\paragraph{%s}" . "\\paragraph*{%s}")                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 # eval:    (setq org-alphabetical-lists t)
 # eval:    (setq org-src-fontify-natively t)
