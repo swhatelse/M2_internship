@@ -1239,6 +1239,28 @@ Text
    The experiments are run on one machine with GPU Nvidia K40 using the
    driver 340.32 and two CPUs Intel E5-2630.
 * Envisioned general approach
+   When using fully automated tools, the user has no feedback about
+   the optimization process and not a lot of control. How good is the
+   optimized version of the code? How is it possible to improve it?
+   What does the search space look like? Our approach targets advanced
+   users who need answers to this kind of questions to help them to
+   understand the characteristics of the search space, to be able to
+   prune it correctly and to choose the most suited search techniques.
+   Thus we investigated the design of a semi-automated approach where
+   the user tunes his application in an interactive way. All along the
+   tuning process this method provides valuable information to user to
+   guide him and exploit his knowledge. Of course, this assumes that the
+   application developer understands well his kernel and knows the
+   reason each code optimization he used. Tuning an application is in
+   fact running multiple experiments by changing the value of the
+   different parameters. That is why we used techniques inspired from
+   design of experiments where the goal is to maximize the amount of
+   information and minimize the number of experiments and regression
+   techniques to predict the objective function.
+
+   1. The user wants to check his hypothesis by providing a 
+     
+ 
    #+BEGIN_LaTeX
    \begin{figure}[tbh]
    \centering
