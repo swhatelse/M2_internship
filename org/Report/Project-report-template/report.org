@@ -121,7 +121,7 @@ Text
 #   \newpage
 # #+END_abstract
 
-* Plan 
+* Plan                                                       
 ** Introduction [3/3]
 *** Why is performance optimization difficult?
    - In HPC code optimization crucial to exploit very complex hardware.
@@ -456,6 +456,10 @@ Text
    define the search methods, where could be the best parts \to pruning
    BOAST \to for advanced users who are ready to rewrite their code in
    ruby and know what they are doing.
+   Use the knowledge of the expert:
+   - Can test his hypothesis
+   - Understand the search space and his problem
+   - Understand what happens
     1. DoE
        - Sampling the space wisely
        - Use linear regression OLS:
@@ -1134,7 +1138,7 @@ Text
 
      p3 <- qplot(data=Dopt) +
          geom_point(aes(x=X1,y=X2)) +
-         ggtitle("lhs")
+         ggtitle("D-optimal")
          
      grid.arrange(p1, p2, p3, ncol=2, top=textGrob("")) 
 
@@ -1274,233 +1278,36 @@ Text
 
 * Results
 ***                                                                :noexport:
-**** Random search
-   #+begin_src sh :results output :exports none
-       ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
-   #+end_src  
+    #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 600 :height 800 :session
+      df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search.csv", strip.white=T, header=T)  
+      library(ggplot2)
+      library(plyr)
 
-   #+RESULTS:
+      df_mean = ddply(df_all_methods,.(method), summarize, 
+                      mean = mean(speedup))
 
-   #+begin_src R :results output :session :exports none
-     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-     speedup <- c()
-     for (i in 1:100){
-         s <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
-         speedup[i] <-  min(df$time_per_pixel) / min(s$time_per_pixel)
-     }
-     random <- data.frame(speedup)
-   #+end_src
+      df_median = ddply(df_all_methods,.(method), summarize, 
+                        median = median(speedup))
 
-   #+RESULTS:
+      ggplot(df_all_methods, aes(speedup)) + 
+          facet_grid(method~.) +
+          geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
+          geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
+          geom_histogram(binwidth=.05,color="white", fill="gray1") +
+          labs(y="Density", x="Percentage of the speedup of best combination") +
+          ggtitle("") + coord_cartesian(xlim=c(.9,3))
+    #+end_src
 
-**** Gradient search
-***** Implementation   
-   #+begin_src R :results output :session :exports none
-        kernel_size <- function(point) {
-            vector_number <- ceiling((point$elements_number / point$y_component_number) / point$vector_length)
-            
-            tempload <- (1 - point$load_overlap) * (vector_number * point$vector_length) / point$vector_length * point$vector_length
-            temp <-  point$load_overlap * 3 * vector_number * (point$y_component_number+2) * point$vector_length
-            res <- vector_number * point$y_component_number * point$vector_length
-            tempc <- 3 * vector_number * (point$y_component_number + 2) * point$temporary_size * point$vector_length
-            out_vec = (1 - point$load_overlap) * tempc
-            resc <- vector_number * point$y_component_number * point$temporary_size * point$vector_length
-
-            tot <- (tempload + temp + res + tempc + out_vec + resc) * point$threads_number
-        }
-
-        check_constraint <- function(point){
-            res <- if(point$load_overlap %in% 0:1 &
-                      point$lws_y <= point$threads_number &
-                      point$elements_number %% point$y_component_number == 0 &
-                      point$elements_number %/% point$y_component_number <= 4 &
-                      kernel_size(point) < kernel_size(data.frame(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024))
-                      ) T else F
-        }
-
-        point_equal <- function(p1,p2){
-            res <- if(p1$elements_number == p2$elements_number &
-                      p1$y_component_number == p2$y_component_number &
-                      p1$vector_length == p2$vector_length &
-                      p1$temporary_size == p2$temporary_size &
-                      p1$load_overlap == p2$load_overlap &
-                      p1$threads_number == p2$threads_number) T else F
-        }
-
-        gradient_descent <- function(point, limit=100){
-            elements_number    <- c(1,0,0,0,0,0,0,-1,0,0,0,0,0,0)
-            y_component_number <- c(0,1,0,0,0,0,0,0,-1,0,0,0,0,0)
-            vector_length      <- c(0,0,1,0,0,0,0,0,0,-1,0,0,0,0)
-            temporary_size     <- c(0,0,0,1,0,0,0,0,0,0,-1,0,0,0)
-            load_overlap       <- c(0,0,0,0,1,0,0,0,0,0,0,-1,0,0)
-            threads_number     <- c(0,0,0,0,0,1,0,0,0,0,0,0,-1,0)
-            lws_y              <- c(0,0,0,0,0,0,1,0,0,0,0,0,0,-1)
-
-            factors <- list(elements_number = as.numeric(levels(as.factor(df$elements_number))), 
-                                  y_component_number = as.numeric(levels(as.factor(df$y_component_number))), 
-                                  vector_length = as.numeric(levels(as.factor(df$vector_length))), 
-                                  temporary_size = as.numeric(levels(as.factor(df$temporary_size))), 
-                                  threads_number= as.numeric(levels(as.factor(df$threads_number))), 
-                                  lws_y= as.numeric(levels(as.factor(df$lws_y)))) 
-
-            directions <- data.frame(elements_number, y_component_number, vector_length, temporary_size, load_overlap, threads_number, lws_y)
-            count <- 0
-
-            repeat{
-                old_point <- point
-                candidates <- data.frame()
-
-                for(i in 1:nrow(directions)){
-                    idx_elements_number = match(point$elements_number, factors$elements_number) + directions[i,]$elements_number
-                    idx_y_component_number = match(point$y_component_number, factors$y_component_number) + directions[i,]$y_component_number
-                    idx_vector_length = match(point$vector_length, factors$vector_length) + directions[i,]$vector_length
-                    idx_temporary_size = match(point$temporary_size, factors$temporary_size) + directions[i,]$temporary_size
-                    idx_threads_number = match(point$threads_number, factors$threads_number) + directions[i,]$threads_number
-                    idx_lws_y = match(point$lws_y, factors$lws_y) + directions[i,]$lws_y
-
-                    if(!(idx_elements_number %in% 1:length(levels(as.factor(df$elements_number))))) next
-                    if(!(idx_y_component_number %in% 1:length(levels(as.factor(df$y_component_number))))) next
-                    if(!(idx_vector_length %in% 1:length(levels(as.factor(df$vector_length))))) next
-                    if(!(idx_temporary_size %in% 1:length(levels(as.factor(df$temporary_size))))) next
-                    if(!(idx_threads_number %in% 1:length(levels(as.factor(df$threads_number))))) next
-                    if(!(idx_lws_y %in% 1:length(levels(as.factor(df$lws_y))))) next
-
-                    p <- data.frame(elements_number = factors$elements_number[idx_elements_number],
-                                    y_component_number = factors$y_component_number[idx_y_component_number],
-                                    vector_length = factors$vector_length[idx_vector_length],
-                                    temporary_size = factors$temporary_size[idx_temporary_size],
-                                    load_overlap = if(point$load_overlap == "true") 1 + directions[i,]$load_overlap else 0 + directions[i,]$load_overlap,
-                                    threads_number = factors$threads_number[idx_threads_number],
-                                    lws_y = factors$lws_y[idx_lws_y]
-                                    )
-
-                    if(check_constraint(p) == T){
-                        p <- df[df$elements_number == p$elements_number & 
-                                df$y_component_number == p$y_component_number & 
-                                df$vector_length == p$vector_length &
-                                df$temporary_size == p$temporary_size &
-                                df$load_overlap == (if (p$load_overlap == 0) "false" else "true") &
-                                #df$load_overlap == "true" &
-                                df$threads_number == p$threads_number &
-                                df$lws_y == p$lws_y,]
-                        candidates <- rbind(p, candidates)
-                    }
-                }
-                
-                if(candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]$time_per_pixel < point$time_per_pixel){
-                    point <- candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]
-                }
-
-                count <- count + 1
-                if(count >= 100 | point_equal(old_point,point) == T){
-                    break
-                }
-            }
-            
-            point
-        }
-
-        row_to_coordinate <- function(row){
-            drops <- c("time_per_pixel", "vector_recompute")
-            row[, !(names(row) %in% drops)]
-         }
-   #+end_src
-
-   #+RESULTS:
-
-***** Run search
-      #+begin_src sh :results output :exports none
-        ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
-      #+end_src  
-
-      #+RESULTS:
-
-      #+begin_src R :results output :session :exports none
-        options(width=150)
-        grad <- data.frame()
-        grad_start <- data.frame()
-        for(i in 1:100){
-            p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
-            grad_start <- rbind(grad_start,p)  
-            grad <- rbind(grad,gradient_descent(p,1e5))
-        }
-
-        speedup <- c()
-        for (i in 1:nrow(grad)){
-            speedup[i] <-  min(df$time_per_pixel) / grad[i,]$time_per_pixel
-        }
-        grad <- data.frame(speedup)
-      #+end_src
-
-      #+RESULTS:
-
-**** Genetic Algorithm
-   #+begin_src sh :results output :exports none
-     ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml 
-   #+end_src
-
-   #+RESULTS:
-
-   #+begin_src R :results output :session :exports none
-     ga_res <- read.csv("/tmp/test.csv", strip.white=T, header=T)
-
-     library(ggplot2)
-     speedup <- c()
-     for (i in 1:nrow(ga_res)){
-         speedup[i] <-  min(df$time_per_pixel) / ga_res[i,]$time_per_pixel
-     }
-     ga <- data.frame(speedup)
-   #+end_src
-
-   #+RESULTS:
-
-**** Linear regression of expectation
-***** Random
-***** LHS
-***** D-Optimal
-**** Quantile regression
-***** Random
-***** LHS
-***** D-Optimal
+    #+RESULTS:
+    [[file:./img/results_hist.pdf]]
 *** 
-   #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 800 :height 400 :session
-     library(ggplot2)
-     library(grid)
-     library(gridExtra)
-
-     p1 <- qplot(data=random) +
-         geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=0.05, color="white") +
-         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(random$speedup), color="green", linetype=2) +
-         geom_vline(xintercept = mean(random$speedup), color="red", linetype=2) +
-         geom_vline(xintercept = quantile(random$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         ggtitle("Random search") +
-         labs(y="Density", x="Speedup")
-
-     p2 <- qplot(data=grad) +
-         geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=.05, color="white") +
-         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(grad$speedup), color="darkgreen", linetype=2) +
-         geom_vline(xintercept = quantile(grad$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         geom_vline(xintercept = mean(grad$speedup), color="red", linetype=2) +
-         ggtitle("Greedy") +
-         labs(y="Density", x="Speedup")
-
-     p3 <- qplot(data=ga) +
-         geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=.05, color="white") +
-         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(ga$speedup), color="darkgreen", linetype=2) +
-         geom_vline(xintercept = quantile(ga$speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         geom_vline(xintercept = mean(ga$speedup), color="red", linetype=2) +
-         ggtitle("Genetic algorithm") +
-         labs(y="Density", x="Speedup")
-         
-       grid.arrange(p1, p2, p3, ncol=3, top=textGrob("Speedup of the tuning process compared to the best")) 
-   #+end_src
-
-   #+RESULTS:
-   [[file:/tmp/babel-3905hlV/figure39052nn.png]]
-
+   #+BEGIN_LaTeX
+   \begin{figure}[]
+   \centering
+   \includegraphics[height=.15\textheight]{./img/results_hist.pdf}
+   \caption{\label{fig:1}Search comparison}
+   \end{figure}
+   #+END_LaTeX
 * Analysis
 ** Characteristics of the search space
    #+begin_src sh :results output :exports none
