@@ -291,6 +291,16 @@ Text
 **** Meta-programming: BOAST
      Less constraint by semantic rules but can be error prone \to not
      correct transformation.
+     BOAST: 
+     - for advanced user
+     - Ruby
+     - Complete tool chain
+       - DSL
+       - Code generation
+       - Compilation
+       - Bench-marking
+       - Kernel verification
+
 *** Recap
     How to port performances.
 ** Problem analysis [0/2]
@@ -440,6 +450,12 @@ Text
 
 ** Contribution [0/22]                                             :noexport:
 ** Envisioned general approach[0/1]
+   Semi automatic, interactive \to gives more control, feed back to the
+   user, guide him.
+   Gives information about the search space characteristics \to shape \to
+   define the search methods, where could be the best parts \to pruning
+   BOAST \to for advanced users who are ready to rewrite their code in
+   ruby and know what they are doing.
     1. DoE
        - Sampling the space wisely
        - Use linear regression OLS:
