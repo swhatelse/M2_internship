@@ -23980,7 +23980,8 @@ h[g.name.to_sym] = 1024
 ** 2016-06-01
 *** Preparing report experiment
 **** Comparison
-***** Genetic Algo
+***** Run
+****** Genetic Algo
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
@@ -23990,7 +23991,7 @@ h[g.name.to_sym] = 1024
          df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
        #+end_src
 
-      #+begin_src sh :results output :exports both
+      #+begin_src sh :results output :exports none
         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt.yaml"
@@ -24003,6 +24004,14 @@ h[g.name.to_sym] = 1024
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt.yaml
       #+end_src
       
+      #+RESULTS:
+
+      #+begin_src R :results output :session :exports both
+        df_gen <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+        df_gen <- cbind(df_gen, point_number=rep(120,100), method=rep("GA",nrow(df_gen)))
+        write.csv(df_gen, "../data/2016_04_08/pilipili2/18_08_24/ga_search.csv", row.names=FALSE)
+      #+end_src
+
       #+RESULTS:
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -24025,7 +24034,7 @@ h[g.name.to_sym] = 1024
       #+RESULTS:
       [[file:/tmp/babel-3564RBo/figure35645kG.png]]
 
-***** Random 
+****** Random 
       Formating the full search space to csv:
       #+begin_src sh :results output :exports none
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
@@ -24037,14 +24046,18 @@ h[g.name.to_sym] = 1024
         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
         df_uniform <- data.frame()
         for (i in 1:100){
-            s <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+            s <- df[sample(1:nrow(df), size = 120, replace = FALSE),]
             df_uniform <- rbind(df_uniform, s[s$time_per_pixel==min(s$time_per_pixel) ,])
         }
+
+        df_uniform <- cbind(df_uniform, point_number=rep(120,100), method=rep("RS",nrow(df_uniform)))
         write.csv(df_uniform, "../data/2016_04_08/pilipili2/18_08_24/uniform_search.csv", row.names=FALSE)
       #+end_src
 
-***** Greedy search
-****** Implementation
+      #+RESULTS:
+
+****** Greedy search
+******* Implementation
       #+begin_src R :results output :session :exports none
         kernel_size <- function(point) {
             vector_number <- ceiling((point$elements_number / point$y_component_number) / point$vector_length)
@@ -24142,11 +24155,12 @@ h[g.name.to_sym] = 1024
                 }
                 
                 count <- count + 1
-                if(count >= 100 | point_equal(old_point,point) == T){
+                if(count >= limit | point_equal(old_point,point) == T){
                     break
                 }
             }
             
+            point <- cbind(point,point_number=count)
             point
         }
 
@@ -24155,10 +24169,10 @@ h[g.name.to_sym] = 1024
             row[, !(names(row) %in% drops)]
         }
       #+end_src
-
+        
       #+RESULTS:
 
-****** Experiment
+******* Experiment
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
        #+end_src  
@@ -24173,14 +24187,15 @@ h[g.name.to_sym] = 1024
              df_greedy_start <- rbind(df_greedy_start,p)  
              df_greedy <- rbind(df_greedy,gradient_descent(p,1e5))
          }
+         df_greedy <- cbind(df_greedy, method=rep("GR",nrow(df_greedy))) 
+
          write.csv(df_greedy, "../data/2016_04_08/pilipili2/18_08_24/greedy_search.csv", row.names=FALSE)
          write.csv(df_greedy_start, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_start.csv", row.names=FALSE)
        #+end_src
 
        #+RESULTS:
 
-                     
-***** LHS
+****** LHS
       #+begin_src sh :results output :exports none
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
       #+end_src
@@ -24232,14 +24247,14 @@ h[g.name.to_sym] = 1024
             point_count[j] <- nrow(set)
             df_lhs <- rbind(df_lhs, set[set$time_per_pixel==min(set$time_per_pixel) ,])
         }
-        df_lhs <- cbind(df_lhs, point_count)
+        df_lhs <- cbind(df_lhs, point_number=point_count, method=rep("LHS",nrow(df_lhs)))
         write.csv(df_lhs, "../data/2016_04_08/pilipili2/18_08_24/lhs_search.csv", row.names=FALSE)
       #+end_src
 
       #+RESULTS:
 
-***** LM
-****** Random
+****** LM
+******* Random
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
@@ -24254,8 +24269,12 @@ h[g.name.to_sym] = 1024
          set.seed(1) 
          runs = 100
          df_lm_random <- data.frame()
+         point_count <- c()
+
          for(i in 1:runs){
-             random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+             random_set <- df[sample(1:nrow(df), size = 105, replace = FALSE),]
+             point_count[i] <- nrow(random_set)
+
              model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
                                        vector_length + 
                                        lws_y + I(1/lws_y) +
@@ -24280,6 +24299,7 @@ h[g.name.to_sym] = 1024
 
              if(nrow(subset) < 5 ){
                subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+               point_count[i] <- point_count[i] + 5
              }
 
              model <- time_per_pixel ~ lws_y + I(1/lws_y)
@@ -24299,6 +24319,7 @@ h[g.name.to_sym] = 1024
 
              if(nrow(subset) < 5 ){
                subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+               point_count[i] <- point_count[i] + 5
              }
 
              model <- time_per_pixel ~ elements_number + I(elements_number^2)
@@ -24318,6 +24339,7 @@ h[g.name.to_sym] = 1024
 
              if(nrow(subset) < 5 ){
                subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = nrow(pruned_full_space), replace = FALSE),])
+               point_count[i] <- point_count[i] + 5
              }
 
              model <- time_per_pixel ~ load_overlap
@@ -24374,6 +24396,210 @@ h[g.name.to_sym] = 1024
                        
              df_lm_random <- rbind(df_lm_random, subset)
          }
+
+         df_lm_random <- cbind(df_lm_random, point_number=point_count, method=rep("LM",nrow(df_lm_random)))
          write.csv(df_lm_random, "../data/2016_04_08/pilipili2/18_08_24/lm_random.csv", row.names=FALSE)
      #+end_src
+
+       #+RESULTS:
+       :  There were 18 warnings (use warnings() to see them)
+
+****** Merging
+      Merging data frame and computing speedup
+      #+begin_src R :results output :session :exports both
+        df_gen <- read.csv("../data/2016_04_08/pilipili2/18_08_24/ga_search.csv", strip.white=T, header=T)
+        df_uniform <- read.csv("../data/2016_04_08/pilipili2/18_08_24/uniform_search.csv", strip.white=T, header=T)
+        df_greedy <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search.csv", strip.white=T, header=T)
+        df_lhs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lhs_search.csv", strip.white=T, header=T)
+        df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random.csv", strip.white=T, header=T)
+
+        df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random)
+        df_merged <- cbind(df_merged,speedup= df_merged$time_per_pixel / min(df$time_per_pixel) )
+        write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search.csv", row.names=FALSE)
+      #+end_src
+
+      #+RESULTS:
+
+***** Visualilzation
+      #+begin_src sh :results output :exports none
+        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+      #+end_src
+      
+      # Load the full space first
+      #+begin_src R :results output :session :exports none
+        df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      #+end_src
+****** Genetic algo
+      #+begin_src sh :results output :exports none
+        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt.yaml
+      #+end_src
+       
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 600 :height 400 :session
+        library(ggplot2)
+        df_gen <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+
+        speedup <- c()
+        for (i in 1:nrow(df_gen)){
+            speedup[i] <- min(df$time_per_pixel) / df_gen[i,]$time_per_pixel * 100
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            coord_cartesian(xlim=c(0,100),ylim=c(0,0.3)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=1, color="white", fill="gray1", aes(y=..density.. * 1)) +
+            labs(y="Density", x="Percentage of the maximal speedup achieved") +
+            ggtitle("Genetic algorithm")    
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3564RBo/figure3564vWh.png]]
+
+****** Random
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 600 :height 400 :session
+        df_uniform <- read.csv("../data/2016_04_08/pilipili2/18_08_24/uniform_search.csv", strip.white=T, header=T)
+        library(ggplot2)
+        speedup <- c()
+        for (i in 1:nrow(df_uniform)){
+            speedup[i] <- min(df$time_per_pixel) / df_uniform[i,]$time_per_pixel * 100
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            coord_cartesian(xlim=c(0,100),ylim=c(0,0.3)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=1, color="white", fill="gray1", aes(y=..density.. * 1)) +
+            labs(y="Density", x="Percentage of the maximal speedup achieved") +
+            ggtitle("Random uniform")     
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3564RBo/figure35648gn.png]]
+
+****** Greedy search
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 600 :height 400 :session
+        df_greedy <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search.csv", strip.white=T, header=T)
+        library(ggplot2)
+        speedup <- c()
+        for (i in 1:nrow(df_greedy)){
+            speedup[i] <- min(df$time_per_pixel) / df_greedy[i,]$time_per_pixel * 100
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            coord_cartesian(xlim=c(0,100),ylim=c(0,0.3)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=1, color="white", fill="gray1", aes(y=..density.. * 1)) +
+            labs(y="Density", x="Percentage of the maximal speedup achieved") +
+            ggtitle("Greedy")     
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3564RBo/figure3564Jrt.png]]
+
+****** LHS search
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 600 :height 400 :session
+        df_lhs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lhs_search.csv", strip.white=T, header=T)
+        library(ggplot2)
+        speedup <- c()
+        for (i in 1:nrow(df_lhs)){
+            speedup[i] <- min(df$time_per_pixel) / df_lhs[i,]$time_per_pixel * 100
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            coord_cartesian(xlim=c(0,100),ylim=c(0,0.3)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=1, color="white", fill="gray1", aes(y=..density.. * 1)) +
+            labs(y="Density", x="Percentage of the maximal speedup achieved") +
+            ggtitle("LHS")     
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3564RBo/figure3564W1z.png]]
+
+****** LM
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports results :width 600 :height 400 :session
+        df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random.csv", strip.white=T, header=T)
+        library(ggplot2)
+        speedup <- c()
+        for (i in 1:nrow(df_lm_random)){
+            speedup[i] <- min(df$time_per_pixel) / df_lm_random[i,]$time_per_pixel * 100
+        }
+        data <- data.frame(speedup)
+        ggplot(data) +
+            aes(speedup) +
+            coord_cartesian(xlim=c(0,100),ylim=c(0,0.3)) +
+            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+            geom_histogram(binwidth=1, color="white", fill="gray1", aes(y=..density.. * 1)) +
+            labs(y="Density", x="Percentage of the maximal speedup achieved") +
+            ggtitle("LM + Random sample")     
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3564RBo/figure3564I_C.png]]
+
+****** All
+      #+begin_src R :results output :session :exports both
+        df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+        df_all_methods <- read.csv("../data/2016_04_08/pilipili2/18_08_24/all_search.csv", strip.white=T, header=T)  
+      #+end_src
+
+      #+RESULTS:
+
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+        library(ggplot2)
+
+        ggplot() +
+            coord_cartesian() +
+            stat_ecdf(aes(df_all_methods[df_all_methods$method=="GA",]$speedup),color="green") + 
+            stat_ecdf(aes(df_all_methods[df_all_methods$method=="RS",]$speedup),color="blue") + 
+            stat_ecdf(aes(df_all_methods[df_all_methods$method=="GR",]$speedup),color="red") + 
+            stat_ecdf(aes(df_all_methods[df_all_methods$method=="LHS",]$speedup),color="yellow") + 
+            stat_ecdf(aes(df_all_methods[df_all_methods$method=="LM",]$speedup),color="darkviolet") + 
+            labs(y="Cumulative distribution", x="Percentage of the maximal speedup achieved") +
+            ggtitle("LM + Random sample")     
+      #+end_src
+       
+      #+RESULTS:
+      [[file:/tmp/babel-3564RBo/figure3564kOp.png]]
+
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
+        library(ggplot2)
+        library(plyr)
+
+        df_mean = ddply(df_all_methods,.(method), summarize, 
+                        mean = mean(speedup))
+
+        df_median = ddply(df_all_methods,.(method), summarize, 
+                          median = median(speedup))
+
+        ggplot(df_all_methods, aes(speedup)) + 
+            facet_grid(method~.) +
+            geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
+            geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
+            geom_histogram(binwidth=.05,color="white", fill="gray1") +
+            labs(y="Density", x="Percentage of the speedup of best combination") +
+            ggtitle("") + coord_cartesian(xlim=c(.9,3))
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3564RBo/figure3564z2N.png]]
+
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        ggplot() + 
+            aes(df_all_methods[df_all_methods$method=="LM",]$speedup) +
+            geom_histogram(binwidth=1, color="white", fill="gray1", aes(y=..density.. * 1)) +
+            labs(y="Density", x="Percentage of the maximal speedup achieved") +
+            ggtitle("")     
+
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-3564RBo/figure3564YFq.png]]
 
