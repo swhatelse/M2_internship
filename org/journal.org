@@ -22480,9 +22480,9 @@ h[g.name.to_sym] = 1024
                                       vector_length + 
                                       lws_y + I(1/lws_y) +
                                       threads_number + I(1/threads_number)
-        
+
             fit <- lm(data=random_set,formula=formula(model))
-        
+
             f <- function(x){
                 as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
                                                   vector_length=x$vector_length, 
@@ -22492,76 +22492,76 @@ h[g.name.to_sym] = 1024
             }
             
             best_base <- df[f(df[,c(2,3,7,8)]) == min(f(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
-        
+
             subset <- random_set[random_set$y_component_number == best_base$y_component_number & random_set$vector_length == best_base$vector_length & random_set$threads_number == best_base$threads_number, ]
             pruned_full_space <- df[df$y_component_number == best_base$y_component_number & df$vector_length == best_base$vector_length & df$threads_number == best_base$threads_number, ]
-        
+
             ###########################################
-        
+
             if(nrow(subset) < 5 ){
               subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
             }
-        
+
             model <- time_per_pixel ~ lws_y + I(1/lws_y)
             
             fit <- lm(data=subset,formula=model)
-        
+
             f <- function(x){
                 as.numeric(predict(fit,data.frame(lws_y=x, interval="none")))
             }
-        
+
             best_lws_y <- pruned_full_space[f(pruned_full_space$lws_y) == min(f(pruned_full_space$lws_y)),][1,]$lws_y
-        
+
             subset <- subset[subset$lws_y == best_lws_y, ]
             pruned_full_space <- pruned_full_space[pruned_full_space$lws_y == best_lws_y, ]
-        
+
             ###########################################
-        
+
             if(nrow(subset) < 5 ){
               subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
             }
-        
+
             model <- time_per_pixel ~ elements_number + I(elements_number^2)
-        
+
             fit <- lm(data=subset,formula=model)
             
             f <- function(x){
                 as.numeric(predict(fit,data.frame(elements_number=x, interval="none")))
             }
-        
+
             best_elements_number <- pruned_full_space[f(pruned_full_space$elements_number) == min(f(pruned_full_space$elements_number)),][1,]$elements_number
-        
+
             subset <- subset[subset$elements_number == best_elements_number, ]
             pruned_full_space <- pruned_full_space[pruned_full_space$elements_number == best_elements_number, ]
-        
+
             ###########################################
-        
+
             if(nrow(subset) < 5 ){
               subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = nrow(pruned_full_space), replace = FALSE),])
             }
-        
+
             model <- time_per_pixel ~ load_overlap
-        
+
             fit <- lm(data=subset,formula=model)
               
             f <- function(x){
                 as.numeric(predict(fit,data.frame(load_overlap=x, interval="none")))
             }
-        
+
             best_load_overlap <- pruned_full_space[f(pruned_full_space$load_overlap) == min(f(pruned_full_space$load_overlap)),][1,]$load_overlap
             best_load_overlap_time <- pruned_full_space[f(pruned_full_space$load_overlap) == min(f(pruned_full_space$load_overlap)),][1,]$time_per_pixel
-        
+
             model <- time_per_pixel ~ temporary_size
-        
+
             fit <- lm(data=subset,formula=model)
                
             f <- function(x){
                 as.numeric(predict(fit,data.frame(temporary_size=x, interval="none")))
             }
-        
+
             best_temporary_size <- pruned_full_space[f(pruned_full_space$temporary_size) == min(f(pruned_full_space$temporary_size)),][1,]$temporary_size
             best_temporary_size_time <- pruned_full_space[f(pruned_full_space$temporary_size) == min(f(pruned_full_space$temporary_size)),][1,]$time_per_pixel
-        
+
             subset <- df[df$y_component_number == best_base$y_component_number & 
                          df$vector_length == best_base$vector_length & 
                          df$threads_number == best_base$threads_number & 
@@ -22569,7 +22569,7 @@ h[g.name.to_sym] = 1024
                          df$elements_number == best_elements_number & 
                          df$load_overlap == best_load_overlap & 
                          df$temporary_size == best_temporary_size,]
-        
+
             if(nrow(subset) < 1){
               if(best_temporary_size_time < best_load_overlap_time){
                 subset <- df[df$y_component_number == best_base$y_component_number & 
@@ -22586,9 +22586,9 @@ h[g.name.to_sym] = 1024
                          df$elements_number == best_elements_number & 
                          df$load_overlap == best_load_overlap,]
               }
-        
+
               if(nrow(subset > 1)){
-        
+
               }
             }
                       
@@ -22596,6 +22596,29 @@ h[g.name.to_sym] = 1024
         }
         speedup
      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+       There were 26 warnings (use warnings() to see them)
+        [1] 0.98602132 0.85284079 0.97373239 0.83496678 0.85318472 0.99029946
+        [7] 0.85318472 0.43600186 0.97373239 0.92624162 0.92620143 0.85318472
+       [13] 0.78263413 0.97000948 0.97373239 0.72523279 0.72341870 0.97373239
+       [19] 0.72341870 0.03114044 0.93206436 0.94002078 0.78263413 0.94002078
+       [25] 0.98602132 0.69895845 0.87657460 0.71026608 0.93206436 0.91022588
+       [31] 0.99029946 0.92069881 0.99029946 0.98602132 0.98602132 0.92620143
+       [37] 0.85318472 0.99029946 0.99029946 0.72675304 0.85318472 0.98533641
+       [43] 0.92620143 0.87355566 0.99029946 0.99029946 0.85284079 0.99029946
+       [49] 0.85318472 0.98533641 0.91022588 0.87355566 0.99029946 0.98533641
+       [55] 0.92624162 0.70557478 0.99029946 0.48803524 0.99029946 0.91022588
+       [61] 0.85318472 0.87355566 0.92624162 0.91022588 0.48447204 0.48447204
+       [67] 0.97373239 0.65518295 0.71026608 0.85318472 0.85318472 0.59609907
+       [73] 0.83496678 0.72523279 0.85284079 0.78263413 0.85284079 0.99029946
+       [79] 0.85318472 0.92620143 0.98533641 0.99029946 0.92624162 0.83496678
+       [85] 0.98533641 0.85318472 0.98602132 0.85284079 0.95074160 0.47443897
+       [91] 0.85318472 0.72523279 0.98533641 0.90553007 0.99029946 0.98533641
+       [97] 0.72523279 1.00000000 0.97373239 0.91022588
+#+end_example
+
       
       Results seems pretty good expect that we able to get very bad
       ones. How is it possible? Maybe because the point choosen are
@@ -22864,23 +22887,24 @@ h[g.name.to_sym] = 1024
 
       Residuals:
              Min         1Q     Median         3Q        Max 
-      -3.571e-09 -8.662e-10 -2.850e-10  2.750e-10  1.071e-08 
+      -6.485e-09 -2.150e-09 -4.486e-10  1.239e-09  2.211e-08 
 
       Coefficients:
                            Estimate Std. Error t value Pr(>|t|)    
-      (Intercept)         1.727e-09  5.949e-10   2.903 0.004601 ** 
-      elements_number    -3.813e-11  4.815e-11  -0.792 0.430380    
-      y_component_number -1.805e-10  1.630e-10  -1.107 0.270933    
-      vector_length       1.796e-10  3.956e-11   4.541 1.66e-05 ***
-      lws_y               8.541e-12  1.262e-12   6.768 1.11e-09 ***
-      threads_number     -2.203e-12  6.121e-13  -3.599 0.000512 ***
+      (Intercept)        -9.860e-10  1.163e-09  -0.848 0.398736    
+      elements_number    -3.453e-10  9.541e-11  -3.619 0.000478 ***
+      y_component_number  1.143e-09  3.122e-10   3.662 0.000414 ***
+      vector_length       3.465e-10  7.865e-11   4.406 2.79e-05 ***
+      lws_y               1.267e-11  2.537e-12   4.994 2.72e-06 ***
+      threads_number     -2.589e-12  1.292e-12  -2.004 0.047941 *  
       ---
       Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-      Residual standard error: 1.986e-09 on 94 degrees of freedom
-      Multiple R-squared:  0.4511,	Adjusted R-squared:  0.4219 
-      F-statistic: 15.45 on 5 and 94 DF,  p-value: 4.51e-11
+      Residual standard error: 4.127e-09 on 94 degrees of freedom
+      Multiple R-squared:  0.3874,	Adjusted R-squared:  0.3548 
+      F-statistic: 11.89 on 5 and 94 DF,  p-value: 6.332e-09
 #+end_example
+
      
       In fact we cannot not consider that we found the value for a
       factor if there remain only onbe point. We need to add points in
@@ -22890,23 +22914,22 @@ h[g.name.to_sym] = 1024
         g <- function(x) { f(x)/x^2 }
         h <- function(x) {pmin(g(x),1e15)}
         set.seed(1) 
-        runs = 100
+        runs = 10
         speedup <- c()
         for(i in 1:runs){
-            print(i)
-            random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+            random_set <- df[sample(1:nrow(df), size = 105, replace = FALSE),]
             model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
                                       vector_length + 
                                       lws_y + I(1/lws_y) +
                                       threads_number + I(1/threads_number)
         
-            fit <- lm(data=random_set,formula=formula(model))
-            for(i in 1:100){
+            fit <- lm(data=random_set,formula=formula(model), na.action="na.exclude")
+            for(j in 1:50){
                 E <- residuals(fit)
-                fit <- lm(data=random_set,formula=formula(model),weights=h(E))
+                fit <- lm(data=random_set,formula=formula(model),weights=h(E), na.action="na.exclude")
             }
         
-            f <- function(x){
+            pred <- function(x){
                 as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
                                                   vector_length=x$vector_length, 
                                                   threads_number=x$threads_number,
@@ -22914,7 +22937,7 @@ h[g.name.to_sym] = 1024
                                                   interval="none")))
             }
         
-            best_base <- df[f(df[,c(2,3,7,8)]) == min(f(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+            best_base <- df[pred(df[,c(2,3,7,8)]) == min(pred(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
         
             subset <- random_set[random_set$y_component_number == best_base$y_component_number & random_set$vector_length == best_base$vector_length & random_set$threads_number == best_base$threads_number, ]
             pruned_full_space <- df[df$y_component_number == best_base$y_component_number & df$vector_length == best_base$vector_length & df$threads_number == best_base$threads_number, ]
@@ -22927,18 +22950,18 @@ h[g.name.to_sym] = 1024
         
             model <- time_per_pixel ~ lws_y + I(1/lws_y)
             
-            fit <- lm(data=subset,formula=model)
-            for(i in 1:100){
+            fit <- lm(data=subset,formula=model, na.action="na.exclude")
+            for(j in 1:100){
                 E <- residuals(fit)
-                fit <- lm(data=subset,formula=model,weights=h(E))
+                fit <- lm(data=subset,formula=model,weights=h(E), na.action="na.exclude")
             }
         
         
-            f <- function(x){
+            pred <- function(x){
                 as.numeric(predict(fit,data.frame(lws_y=x, interval="none")))
             }
         
-            best_lws_y <- pruned_full_space[f(pruned_full_space$lws_y) == min(f(pruned_full_space$lws_y)),][1,]$lws_y
+            best_lws_y <- pruned_full_space[pred(pruned_full_space$lws_y) == min(pred(pruned_full_space$lws_y)),][1,]$lws_y
         
             subset <- subset[subset$lws_y == best_lws_y, ]
             pruned_full_space <- pruned_full_space[pruned_full_space$lws_y == best_lws_y, ]
@@ -22951,17 +22974,17 @@ h[g.name.to_sym] = 1024
         
             model <- time_per_pixel ~ elements_number + I(elements_number^2)
         
-            fit <- lm(data=subset,formula=model)
-            for(i in 1:100){
+            fit <- lm(data=subset,formula=model, na.action="na.exclude")
+            for(j in 1:100){
                 E <- residuals(fit)
-                fit <- lm(data=subset,formula=model,weights=h(E))
+                fit <- lm(data=subset,formula=model,weights=h(E), na.action="na.exclude")
             }
         
-            f <- function(x){
+            pred <- function(x){
                 as.numeric(predict(fit,data.frame(elements_number=x, interval="none")))
             }
         
-            best_elements_number <- pruned_full_space[f(pruned_full_space$elements_number) == min(f(pruned_full_space$elements_number)),][1,]$elements_number
+            best_elements_number <- pruned_full_space[pred(pruned_full_space$elements_number) == min(pred(pruned_full_space$elements_number)),][1,]$elements_number
         
             subset <- subset[subset$elements_number == best_elements_number, ]
             pruned_full_space <- pruned_full_space[pruned_full_space$elements_number == best_elements_number, ]
@@ -22974,33 +22997,33 @@ h[g.name.to_sym] = 1024
         
             model <- time_per_pixel ~ load_overlap
         
-            fit <- lm(data=subset,formula=model)
-            for(i in 1:10){
+            fit <- lm(data=subset,formula=model, na.action="na.exclude")
+            for(j in 1:10){
                 E <- residuals(fit)
-                fit <- lm(data=subset,formula=model,weights=h(E))
+                fit <- lm(data=subset,formula=model,weights=h(E), na.action="na.exclude")
             }
             
-            f <- function(x){
+            pred <- function(x){
                 as.numeric(predict(fit,data.frame(load_overlap=x, interval="none")))
             }
         
-            best_load_overlap <- pruned_full_space[f(pruned_full_space$load_overlap) == min(f(pruned_full_space$load_overlap)),][1,]$load_overlap
-            best_load_overlap_time <- pruned_full_space[f(pruned_full_space$load_overlap) == min(f(pruned_full_space$load_overlap)),][1,]$time_per_pixel
+            best_load_overlap <- pruned_full_space[pred(pruned_full_space$load_overlap) == min(pred(pruned_full_space$load_overlap)),][1,]$load_overlap
+            best_load_overlap_time <- pruned_full_space[pred(pruned_full_space$load_overlap) == min(pred(pruned_full_space$load_overlap)),][1,]$time_per_pixel
         
             model <- time_per_pixel ~ temporary_size
         
-            fit <- lm(data=subset,formula=model)
-            for(i in 1:10){
+            fit <- lm(data=subset,formula=model, na.action="na.exclude")
+            for(j in 1:10){
                 E <- residuals(fit)
-                fit <- lm(data=subset,formula=model,weights=h(E))
+                fit <- lm(data=subset,formula=model,weights=h(E), na.action="na.exclude")
             }
              
-            f <- function(x){
+            pred <- function(x){
                 as.numeric(predict(fit,data.frame(temporary_size=x, interval="none")))
             }
         
-            best_temporary_size <- pruned_full_space[f(pruned_full_space$temporary_size) == min(f(pruned_full_space$temporary_size)),][1,]$temporary_size
-            best_temporary_size_time <- pruned_full_space[f(pruned_full_space$temporary_size) == min(f(pruned_full_space$temporary_size)),][1,]$time_per_pixel
+            best_temporary_size <- pruned_full_space[pred(pruned_full_space$temporary_size) == min(pred(pruned_full_space$temporary_size)),][1,]$temporary_size
+            best_temporary_size_time <- pruned_full_space[pred(pruned_full_space$temporary_size) == min(pred(pruned_full_space$temporary_size)),][1,]$time_per_pixel
         
             subset <- df[df$y_component_number == best_base$y_component_number & 
                          df$vector_length == best_base$vector_length & 
@@ -23038,9 +23061,19 @@ h[g.name.to_sym] = 1024
      #+end_src
 
       #+RESULTS:
-      : [1] 1
-      : Error in x$y_component_number (from #16) : $ operator is invalid for atomic vectors
-      : NULL
+      #+begin_example
+       Warning messages:
+      1: In predict.lm(fit, data.frame(elements_number = x, interval = "none")) :
+        prediction from a rank-deficient fit may be misleading
+      2: In predict.lm(fit, data.frame(elements_number = x, interval = "none")) :
+        prediction from a rank-deficient fit may be misleading
+      3: In predict.lm(fit, data.frame(elements_number = x, interval = "none")) :
+        prediction from a rank-deficient fit may be misleading
+      4: In predict.lm(fit, data.frame(elements_number = x, interval = "none")) :
+        prediction from a rank-deficient fit may be misleading
+       [1] 0.9902995 0.8349668 0.9055301 0.9521134 0.9320644 0.9902995 0.8531847
+       [8] 0.9102259 0.9320644 0.9902995
+#+end_example
 
       
       Results seems pretty good expect that we able to get very bad
@@ -24602,4 +24635,164 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
       [[file:/tmp/babel-3564RBo/figure3564YFq.png]]
+
+*** Investigating iterated regression error
+    #+begin_src R :results output :session :exports both
+      df1 <- read.csv("../data/2016_04_08/pilipili2/18_08_24/debug_iwr.csv")
+    #+end_src
+
+    #+RESULTS:
+
+      
+    That is strange because is the random set that failed earlier but
+    here it works...
+    #+begin_src R :results output :session :exports both
+      f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+      g <- function(x) { f(x)/x^2 }
+      h <- function(x) {pmin(g(x),1e15)}
+      set.seed(1) 
+
+      for (i in 1:10){
+          model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+              vector_length + 
+              lws_y + I(1/lws_y) +
+              threads_number + I(1/threads_number)
+          
+          print("Before lm")
+          fit <- lm(data=df1,formula=formula(model))
+          for(j in 1:100){
+              E <- residuals(fit)
+              fit <- lm(data=df1,formula=formula(model),weights=h(E))
+          }
+          print("After lm")
+      }
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+    [1] "Before lm"
+    [1] "After lm"
+#+end_example
+
+    Let's try to generate random_set with the same seed... And it does
+    not fail yet...
+    #+begin_src R :results output :session :exports both
+      f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+      g <- function(x) { f(x)/x^2 }
+      h <- function(x) {pmin(g(x),1e15)}
+      set.seed(1) 
+
+      for (i in 1:10){
+          random_set <- df[sample(1:nrow(df), size = 105, replace = FALSE),]
+          model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+              vector_length + 
+              lws_y + I(1/lws_y) +
+              threads_number + I(1/threads_number)
+
+          fit <- lm(data=random_set,formula=formula(model))
+          for(j in 1:100){
+              E <- residuals(fit)
+              fit <- lm(data=random_set,formula=formula(model),weights=h(E))
+          }
+      }
+
+    #+end_src
+
+    #+RESULTS:
+
+        #+begin_src R :results output :session :exports both
+          f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+          g <- function(x) { f(x)/x^2 }
+          h <- function(x) {pmin(g(x),1e15)}
+          set.seed(1) 
+
+          for (i in 1:10){
+              model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+                  vector_length + 
+                  lws_y + I(1/lws_y) +
+                  threads_number + I(1/threads_number)
+              
+              print("Before lm")
+              fit <- lm(data=df1,formula=formula(model))
+              for(j in 1:100){
+                  E <- residuals(fit)
+                  fit <- lm(data=df1,formula=formula(model),weights=h(E))
+              }
+              print("After lm")
+              
+              pred <- function(x){
+                   as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
+                                                     vector_length=x$vector_length, 
+                                                     threads_number=x$threads_number,
+                                                     lws_y=x$lws_y,
+                                                     interval="none")))
+              }
+
+              print("Before search")
+              best_base <- df1[pred(df1[,c(2,3,7,8)]) == min(pred(df1[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+              print("After search")
+          }
+    #+end_src
+
+        #+RESULTS:
+        #+begin_example
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+        [1] "Before lm"
+        [1] "After lm"
+        [1] "Before search"
+        [1] "After search"
+#+end_example
 
