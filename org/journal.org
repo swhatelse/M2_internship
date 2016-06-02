@@ -23739,7 +23739,7 @@ h[g.name.to_sym] = 1024
    [[file:/tmp/babel-4163dFq/figure4163_KO.png]]
 
 ** 2016-05-26
-*** Function error object not found 
+*** TODO Function error object not found 
     #+begin_src sh :results output :exports both
           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
     #+end_src
@@ -23802,8 +23802,7 @@ h[g.name.to_sym] = 1024
 #+end_example
 
 ** 2016-05-30
-*** TODO LHS search
-
+*** DONE LHS search  
 ** 2016-05-31
 *** Change display width of R                                             :R:
    #+begin_src R :results output :session :exports both
@@ -23815,7 +23814,7 @@ h[g.name.to_sym] = 1024
 
 * June
 ** 2016-06-01
-*** Preparing report experiment
+*** DONE Preparing report experiment
 **** Comparison
 ***** Run
 ****** Genetic Algo
@@ -24567,13 +24566,13 @@ h[g.name.to_sym] = 1024
             stat_ecdf(aes(df_all_methods[df_all_methods$method=="GR",]$speedup),color="red") + 
             stat_ecdf(aes(df_all_methods[df_all_methods$method=="LHS",]$speedup),color="yellow") + 
             stat_ecdf(aes(df_all_methods[df_all_methods$method=="LM",]$speedup),color="darkviolet") + 
-stat_ecdf(aes(df_all_methods[df_all_methods$method=="RQ",]$speedup),color="grey") + 
+            stat_ecdf(aes(df_all_methods[df_all_methods$method=="RQ",]$speedup),color="grey") + 
             labs(y="Cumulative distribution", x="Percentage of the maximal speedup achieved") +
             ggtitle("LM + Random sample")     
       #+end_src
        
       #+RESULTS:
-      [[file:/tmp/babel-3114auy/figure31140qz.png]]
+      [[file:/tmp/babel-6458re_/figure64585tR.png]]
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
         library(ggplot2)
@@ -24595,7 +24594,7 @@ stat_ecdf(aes(df_all_methods[df_all_methods$method=="RQ",]$speedup),color="grey"
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-3114auy/figure3114ngt.png]]
+      [[file:/tmp/babel-6458re_/figure6458G4X.png]]
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
         ggplot() + 
@@ -24609,7 +24608,7 @@ stat_ecdf(aes(df_all_methods[df_all_methods$method=="RQ",]$speedup),color="grey"
       #+RESULTS:
       [[file:/tmp/babel-3564RBo/figure3564YFq.png]]
 
-*** Investigating iterated regression error
+*** DONE Investigating iterated regression error
     #+begin_src R :results output :session :exports both
       df1 <- read.csv("../data/2016_04_08/pilipili2/18_08_24/debug_iwr.csv")
     #+end_src
@@ -24771,7 +24770,8 @@ stat_ecdf(aes(df_all_methods[df_all_methods$method=="RQ",]$speedup),color="grey"
 #+end_example
 
 ** 2016-06-02
-*** TODO Impact of na.action="na.exclude"
+*** DONE Impact of na.action="na.exclude"
+    - *Conclusion:* This seems to have no negative effect in the estimate of the quantile.
     #+begin_src sh :results output :exports both
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
     #+end_src
@@ -24779,30 +24779,78 @@ stat_ecdf(aes(df_all_methods[df_all_methods$method=="RQ",]$speedup),color="grey"
     #+begin_src R :results output :session :exports both
       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
       random_set <- df[sample(1:nrow(df), size = 5, replace = FALSE),]
+
       model <- time_per_pixel ~ elements_number + I(1/elements_number) + I(elements_number^2)
-      fit <- lm(data=random_set,formula=model)
-      summary(fit)
+      f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+      g <- function(x) { f(x)/x^2 }
+      h <- function(x) {pmin(g(x),1e15)}
+
+      fit1 <- lm(data=random_set,formula=formula(model))
+      for(j in 1:200){
+          E <- residuals(fit1)
+          fit1 <- lm(data=random_set,formula=formula(model),weights=g(E))
+      }
+      summary(fit1)
+
+      fit2 <- lm(data=random_set,formula=formula(model),na.action="na.exclude")
+      for(j in 1:200){
+          E <- residuals(fit2)
+          fit2 <- lm(data=random_set,formula=formula(model),weights=g(E),na.action="na.exclude")
+      }
+      summary(fit2)
     #+end_src
 
     #+RESULTS:
     #+begin_example
 
     Call:
-    lm(formula = model, data = random_set)
+    lm(formula = formula(model), data = random_set, weights = g(E))
 
-    Residuals:
-         12421       3796      17157      20125      17950 
-     2.931e-10  3.053e-12  3.297e-11 -8.976e-11 -2.394e-10 
+    Weighted Residuals:
+         17372       2202      19598      10510      11140 
+     1.873e-05  1.407e-07 -3.149e-08  1.471e-05 -3.712e-15 
 
-    Coefficients:
-                           Estimate Std. Error t value Pr(>|t|)
-    (Intercept)          -2.094e-09  2.353e-09  -0.890    0.537
-    elements_number       2.885e-10  4.295e-10   0.672    0.623
-    I(1/elements_number)  7.195e-09  2.026e-09   3.551    0.175
-    I(elements_number^2) -1.117e-11  1.960e-11  -0.570    0.670
+    Coefficients: (2 not defined because of singularities)
+                           Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)          -4.693e-10  1.009e-11  -46.52 2.19e-05 ***
+    elements_number       2.284e-10  8.406e-13  271.66 1.10e-07 ***
+    I(1/elements_number)         NA         NA      NA       NA    
+    I(elements_number^2)         NA         NA      NA       NA    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-    Residual standard error: 3.903e-10 on 1 degrees of freedom
-    Multiple R-squared:  0.9925,	Adjusted R-squared:  0.9699 
-    F-statistic: 43.93 on 3 and 1 DF,  p-value: 0.1104
-#+end_example
+    Residual standard error: 1.375e-05 on 3 degrees of freedom
+    Multiple R-squared:      1,	Adjusted R-squared:  0.9999 
+    F-statistic: 7.38e+04 on 1 and 3 DF,  p-value: 1.1e-07
+
+    Call:
+    lm(formula = formula(model), data = random_set, weights = g(E), 
+        na.action = "na.exclude")
+
+    Weighted Residuals:
+         17372       2202      19598      10510      11140 
+     1.873e-05  1.407e-07 -3.149e-08  1.471e-05 -3.712e-15 
+
+    Coefficients: (2 not defined because of singularities)
+                           Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)          -4.693e-10  1.009e-11  -46.52 2.19e-05 ***
+    elements_number       2.284e-10  8.406e-13  271.66 1.10e-07 ***
+    I(1/elements_number)         NA         NA      NA       NA    
+    I(elements_number^2)         NA         NA      NA       NA    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 1.375e-05 on 3 degrees of freedom
+    Multiple R-squared:      1,	Adjusted R-squared:  0.9999 
+    F-statistic: 7.38e+04 on 1 and 3 DF,  p-value: 1.1e-07
+    #+end_example
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+    plot(random_set$elements_number, random_set$time_per_pixel)
+    lines(seq(1,12,0.1),as.numeric(predict(fit2,data.frame(elements_number=seq(1,12,0.1)),interval="none")),col="red")
+    lines(seq(1,12,0.1),as.numeric(predict(fit1,data.frame(elements_number=seq(1,12,0.1)),interval="none")),col="green")
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-6458re_/figure6458sjL.png]]
 

@@ -486,31 +486,29 @@ Text
       - Compilation
       - Bench-marking
 
-** Results [0/2]
-    Considering speedup with regard to the best.
+** Results [1/2]
+    Considering slowdown with regard to the best.
     Comparison:
     - GA \to not tuned \to would have take time to tune it
+      Very efficient in general
     - Greedy
+      Fails
     - Random
+      Very simple and efficient also
     - LM
-      - Full \to evaluate the quality of the model \to maybe in the
-        analysis to explain why we don't have the best
-      - Uniform
-      - LHS
-      - D-Opt
+      - Uniform \to The one which get the most high performing version
+        but sometime fails and gives very bad results.
+
     - Rq \to Another way of doing linear regression
-      - Full \to evaluate the quality of the model \to maybe in the
-        analysis to explain why we don't have the best
-      - Uniform
-      - LHS
-      - D-Opt
+      - Uniform \to Improved a little bit in general LM but less very
+        high performing version 
    | Histogram of solutions | Cost |
 
 ** Analysis [0/14]
 *** Characteristics of the search space [0/2]
    - Repartition of good combinations
-   - Lot of local optimum \to local search failed
-   - Heteroscedasticity
+   - Lots of local optimum \to local search failed
+   - Heteroscedasticity \to noise due to interactions
 *** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
 **** Least Squared regression and non uniform noise  
     - Assumptions:
@@ -1423,11 +1421,15 @@ Text
     #+RESULTS:
     [[file:./img/results_hist.pdf]]
 *** 
-    To evaluate our solution we compared it against the following search
+    To evaluate our solution, we compared it against the following search
     methods that have already been used in auto-tuning:
     - RS: is the uniform random search that take points randomly in the
-    search space with equal probabilities. 
-    - GA: BOAST embeds an implementation of a genetic algorithm.
+      search space with equal probabilities. 
+    - GA: BOAST embeds an implementation of a genetic algorithm. We
+      used a population size of 20, number of generations of 5 and
+      mutation rate of 0.1. Among the different configuration tested
+      it was the one that gives the best results, however it could be
+      possible to obtain better results by tuning further the options.
     - LHS: it is not methods use to search, it is sampling which take
       point randomly but which also maximize the distance between the
       point to cover the full search space. However we want to see how
@@ -1438,8 +1440,8 @@ Text
       this kind of algorithm is very efficient on convex search space
       or if we already know where to search. 
     
-    There are many ways of performing linear regression. For this
-    reason, with our approach, we evaluated two techniques:
+    There are many ways of performing linear regression. With our
+    approach, we evaluated two of them:
     - LM: which is the least square regression which gives an estimate
       of the mean
     - RQ: which is the quantile regression which gives an estimate of
@@ -1448,14 +1450,27 @@ Text
     We measured each methods one hundred time with about 120
     points for GA, RS, LHS, LM and RQ and we evaluated the slowdown
     achieved compared to the best solution available in the entire
-    search space. Figure\ref{search-comparison} shows the results.
+    search space. Figure\ref{search_comparison} shows the
+    results. With this search space, the local search is inefficient,
+    half of the time we get a slowdown of higher than x2. The LHS
+    search does better with a slowdown that is below 1.388
    #+BEGIN_LaTeX
    \begin{figure}[]
    \centering
    \includegraphics[height=.15\textheight]{./img/results_hist.pdf}
-   \caption{\label{fig:search-comparison}Search comparison}
+   \caption{\label{fig:search_comparison}Search comparison}
    \end{figure}
    #+END_LaTeX
+
+    | Methods |   Min |    Max |  Mean | Median |
+    |---------+-------+--------+-------+--------|
+    | GR      | 1.006 | 66.010 | 7.964 |  2.161 |
+    | LHS     | 1.009 |  1.388 | 1.155 |  1.172 |
+    | RS      | 1.011 |  1.341 | 1.098 |  1.079 |
+    | GA      |  1.00 |  1.390 | 1.098 |  1.073 |
+    | LM      | 1.010 | 32.060 | 1.445 |  1.080 |
+    | RQ      | 1.010 | 30.890 | 1.432 |  1.073 |
+
 * Analysis
 ** Characteristics of the search space
    #+begin_src sh :results output :exports none
