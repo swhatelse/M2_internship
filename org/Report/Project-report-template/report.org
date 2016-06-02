@@ -121,7 +121,7 @@ Text
 #   \newpage
 # #+END_abstract
 
-* Plan                                                       
+* Plan
 ** Introduction [3/3]
 *** Why is performance optimization difficult?
    - In HPC code optimization crucial to exploit very complex hardware.
@@ -456,6 +456,12 @@ Text
    define the search methods, where could be the best parts \to pruning
    BOAST \to for advanced users who are ready to rewrite their code in
    ruby and know what they are doing.
+   Regression + sampling to get knowledge
+   Show the structure of the problem parameters that have the most
+   impact (global) one those have less impact (local)
+
+   Interrogating correctly the search space \to sampling
+   Build model of the objective function \to easier for optimize and extract information
    Use the knowledge of the expert:
    - Can test his hypothesis
    - Understand the search space and his problem
@@ -546,6 +552,8 @@ Text
         - Try to find interactions
       - Keep the more accurate and the simplest
 
+    - Process dependent of the set of points \to cannot apply a model
+      blindly even if it the correct model without considering the points.
     - Test parameters independently and remove useless ones. 
     - Iterative refinement \to try to find the interactions.
     - Determines the quality of the prediction
@@ -1238,34 +1246,69 @@ Text
 
    The experiments are run on one machine with GPU Nvidia K40 using the
    driver 340.32 and two CPUs Intel E5-2630.
-* Envisioned general approach
+* DONE Envisioned general approach
    When using fully automated tools, the user has no feedback about
    the optimization process and not a lot of control. How good is the
    optimized version of the code? How is it possible to improve it?
-   What does the search space look like? Our approach targets advanced
-   users who need answers to this kind of questions to help them to
-   understand the characteristics of the search space, to be able to
-   prune it correctly and to choose the most suited search techniques.
-   Thus we investigated the design of a semi-automated approach where
-   the user tunes his application in an interactive way. All along the
-   tuning process this method provides valuable information to user to
-   guide him and exploit his knowledge. Of course, this assumes that the
-   application developer understands well his kernel and knows the
-   reason each code optimization he used. Tuning an application is in
-   fact running multiple experiments by changing the value of the
-   different parameters. That is why we used techniques inspired from
-   design of experiments where the goal is to maximize the amount of
-   information and minimize the number of experiments and regression
-   techniques to predict the objective function.
+   What does the search space look like? What are the parameters that
+   have a big impact (high-order parameters) and those which have a
+   small impact (low-order parameters)? All this questions are
+   necessary to understand the structure of the problem. Our approach
+   targets advanced users who need answers to this kind of questions
+   to help them to understand the characteristics of the search space,
+   to be able to prune it correctly and to choose the most suited
+   search techniques. Thus we investigated the design of a
+   semi-automated approach where the user tunes his application in an
+   interactive way. All along the tuning process this method provides
+   valuable information to user to guide him and exploit his
+   knowledge. Of course, this assumes that the application developer
+   understands well his kernel and knows the reason each code
+   optimization he used.  
 
-   1. The user wants to check his hypothesis by providing a 
+   As objective the function is empirical and is costly to evaluate, our
+   approach consist in sampling the space with only few points to
+   build a model in order to approximate it at low cost. Our approach
+   use linear regression because usually, it is enough to model
+   accurately computer phenomenon. However a correct modeling goes
+   to together with efficient sampling techniques. That is why we used
+   techniques inspired from design of experiments where the goal is to
+   maximize the amount of information and minimize the number of
+   points.
+
+   The figure\ref{fig:process} show the work-flow of our approach: 
+   1. The user interrogate the search space for example to find what
+      are the parameters that have the most impact and their
+      interactions, check his hypothesis about the model, etc...
+   2. The search space is sampled by taking into account the objective
+      of the user. For instance if the user wants to have a first
+      overview of the high-order parameters or if to refine his model or
+      if he wants obtain more information about a precise part of the
+      search space.
+   3. Linear regression build the model based on the hypothesis
+      provided by the user and also determines what are the parameters
+      that have the most impact. Parameters that have less impact are
+      removed from the model and will be re-injected later when higher
+      order parameters are fixed.
+   4. According to the model the best value for the studied parameters
+      are predicted.
+   5. Results of the regression and estimated best value for the
+      parameters are return to the user. At this step either he is
+      satisfied by the results of the regression and can prune the
+      search space by fixing the parameters to the estimated values,
+      or he can ask to test another model, ask more points in a
+      particular area to refine the model, etc...
+   6. This process iterate until all parameters are fixed.
+
+   In short the tuning is done through an iterative and instrumented
+   process where the user refine is model according the information he
+   has. 
      
  
    #+BEGIN_LaTeX
    \begin{figure}[tbh]
    \centering
    \includegraphics[width=.8\linewidth]{./img/process.pdf}
-   \caption{\label{fig:1}Workflow}
+   \caption{\label{fig:process}Workflow}
    \end{figure}
    #+END_LaTeX
 * Controlling measurement
