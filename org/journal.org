@@ -24423,7 +24423,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
-
+      
 ***** Visualilzation
       #+begin_src sh :results output :exports none
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
@@ -24853,4 +24853,51 @@ h[g.name.to_sym] = 1024
 
     #+RESULTS:
     [[file:/tmp/babel-6458re_/figure6458sjL.png]]
+*** Meta-Programming                                                      :R:
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+    
+    #+begin_src R :results output :session :exports none
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+    #+end_src
+
+    #+RESULTS:
+
+    Generate dynamically a data frame:
+    #+begin_src R :results output :session :exports both
+      names <- colnames(df)
+      s <- paste("df2 <-data.frame(", paste(paste(names,names,sep="=df$"),collapse=","), ")")
+      s
+      eval(parse(text=s))
+      summary(df2)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+    [1] "df2 <-data.frame( elements_number=df$elements_number,y_component_number=df$y_component_number,vector_length=df$vector_length,temporary_size=df$temporary_size,vector_recompute=df$vector_recompute,load_overlap=df$load_overlap,threads_number=df$threads_number,lws_y=df$lws_y,time_per_pixel=df$time_per_pixel )"
+     elements_number  y_component_number vector_length   temporary_size 
+     Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+     1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+     Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+     Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+     3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+     Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+     vector_recompute load_overlap  threads_number       lws_y        
+     true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                      true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                    Median : 256.0   Median :  16.00  
+                                    Mean   : 368.1   Mean   :  73.58  
+                                    3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                    Max.   :1024.0   Max.   :1024.00  
+     time_per_pixel     
+     Min.   :1.165e-10  
+     1st Qu.:3.028e-10  
+     Median :7.125e-10  
+     Mean   :2.013e-09  
+     3rd Qu.:2.001e-09  
+     Max.   :4.452e-08
+#+end_example
 
