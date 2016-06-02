@@ -121,7 +121,7 @@ Text
 #   \newpage
 # #+END_abstract
 
-* Plan
+* Plan                                                             :noexport:
 ** Introduction [3/3]
 *** Why is performance optimization difficult?
    - In HPC code optimization crucial to exploit very complex hardware.
@@ -234,7 +234,7 @@ Text
             - Add point with hypothesis \to D-Opt
             
 *** Structure of the report
-** Context [0/2]
+** Context [3/3]
 *** HPC/architectures     
     - Crucial for science and business
     - To get performance \to exploit hardware \to take characteristics into account
@@ -303,7 +303,7 @@ Text
 
 *** Recap
     How to port performances.
-** Problem analysis [0/2]
+** Problem analysis [0/1]
    - Huge search space \to need to explore only part of it \to
      optimization problem.
    - Interactions between parameters
@@ -471,7 +471,7 @@ Text
          - remove factors from the model
          - model and optimize
     2. Loop back to 1 to refine the model
-** DONE Controlling measurement [0/0]
+** Controlling measurement [1/1]
     - Time per pixel \to total time / number of pixel. Because we test
       different size of image.
     - min(x_1,...,x_10) ? how to protect against potential warm-up
@@ -1315,7 +1315,7 @@ Text
    \caption{\label{fig:process}Workflow}
    \end{figure}
    #+END_LaTeX
-* Controlling measurement
+* DONE Controlling measurement
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
    #+end_src
@@ -1423,11 +1423,37 @@ Text
     #+RESULTS:
     [[file:./img/results_hist.pdf]]
 *** 
+    To evaluate our solution we compared it against the following search
+    methods that have already been used in auto-tuning:
+    - RS: is the uniform random search that take points randomly in the
+    search space with equal probabilities. 
+    - GA: BOAST embeds an implementation of a genetic algorithm.
+    - LHS: it is not methods use to search, it is sampling which take
+      point randomly but which also maximize the distance between the
+      point to cover the full search space. However we want to see how
+      a search based in it would perform.
+    - GR: greedy search which is a local search. From a starting point
+      it explores all the possible directions it can go at distance
+      one and goes to the direction that gives the best improvement
+      this kind of algorithm is very efficient on convex search space
+      or if we already know where to search. 
+    
+    There are many ways of performing linear regression. For this
+    reason, with our approach, we evaluated two techniques:
+    - LM: which is the least square regression which gives an estimate
+      of the mean
+    - RQ: which is the quantile regression which gives an estimate of
+      a given quantile.
+
+    We measured each methods one hundred time with about 120
+    points for GA, RS, LHS, LM and RQ and we evaluated the slowdown
+    achieved compared to the best solution available in the entire
+    search space. Figure\ref{search-comparison} shows the results.
    #+BEGIN_LaTeX
    \begin{figure}[]
    \centering
    \includegraphics[height=.15\textheight]{./img/results_hist.pdf}
-   \caption{\label{fig:1}Search comparison}
+   \caption{\label{fig:search-comparison}Search comparison}
    \end{figure}
    #+END_LaTeX
 * Analysis
