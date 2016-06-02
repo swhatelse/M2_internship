@@ -12941,6 +12941,27 @@ Entered on [2015-11-19 jeu. 20:56]
     #+RESULTS:
     [[file:img/20160402/pilipili2/points_run_index.png]]
 
+    Lets look at the variability:
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      library(ggplot2)
+      library(plyr)
+      df = read.csv("/tmp/test.csv",strip.white=T,header=T)
+      d2 <- df[df$lws_y == 1 & df$elements_number == 8 & df$y_component_number == 4 & df$threads_number == 128,]
+
+      df2 = ddply(d2,.(run_index,vector_length,image_size_index), summarize, 
+                  mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+
+
+      ggplot(d2) +
+          # geom_jitter(aes(x=factor(run_index), y=time_per_pixel, color=factor(load_overlap), shape=factor(temporary_size))) + 
+          geom_line(aes(x=run_index, y=time_per_pixel, color=factor(load_overlap),linetype=factor(temporary_size))) + 
+          geom_errorbar(data=df2,aes(x=run_index,y=mean, ymin=mean-err, ymax=mean+err)) +
+          facet_grid(vector_length ~ image_size_index, scales="free_y", labeller=label_both) 
+    #+end_src    
+
+    #+RESULTS:
+    [[file:/tmp/babel-6458re_/figure64585fp.png]]
+
     Let's focus on the first image size and try to quantify this effect:
     #+begin_src R :results output :session :exports both
       library(plyr)
