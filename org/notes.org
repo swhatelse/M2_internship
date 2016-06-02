@@ -759,6 +759,26 @@
     #+BEGIN_SRC bibtex
     
     #+END_SRC
+** The art of computer systems performance analysis
+*** Bibtex
+    #+BEGIN_SRC bibtex
+        @book{books/daglib/0076234,
+        added-at = {2011-04-19T00:00:00.000+0200},
+        author = {Jain, Raj},
+        biburl = {http://www.bibsonomy.org/bibtex/2fec32c393af648375f02cde200e33b99/dblp},
+        interhash = {655d52a18a388bbf814d7d5e5df1f018},
+        intrahash = {fec32c393af648375f02cde200e33b99},
+        isbn = {978-0-471-50336-1},
+        keywords = {dblp},
+        pages = {I-XXVII, 1-685},
+        publisher = {Wiley},
+        series = {Wiley professional computing},
+        timestamp = {2011-04-29T15:27:00.000+0200},
+        title = {The art of computer systems performance analysis - techniques for experimental design, measurement, simulation, and modeling.},
+        year = 1991
+      }
+    #+END_SRC
+** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/construction%20and%20use%20of%20linear%20regression%20models%20for%20processor%20performance%20analysis.pdf][construction and use of linear regression models for processor performance analysis]] ] Construction and use of linear regression models for processor performance analysis
 * Mathematical notions
 ** Non-smooth
    Discontinous and non differentiable functions. 
