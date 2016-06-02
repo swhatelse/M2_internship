@@ -419,7 +419,7 @@ Text
            Select points according to a model.
          - I-Optimal
          - A-Optimal
-** Methods and material [0/2]
+** Methodology [2/2]
 *** Reproducible work
     - Lab book on github  
     - Literate programming 
@@ -448,8 +448,7 @@ Text
      - Qualitative observation in term of speed up
 **** Comparison with random and genetic algo
 
-** Contribution [0/22]                                             :noexport:
-** Envisioned general approach[0/1]
+** Envisioned general approach[1/1]
    Semi automatic, interactive \to gives more control, feed back to the
    user, guide him.
    Gives information about the search space characteristics \to shape \to
@@ -472,7 +471,7 @@ Text
          - remove factors from the model
          - model and optimize
     2. Loop back to 1 to refine the model
-** Controlling measurement [0/1]
+** DONE Controlling measurement [0/0]
     - Time per pixel \to total time / number of pixel. Because we test
       different size of image.
     - min(x_1,...,x_10) ? how to protect against potential warm-up
@@ -481,6 +480,12 @@ Text
       - 4 runs \to take the minimum
     - randomizing to protect against bias, even for full search
       space. But run and image size not randomized.
+
+    - Process
+      - Code generation
+      - Compilation
+      - Bench-marking
+
 ** Results [0/2]
     Considering speedup with regard to the best.
     Comparison:
@@ -1248,15 +1253,14 @@ Text
    driver 340.32 and two CPUs Intel E5-2630.
 * DONE Envisioned general approach
    When using fully automated tools, the user has no feedback about
-   the optimization process and not a lot of control. How good is the
-   optimized version of the code? How is it possible to improve it?
-   What does the search space look like? What are the parameters that
-   have a big impact (high-order parameters) and those which have a
-   small impact (low-order parameters)? All this questions are
-   necessary to understand the structure of the problem. Our approach
-   targets advanced users who need answers to this kind of questions
-   to help them to understand the characteristics of the search space,
-   to be able to prune it correctly and to choose the most suited
+   the optimization process and does not have a lot of control. How
+   good is the optimized version of the code? How is it possible to
+   improve it? What does the search space look like? What are the
+   parameters that have a big impact (high-order parameters) and those
+   which have a small impact (low-order parameters)? All this
+   questions are necessary to understand the structure of the
+   problem and provide valuable information for the expert to be able
+   to prune the search space correctly and to choose the most suited
    search techniques. Thus we investigated the design of a
    semi-automated approach where the user tunes his application in an
    interactive way. All along the tuning process this method provides
@@ -1267,8 +1271,8 @@ Text
 
    As objective the function is empirical and is costly to evaluate, our
    approach consist in sampling the space with only few points to
-   build a model in order to approximate it at low cost. Our approach
-   use linear regression because usually, it is enough to model
+   build a model in order to approximate it at low cost. We focused
+   on linear regression because usually, it is enough to model
    accurately computer phenomenon. However a correct modeling goes
    to together with efficient sampling techniques. That is why we used
    techniques inspired from design of experiments where the goal is to
@@ -1281,27 +1285,27 @@ Text
       interactions, check his hypothesis about the model, etc...
    2. The search space is sampled by taking into account the objective
       of the user. For instance if the user wants to have a first
-      overview of the high-order parameters or if to refine his model or
-      if he wants obtain more information about a precise part of the
-      search space.
-   3. Linear regression build the model based on the hypothesis
-      provided by the user and also determines what are the parameters
+      overview of the high-order parameters or if he wants to refine
+      his model or if he needs to obtain more information about a precise
+      part of the search space.
+   3. Using linear regression a model is built based on the hypothesis
+      provided by the user. It also determines what are the parameters
       that have the most impact. Parameters that have less impact are
       removed from the model and will be re-injected later when higher
       order parameters are fixed.
-   4. According to the model the best value for the studied parameters
-      are predicted.
-   5. Results of the regression and estimated best value for the
-      parameters are return to the user. At this step either he is
-      satisfied by the results of the regression and can prune the
-      search space by fixing the parameters to the estimated values,
-      or he can ask to test another model, ask more points in a
+   4. The best value for the studied parameters are predicted from the
+      model.
+   5. The result of the regression and estimated best value for the
+      parameters are return to the user. At this step, either he is
+      satisfied by the result of the regression and he can prune the
+      search space by fixing the parameters to the estimated values.
+      Or he can ask to test another model, ask more points in a
       particular area to refine the model, etc...
    6. This process iterate until all parameters are fixed.
 
    In short the tuning is done through an iterative and instrumented
-   process where the user refine is model according the information he
-   has. 
+   process where the user refine is model according to the extracted
+   information.
      
  
    #+BEGIN_LaTeX
@@ -1318,7 +1322,7 @@ Text
 
    #+RESULTS:
 
-   #+begin_src R :results output graphics :file img/warm_up.png :exports results :width 800 :height 600 :session
+   #+begin_src R :results output graphics :file img/warm_up.pdf :exports none :width 800 :height 600 :session
      library(plyr)
      library(ggplot2)
 
@@ -1332,15 +1336,68 @@ Text
      
      
      ggplot(d2) +
-         # geom_jitter(aes(x=factor(run_index), y=time_per_pixel, color=factor(load_overlap), shape=factor(temporary_size))) + 
-         geom_point(aes(x=factor(run_index), y=time_per_pixel)) + 
-         geom_errorbar(data=df2,aes(x=factor(run_index),y=mean, ymin=mean-err, ymax=mean+err)) +
-         facet_grid(vector_length ~ image_size_index, scales="free_y", labeller=label_both) 
+          geom_line(aes(x=run_index, y=time_per_pixel, color=factor(load_overlap),linetype=factor(temporary_size))) + 
+          geom_errorbar(data=df2,aes(x=run_index,y=mean, ymin=mean-err, ymax=mean+err)) +
+          facet_grid(vector_length ~ image_size_index, scales="free_y", labeller=label_both) 
    #+end_src
 
    #+RESULTS:
-   [[file:img/warm_up.png]]
+   [[file:img/warm_up.pdf]]
+   
+   Current hardware has became more and more complex and provides
+   features such that power saving, frequency scaling, etc... Thus it
+   is possible to have measurements that are different from an
+   experiment to another even if the set of inputs is the same exactly the
+   same. For instance, frequency scaling mechanism could chose to scale
+   down the frequency of the CPU because of the temperature inside the
+   computer case has increased which would have an impact on the
+   compute time. To have trusted measurements we are concerned about
+   kind of problems because the metric in our case which is the time to
+   compute a pixel, is sensitive to this. Thus we have to protected
+   against variability between the same measurements and especially
+   the warm-up effect. This phenomena can occurs on devices providing
+   energy saving features. This kind of devices generally have a
+   performance mode and an idle mode. As long as the device does not
+   have a lot of work it stays in idle mode but at a some threshold it
+   switches to the performances mode. Thus the device does not provides
+   all its capabilities immediately, hence the warm-up effect.
 
+   The measurement process is made as follows:
+   1. Generation of the next a version of the code
+   2. Compilation
+   3. Bench-marking on several image sizes multiple times.
+  
+   As the code is executed on a GPU, the latter has no work to do
+   during the code generation and compilation phases. For this reason
+   we suspected that warm-up effect can occurs at this moment and also
+   after an image is loaded. We tried to see if on the GPU Nvidia K40
+   there this effect is present. We also tried to quantify it along
+   with the variability we could have between the different runs of
+   the same version of the code in order to protect against it. The
+   figure\ref{warmup}, illustrates what we expected, there is a power
+   saving mechanism on Nvidia K40 which turns the GPU into idle mode
+   when the computational intensity is bellow a threshold. This effect
+   occurs on the first size of image tested, which is just after the
+   code generation and compilation phases. The more run are performed the
+   better the performances. It also could have been the case when
+   going from one image size to another, the GPU could have switched
+   to idle mode while the loading of the image but is not the case the
+   GPU does not have the time to switch to idle mode. So prevent to
+   protected against warm-up effect we just need to make at least four
+   runs on the first size of image and we keep the run the gives
+   minimal time to compute one pixel. However we also did the same
+   four all the size of images. An other concern is the variability
+   between multiple execution of the same version of code but as we
+   can see, it is only due to the warm-effect in the first image
+   size. On the other size of images we have almost no variability.
+
+   #+BEGIN_LaTeX
+   \begin{figure}[]
+   \centering
+   \includegraphics[height=.15\textheight]{./img/warm_up.pdf}
+   \caption{\label{fig:warmup}Warm-up effect}
+   \end{figure}
+   #+END_LaTeX
 * Results
 ***                                                                :noexport:
     #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 600 :height 800 :session
