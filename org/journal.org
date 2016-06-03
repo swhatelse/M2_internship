@@ -13062,7 +13062,7 @@ Entered on [2015-11-19 jeu. 20:56]
        }
      #+END_SRC
 
-**** TODO Search space characteristics                             :Analysis:
+**** DONE Search space characteristics                             :Analysis:
      Generate clean data if note already done:
      #+begin_src sh :results output :exports both
        ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
@@ -13165,6 +13165,74 @@ Entered on [2015-11-19 jeu. 20:56]
      The search more complicated than at first sight because in fact we
      have only few combinations that are really good and the others are
      pretty far from the global optimum.
+
+     In fact we should think in term of slowdown. In fact this search
+     space is simple, there is a lot of good combinations that is why
+     the random and GA perform well:
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/combinations_slowdown.png :exports results :width 800 :height 600 :session
+       library(ggplot2)
+       library(grid)
+       library(gridExtra)
+
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+       slowdown <-  df$time_per_pixel / min(df$time_per_pixel)
+       df$slowdown <- slowdown
+
+       p2 <- qplot(data=df) +
+           geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+           theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+           geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+           geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
+           geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+           ggtitle("Density of the combinations slowdown compared to the best") +
+           labs(y="Density", x="Slowdown")
+
+       p3 <- qplot(data=df) +
+           geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+           theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+           geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+           geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
+           geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+           ggtitle("Density of the combinations slowdown compared to the best") +
+           coord_cartesian(xlim=c(.9,17)) +
+           labs(y="Density", x="Slowdown")
+
+       grid.arrange(p2, p3,  ncol=2, top=textGrob("Repartition of the performance combination")) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:img/20160402/pilipili2/combinations_slowdown.png]]
+
+     Only few very bad points. 75% of the time the slowdown is below 17.177%
+     #+begin_src R :results output :session :exports both
+     summary(df)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+      elements_number  y_component_number vector_length   temporary_size 
+      Min.   : 1.000   Min.   :1.000      Min.   : 1.00   Min.   :2.000  
+      1st Qu.: 4.000   1st Qu.:2.000      1st Qu.: 2.00   1st Qu.:2.000  
+      Median : 6.000   Median :3.000      Median : 4.00   Median :2.000  
+      Mean   : 8.598   Mean   :3.441      Mean   : 5.73   Mean   :2.975  
+      3rd Qu.:12.000   3rd Qu.:5.000      3rd Qu.: 8.00   3rd Qu.:4.000  
+      Max.   :24.000   Max.   :6.000      Max.   :16.00   Max.   :4.000  
+      vector_recompute load_overlap  threads_number       lws_y        
+      true:23120       false:11400   Min.   :  32.0   Min.   :   1.00  
+                       true :11720   1st Qu.:  64.0   1st Qu.:   4.00  
+                                     Median : 256.0   Median :  16.00  
+                                     Mean   : 368.1   Mean   :  73.58  
+                                     3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                     Max.   :1024.0   Max.   :1024.00  
+      time_per_pixel         slowdown      
+      Min.   :1.165e-10   Min.   :  1.000  
+      1st Qu.:3.028e-10   1st Qu.:  2.599  
+      Median :7.125e-10   Median :  6.116  
+      Mean   :2.013e-09   Mean   : 17.276  
+      3rd Qu.:2.001e-09   3rd Qu.: 17.177  
+      Max.   :4.452e-08   Max.   :382.168
+#+end_example
 
 **** TODO A random exploration                                     :Analysis:
      #+begin_src sh :results output :exports both
@@ -23832,14 +23900,14 @@ h[g.name.to_sym] = 1024
        #+RESULTS:
 
       #+begin_src sh :results output :exports none
-        DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+        INPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt.yaml"
         for i in `seq 1 100`; do
-            ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+            ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $INPOUT -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
         done
       #+end_src
-      
+
       #+begin_src sh :results output :exports none
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt.yaml
       #+end_src
@@ -23854,26 +23922,7 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
 
-      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-        df_gen <- read.csv("/tmp/test.csv", strip.white=T, header=T)
-
-        library(ggplot2)
-        speedup <- c()
-        for (i in 1:nrow(df_gen)){
-            speedup[i] <-  min(df$time_per_pixel) / df_gen[i,]$time_per_pixel
-        }
-        data <- data.frame(speedup)
-        ggplot(data) +
-            aes(speedup) +
-            theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-            geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
-            geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
-            geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
-      #+end_src
-
-      #+RESULTS:
-      [[file:/tmp/babel-3564RBo/figure35645kG.png]]
-
+  
 ****** Random 
       Formating the full search space to csv:
       #+begin_src sh :results output :exports none
@@ -24613,6 +24662,41 @@ h[g.name.to_sym] = 1024
       #+RESULTS:
       [[file:/tmp/babel-3564RBo/figure3564YFq.png]]
 
+**** Study of the convergence of the distribution
+***** GA
+      #+begin_src sh :results output :exports none :tangle ../scripts/GA_experiment.sh
+        INPUT="$1"
+        PARAM="$2"
+        OUTPUT="$3"
+        for i in `seq 1 100`; do
+            ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $INPUT -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+        done
+      #+end_src
+      
+      #+begin_src sh :results output :exports both :tangle ../scripts/GA_run.sh
+        DAY=`date +%Y_%m_%d`
+        DIR="../data/$DAY"
+        mkdir -p $DIR
+        DIR="$DIR/pilipili2"
+        mkdir -p $DIR
+        DIR="$DIR/algos"
+        mkdir -p $DIR
+        DIR="$DIR/GA"
+        mkdir -p $DIR
+        INPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+        PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+
+        for i in `seq 1 100`; do 
+          START=$(date +%s)
+          ../scripts/GA_experiment.sh $INPUT $PARAM ${DIR}/"$i.yaml"
+          END=$(date +%s)
+        done
+        echo $(($END-$START))
+      #+end_src
+
+      #+RESULTS:
+      : 1179
+
 *** DONE Investigating iterated regression error
     #+begin_src R :results output :session :exports both
       df1 <- read.csv("../data/2016_04_08/pilipili2/18_08_24/debug_iwr.csv")
@@ -24906,3 +24990,7 @@ h[g.name.to_sym] = 1024
      Max.   :4.452e-08
 #+end_example
 
+** 2016-06-03
+*** TODO Check distribution convergence
+    Run 1000 experiments compute the histogram for each
+    
