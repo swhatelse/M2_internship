@@ -24562,17 +24562,17 @@ h[g.name.to_sym] = 1024
         ggplot() +
             coord_cartesian() +
             stat_ecdf(aes(df_all_methods[df_all_methods$method=="GA",]$speedup),color="green") + 
-            stat_ecdf(aes(df_all_methods[df_all_methods$method=="RS",]$speedup),color="blue") + 
-            stat_ecdf(aes(df_all_methods[df_all_methods$method=="GR",]$speedup),color="red") + 
-            stat_ecdf(aes(df_all_methods[df_all_methods$method=="LHS",]$speedup),color="yellow") + 
+            # stat_ecdf(aes(df_all_methods[df_all_methods$method=="RS",]$speedup),color="blue") + 
+            # stat_ecdf(aes(df_all_methods[df_all_methods$method=="GR",]$speedup),color="red") + 
+            # stat_ecdf(aes(df_all_methods[df_all_methods$method=="LHS",]$speedup),color="yellow") + 
             stat_ecdf(aes(df_all_methods[df_all_methods$method=="LM",]$speedup),color="darkviolet") + 
-            stat_ecdf(aes(df_all_methods[df_all_methods$method=="RQ",]$speedup),color="grey") + 
+            stat_ecdf(aes(df_all_methods[df_all_methods$method=="RQ",]$speedup),color="black") + 
             labs(y="Cumulative distribution", x="Percentage of the maximal speedup achieved") +
             ggtitle("LM + Random sample")     
       #+end_src
        
       #+RESULTS:
-      [[file:/tmp/babel-6458re_/figure64585tR.png]]
+      [[file:/tmp/babel-6458re_/figure6458gMk.png]]
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
         library(ggplot2)
