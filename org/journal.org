@@ -24100,10 +24100,12 @@ h[g.name.to_sym] = 1024
        #+end_src
        
        #+RESULTS:
-       
+
        #+begin_src R :results output :session :exports none
          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
        #+end_src
+
+       #+RESULTS:
 
        #+begin_src R :results output :session :exports none
          set.seed(1) 
@@ -24179,7 +24181,7 @@ h[g.name.to_sym] = 1024
 
              if(nrow(subset) < 5 ){
                subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = nrow(pruned_full_space), replace = FALSE),])
-               point_count[i] <- point_count[i] + 5
+               point_count[i] <- point_count[i] + nrow(pruned_full_space)
              }
 
              model <- time_per_pixel ~ load_overlap
@@ -24423,11 +24425,14 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
-      
+==      
 ***** Visualilzation
       #+begin_src sh :results output :exports none
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
       #+end_src
+
+      #+RESULTS:
+
       
       # Load the full space first
       #+begin_src R :results output :session :exports none
@@ -24594,7 +24599,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-6458re_/figure6458G4X.png]]
+      [[file:/tmp/babel-4834_kS/figure4834l_u.png]]
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
         ggplot() + 
