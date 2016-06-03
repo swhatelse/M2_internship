@@ -23921,8 +23921,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
-
-  
+ 
 ****** Random 
       Formating the full search space to csv:
       #+begin_src sh :results output :exports none
@@ -24693,6 +24692,262 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
       : 1179
+
+***** Random
+      #+begin_src R :results output :session :exports both :tangle ../scripts/RS_experiment.R
+        #!/usr/bin/env Rscript
+        args = commandArgs(trailingOnly=TRUE)
+        output = args[1]
+
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+        df_uniform <- data.frame()
+        for (i in 1:100){
+            s <- df[sample(1:nrow(df), size = 120, replace = FALSE),]
+            df_uniform <- rbind(df_uniform, s[s$time_per_pixel==min(s$time_per_pixel) ,])
+        }
+
+        df_uniform <- cbind(df_uniform, point_number=rep(120,100), method=rep("RS",nrow(df_uniform)))
+        df_uniform$slowdown <- df_uniform$time_per_pixel / min(df$time_per_pixel)
+        write.csv(df_uniform, output, row.names=FALSE)
+      #+end_src
+
+      #+begin_src sh :results output :exports both :tangle ../scripts/RS_run.R
+        DAY=`date +%Y_%m_%d`
+        DIR="../data/$DAY"
+        mkdir -p $DIR
+        DIR="$DIR/pilipili2"
+        mkdir -p $DIR
+        DIR="$DIR/algos"
+        mkdir -p $DIR
+        DIR="$DIR/RS"
+        mkdir -p $DIR
+        INPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+
+        ruby ../scripts/format_data.rb $INPUT
+
+        for i in `seq 1 100`; do 
+          Rscript ../scripts/RS_experiment.R ${DIR}/"$i.csv" &
+        done
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+            elements_number y_component_number vector_length temporary_size
+      20540               4                  4             1              4
+      12314               6                  6             1              4
+      11070               5                  5             1              2
+      10280               5                  5             1              2
+      4353                3                  3             1              4
+      12450               5                  5             1              2
+            vector_recompute load_overlap threads_number lws_y time_per_pixel
+      20540             true         true           1024     2   1.267757e-10
+      12314             true         true            512     2   1.201387e-10
+      11070             true         true           1024     2   1.230414e-10
+      10280             true        false            128     4   1.186349e-10
+      4353              true         true            128     2   1.365384e-10
+      12450             true         true            512     4   1.180929e-10
+            point_number method slowdown
+      20540          120     RS 1.088191
+      12314          120     RS 1.031222
+      11070          120     RS 1.056138
+      10280          120     RS 1.018313
+      4353           120     RS 1.171990
+      12450          120     RS 1.013662
+#+end_example
+
+***** Greedy
+      #+begin_src R :results output :session :exports none :tangle ../scripts/Greedy_experiment.R
+        #!/usr/bin/env Rscript
+        kernel_size <- function(point) {
+            vector_number <- ceiling((point$elements_number / point$y_component_number) / point$vector_length)
+            
+            tempload <- (1 - point$load_overlap) * (vector_number * point$vector_length) / point$vector_length * point$vector_length
+            temp <-  point$load_overlap * 3 * vector_number * (point$y_component_number+2) * point$vector_length
+            res <- vector_number * point$y_component_number * point$vector_length
+            tempc <- 3 * vector_number * (point$y_component_number + 2) * point$temporary_size * point$vector_length
+            out_vec = (1 - point$load_overlap) * tempc
+            resc <- vector_number * point$y_component_number * point$temporary_size * point$vector_length
+            
+            tot <- (tempload + temp + res + tempc + out_vec + resc) * point$threads_number
+        }
+
+        check_constraint <- function(point){
+            res <- if(point$load_overlap %in% 0:1 &
+                      point$lws_y <= point$threads_number &
+                      point$elements_number %% point$y_component_number == 0 &
+                      point$elements_number %/% point$y_component_number <= 4 &
+                      kernel_size(point) < kernel_size(data.frame(elements_number=6, y_component_number=6, vector_length=8, temporary_size=2, load_overlap=0, threads_number=1024))
+                      ) T else F
+        }
+
+        point_equal <- function(p1,p2){
+            res <- if(p1$elements_number == p2$elements_number &
+                      p1$y_component_number == p2$y_component_number &
+                      p1$vector_length == p2$vector_length &
+                      p1$temporary_size == p2$temporary_size &
+                      p1$load_overlap == p2$load_overlap &
+                      p1$threads_number == p2$threads_number) T else F
+        }
+
+        gradient_descent <- function(point, limit=100){
+            elements_number    <- c(1,0,0,0,0,0,0,-1,0,0,0,0,0,0)
+            y_component_number <- c(0,1,0,0,0,0,0,0,-1,0,0,0,0,0)
+            vector_length      <- c(0,0,1,0,0,0,0,0,0,-1,0,0,0,0)
+            temporary_size     <- c(0,0,0,1,0,0,0,0,0,0,-1,0,0,0)
+            load_overlap       <- c(0,0,0,0,1,0,0,0,0,0,0,-1,0,0)
+            threads_number     <- c(0,0,0,0,0,1,0,0,0,0,0,0,-1,0)
+            lws_y              <- c(0,0,0,0,0,0,1,0,0,0,0,0,0,-1)
+            
+            factors <- list(elements_number = as.numeric(levels(as.factor(df$elements_number))), 
+                            y_component_number = as.numeric(levels(as.factor(df$y_component_number))), 
+                            vector_length = as.numeric(levels(as.factor(df$vector_length))), 
+                            temporary_size = as.numeric(levels(as.factor(df$temporary_size))), 
+                            threads_number= as.numeric(levels(as.factor(df$threads_number))), 
+                            lws_y= as.numeric(levels(as.factor(df$lws_y)))) 
+            
+            directions <- data.frame(elements_number, y_component_number, vector_length, temporary_size, load_overlap, threads_number, lws_y)
+            count <- 0
+            
+            repeat{
+                old_point <- point
+                candidates <- data.frame()
+                
+                for(i in 1:nrow(directions)){
+                    idx_elements_number = match(point$elements_number, factors$elements_number) + directions[i,]$elements_number
+                    idx_y_component_number = match(point$y_component_number, factors$y_component_number) + directions[i,]$y_component_number
+                    idx_vector_length = match(point$vector_length, factors$vector_length) + directions[i,]$vector_length
+                    idx_temporary_size = match(point$temporary_size, factors$temporary_size) + directions[i,]$temporary_size
+                    idx_threads_number = match(point$threads_number, factors$threads_number) + directions[i,]$threads_number
+                    idx_lws_y = match(point$lws_y, factors$lws_y) + directions[i,]$lws_y
+                    
+                    if(!(idx_elements_number %in% 1:length(levels(as.factor(df$elements_number))))) next
+                    if(!(idx_y_component_number %in% 1:length(levels(as.factor(df$y_component_number))))) next
+                    if(!(idx_vector_length %in% 1:length(levels(as.factor(df$vector_length))))) next
+                    if(!(idx_temporary_size %in% 1:length(levels(as.factor(df$temporary_size))))) next
+                    if(!(idx_threads_number %in% 1:length(levels(as.factor(df$threads_number))))) next
+                    if(!(idx_lws_y %in% 1:length(levels(as.factor(df$lws_y))))) next
+                    
+                    p <- data.frame(elements_number = factors$elements_number[idx_elements_number],
+                                    y_component_number = factors$y_component_number[idx_y_component_number],
+                                    vector_length = factors$vector_length[idx_vector_length],
+                                    temporary_size = factors$temporary_size[idx_temporary_size],
+                                    load_overlap = if(point$load_overlap == "true") 1 + directions[i,]$load_overlap else 0 + directions[i,]$load_overlap,
+                                    threads_number = factors$threads_number[idx_threads_number],
+                                    lws_y = factors$lws_y[idx_lws_y]
+                                    )
+                    
+                    if(check_constraint(p) == T){
+                        p <- df[df$elements_number == p$elements_number & 
+                                df$y_component_number == p$y_component_number & 
+                                df$vector_length == p$vector_length &
+                                df$temporary_size == p$temporary_size &
+                                df$load_overlap == (if (p$load_overlap == 0) "false" else "true") &
+                                                #df$load_overlap == "true" &
+                                df$threads_number == p$threads_number &
+                                df$lws_y == p$lws_y,]
+                        candidates <- rbind(p, candidates)
+                    }
+                }
+                
+                if(candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]$time_per_pixel < point$time_per_pixel){
+                    point <- candidates[candidates$time_per_pixel == min(candidates$time_per_pixel),]
+                }
+                
+                count <- count + 1
+                if(count >= limit | point_equal(old_point,point) == T){
+                    break
+                }
+            }
+            
+            point <- cbind(point,point_number=count)
+            point
+        }
+
+        row_to_coordinate <- function(row){
+            drops <- c("time_per_pixel", "vector_recompute")
+            row[, !(names(row) %in% drops)]
+        }
+
+        args = commandArgs(trailingOnly=TRUE)
+        output = args[1]
+        
+        df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+        df_greedy <- data.frame()
+        for(i in 1:100){
+            p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
+            df_greedy <- rbind(df_greedy,gradient_descent(p,1e5))
+        }
+        df_greedy <- cbind(df_greedy, method=rep("GR",nrow(df_greedy))) 
+        df_greedy$slow_down <- df_greedy$time_per_pixel / min(df$time_per_pixel) 
+
+        write.csv(df_greedy, output, row.names=FALSE)
+      #+end_src
+
+      #+begin_src sh :results output :exports both :tangle ../scripts/Greedy_run.R
+        DAY=`date +%Y_%m_%d`
+        DIR="../data/$DAY"
+        mkdir -p $DIR
+        DIR="$DIR/pilipili2"
+        mkdir -p $DIR
+        DIR="$DIR/algos"
+        mkdir -p $DIR
+        DIR="$DIR/GR"
+        mkdir -p $DIR
+        INPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+
+        ruby ../scripts/format_data.rb $INPUT
+        for i in `seq 1 100`; do 
+            Rscript ../scripts/Greedy_experiment.R ${DIR}/"$i.csv" &
+        done
+      #+end_src
+
+***** LHS
+       #+begin_src R :results output :session :exports none
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+   
+        library(DoE.base)
+        library(DoE.wrapper)
+
+        elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+        y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+        vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+        threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+        lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+        temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+        load_overlap_val <- levels(df$load_overlap)
+
+        df_lhs <- data.frame()
+        point_count <- c()
+        runs = 100  
+        for(j in 1:runs){
+            Design.1 <- lhs.design( type= "maximin" , nruns= 441 ,nfactors= 7, randomize=TRUE ,digits= NULL, factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
+                                                                                                                               idx_y_component_number = c(1,length(y_component_number_val)),
+                                                                                                                               idx_vector_length = c(1,length(vector_length_val)), 
+                                                                                                                               idx_threads_number = c(1,length(threads_number_val)),
+                                                                                                                               idx_temporary_size = c(1,length(temporary_size_val)), 
+                                                                                                                               idx_lws_y = c(1,length(lws_y_val)), 
+                                                                                                                               idx_load_overlap = c(1,length(load_overlap_val)) 
+                                                                                                                               ) 
+                                   )
+
+            Design.1.rounded <- round(Design.1) 
+
+            set <- data.frame()
+            for(i in 1:nrow(Design.1.rounded)){
+                set <- rbind(set, df[ df$elements_number == elements_number_val[Design.1.rounded$idx_elements_number[i]]
+                                     & df$y_component_number == y_component_number_val[Design.1.rounded$idx_y_component_number[i]]
+                                     & df$vector_length == vector_length_val[Design.1.rounded$idx_vector_length[i]]
+                                     & df$threads_number == threads_number_val[Design.1.rounded$idx_threads_number[i]]
+                                     & df$lws_y == lws_y_val[Design.1.rounded$idx_lws_y[i]]
+                                     & df$temporary_size == temporary_size_val[Design.1.rounded$idx_temporary_size[i]]
+                                     & df$load_overlap == load_overlap_val[Design.1.rounded$idx_load_overlap[i]], ])
+            }
+            point_count[j] <- nrow(set)
+            df_lhs <- rbind(df_lhs, set[set$time_per_pixel==min(set$time_per_pixel) ,])
+        }
+        df_lhs <- cbind(df_lhs, point_number=point_count, method=rep("LHS",nrow(df_lhs)))
+        write.csv(df_lhs, output, row.names=FALSE)
+      #+end_src
 
 *** DONE Investigating iterated regression error
     #+begin_src R :results output :session :exports both
