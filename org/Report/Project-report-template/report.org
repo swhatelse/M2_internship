@@ -449,6 +449,8 @@ Text
 **** Comparison with random and genetic algo
 
 ** Envisioned general approach[1/1]
+   # Maybe need more explanation 
+   # What is the linear regression, how we use it, why, etc...
    Semi automatic, interactive \to gives more control, feed back to the
    user, guide him.
    Gives information about the search space characteristics \to shape \to
@@ -505,7 +507,7 @@ Text
    | Histogram of solutions | Cost |
 
 ** Analysis [0/14]
-*** Characteristics of the search space [0/2]
+*** Characteristics of the search space [1/2]
    - Repartition of good combinations
    - Lots of local optimum \to local search failed
    - Heteroscedasticity \to noise due to interactions
@@ -914,7 +916,7 @@ Text
   in tuning correctly the different optimization parameters of the
   applications. 
 
-* TODO Problem analysis
+** Problem analysis
   The tuning of applications is a non-trivial problem, because the
   search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
@@ -1185,6 +1187,7 @@ Text
 
      | Parameters         | Values                            |
      |--------------------+-----------------------------------|
+     | /                  | <                                 |
      | vector length      | 1,2,4,8,16                        |
      | load overlap       | true,false                        |
      | temporary size     | 2,4                               |
@@ -1456,7 +1459,7 @@ Text
 
     Our approach uses the random uniform sampling techniques to sample
     the search space. It starts with 105 random points and adds 5
-    additional points we needed to be able to perform the
+    additional points when needed to be able to perform the
     regression but we do not use more than 120 points. In order to
     automate our approach for evaluation purpose, we decided to apply
     exactly the same strategy. This means we fixed the parameters in
@@ -1485,6 +1488,8 @@ Text
    \end{figure}
    #+END_LaTeX
 
+    #+CAPTION: This table shows the minimum, maximum, mean and median slowdown including the mean number of points used by each method
+    #+NAME:   tab:comparison-table
     | Methods |   Min |    Max |  Mean | Median | Mean Cost |
     |---------+-------+--------+-------+--------+-----------|
     | /       |    <> |     <> |    <> |     <> |           |
@@ -1497,7 +1502,15 @@ Text
 
 
 * Analysis
+  This part explains the results of our approach. First we made a
+  detailed study of the search to understand our results. As we used the
+  linear regression of expectation and the quantile regression we
+  studied there difference. Then we studied the impact of the choice
+  of the model and the sampling techniques on our approach. Finally we
+  dig into optimization techniques to converge faster to the optimal
+  solution using our model of the objective function.
 ** Characteristics of the search space
+***                                                                :noexport:
    #+begin_src sh :results output :exports none
        ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
    #+end_src
@@ -1507,42 +1520,72 @@ Text
    #+end_src
 
    #+RESULTS:
-
-   #+begin_src R :results output graphics :file ./img/search_combination_rep_speedup.png :exports results :width 800 :height 600 :session
+*** 
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.png :exports results :width 800 :height 600 :session
      library(ggplot2)
      library(grid)
      library(gridExtra)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-     speedup <- c()
-     for(i in 1:nrow(df)){
-         speedup[i] <- min(df$time_per_pixel) / df[i,]$time_per_pixel      
-     }
-     df$speedup <- speedup
 
-     p1 <- qplot(data=df) +
-         geom_histogram(aes(x=time_per_pixel,y=..density.. * 1e-9), binwidth=1e-9, color="white") +
-         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(df$time_per_pixel), color="green", linetype=2) +
-         geom_vline(xintercept = mean(df$time_per_pixel), color="red", linetype=2) +
-         geom_vline(xintercept = quantile(df$time_per_pixel, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         ggtitle("Density of the of performances combinations") +
-         labs(y="Density", x="Time per pixel")
+     slowdown <-  df$time_per_pixel / min(df$time_per_pixel)
+     df$slowdown <- slowdown
 
      p2 <- qplot(data=df) +
-         geom_histogram(aes(x=speedup,y=..density.. * 0.05), binwidth=.05, color="white") +
+         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(speedup), color="darkgreen", linetype=2) +
-         geom_vline(xintercept = quantile(speedup, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         geom_vline(xintercept = mean(speedup), color="red", linetype=2) +
-         ggtitle("Density of the combinations speedup compared to the best") +
-         labs(y="Density", x="Speedup")
-         
-       grid.arrange(p1, p2,  ncol=2, top=textGrob("Repartition of the performance combination")) 
+         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+         ggtitle("Density of the combinations slowdown compared to the best") +
+         labs(y="Density", x="Slowdown")
+
+     p3 <- qplot(data=df) +
+         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+         ggtitle("Density of the combinations slowdown compared to the best") +
+         coord_cartesian(xlim=c(.9,17)) +
+         labs(y="Density", x="Slowdown")
+
+     grid.arrange(p2, p3,  ncol=2, top=textGrob("Repartition of the performance combination")) 
    #+end_src
 
    #+RESULTS:
-   [[file:./img/search_combination_rep_speedup.png]]
+   [[file:./img/search_combination_rep_slowdown.png]]
+
+  By studying the characteristics of the search space we can
+  understand the structure of the problem in order to be able to
+  understand the results of the different search techniques. 
+  The figure\ref{} and the table\ref{search-space-characteristics}
+  show the distribution of the combinations over the 
+  search space in term of slowdown. This search space contains a lot
+  of good combinations, half of them have a slowdown that
+  is less x6.1 which is x2.8 faster than the mean slowdown. However
+  there are few bad ones with the worst at a slowdown of x382. Thus
+  the probability of finding a good performing combination is high,
+  this is the reason why randomized algorithms such as the RS, GA and
+  LHS good results. Yet, this search space remains complicated,
+  because as we saw previously our local search GR failed which means
+  there are a lot of local optimum in which it is stuck and some are
+  far from the optimal one. 
+
+  #+CAPTION: This presents the slowdown characteristics of the search space
+  #+NAME:   tab:search-space-characteristics
+  | Min  | 1st Q. | Median | Mean   | 3rd Q. |     Max |
+  |------+--------+--------+--------+--------+---------|
+  | /    | <>     | <>     | <>     | <>     |         |
+  | 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
+
+
+   We can also notice in the figure\ref{} that the variability is not
+   the same everywhere, hence our random variables are
+   heteroscedastics. This  because the noise does not 
+   follow the same law for the different value of the same
+   parameters. This noise is due to complex interactions between
+   parameters.  
 
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
@@ -1632,17 +1675,17 @@ Text
    have been put aside for no real reasons to our knowledge. Using
    this method to study the impact of the parameters with using linear
    models to approximate the behavior of the search space coupled with
-   efficient sampling strategies seemed very interesting to us.
+   efficient sampling strategies seemed very appealing to us.
    
-   If linear regression have been efficient in brewer's
+   If linear regression have been efficient in Brewer's
    work\cite{Brewer:1995:HOV:209937.209946} it is maybe because at
    this time the architecture of computers was less complicated than
    today. The figure\ref{fig:lm-1} shows clearly the limit of the
    linear regression on the simple case such as a Laplacian kernel on
    nowadays architectures. First, one of the assumptions of the linear
    regression is homoscedasticity of the data which is not often
-   necessarily the case, and in our example we can see that the
-   variability is not the same at each factor level.
+   the case, and in our example we can see that the variability is not
+   the same at each factor level. 
 
    Heteroscedasticity is problematic because the least square is not
    the Best Linear Unbiased Estimator in this case and it biases the
