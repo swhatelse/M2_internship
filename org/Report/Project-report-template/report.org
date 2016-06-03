@@ -486,7 +486,7 @@ Text
       - Compilation
       - Bench-marking
 
-** Results [1/2]
+** Results [2/2]
     Considering slowdown with regard to the best.
     Comparison:
     - GA \to not tuned \to would have take time to tune it
@@ -1430,30 +1430,53 @@ Text
       mutation rate of 0.1. Among the different configuration tested
       it was the one that gives the best results, however it could be
       possible to obtain better results by tuning further the options.
-    - LHS: it is not methods use to search, it is sampling which take
-      point randomly but which also maximize the distance between the
-      point to cover the full search space. However we want to see how
-      a search based in it would perform.
-    - GR: greedy search which is a local search. From a starting point
-      it explores all the possible directions it can go at distance
-      one and goes to the direction that gives the best improvement
-      this kind of algorithm is very efficient on convex search space
-      or if we already know where to search. 
+    - LHS: it is not methods use to search, it is a sampling
+      techniques which take point randomly but which also maximize the
+      distance between the point to cover the full search
+      space. However we want to see how a search based on it would
+      perform. 
+    - GR: greedy search which is a derivative-free local search. From
+      a starting point it explores all the possible directions at
+      distance one and goes to the direction that gives the best
+      improvement. This kind of algorithm is very efficient on convex
+      objective function or if we already know where to search.  
     
-    There are many ways of performing linear regression. With our
-    approach, we evaluated two of them:
+    There are many ways of performing linear regression. We evaluated
+    two of them: 
     - LM: which is the least square regression which gives an estimate
-      of the mean
+      of the mean.
     - RQ: which is the quantile regression which gives an estimate of
       a given quantile.
 
-    We measured each methods one hundred time with about 120
-    points for GA, RS, LHS, LM and RQ and we evaluated the slowdown
-    achieved compared to the best solution available in the entire
-    search space. Figure\ref{search_comparison} shows the
-    results. With this search space, the local search is inefficient,
-    half of the time we get a slowdown of higher than x2. The LHS
-    search does better with a slowdown that is below 1.388
+    We measured each methods one hundred time with about 120 (0.5% of
+    the search space) points for GA, RS, LHS, LM and RQ and we
+    evaluated the slowdown achieved compared to the best solution
+    available in the entire search space. For GR 1 random point is
+    chosen as starting point.
+
+    Our approach uses the random uniform sampling techniques to sample
+    the search space. It starts with 105 random points and adds 5
+    additional points we needed to be able to perform the
+    regression but we do not use more than 120 points. In order to
+    automate our approach for evaluation purpose, we decided to apply
+    exactly the same strategy. This means we fixed the parameters in
+    the same order, thus pruning decisions are the same and we used
+    exactly the same model of without considering the structure of the
+    random set.
+
+    Figure\ref{search_comparison} shows the  results. 
+    With this search space, the local search GR is inefficient,
+    half of the time we get a slowdown of higher than x2. It can be
+    every far from the optimal solution, up to x66 slower.
+    The LHS search does a lot more better with a slowdown that is
+    never higher than 38.8%. 50% of the time we can get a slowdown of
+    17%.
+    The uniform random search RS is very efficient here. Half of the time
+    we get a slowdown that is less than 7.9% and we do not get a
+    maximum slowdown of slowdown.
+    The genetic algorithm GA is the one that performs the best in
+    general with a slowdown which is less than 7.3% half of the time
+    and a maximum slowdown of 39%.
    #+BEGIN_LaTeX
    \begin{figure}[]
    \centering
@@ -1462,14 +1485,16 @@ Text
    \end{figure}
    #+END_LaTeX
 
-    | Methods |   Min |    Max |  Mean | Median |
-    |---------+-------+--------+-------+--------|
-    | GR      | 1.006 | 66.010 | 7.964 |  2.161 |
-    | LHS     | 1.009 |  1.388 | 1.155 |  1.172 |
-    | RS      | 1.011 |  1.341 | 1.098 |  1.079 |
-    | GA      |  1.00 |  1.390 | 1.098 |  1.073 |
-    | LM      | 1.010 | 32.060 | 1.445 |  1.080 |
-    | RQ      | 1.010 | 30.890 | 1.432 |  1.073 |
+    | Methods |   Min |    Max |  Mean | Median | Mean Cost |
+    |---------+-------+--------+-------+--------+-----------|
+    | /       |    <> |     <> |    <> |     <> |           |
+    | GR      | 1.006 | 66.010 | 7.964 |  2.161 |      2.33 |
+    | LHS     | 1.009 |  1.388 | 1.155 |  1.172 |      99.6 |
+    | RS      | 1.011 |  1.341 | 1.098 |  1.079 |       120 |
+    | GA      |  1.00 |  1.390 | 1.098 |  1.073 |       120 |
+    | LM      | 1.010 | 32.060 | 1.445 |  1.080 |       119 |
+    | RQ      | 1.010 | 30.890 | 1.432 |  1.073 |       119 |
+
 
 * Analysis
 ** Characteristics of the search space
