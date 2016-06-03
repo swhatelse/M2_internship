@@ -25607,4 +25607,24 @@ h[g.name.to_sym] = 1024
 ** 2016-06-03
 *** TODO Check distribution convergence
     Run 1000 experiments compute the histogram for each
-    
+
+*** TODO Dynamic automatization 
+    Dynamization of the analysis process in order to automatize it
+
+    #+begin_src R :results output :session :exports none
+      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+    #+end_src
+
+    #+begin_src R :results output :session :exports both
+          objective_predict <- function(fit,x){
+            names <- colnames(x)
+            s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
+            eval(parse(text=s))
+            as.numeric(predict(fit, values, interval="none")))
+          }
+
+          machin <- function(model){
+
+          }
+          
+    #+end_src
