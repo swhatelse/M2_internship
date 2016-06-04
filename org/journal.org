@@ -24647,7 +24647,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-4834_kS/figure4834l_u.png]]
+      [[file:/tmp/babel-2560wTm/figure256081G.png]]
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
         ggplot() + 
@@ -25611,9 +25611,17 @@ h[g.name.to_sym] = 1024
 *** TODO Dynamic automatization 
     Dynamization of the analysis process in order to automatize it
 
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
     #+begin_src R :results output :session :exports none
       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
     #+end_src
+
+    #+RESULTS:
 
     #+begin_src R :results output :session :exports both
           objective_predict <- function(fit,x){
@@ -25623,8 +25631,864 @@ h[g.name.to_sym] = 1024
             as.numeric(predict(fit, values, interval="none")))
           }
 
-          machin <- function(model){
-
+          machin <- function(data,model){
+            fit <- lm(formula(model),data)
+            p <- coef(summary(fit))[,4] 
           }
           
     #+end_src
+
+**** Extract p-values                                                     :R:
+     #+begin_src R :results output :session :exports both
+       fit <- lm(data=df,formula=time_per_pixel ~ elements_number + vector_length + lws_y + temporary_size)
+       summary(fit)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+
+     Call:
+     lm(formula = time_per_pixel ~ elements_number + vector_length + 
+         lws_y + temporary_size, data = df)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -7.085e-09 -1.222e-09 -4.750e-10  5.230e-10  3.818e-08 
+
+     Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)      8.219e-10  7.543e-11   10.90   <2e-16 ***
+     elements_number -1.130e-10  3.352e-12  -33.71   <2e-16 ***
+     vector_length    2.396e-10  3.921e-12   61.10   <2e-16 ***
+     lws_y            9.453e-12  1.239e-13   76.27   <2e-16 ***
+     temporary_size   3.167e-11  2.029e-11    1.56    0.119    
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 3.083e-09 on 23115 degrees of freedom
+     Multiple R-squared:  0.3115,	Adjusted R-squared:  0.3114 
+     F-statistic:  2615 on 4 and 23115 DF,  p-value: < 2.2e-16
+     #+end_example
+
+     We can either compute p-values like this:
+     #+begin_src R :results output :session :exports both
+       (tstats <- coef(fit) / sqrt(diag(vcov(fit))))
+       2 * pt(abs(tstats), df = df.residual(fit), lower.tail = FALSE)
+     #+end_src
+
+     #+RESULTS:
+     :     (Intercept) elements_number   vector_length           lws_y  temporary_size 
+     :       10.896324      -33.711880       61.096237       76.266326        1.560315
+     :     (Intercept) elements_number   vector_length           lws_y  temporary_size 
+     :    1.400579e-27   2.974186e-243    0.000000e+00    0.000000e+00    1.186992e-01
+
+     Or retrieve it from summary like this:     
+     #+begin_src R :results output :session :exports both
+     coef(summary(fit))[,4]
+     #+end_src
+
+     #+RESULTS:
+     :     (Intercept) elements_number   vector_length           lws_y  temporary_size 
+     :    1.400579e-27   2.974186e-243    0.000000e+00    0.000000e+00    1.186992e-01
+
+** 2016-06-04
+*** DONE Improving worst solution
+**** Generating the logs
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports none
+      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+    #+end_src
+    
+    #+begin_src R :results output :session :exports none
+      set.seed(1) 
+      runs = 100
+      df_lm_random <- data.frame()
+      point_count <- c()
+      logs <- data.frame()
+      
+      for(i in 1:runs){
+          random_set <- df[sample(1:nrow(df), size = 105, replace = FALSE),]
+          tmp <- cbind(random_set, run=rep(i,nrow(random_set)))
+          logs <- rbind(logs, tmp)
+          point_count[i] <- nrow(random_set)
+          
+          model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+              vector_length + 
+              lws_y + I(1/lws_y) +
+              threads_number + I(1/threads_number)
+          
+          fit <- lm(data=random_set,formula=formula(model))
+          
+          f <- function(x){
+              as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
+                                                vector_length=x$vector_length, 
+                                                threads_number=x$threads_number,
+                                                lws_y=x$lws_y,
+                                                interval="none")))
+          }
+          
+          best_base <- df[f(df[,c(2,3,7,8)]) == min(f(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+          
+          subset <- random_set[random_set$y_component_number == best_base$y_component_number & random_set$vector_length == best_base$vector_length & random_set$threads_number == best_base$threads_number, ]
+          pruned_full_space <- df[df$y_component_number == best_base$y_component_number & df$vector_length == best_base$vector_length & df$threads_number == best_base$threads_number, ]
+          
+      ###########################################
+          
+          if(nrow(subset) < 5 ){
+              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+              point_count[i] <- point_count[i] + 5
+          }
+          
+          model <- time_per_pixel ~ lws_y + I(1/lws_y)
+          
+          fit <- lm(data=subset,formula=model)
+          
+          f <- function(x){
+              as.numeric(predict(fit,data.frame(lws_y=x, interval="none")))
+          }
+          
+          best_lws_y <- pruned_full_space[f(pruned_full_space$lws_y) == min(f(pruned_full_space$lws_y)),][1,]$lws_y
+          
+          subset <- subset[subset$lws_y == best_lws_y, ]
+          pruned_full_space <- pruned_full_space[pruned_full_space$lws_y == best_lws_y, ]
+          
+      ###########################################
+          
+          if(nrow(subset) < 5 ){
+              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+              point_count[i] <- point_count[i] + 5
+          }
+          
+          model <- time_per_pixel ~ elements_number + I(elements_number^2)
+          
+          fit <- lm(data=subset,formula=model)
+          
+          f <- function(x){
+              as.numeric(predict(fit,data.frame(elements_number=x, interval="none")))
+          }
+          
+          best_elements_number <- pruned_full_space[f(pruned_full_space$elements_number) == min(f(pruned_full_space$elements_number)),][1,]$elements_number
+          
+          subset <- subset[subset$elements_number == best_elements_number, ]
+          pruned_full_space <- pruned_full_space[pruned_full_space$elements_number == best_elements_number, ]
+          
+      ###########################################
+          
+          if(nrow(subset) < 5 ){
+              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = nrow(pruned_full_space), replace = FALSE),])
+              point_count[i] <- point_count[i] + nrow(pruned_full_space)
+          }
+          
+          model <- time_per_pixel ~ load_overlap
+          
+          fit <- lm(data=subset,formula=model)
+          
+          f <- function(x){
+              as.numeric(predict(fit,data.frame(load_overlap=x, interval="none")))
+          }
+          
+          best_load_overlap <- pruned_full_space[f(pruned_full_space$load_overlap) == min(f(pruned_full_space$load_overlap)),][1,]$load_overlap
+          best_load_overlap_time <- pruned_full_space[f(pruned_full_space$load_overlap) == min(f(pruned_full_space$load_overlap)),][1,]$time_per_pixel
+          
+          model <- time_per_pixel ~ temporary_size
+          
+          fit <- lm(data=subset,formula=model)
+          
+          f <- function(x){
+              as.numeric(predict(fit,data.frame(temporary_size=x, interval="none")))
+          }
+          
+          best_temporary_size <- pruned_full_space[f(pruned_full_space$temporary_size) == min(f(pruned_full_space$temporary_size)),][1,]$temporary_size
+          best_temporary_size_time <- pruned_full_space[f(pruned_full_space$temporary_size) == min(f(pruned_full_space$temporary_size)),][1,]$time_per_pixel
+          
+          subset <- df[df$y_component_number == best_base$y_component_number & 
+                       df$vector_length == best_base$vector_length & 
+                       df$threads_number == best_base$threads_number & 
+                       df$lws_y == best_lws_y & 
+                       df$elements_number == best_elements_number & 
+                       df$load_overlap == best_load_overlap & 
+                       df$temporary_size == best_temporary_size,]
+          
+          if(nrow(subset) < 1){
+              if(best_temporary_size_time < best_load_overlap_time){
+                  subset <- df[df$y_component_number == best_base$y_component_number & 
+                               df$vector_length == best_base$vector_length & 
+                               df$threads_number == best_base$threads_number & 
+                               df$lws_y == best_lws_y & 
+                               df$elements_number == best_elements_number & 
+                               df$temporary_size == best_temporary_size,]
+              } else {
+                  subset <- df[df$y_component_number == best_base$y_component_number & 
+                               df$vector_length == best_base$threads_number & 
+                                   df$lws_y == best_lws_y & 
+                                   df$elements_number == best_elements_number & 
+                                   df$load_overlap == best_load_overlap,]
+              }
+              
+              if(nrow(subset > 1)){
+                  
+              }
+          }
+          
+          subset$run <- i
+          df_lm_random <- rbind(df_lm_random, subset)
+      }
+      
+      df_lm_random <- cbind(df_lm_random, point_number=point_count, method=rep("LM",nrow(df_lm_random)))
+      df_lm_random$slowdown <- df_lm_random$time_per_pixel / min(df$time_per_pixel)
+      write.csv(df_lm_random, "../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_trial.csv", row.names=FALSE)
+      write.csv(logs, "../data/2016_04_08/pilipili2/18_08_24/lm_random_logs.csv", row.names=FALSE)
+    #+end_src
+
+    #+RESULTS:
+    :  There were 18 warnings (use warnings() to see them)
+
+**** Analysis
+    #+begin_src R :results output :session :exports both
+      logs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_logs.csv",strip.white=T,header=T)
+      df_lm_random <- write.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_trial.csv",strip.white=T,header=T)
+    #+end_src
+
+    The worst case happen at the 25th runs:
+    #+begin_src R :results output :session :exports both
+      df_lm_random[df_lm_random$slowdown==max(df_lm_random$slowdown),]
+    #+end_src
+
+    #+RESULTS:
+    :      elements_number y_component_number vector_length temporary_size
+    : 6861              24                  6             1              2
+    :      vector_recompute load_overlap threads_number lws_y time_per_pixel run
+    : 6861             true         true           1024  1024   3.735084e-09  25
+    :      point_number method slowdown
+    : 6861          119     LM 32.06044
+
+    Lets study it and try to improve the result:
+    #+begin_src R :results output :session :exports both
+      working_set <- logs[logs$run == df_lm_random[df_lm_random$slowdown==max(df_lm_random$slowdown),]$run,]
+      summary(working_set)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+     elements_number  y_component_number vector_length    temporary_size 
+     Min.   : 1.000   Min.   :1.000      Min.   : 1.000   Min.   :2.000  
+     1st Qu.: 3.000   1st Qu.:2.000      1st Qu.: 2.000   1st Qu.:2.000  
+     Median : 6.000   Median :4.000      Median : 4.000   Median :2.000  
+     Mean   : 9.257   Mean   :3.638      Mean   : 6.152   Mean   :2.952  
+     3rd Qu.:15.000   3rd Qu.:5.000      3rd Qu.: 8.000   3rd Qu.:4.000  
+     Max.   :24.000   Max.   :6.000      Max.   :16.000   Max.   :4.000  
+     vector_recompute load_overlap threads_number       lws_y        
+     true:105         false:48     Min.   :  32.0   Min.   :   1.00  
+                      true :57     1st Qu.: 128.0   1st Qu.:   4.00  
+                                   Median : 256.0   Median :   8.00  
+                                   Mean   : 396.2   Mean   :  87.55  
+                                   3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                   Max.   :1024.0   Max.   :1024.00  
+     time_per_pixel           run    
+     Min.   :1.193e-10   Min.   :25  
+     1st Qu.:3.256e-10   1st Qu.:25  
+     Median :7.412e-10   Median :25  
+     Mean   :1.824e-09   Mean   :25  
+     3rd Qu.:2.245e-09   3rd Qu.:25  
+     Max.   :2.590e-08   Max.   :25
+#+end_example
+
+    The space covering seems similar between the best and the worst: 
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      plot(working_set[,c(1,2,3,4,6,7,8)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-2560wTm/figure2560iMe.png]]
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      plot(logs[logs$run == df_lm_random[df_lm_random$slowdown==min(df_lm_random$slowdown),]$run,c(1,2,3,4,6,7,8)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-2560wTm/figure2560Jrw.png]]
+
+    What are the parameters that have the biggest impact:
+    #+begin_src R :results output :session :exports both
+    fit <- lm(time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + load_overlap + temporary_size, working_set)
+    summary(fit) 
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ elements_number + y_component_number + 
+        vector_length + threads_number + lws_y + load_overlap + temporary_size, 
+        data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -3.565e-09 -1.150e-09 -3.410e-10  6.425e-10  2.056e-08 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         8.921e-10  1.248e-09   0.715 0.476539    
+    elements_number    -1.802e-10  6.259e-11  -2.879 0.004904 ** 
+    y_component_number  3.823e-10  2.313e-10   1.652 0.101698    
+    vector_length       1.929e-10  5.084e-11   3.794 0.000258 ***
+    threads_number     -2.696e-12  8.913e-13  -3.025 0.003187 ** 
+    lws_y               6.459e-12  1.424e-12   4.536 1.64e-05 ***
+    load_overlaptrue    4.466e-10  5.630e-10   0.793 0.429547    
+    temporary_size      9.575e-11  2.777e-10   0.345 0.730943    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.786e-09 on 97 degrees of freedom
+    Multiple R-squared:  0.2927,	Adjusted R-squared:  0.2417 
+    F-statistic: 5.736 on 7 and 97 DF,  p-value: 1.43e-05
+    #+end_example
+    
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      plot(working_set[,c(1,2,3,4,6,7,8,9)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-2560wTm/figure2560I_F.png]]
+
+    We remove useless parameters and look for interactions. It seems
+    that the parameters that should by fixed first are the
+    vector_length and lws_y:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ (elements_number + vector_length + threads_number + lws_y)^2, working_set)
+      summary(fit) 
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ (elements_number + vector_length + 
+        threads_number + lws_y)^2, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.498e-09 -9.213e-10 -2.091e-10  3.434e-10  1.734e-08 
+
+    Coefficients:
+                                     Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)                    -3.416e-10  9.290e-10  -0.368 0.713938    
+    elements_number                -7.343e-13  7.200e-11  -0.010 0.991885    
+    vector_length                   5.689e-10  1.067e-10   5.334 6.61e-07 ***
+    threads_number                  1.212e-12  1.804e-12   0.672 0.503412    
+    lws_y                           2.189e-11  7.116e-12   3.076 0.002747 ** 
+    elements_number:vector_length  -2.043e-11  6.772e-12  -3.017 0.003283 ** 
+    elements_number:threads_number -1.067e-14  1.303e-13  -0.082 0.934944    
+    elements_number:lws_y          -3.876e-14  2.144e-13  -0.181 0.856923    
+    vector_length:threads_number   -6.421e-13  1.823e-13  -3.522 0.000663 ***
+    vector_length:lws_y             7.868e-13  3.682e-13   2.137 0.035177 *  
+    threads_number:lws_y           -1.932e-14  6.745e-15  -2.864 0.005153 ** 
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.547e-09 on 94 degrees of freedom
+    Multiple R-squared:  0.4274,	Adjusted R-squared:  0.3665 
+    F-statistic: 7.017 on 10 and 94 DF,  p-value: 3.885e-08
+    #+end_example
+
+    #+begin_src R :results output :session :exports both
+    
+    #+end_src
+
+    Lets test a model. We now that there is no vector support on
+    Nvidia so the impact of vector_length should be simple. Lws_y is
+    likely to have a quadratic or asymptotic:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ vector_length + lws_y + elements_number:vector_length + vector_length:threads_number + threads_number:lws_y , working_set)
+      summary(fit) 
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ vector_length + lws_y + elements_number:vector_length + 
+        vector_length:threads_number + threads_number:lws_y, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.299e-09 -9.808e-10 -1.145e-10  3.193e-10  1.784e-08 
+
+    Coefficients:
+                                    Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)                   -1.463e-10  4.150e-10  -0.353 0.725172    
+    vector_length                  5.397e-10  8.041e-11   6.712 1.22e-09 ***
+    lws_y                          2.330e-11  6.567e-12   3.547 0.000597 ***
+    vector_length:elements_number -1.918e-11  4.486e-12  -4.275 4.40e-05 ***
+    vector_length:threads_number  -4.626e-13  1.105e-13  -4.186 6.16e-05 ***
+    lws_y:threads_number          -1.789e-14  6.530e-15  -2.740 0.007292 ** 
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.546e-09 on 99 degrees of freedom
+    Multiple R-squared:  0.3974,	Adjusted R-squared:  0.367 
+    F-statistic: 13.06 on 5 and 99 DF,  p-value: 9.184e-10
+#+end_example
+
+    So what is the best values for vector_length and lws_y?
+    #+begin_src R :results output :session :exports both
+      objective_predict <- function(x){
+          as.numeric(predict(fit,data.frame(vector_length=x$vector_length, 
+                                            lws_y=x$lws_y,
+                                            elements_number=x$elements_number,
+                                            threads_number=x$threads_number,
+                                            interval="none")))
+      }
+      
+      best_base <- df[objective_predict(df[,c("vector_length","lws_y","threads_number","elements_number")]) == min(objective_predict(df[,c("vector_length","lws_y","threads_number","elements_number")])), c("vector_length","lws_y","threads_number","elements_number")][1,]
+      best_base
+    #+end_src
+
+    #+RESULTS:
+    :       vector_length lws_y threads_number elements_number
+    : 21807             8     1           1024              24
+
+    If we prune the search space now the best solution we can get
+    brings a speed up of:
+    #+begin_src R :results output :session :exports both
+      min(df[df$vector_length == 8 & df$lws_y == 1 & df$threads_number == 1024 & df$elements_number ==24 ,]$time_per_pixel) / df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel
+    #+end_src
+
+    #+RESULTS:
+    : [1] 2.622652
+
+    Obviously we are not supposed to fix those parameters now but the
+    potential solution is a lot more better than the solution we had
+    from the automated process. What is the potential solution by
+    fixing only vector length and lws y?
+    #+begin_src R :results output :session :exports both
+      min(df[df$vector_length == 8 & df$lws_y == 1,]$time_per_pixel) / df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel
+    #+end_src
+
+    #+RESULTS:
+    : [1] 1.812576
+
+    And what if we only fix vector_length? It is very close.
+    #+begin_src R :results output :session :exports both
+      min(df[df$vector_length == 8,]$time_per_pixel) / df[df$time_per_pixel == min(df$time_per_pixel),]$time_per_pixel
+    #+end_src
+
+    #+RESULTS:
+    : [1] 1.812557
+
+    Lets assume we fix them both:
+    #+begin_src R :results output :session :exports both
+      pruned_working_set <- working_set[working_set$vector_length == 8 & working_set$lws_y == 1,]
+      pruned_df <- df[df$vector_length == 8 & df$lws_y == 1,] 
+      nrow(pruned_working_set)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 4
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      plot(pruned_working_set[,c(1,2,4,6,7,9)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-2560wTm/figure25608ne.png]]
+
+    Lets add more point:
+    #+begin_src R :results output :session :exports both
+      pruned_working_set <- pruned_working_set[,seq(1,9)]
+      pruned_working_set <- rbind(pruned_working_set, pruned_df[sample(1:nrow(pruned_df), size = 5, replace = FALSE),])
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      plot(pruned_working_set[,c(1,2,4,6,7,9)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-2560wTm/figure2560vkM.png]]
+
+
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ (elements_number + I(1/elements_number) + y_component_number + threads_number + temporary_size + load_overlap), pruned_working_set)
+      summary(fit) 
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ (elements_number + I(1/elements_number) + 
+        y_component_number + threads_number + temporary_size + load_overlap), 
+        data = pruned_working_set)
+
+    Residuals:
+         22852      92331     184281       4009      22713       3988      15393 
+     1.236e-11 -3.921e-12 -5.659e-12 -2.951e-12  8.610e-12 -2.344e-11  6.395e-12 
+         15404      20310 
+     6.741e-12  1.869e-12 
+
+    Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)          -9.847e-11  9.823e-11  -1.002  0.42171   
+    elements_number      -9.422e-12  7.182e-12  -1.312  0.31989   
+    I(1/elements_number)  1.581e-09  7.317e-11  21.611  0.00213 **
+    y_component_number    8.324e-11  1.114e-11   7.474  0.01743 * 
+    threads_number        4.555e-14  3.827e-14   1.190  0.35611   
+    temporary_size        2.214e-11  1.731e-11   1.279  0.32917   
+    load_overlaptrue      2.363e-12  2.364e-11   0.100  0.92950   
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.147e-11 on 2 degrees of freedom
+    Multiple R-squared:  0.9993,	Adjusted R-squared:  0.9974 
+    F-statistic: 508.2 on 6 and 2 DF,  p-value: 0.001965
+#+end_example
+
+    Maybe we need a little more points
+    #+begin_src R :results output :session :exports both
+      pruned_working_set2 <- rbind(pruned_working_set, pruned_df[sample(1:nrow(pruned_df), size = 5, replace = FALSE),])
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      plot(pruned_working_set2[,c(1,2,4,6,7,9)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-2560wTm/figure2560jNl.png]]
+
+    Adding more point is not use full:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ (elements_number + I(1/elements_number) + y_component_number + I(1/y_component_number) + threads_number + I(1/threads_number) + temporary_size + load_overlap), pruned_working_set2)
+      summary(fit) 
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ (elements_number + I(1/elements_number) + 
+        y_component_number + I(1/y_component_number) + threads_number + 
+        I(1/threads_number) + temporary_size + load_overlap), data = pruned_working_set2)
+
+    Residuals:
+         22852      92331     184281       4009      22713       3988      15393 
+    -1.943e-11  5.348e-11  2.174e-11 -5.258e-12  1.613e-12 -2.679e-11  1.605e-12 
+         15404      20310       2716       7803       9548       7970       5991 
+    -7.413e-12  1.696e-11  2.352e-11 -6.555e-11  2.362e-11 -4.955e-11  3.145e-11 
+
+    Coefficients:
+                              Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)             -1.154e-11  1.842e-10  -0.063 0.952483    
+    elements_number         -1.682e-11  9.863e-12  -1.705 0.148889    
+    I(1/elements_number)     1.313e-09  1.774e-10   7.401 0.000709 ***
+    y_component_number       7.009e-11  3.548e-11   1.976 0.105144    
+    I(1/y_component_number) -1.863e-11  3.068e-10  -0.061 0.953935    
+    threads_number           2.103e-13  2.143e-13   0.981 0.371595    
+    I(1/threads_number)      7.537e-09  5.751e-09   1.311 0.246974    
+    temporary_size           1.335e-11  2.488e-11   0.537 0.614553    
+    load_overlaptrue        -1.278e-11  4.313e-11  -0.296 0.778908    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 5.226e-11 on 5 degrees of freedom
+    Multiple R-squared:  0.9914,	Adjusted R-squared:  0.9778 
+    F-statistic: 72.44 on 8 and 5 DF,  p-value: 9.591e-05
+#+end_example
+
+    If we remove load_overlap and temporary the other parameters
+    appears to be relevant:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ elements_number + I(1/elements_number) + y_component_number + threads_number, pruned_working_set)
+      summary(fit) 
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ elements_number + I(1/elements_number) + 
+        y_component_number + threads_number, data = pruned_working_set)
+
+    Residuals:
+         22852      92331     184281       4009      22713       3988      15393 
+     1.036e-11  1.363e-11 -1.344e-11 -1.896e-12  2.329e-11 -2.434e-11 -3.969e-12 
+         15404      20310 
+     5.553e-12 -9.194e-12 
+
+    Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)           1.497e-11  3.705e-11   0.404 0.706784    
+    elements_number      -1.712e-11  2.975e-12  -5.756 0.004518 ** 
+    I(1/elements_number)  1.510e-09  4.222e-11  35.767 3.65e-06 ***
+    y_component_number    9.107e-11  6.874e-12  13.248 0.000188 ***
+    threads_number        6.759e-14  2.393e-14   2.825 0.047587 *  
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.088e-11 on 4 degrees of freedom
+    Multiple R-squared:  0.9988,	Adjusted R-squared:  0.9975 
+    F-statistic: 805.8 on 4 and 4 DF,  p-value: 4.605e-06
+#+end_example
+
+    Lets fix elements_number and y_component_number:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ elements_number + I(1/elements_number) + y_component_number, pruned_working_set)
+      summary(fit) 
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ elements_number + I(1/elements_number) + 
+        y_component_number, data = pruned_working_set)
+
+    Residuals:
+         22852      92331     184281       4009      22713       3988      15393 
+     4.882e-11  3.565e-11 -1.807e-11 -1.567e-11 -1.399e-12 -2.204e-11 -1.873e-11 
+         15404      20310 
+    -1.205e-11  3.484e-12 
+
+    Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)           6.753e-11  4.959e-11   1.362   0.2315    
+    elements_number      -1.790e-11  4.585e-12  -3.905   0.0114 *  
+    I(1/elements_number)  1.479e-09  6.309e-11  23.444 2.63e-06 ***
+    y_component_number    8.640e-11  1.033e-11   8.365   0.0004 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.232e-11 on 5 degrees of freedom
+    Multiple R-squared:  0.9963,	Adjusted R-squared:  0.9941 
+    F-statistic: 447.3 on 3 and 5 DF,  p-value: 1.709e-06
+#+end_example
+
+    #+begin_src R :results output :session :exports both
+      objective_predict <- function(x){
+          as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number,
+                                            elements_number=x$elements_number,
+                                            interval="none")))
+      }
+      best_elm_ycomp <- pruned_df[objective_predict(pruned_df[,c("elements_number","y_component_number")]) == min(objective_predict(pruned_df[,c("elements_number","y_component_number")])), c("elements_number","y_component_number")][1,]
+      best_elm_ycomp
+    #+end_src
+
+    #+RESULTS:
+    :      elements_number y_component_number
+    : 6446              20                  5
+
+    #+begin_src R :results output :session :exports both
+      pruned_working_set <- pruned_working_set[pruned_working_set$elements_number == 20 & pruned_working_set$y_component_number == 5,]
+      pruned_df <- pruned_df[pruned_df$elements_number == 20 & pruned_df$y_component_number == 5,]
+      nrow(pruned_working_set)
+      nrow(pruned_df)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 0
+    : [1] 22
+
+    At this step what is the best potential solution? It is a little
+    worse than previously...
+    #+begin_src R :results output :session :exports both
+      min(pruned_df$time_per_pixel) / min(df$time_per_pixel)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 1.872369
+    
+    Lets add a few more points:
+    #+begin_src R :results output :session :exports both
+      pruned_working_set <- rbind(pruned_working_set, pruned_df[sample(1:nrow(pruned_df), size = 5, replace = FALSE),])    
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      plot(pruned_working_set[,c(4,6,7,9)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-2560wTm/figure25609hx.png]]
+
+    #+begin_src R :results output :session :exports both
+      pruned_working_set2 <- rbind(pruned_working_set, pruned_df[sample(1:nrow(pruned_df), size = 5, replace = FALSE),])    
+    #+end_src
+
+    #+RESULTS:
+
+    It is better with few more points:
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      plot(pruned_working_set2[,c(4,6,7,9)])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-2560wTm/figure2560vrA.png]]
+
+
+    But first lets try with the first set. We can see the impact of
+    threads number on the plot below but it does not appear in the summary:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ threads_number + load_overlap + temporary_size, pruned_working_set)
+      summary(fit) 
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ threads_number + load_overlap + 
+        temporary_size, data = pruned_working_set)
+
+    Residuals:
+         16031      18037      20529      21771      15460 
+    -1.925e-12 -1.925e-12  1.925e-12  1.925e-12  1.515e-27 
+
+    Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)  
+    (Intercept)       2.607e-10  1.262e-11  20.663   0.0308 *
+    threads_number    7.940e-14  9.949e-15   7.980   0.0794 .
+    load_overlaptrue -4.197e-12  3.851e-12  -1.090   0.4726  
+    temporary_size   -1.177e-11  3.184e-12  -3.697   0.1682  
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.851e-12 on 1 degrees of freedom
+    Multiple R-squared:  0.9977,	Adjusted R-squared:  0.9907 
+    F-statistic: 143.3 on 3 and 1 DF,  p-value: 0.06131
+    #+end_example
+
+    So lets consider only threads_number:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ threads_number, pruned_working_set)
+      summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ threads_number, data = pruned_working_set)
+
+    Residuals:
+         16031      18037      20529      21771      15460 
+    -4.668e-12  4.448e-12 -5.014e-12  1.250e-11 -7.261e-12 
+
+    Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)    2.130e-10  7.364e-12  28.917 9.08e-05 ***
+    threads_number 1.060e-13  1.300e-14   8.159  0.00385 ** 
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 9.584e-12 on 3 degrees of freedom
+    Multiple R-squared:  0.9569,	Adjusted R-squared:  0.9425 
+    F-statistic: 66.57 on 1 and 3 DF,  p-value: 0.003851
+#+end_example
+
+    We look for the best value:
+    #+begin_src R :results output :session :exports both
+      objective_predict <- function(x){
+          as.numeric(predict(fit,data.frame(threads_number=x,
+                                            interval="none")))
+      }
+      best_th_nb <- pruned_df[objective_predict(pruned_df[,c("threads_number")]) == min(objective_predict(pruned_df[,c("threads_number")])), c("threads_number")][1]
+      best_th_nb
+    #+end_src
+
+    #+RESULTS:
+    : [1] 32
+
+    Lets fix threads number:
+    #+begin_src R :results output :session :exports both
+      pruned_working_set <- pruned_working_set[pruned_working_set$threads_number == 32,]
+      pruned_df <- pruned_df[pruned_df$threads_number == 32,]
+      nrow(pruned_working_set)
+      nrow(pruned_df)      
+    #+end_src
+
+    #+RESULTS:
+    : [1] 0
+    : [1] 4
+
+    As it remains only for point and we still have the budget we can
+    take the minimum:
+    #+begin_src R :results output :session :exports both
+      pruned_df[pruned_df$time_per_pixel==min(pruned_df$time_per_pixel),]
+    #+end_src
+
+    #+RESULTS:
+    :      elements_number y_component_number vector_length temporary_size
+    : 6608              20                  5             8              4
+    :      vector_recompute load_overlap threads_number lws_y time_per_pixel
+    : 6608             true        false             32     1   2.532311e-10
+
+    Which has a slowdown of which is a lot better than x32:
+    #+begin_src R :results output :session :exports both
+      pruned_df[pruned_df$time_per_pixel==min(pruned_df$time_per_pixel),]$time_per_pixel / min(df$time_per_pixel)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 2.173633
+
+    Now what if we try with the other set:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ threads_number + I(threads_number^2), pruned_working_set2)
+      summary(fit)     
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ threads_number + I(threads_number^2), 
+        data = pruned_working_set2)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.932e-12 -2.973e-12 -8.344e-13  3.271e-12  7.918e-12 
+
+    Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)          2.002e-10  3.567e-12  56.138 1.49e-10 ***
+    threads_number       1.808e-13  1.893e-14   9.549 2.90e-05 ***
+    I(threads_number^2) -6.691e-17  1.784e-17  -3.750  0.00717 ** 
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 4.892e-12 on 7 degrees of freedom
+    Multiple R-squared:  0.9847,	Adjusted R-squared:  0.9803 
+    F-statistic: 224.7 on 2 and 7 DF,  p-value: 4.47e-07
+#+end_example
+
+    We look for the best value. And we end up with the same value for threads_number:
+    #+begin_src R :results output :session :exports both
+      objective_predict <- function(x){
+          as.numeric(predict(fit,data.frame(threads_number=x,
+                                            interval="none")))
+      }
+      best_th_nb <- pruned_df[objective_predict(pruned_df[,c("threads_number")]) == min(objective_predict(pruned_df[,c("threads_number")])), c("threads_number")][1]
+      best_th_nb
+
+    #+end_src
+
+    #+RESULTS:
+    : [1] 32
+
+    What was the best one is the working set at the beginning? ... To
+    bad we had a very good solution in our random set and we did worse:
+    #+begin_src R :results output :session :exports both
+      working_set[working_set$time_per_pixel == min(working_set$time_per_pixel),]$time_per_pixel / min(df$time_per_pixel)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 1.023715
+

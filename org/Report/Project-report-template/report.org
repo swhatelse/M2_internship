@@ -514,7 +514,7 @@ Text
 *** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
 **** Least Squared regression and non uniform noise  
     - Assumptions:
-      - homoscedasticity but pb we have heteroscedasticity
+      - homoscedasticity (Gaussian noise) but pb we have heteroscedasticity
         - Why is it a problem?
           - Unbiased coefficient estimate but biased std error and thus
             R-squared \to more difficult know if a model is correct
