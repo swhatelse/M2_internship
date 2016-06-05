@@ -24663,7 +24663,8 @@ h[g.name.to_sym] = 1024
 
 **** Study of the convergence of the distribution
 ***** GA
-      #+begin_src sh :results output :exports none :tangle ../scripts/GA_experiment.sh
+****** Old version  
+      #+begin_src sh :results output :exports none 
         INPUT="$1"
         PARAM="$2"
         OUTPUT="$3"
@@ -24672,7 +24673,7 @@ h[g.name.to_sym] = 1024
         done
       #+end_src
       
-      #+begin_src sh :results output :exports both :tangle ../scripts/GA_run.sh
+      #+begin_src sh :results output :exports both 
         DAY=`date +%Y_%m_%d`
         DIR="../data/$DAY"
         mkdir -p $DIR
@@ -24692,7 +24693,27 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
       : 1179
-
+****** New version
+    #+begin_src sh :results output :exports both :tangle ../scripts/GA_run.sh
+      DAY=`date +%Y_%m_%d`
+      DIR="$PWD/../data/$DAY"
+      mkdir -p $DIR
+      DIR="$DIR/pilipili2"
+      mkdir -p $DIR
+      DIR="$DIR/algos"
+      mkdir -p $DIR
+      DIR="$DIR/GA"
+      mkdir -p $DIR
+      INPUT="$PWD/../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+      PARAM="$PWD/../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+      
+      for i in `seq 1 100`; do 
+          ruby ../boast/optimizer_benchmarks/bench_gen.rb $PARAM $INPUT -r ${DIR}/"$i.yaml" --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null &
+      done
+    #+end_src
+    
+    #+RESULTS:
+    
 ***** Random
       #+begin_src R :results output :session :exports both :tangle ../scripts/RS_experiment.R
         #!/usr/bin/env Rscript
@@ -25849,9 +25870,107 @@ h[g.name.to_sym] = 1024
     :  There were 18 warnings (use warnings() to see them)
 
 **** Analysis
+***** Why did it failed
+      #+begin_src R :results output :session :exports both
+        logs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_logs.csv",strip.white=T,header=T)
+        df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_trial.csv",strip.white=T,header=T)
+        working_set <- logs[logs$run == df_lm_random[df_lm_random$slowdown==max(df_lm_random$slowdown),]$run,]
+      #+end_src
+      
+      One of the reason it failed is because we fixed y component
+      number and threads number and they are not relevant yet and the
+      standard error is too high for y component number:
+      #+begin_src R :results output :session :exports both
+        model <- time_per_pixel ~ y_component_number + I(1/y_component_number) + 
+            vector_length + 
+            lws_y + I(1/lws_y) +
+            threads_number + I(1/threads_number)
+        
+        fit <- lm(data=working_set,formula=formula(model))
+        summary(fit)                
+      #+end_src
+
+      #+RESULTS:
+      #+begin_example
+
+      Call:
+      lm(formula = formula(model), data = working_set)
+
+      Residuals:
+             Min         1Q     Median         3Q        Max 
+      -4.225e-09 -9.116e-10 -3.265e-10  5.105e-10  1.990e-08 
+
+      Coefficients:
+                                Estimate Std. Error t value Pr(>|t|)   
+      (Intercept)              1.261e-09  2.177e-09   0.579  0.56388   
+      y_component_number      -1.679e-10  3.463e-10  -0.485  0.62893   
+      I(1/y_component_number) -3.274e-10  2.030e-09  -0.161  0.87222   
+      vector_length            1.570e-10  5.241e-11   2.996  0.00347 **
+      lws_y                    4.143e-12  1.470e-12   2.819  0.00584 **
+      I(1/lws_y)              -2.190e-09  9.247e-10  -2.369  0.01983 * 
+      threads_number          -5.232e-13  1.179e-12  -0.444  0.65820   
+      I(1/threads_number)      8.948e-08  4.006e-08   2.233  0.02782 * 
+      ---
+      Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Residual standard error: 2.787e-09 on 97 degrees of freedom
+      Multiple R-squared:  0.2925,	Adjusted R-squared:  0.2414 
+      F-statistic: 5.728 on 7 and 97 DF,  p-value: 1.453e-05
+      #+end_example
+
+      #+begin_src R :results output :session :exports both
+       objective_predict <- function(x){
+            as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
+                                              vector_length=x$vector_length, 
+                                              threads_number=x$threads_number,
+                                              lws_y=x$lws_y,
+                                              interval="none")))
+        }
+        
+        best_base <- df[objective_predict(df[,c(2,3,7,8)]) == min(objective_predict(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+        
+        subset <- working_set[working_set$y_component_number == best_base$y_component_number & working_set$vector_length == best_base$vector_length & working_set$threads_number == best_base$threads_number, ]
+        pruned_full_space <- df[df$y_component_number == best_base$y_component_number & df$vector_length == best_base$vector_length & df$threads_number == best_base$threads_number, ]
+        best_base
+      #+end_src
+
+      #+RESULTS:
+      :      y_component_number vector_length threads_number lws_y
+      : 7103                  6             1           1024     1
+
+      What would be the potential solution? I guess it due to luck but
+      we get the right values! It failed somewhere else.
+      #+begin_src R :results output :session :exports both
+        pruned_full_space[pruned_full_space$time_per_pixel == min(pruned_full_space$time_per_pixel),]$time_per_pixel / min(df$time_per_pixel)
+      #+end_src
+
+      #+RESULTS:
+      : [1] 1
+
+      #+begin_src R :results output :session :exports both
+       nrow(subset)
+      #+end_src
+
+      #+RESULTS:
+      : [1] 1
+
+      #+begin_src R :results output :session :exports both
+        subset <- rbind(subset[,seq(1,9)], pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+      #+end_src
+
+      #+RESULTS:
+
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+        plot(subset[,c(1,4,6,8,9)])
+      #+end_src
+      
+      #+RESULTS:
+      [[file:/tmp/babel-2560wTm/figure2560JAN.png]]
+
+***** Lets improve it
     #+begin_src R :results output :session :exports both
       logs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_logs.csv",strip.white=T,header=T)
-      df_lm_random <- write.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_trial.csv",strip.white=T,header=T)
+      df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_trial.csv",strip.white=T,header=T)
     #+end_src
 
     The worst case happen at the 25th runs:
@@ -26491,4 +26610,6 @@ h[g.name.to_sym] = 1024
 
     #+RESULTS:
     : [1] 1.023715
+
+   
 
