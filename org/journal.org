@@ -25724,6 +25724,9 @@ h[g.name.to_sym] = 1024
     #+begin_src R :results output :session :exports none
       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
     #+end_src
+
+    #+RESULTS:
+
     
     #+begin_src R :results output :session :exports none
       set.seed(1) 
@@ -25731,9 +25734,11 @@ h[g.name.to_sym] = 1024
       df_lm_random <- data.frame()
       point_count <- c()
       logs <- data.frame()
+      additional_points <- data.frame()
       
       for(i in 1:runs){
           random_set <- df[sample(1:nrow(df), size = 105, replace = FALSE),]
+          best_time <- min(random_set$time_per_pixel)
           tmp <- cbind(random_set, run=rep(i,nrow(random_set)))
           logs <- rbind(logs, tmp)
           point_count[i] <- nrow(random_set)
@@ -25761,10 +25766,16 @@ h[g.name.to_sym] = 1024
       ###########################################
           
           if(nrow(subset) < 5 ){
-              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+              tmp2 <- pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),]
+              subset <- rbind(subset,tmp2)
+              additional_points <- rbind(additional_points,cbind(tmp2, run=rep(i,nrow(tmp2)), step=rep(1,nrow(tmp2))))
               point_count[i] <- point_count[i] + 5
           }
           
+          if(best_time > min(subset$time_per_pixel)){
+            best_time <- min(subset$time_per_pixel)
+          }
+      
           model <- time_per_pixel ~ lws_y + I(1/lws_y)
           
           fit <- lm(data=subset,formula=model)
@@ -25779,10 +25790,20 @@ h[g.name.to_sym] = 1024
           pruned_full_space <- pruned_full_space[pruned_full_space$lws_y == best_lws_y, ]
           
       ###########################################
-          
+      #
+      #               Step 2
+      #
+      ###########################################      
+      
           if(nrow(subset) < 5 ){
-              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),])
+              tmp2 <- pruned_full_space[sample(1:nrow(pruned_full_space), size = 5, replace = FALSE),]
+              additional_points <- rbind(additional_points,cbind(tmp2, run=rep(i,nrow(tmp2)), step=rep(2,nrow(tmp2))))
+              subset <- rbind(subset,tmp2)
               point_count[i] <- point_count[i] + 5
+          }
+      
+          if(best_time > min(subset$time_per_pixel)){
+            best_time <- min(subset$time_per_pixel)
           }
           
           model <- time_per_pixel ~ elements_number + I(elements_number^2)
@@ -25799,12 +25820,22 @@ h[g.name.to_sym] = 1024
           pruned_full_space <- pruned_full_space[pruned_full_space$elements_number == best_elements_number, ]
           
       ###########################################
-          
+      #
+      #               Step 3
+      #
+      ###########################################      
+      
           if(nrow(subset) < 5 ){
-              subset <- rbind(subset,pruned_full_space[sample(1:nrow(pruned_full_space), size = nrow(pruned_full_space), replace = FALSE),])
+              tmp2 <- pruned_full_space[sample(1:nrow(pruned_full_space), size = nrow(pruned_full_space), replace = FALSE),]
+              additional_points <- rbind(additional_points,cbind(tmp2, run=rep(i,nrow(tmp2)), step=rep(3,nrow(tmp2))))
+              subset <- rbind(subset,tmp2)
               point_count[i] <- point_count[i] + nrow(pruned_full_space)
           }
-          
+      
+          if(best_time > min(subset$time_per_pixel)){
+            best_time <- min(subset$time_per_pixel)
+          }
+      
           model <- time_per_pixel ~ load_overlap
           
           fit <- lm(data=subset,formula=model)
@@ -25852,22 +25883,35 @@ h[g.name.to_sym] = 1024
               }
               
               if(nrow(subset > 1)){
-                  
+                  subset <- subset[subset$time_per_pixel==min(subset$time_per_pixel),]
               }
           }
           
           subset$run <- i
-          df_lm_random <- rbind(df_lm_random, subset)
+          df_lm_random <- rbind(df_lm_random, cbind(subset, best=best_time))
       }
       
       df_lm_random <- cbind(df_lm_random, point_number=point_count, method=rep("LM",nrow(df_lm_random)))
       df_lm_random$slowdown <- df_lm_random$time_per_pixel / min(df$time_per_pixel)
       write.csv(df_lm_random, "../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_trial.csv", row.names=FALSE)
       write.csv(logs, "../data/2016_04_08/pilipili2/18_08_24/lm_random_logs.csv", row.names=FALSE)
+      write.csv(additional_points, "../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_additional_points.csv", row.names=FALSE)
     #+end_src
 
     #+RESULTS:
     :  There were 18 warnings (use warnings() to see them)
+
+     #+begin_src R :results output :session :exports both
+       library(ggplot2)
+       library(plyr)
+       
+       ggplot(df_lm_random, aes(best/min(df$time_per_pixel))) + 
+           geom_histogram(binwidth=.05,color="white", fill="gray1") +
+           labs(y="Density", x="Percentage of the speedup of best combination") +
+           ggtitle("") + coord_cartesian(xlim=c(.9,3))
+     #+end_src
+
+     #+RESULTS:
 
 **** Analysis
 ***** Why did it failed
