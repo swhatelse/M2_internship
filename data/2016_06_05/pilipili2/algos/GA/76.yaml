@@ -1,0 +1,901 @@
+---
+- - :elements_number: 3
+    :y_component_number: 3
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 2
+  - 1.361202524438335e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 2
+  - 1.3576136594157254e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 4
+  - 1.356622118767734e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 4
+  - 1.3717425941301954e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 4
+  - 1.2889704518182625e-10
+- - :elements_number: 16
+    :y_component_number: 4
+    :vector_length: 4
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 2
+  - 1.5713297268648948e-10
+- - :elements_number: 3
+    :y_component_number: 3
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 2
+  - 1.3534115254911533e-10
+- - :elements_number: 24
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 4
+  - 1.4313354580988943e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 1
+  - 1.1791997420439366e-10
+- - :elements_number: 6
+    :y_component_number: 3
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 1024
+    :lws_y: 4
+  - 1.569049977761657e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 2
+  - 1.187466878106478e-10
+- - :elements_number: 10
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 4
+  - 1.4244485029065077e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 2
+  - 1.165013212480614e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 2
+  - 1.2263620887451712e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 1
+  - 1.1861176794279483e-10
+- - :elements_number: 3
+    :y_component_number: 3
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 2
+  - 1.3534115254911533e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 2
+  - 1.165013212480614e-10
+- - :elements_number: 24
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 2
+  - 1.4130484905393121e-10
+- - :elements_number: 6
+    :y_component_number: 3
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 1024
+    :lws_y: 8
+  - 1.5347367191650526e-10
+- - :elements_number: 10
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 4
+  - 1.4233363476334047e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 256
+    :lws_y: 1
+  - 1.3904263465540283e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 8
+  - 1.1814401884462135e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 2
+  - 1.165013212480614e-10
+- - :elements_number: 10
+    :y_component_number: 5
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 4
+  - 1.4230882445146876e-10
+- - :elements_number: 8
+    :y_component_number: 4
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 16
+  - 1.4316921757907688e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 4
+  - 1.356622118767734e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 256
+    :lws_y: 4
+  - 1.368382897525563e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 4
+  - 1.2253731332295059e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 1
+  - 1.1861176794279483e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 2
+  - 1.3692947345072434e-10
+- - :elements_number: 8
+    :y_component_number: 4
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 1
+  - 1.4570347675605943e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 2
+  - 1.1808319494789006e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 8
+  - 1.1926854261674555e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 4
+  - 1.1784215523601687e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 256
+    :lws_y: 4
+  - 1.171493487895835e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 2
+  - 1.248792036698149e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 2
+  - 1.2677568132206115e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 4
+  - 1.177325347902624e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 2
+  - 1.165013212480614e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 8
+  - 1.3668427084282586e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 4
+  - 1.1809292239989982e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 16
+  - 1.4089829628254096e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 2
+  - 1.165013212480614e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 2
+  - 1.3576136594157254e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 1
+  - 1.2653707425306377e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 4
+  - 1.1737976866202626e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 2
+  - 1.1926417734993613e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 1024
+    :lws_y: 8
+  - 1.1764251683328236e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 1024
+    :lws_y: 2
+  - 1.1871748553403852e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 4
+  - 1.178654962980579e-10
+- - :elements_number: 10
+    :y_component_number: 5
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 1
+  - 1.4330985152801063e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 8
+  - 1.361873493701774e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 1024
+    :lws_y: 4
+  - 1.1809684171547857e-10
+- - :elements_number: 24
+    :y_component_number: 6
+    :vector_length: 4
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 256
+    :lws_y: 8
+  - 1.4376044417745115e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 8
+  - 1.2536652129928351e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 2
+  - 1.1842724521445327e-10
+- - :elements_number: 8
+    :y_component_number: 4
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 4
+  - 1.4493093093372995e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 4
+  - 1.1815294305683734e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 1
+  - 1.2797397902979983e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 2
+  - 1.2566912306185422e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 2
+  - 1.18080485105728e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 2
+  - 1.1797652381968577e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 2
+  - 1.1836397813052031e-10
+- - :elements_number: 8
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 4
+  - 1.4929892310177183e-10
+- - :elements_number: 10
+    :y_component_number: 5
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 4
+  - 1.4230882445146876e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 8
+  - 1.3450284129793573e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 4
+  - 1.255695851070326e-10
+- - :elements_number: 3
+    :y_component_number: 3
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 1024
+    :lws_y: 8
+  - 1.3654876725925236e-10
+- - :elements_number: 8
+    :y_component_number: 4
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 2
+  - 1.4568721438463836e-10
+- - :elements_number: 10
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 256
+    :lws_y: 1
+  - 1.456911573775117e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 64
+    :lws_y: 1
+  - 1.3757695591540468e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 4
+  - 1.356622118767734e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 2
+  - 1.1896345482485984e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 1024
+    :lws_y: 8
+  - 1.1764251683328236e-10
+- - :elements_number: 8
+    :y_component_number: 4
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 8
+  - 1.468585745599572e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 1024
+    :lws_y: 1
+  - 1.2866918111722617e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 8
+  - 1.3450284129793573e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 2
+  - 1.3874274951794434e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 4
+  - 1.1737976866202626e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 2
+  - 1.2510951176248206e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 4
+  - 1.3624869759380456e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 2
+  - 1.3874954843399425e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 4
+  - 1.177325347902624e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 4
+  - 1.178654962980579e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 256
+    :lws_y: 4
+  - 1.171493487895835e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 8
+  - 1.3450284129793573e-10
+- - :elements_number: 6
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 1
+  - 1.1791997420439366e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 8
+  - 1.2208003832793375e-10
+- - :elements_number: 24
+    :y_component_number: 6
+    :vector_length: 4
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 4
+  - 1.433774864885862e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 2
+  - 1.2566912306185422e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 256
+    :lws_y: 4
+  - 1.1756153713552331e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 256
+    :lws_y: 1
+  - 1.2892827588199876e-10
+- - :elements_number: 10
+    :y_component_number: 5
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 512
+    :lws_y: 4
+  - 1.4074219378943118e-10
+- - :elements_number: 5
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 128
+    :lws_y: 1
+  - 1.2203693125380268e-10
+- - :elements_number: 24
+    :y_component_number: 6
+    :vector_length: 4
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 64
+    :lws_y: 1
+  - 1.422168728241274e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 2
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 64
+    :lws_y: 1
+  - 1.3757695591540468e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 2
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: true
+    :threads_number: 256
+    :lws_y: 2
+  - 1.3576136594157254e-10
+- - :elements_number: 10
+    :y_component_number: 5
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 512
+    :lws_y: 4
+  - 1.412179425332601e-10
+- - :elements_number: 4
+    :y_component_number: 4
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 2
+  - 1.2510951176248206e-10
+- - :elements_number: 12
+    :y_component_number: 6
+    :vector_length: 1
+    :temporary_size: 4
+    :vector_recompute: true
+    :load_overlap: false
+    :threads_number: 128
+    :lws_y: 2
+  - 1.3874274951794434e-10
