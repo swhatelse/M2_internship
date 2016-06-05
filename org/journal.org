@@ -25645,12 +25645,12 @@ h[g.name.to_sym] = 1024
     #+RESULTS:
 
     #+begin_src R :results output :session :exports both
-          objective_predict <- function(fit,x){
-            names <- colnames(x)
-            s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
-            eval(parse(text=s))
-            as.numeric(predict(fit, values, interval="none")))
-          }
+      objective_predict <- function(fit,x){
+          names <- colnames(x)
+          s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
+          eval(parse(text=s))
+          as.numeric(predict(fit, values, interval="none"))
+      }
 
           machin <- function(data,model){
             fit <- lm(formula(model),data)
@@ -25658,6 +25658,7 @@ h[g.name.to_sym] = 1024
           }
           
     #+end_src
+
 
 **** Extract p-values                                                     :R:
      #+begin_src R :results output :session :exports both
@@ -25729,6 +25730,19 @@ h[g.name.to_sym] = 1024
 
     
     #+begin_src R :results output :session :exports none
+      objective_predict <- function(fit,x){
+          names <- colnames(x)
+          s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
+          eval(parse(text=s))
+          as.numeric(predict(fit, values, interval="none"))
+      }
+
+      objective_predict_one <- function(fit,x,colname){
+          s <- paste("values <-data.frame(", paste(paste(colname,"=x",sep=""),collapse=","), ")")
+          eval(parse(text=s))
+          as.numeric(predict(fit, values, interval="none"))
+      }
+      
       set.seed(1) 
       runs = 100
       df_lm_random <- data.frame()
@@ -25750,15 +25764,7 @@ h[g.name.to_sym] = 1024
           
           fit <- lm(data=random_set,formula=formula(model))
           
-          f <- function(x){
-              as.numeric(predict(fit,data.frame(y_component_number=x$y_component_number, 
-                                                vector_length=x$vector_length, 
-                                                threads_number=x$threads_number,
-                                                lws_y=x$lws_y,
-                                                interval="none")))
-          }
-          
-          best_base <- df[f(df[,c(2,3,7,8)]) == min(f(df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
+          best_base <- df[objective_predict(fit,df[,c(2,3,7,8)]) == min(objective_predict(fit,df[,c(2,3,7,8)])), c(2,3,7,8)][1,]
           
           subset <- random_set[random_set$y_component_number == best_base$y_component_number & random_set$vector_length == best_base$vector_length & random_set$threads_number == best_base$threads_number, ]
           pruned_full_space <- df[df$y_component_number == best_base$y_component_number & df$vector_length == best_base$vector_length & df$threads_number == best_base$threads_number, ]
@@ -25784,7 +25790,8 @@ h[g.name.to_sym] = 1024
               as.numeric(predict(fit,data.frame(lws_y=x, interval="none")))
           }
           
-          best_lws_y <- pruned_full_space[f(pruned_full_space$lws_y) == min(f(pruned_full_space$lws_y)),][1,]$lws_y
+          # best_lws_y <- pruned_full_space[f(pruned_full_space$lws_y) == min(f(pruned_full_space$lws_y)),][1,]$lws_y
+          best_lws_y <- pruned_full_space[objective_predict_one(fit,pruned_full_space$lws_y) == min(objective_predict_one(fit,pruned_full_space$lws_y)),][1,]$lws_y
           
           subset <- subset[subset$lws_y == best_lws_y, ]
           pruned_full_space <- pruned_full_space[pruned_full_space$lws_y == best_lws_y, ]
@@ -25899,7 +25906,18 @@ h[g.name.to_sym] = 1024
     #+end_src
 
     #+RESULTS:
-    :  There were 18 warnings (use warnings() to see them)
+    #+begin_example
+    Error: unexpected ',' in "objective_predict_one <- function(fit,x),"
+    Error in paste(colname, "=x", sep = "") : object 'colname' not found
+    Error in parse(text = s) : object 's' not found
+    Error in predict.lm(fit, values, interval = "none") : 
+      object 'values' not found
+    Error: unexpected '}' in "}"
+     Error in `[.data.frame`(pruned_full_space, objective_predict_one(fit,  (from #42) : 
+      could not find function "objective_predict_one"
+    Error in data.frame(..., check.names = FALSE) : 
+      arguments imply differing number of rows: 0, 1
+#+end_example
 
      #+begin_src R :results output :session :exports both
        library(ggplot2)
@@ -26657,3 +26675,4 @@ h[g.name.to_sym] = 1024
 
    
 
+    
