@@ -512,6 +512,10 @@ Text
    - Lots of local optimum \to local search failed
    - Heteroscedasticity \to noise due to interactions
 *** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
+   OLS gives often good results but sometime can fail.
+   Prediction of two different things:
+   - Mean / Expected value
+   - Quantile
 **** Least Squared regression and non uniform noise  
     - Assumptions:
       - homoscedasticity (Gaussian noise) but pb we have heteroscedasticity
@@ -1623,7 +1627,12 @@ Text
    #+RESULTS:
    [[file:./img/heteroscedasticity.png]]
 
-** Linear regression of expectation: why it cannot work and how it can be circumvented
+** Differences between regression of expectation and quantile regression
+   The previous results showed that using linear regression gives
+   often good results. But there is a significant difference between
+   regression of expectation and quantile regression. It is due to the
+   fact that they do not predict the same thing.
+*** Linear regression of expectation: why it can be inefficient
    #+begin_src sh :results output :exports none
        ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
@@ -1672,44 +1681,49 @@ Text
    #+RESULTS:
    [[file:img/lm.png]]
    
-   Linear regression has already been used successfully for
-   auto-tuning problems\cite{Brewer:1995:HOV:209937.209946}. But they
-   have been put aside for no real reasons to our knowledge. Using
-   this method to study the impact of the parameters with using linear
+   Linear regression of expectation has already been used successfully
+   with auto-tuning problems by Brewer in the
+   1990s\cite{Brewer:1995:HOV:209937.209946}. But this method have
+   been put aside for no real reasons to our knowledge. Using this
+   method to study the impact of the parameters with using linear
    models to approximate the behavior of the search space coupled with
-   efficient sampling strategies seemed very appealing to us.
+   efficient sampling strategies seemed very appealing to us. 
+
+   This techniques assumes that the noise is uniform and more
+   specifically follows the Gaussian law, in this case we say that the
+   variable are homoscedastics. However the figure\ref{fig:lm-1} shows
+   that in the case of our Laplacian kernel, which is a very simple case,
+   we have heteroscedasticity, which means that the noise is
+   non-uniform because it is due to complex interaction between
+   parameters. Heteroscedasticity is problematic because
+   the least square is not the Best Linear Unbiased Estimator in this
+   case and it biases the variance and thus the coefficient of
+   determination which makes it more difficult to evaluate the
+   accuracy of the model. In addition, we want to predict the minimum
+   value of the objective function not the mean. With non-uniform
+   noise the evaluation of the minimum value does not follows the
+   evolution of the mean.
    
-   If linear regression have been efficient in Brewer's
-   work\cite{Brewer:1995:HOV:209937.209946} it is maybe because at
-   this time the architecture of computers was less complicated than
-   today. The figure\ref{fig:lm-1} shows clearly the limit of the
-   linear regression on the simple case such as a Laplacian kernel on
-   nowadays architectures. First, one of the assumptions of the linear
-   regression is homoscedasticity of the data which is not often
-   the case, and in our example we can see that the variability is not
-   the same at each factor level. 
-
-   Heteroscedasticity is problematic because the least square is not
-   the Best Linear Unbiased Estimator in this case and it biases the
-   variance  and thus the coefficient of determination which makes it   
-   more difficult to evaluate the accuracy of the model.
-
-   If the error law is the same everywhere as in the left in
-   figure\ref{fig:lm-1} we can still have the minimum values that
-   follow the same evolution as the mean and we can still predict the
-   minimum. The resulting model and approximation can still be correct
-   and we can easily know what is the best size for the length of the
-   vector. But we would need to make assumptions that about the 
-   error and we do not know anything about the error. In the right in
-   figure\ref{fig:lm-1}, the evolution of the mean and the evolution
-   of the minimum is not correlated and the best value is mispredicted.  
+   The reason why linear regression of expectation have been
+   efficient in Brewer's work\cite{Brewer:1995:HOV:209937.209946} is
+   probably because at that time the architecture of computers was
+   less complicated than today and the noise was uniform. If the error
+   law is the same everywhere as in the left in figure\ref{fig:lm-1}
+   we can still have the minimum values that follow the same evolution
+   as the mean and we can still predict the minimum. The resulting
+   model and approximation can still be correct and we can easily know
+   what is the best size of vector. But we would still need to make
+   assumptions that about the error and we do not know anything it. In
+   the right in figure\ref{fig:lm-1}, the evolution of the mean and
+   the evolution of the minimum is not correlated and the best value
+   is mispredicted.     
 
    We conclude that in the case of heteroscedasticity and non-uniform
    error law, linear regression tracks the general tendency of impact
    of the parameters. But in our case in which we are interested about
    the minimum which is uncorrelated to the mean, the linear
-   regression cannot lead to the global optimum and we need another
-   estimator for the minimum. 
+   regression of expectation cannot lead to the global optimum and we
+   need another estimator for the minimum. 
 
 *** The choice of quantile regression
    #+begin_src sh :results output :exports none
