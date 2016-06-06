@@ -1402,7 +1402,7 @@ Text
 * TODO Results
 ***                                                                :noexport:
     #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 600 :height 800 :session
-      df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search.csv", strip.white=T, header=T)  
+      df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_2.csv", strip.white=T, header=T)  
       library(ggplot2)
       library(plyr)
 
@@ -1458,7 +1458,9 @@ Text
     chosen as starting point.
 
     Our approach uses the random uniform sampling techniques to sample
-    the search space. It starts with 105 random points and adds 5
+    the search space. It starts with 50 random points and adds just
+    enough points after pruning to perform the regression. The total
+    number of points used lays between 84 and 89
     additional points when needed to be able to perform the
     regression but we do not use more than 120 points. In order to
     automate our approach for evaluation purpose, we decided to apply
@@ -1497,8 +1499,9 @@ Text
     | LHS     | 1.009 |  1.388 | 1.155 |  1.172 |      99.6 |
     | RS      | 1.011 |  1.341 | 1.098 |  1.079 |       120 |
     | GA      |  1.00 |  1.390 | 1.098 |  1.073 |       120 |
-    | LM      | 1.010 | 32.060 | 1.445 |  1.080 |       119 |
-    | RQ      | 1.010 | 30.890 | 1.432 |  1.073 |       119 |
+    | LM      |  1.06 |  2.064 | 1.187 |  1.068 |     88.25 |
+    | RQ      | 1.010 |  1.173 | 1.053 |  1.012 |     88.46 |
+
 
 * Analysis
   This part explains the results of our approach. First we made a
