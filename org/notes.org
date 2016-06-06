@@ -289,7 +289,7 @@
 **** Link
     http://delivery.acm.org/10.1145/330000/321069/p212-hooke.pdf?ip=194.199.27.221&id=321069&acc=ACTIVE%20SERVICE&key=7EBF6E77E86B478F%2E9B0CC472860F67C6%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&CFID=751594268&CFTOKEN=50107111&__acm__=1455030106_ccd8cb9aa66e698e79840f74cfa6aa91
 **** Bibtex
-    #+BEGIN_SRC :tangle ./biblio.bib
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
     @article{Hooke:1961:DSS:321062.321069,
     author = {Hooke, Robert and Jeeves, T. A.},
     title = {`` Direct Search'' Solution of Numerical and Statistical Problems},
@@ -761,7 +761,7 @@
     #+END_SRC
 ** The art of computer systems performance analysis
 *** Bibtex
-    #+BEGIN_SRC bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
         @book{books/daglib/0076234,
         added-at = {2011-04-19T00:00:00.000+0200},
         author = {Jain, Raj},
@@ -779,6 +779,23 @@
       }
     #+END_SRC
 ** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/construction%20and%20use%20of%20linear%20regression%20models%20for%20processor%20performance%20analysis.pdf][construction and use of linear regression models for processor performance analysis]] ] Construction and use of linear regression models for processor performance analysis
+** TODO [ [[file:~/Dropbox/IMAG/M2/Stage/BOAST/papers/QReco.pdf][QReco]] ]A gentle introduction to quantile regression for ecologists
+*** Bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+      @article {FEE:FEE200318412,
+      author = {Cade, Brian S. and Noon, Barry R.},
+      title = {A gentle introduction to quantile regression for ecologists},
+      journal = {Frontiers in Ecology and the Environment},
+      volume = {1},
+      number = {8},
+      publisher = {Ecological Society of America},
+      issn = {1540-9309},
+      url = {http://dx.doi.org/10.1890/1540-9295(2003)001[0412:AGITQR]2.0.CO;2},
+      doi = {10.1890/1540-9295(2003)001[0412:AGITQR]2.0.CO;2},
+      pages = {412--420},
+      year = {2003},
+      }
+    #+END_SRC
 * Mathematical notions
 ** Non-smooth
    Discontinous and non differentiable functions. 

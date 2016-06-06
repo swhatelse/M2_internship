@@ -24470,7 +24470,7 @@ h[g.name.to_sym] = 1024
         df_rq_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/rq_random_budget.csv", strip.white=T, header=T)
 
         df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random[,c(1,2,3,4,5,6,7,8,9,12,13)], df_rq_random)
-        df_merged <- cbind(df_merged,speedup= df_merged$time_per_pixel / min(df$time_per_pixel) )
+        df_merged <- cbind(df_merged,slowdown = df_merged$time_per_pixel / min(df$time_per_pixel) )
         # write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search.csv", row.names=FALSE)
         write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search_2.csv", row.names=FALSE)
       #+end_src
@@ -24635,22 +24635,30 @@ h[g.name.to_sym] = 1024
         library(plyr)
 
         df_mean = ddply(df_all_methods,.(method), summarize, 
-                        mean = mean(speedup))
+                        mean = mean(slowdown))
 
         df_median = ddply(df_all_methods,.(method), summarize, 
-                          median = median(speedup))
+                          median = median(slowdown))
 
-        ggplot(df_all_methods, aes(speedup)) + 
+        df_err = ddply(df_all_methods,.(method), summarize,
+                      mean = mean(slowdown), err = 2*sd(slowdown)/sqrt(length(slowdown)))
+
+        ggplot(df_all_methods) + 
             facet_grid(method~.) +
+            theme_bw() +
+            geom_histogram(aes(slowdown),binwidth=.05,color="white", fill="gray48") +
+            geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=60, fill="red"), alpha=0.3) +
             geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
             geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
-            geom_histogram(binwidth=.05,color="white", fill="gray1") +
-            labs(y="Density", x="Percentage of the speedup of best combination") +
-            ggtitle("") + coord_cartesian(xlim=c(.9,3))
+            labs(y="Density", x="Slowdown compared best combination of the entire search space") +
+            scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
+            ggtitle("") + 
+            theme(legend.position="top") +
+            coord_cartesian(xlim=c(.9,3), ylim=c(0,60))
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-5110xkR/figure5110IkG.png]]
+      [[file:/tmp/babel-5110xkR/figure51109iC.png]]
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
         ggplot() + 

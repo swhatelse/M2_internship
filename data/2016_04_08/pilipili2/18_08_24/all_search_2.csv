@@ -1,4 +1,4 @@
-"elements_number","y_component_number","vector_length","temporary_size","vector_recompute","load_overlap","threads_number","lws_y","time_per_pixel","point_number","method","speedup"
+"elements_number","y_component_number","vector_length","temporary_size","vector_recompute","load_overlap","threads_number","lws_y","time_per_pixel","point_number","method","slowdown"
 3,3,1,4,"true","true",256,1,1.36263397941189e-10,120,"GA",1.16962963579657
 4,4,1,2,"true","false",512,8,1.29363514465716e-10,120,"GA",1.11040383988665
 10,5,2,4,"true","true",256,4,1.41563511285379e-10,120,"GA",1.21512365498374

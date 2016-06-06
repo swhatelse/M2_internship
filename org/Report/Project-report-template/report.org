@@ -1407,22 +1407,30 @@ Text
 ***                                                                :noexport:
     #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 600 :height 800 :session
       df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_2.csv", strip.white=T, header=T)  
-      library(ggplot2)
-      library(plyr)
+        library(ggplot2)
+        library(plyr)
 
-      df_mean = ddply(df_all_methods,.(method), summarize, 
-                      mean = mean(speedup))
+        df_mean = ddply(df_all_methods,.(method), summarize, 
+                        mean = mean(slowdown))
 
-      df_median = ddply(df_all_methods,.(method), summarize, 
-                        median = median(speedup))
+        df_median = ddply(df_all_methods,.(method), summarize, 
+                          median = median(slowdown))
 
-      ggplot(df_all_methods, aes(speedup)) + 
-          facet_grid(method~.) +
-          geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
-          geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
-          geom_histogram(binwidth=.05,color="white", fill="gray1") +
-          labs(y="Density", x="Percentage of the speedup of best combination") +
-          ggtitle("") + coord_cartesian(xlim=c(.9,3))
+        df_err = ddply(df_all_methods,.(method), summarize,
+                      mean = mean(slowdown), err = 2*sd(slowdown)/sqrt(length(slowdown)))
+
+        ggplot(df_all_methods ) + 
+            facet_grid(method~.) +
+            theme_bw() +
+            geom_histogram(aes(slowdown),binwidth=.05,color="white", fill="gray48") +
+            geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=60, fill="red"), alpha=0.3) +
+            geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
+            geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
+            labs(y="Density", x="Slowdown compared best combination of the entire search space") +
+            scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
+            ggtitle("") + 
+            theme(legend.position="top") +
+            coord_cartesian(xlim=c(.9,3), ylim=c(0,60))
     #+end_src
 
     #+RESULTS:
@@ -1746,7 +1754,6 @@ Text
          labs(y="time per pixel in seconds", x="x component number") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
-
    #+end_src
 
    #+CAPTION: Linear regression vs quantile regression
@@ -1754,7 +1761,22 @@ Text
    #+RESULTS:
    [[file:img/why_we_choose_quantile_reg.png]]
 
-   In our case
+    Quantile regression gives the estimate of quantile and has been
+    proven successful in the ecologic field\cite{FEE:FEE200318412}
+    where complex interactions between factors lead to non-uniform
+    noise which is exactly the case of our Laplacian kernel. Moreover
+    it has the ability to estimate multiple tendency from the minimum
+    to the maximum. As we want to minimize the time to compute a pixel
+    need to estimate the minimum and regression on the 5th percentile is
+    a generally a good estimation of
+    it\cite{books/daglib/0076234}. There are different ways of
+    computing quantile regression we just tried one which is the
+    iterated weighted least squares. This techniques weighted least
+    square regression to add more weight to a particular quantile and
+    iterate until it has converge to the wanted quantile
+    regression. Figure\ref{fig:qr-example} illustrates the comparison
+    between regression of expectation and quantile regression.
+
 ** Model choice and refinement
 ** Using less point as possible: sampling strategy
 ** Model optimization
