@@ -1399,7 +1399,7 @@ Text
    \caption{\label{fig:warmup}Warm-up effect}
    \end{figure}
    #+END_LaTeX
-* Results
+* TODO Results
 ***                                                                :noexport:
     #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 600 :height 800 :session
       df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search.csv", strip.white=T, header=T)  
@@ -1500,7 +1500,6 @@ Text
     | LM      | 1.010 | 32.060 | 1.445 |  1.080 |       119 |
     | RQ      | 1.010 | 30.890 | 1.432 |  1.073 |       119 |
 
-
 * Analysis
   This part explains the results of our approach. First we made a
   detailed study of the search to understand our results. As we used the
@@ -1509,7 +1508,7 @@ Text
   of the model and the sampling techniques on our approach. Finally we
   dig into optimization techniques to converge faster to the optimal
   solution using our model of the objective function.
-** Characteristics of the search space
+** DONE Characteristics of the search space
 ***                                                                :noexport:
    #+begin_src sh :results output :exports none
        ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
@@ -1740,8 +1739,8 @@ Text
 
    In our case
 ** Model choice and refinement
-** Model optimization
 ** Using less point as possible: sampling strategy
+** Model optimization
 * Future work
 * Conclusion
 #+LaTeX: \nocite{*}
