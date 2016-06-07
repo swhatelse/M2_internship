@@ -811,19 +811,20 @@ Text
   can be in the pipeline at the same time but only at different state
   of the processing, like in an assembly line. A correct scheduling of
   the instructions in the pipeline leads to a better occupancy of
-  it. For example conditions are a disaster because prevent this kind
-  of things *Instruction Level Parallelism* is a mechanism that can
-  change the order of the instructions to have a better overlapping of the
-  instructions in the pipeline. In addition some CPUs have vector
-  support. Such processors can manipulate not only scalar variables
-  but also vector variables. The vector is loaded into a vector
-  register and the same instruction is applied on the entire. This the
-  save cost of decoding the same instruction multiple times. 
+  it. *Instruction Level Parallelism* is a mechanism that can
+  change the order of the instructions to have a better overlapping of
+  instructions in the pipeline. But for example conditions are a
+  disaster because it can hinder this. In addition some
+  CPUs have vector support. Such processors can manipulate not only
+  scalar variables but also directly *vector* variables. The vector is loaded
+  into a vector register and the same instruction is applied on the
+  entire vector. This saves the cost of decoding the same instruction multiple
+  times.
 
   Today, CPUs have become so fast that one of the main bottleneck is
   the memory. Thus accessing data in memory is much more expensive than
   performing computations. To deal with this problem the solution
-  found is to use different hierarchy of memory. The statement is that
+  found is to use different *memory hierarchy*. The statement is that
   a data that is currently used is more likely to be re-used in a near
   future. Hence the idea is to keep that are the most frequently used
   data as close as possible to the CPUs, that is why CPUs embeds cache
