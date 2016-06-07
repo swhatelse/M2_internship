@@ -20802,22 +20802,26 @@ h[g.name.to_sym] = 1024
           f <- function(x){
               as.numeric(predict(fit,data.frame(elements_number=x[1], y_component_number=x[2]),interval="none"))
           }
-          combinations <- matrix(NA,nrow=24,ncol=6)
-          for(i in 1:24){
-              for(j in 1:6){
-                combinations[i,j] <- f(c(i,j))
+          combinations <- matrix(NA,nrow=24*resi,ncol=6*resj)
+          i2 <- 1
+          for(i in 1:(24*resi)){
+              j2 <- 1
+              for(j in 1:(6*resj)){
+                combinations[i2,j2] <- f(c(i,j))
+                j2 <- j2 + 1
               }
+              i2 <- i2 + 1
           }
 
-          persp3D(z=combinations, phi=20, theta=160)   
+          persp3D(x=1:(24*resi)/resi, y=1:(6*resj)/resj, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=220, clab=c("time per pixel in s"), colkey = list(length = 0.5, width=0.4), border=NA, ticktype="detailed")
         #+end_src
 
         #+RESULTS:
         [[file:img/20160402/pilipili2/model_3D_elem_y_comp.png]]
 
-        #+begin_src R :results output graphics :file img/20160402/pilipili2/model_3D_elem_y_comp_constraint.png :exports both :width 600 :height 400 :session     
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/model_3D_elem_y_comp_constraint.png :exports both :width 800 :height 600 :session     
           g <- function(x){
-              ifelse(x[1] <= x[2] * 4, f(x), 0)
+              ifelse(x[1] <= x[2] * 4, f(x), NA)
           }
 
           # combinations <- matrix(NA,nrow=24,ncol=6)
@@ -20831,13 +20835,17 @@ h[g.name.to_sym] = 1024
           offi = 3
           offj = 3
           combinations <- matrix(NA,nrow=24*resi,ncol=6*resj)
+          i2 <- 1
           for(i in 1:(24*resi)){
+              j2 <- 1
               for(j in 1:(6*resj)){
-                combinations[i,j] <- g(c((i+offi)/resi,(j+offj)/resj))
+                combinations[i2,j2] <- g(c((i+offi)/resi,(j+offj)/resj))
+                j2 <- j2 + 1
               }
+              i2 <- i2 + 1
           }
 
-          persp3D(z=combinations, phi=20, theta=220)
+          persp3D(x=1:(24*resi)/resi, y=1:(6*resj)/resj, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=220, clab=c("time per pixel in s"), colkey = list(side=1,length = 0.5, width=0.4))
         #+end_src
 
         #+RESULTS:
@@ -20858,6 +20866,7 @@ h[g.name.to_sym] = 1024
 
 
           persp3D(z=combinations, phi=20, theta=190)
+
         #+end_src
 
         #+RESULTS:
@@ -20910,26 +20919,116 @@ h[g.name.to_sym] = 1024
         F-statistic: 7.981e+05 on 4 and 23115 DF,  p-value: < 2.2e-16
 #+end_example
 
-        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-          library(plot3D)
+        #+begin_src R :results output :session :exports both
           f <- function(x){
               as.numeric(predict(fit,data.frame(threads_number=x[1], lws_y=x[2]),interval="none"))
           }
 
-          res <- 4
-          combinations <- matrix(NA,nrow=(1024-32)/res,ncol=1024/res)
-          for(i in seq(32,1024,res)){
-              for(j in seq(1,1024,res)){
-                combinations[i,j] <- f(c(i,j))
-              }
-          }
+          res <- 8
+          combinations <- matrix(NA,nrow=(1024)/res,ncol=1024/res)
 
-          persp3D(z=combinations, phi=20, theta=160)   
+          i2 <- 1
+          for(i in seq(1,1024,res)){
+              j2 <- 1
+              for(j in seq(1,1024,res)){
+                combinations[i2,j2] <- f(c(i,j))
+                j2 <- j2 + 1
+              }
+                i2 <- i2 + 1
+          }
+                  
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          library(plot3D)
+
+          persp3D(z=combinations, phi=20, theta=110)   
 
         #+end_src
 
         #+RESULTS:
-        [[file:/tmp/babel-7841klr/figure78416qN.png]]
+        [[file:/tmp/babel-7841klr/figure78417rU.png]]
+
+        #+begin_src R :results output :session :exports both
+            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+            g <- function(x) { f(x)/x^2 }
+            h <- function(x) {pmin(g(x),1e15)}
+
+          model <- time_per_pixel ~ # elements_number + I(1/elements_number) + 
+              # y_component_number + I(1/y_component_number) +
+              vector_length + 
+              threads_number + I(1/threads_number) + 
+              #lws_y + 
+              # elements_number:y_component_number 
+              threads_number:vector_length
+              # threads_number:elements_number
+
+          fit <- lm(data=df,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              fit <- lm(data=df,formula=model,weight=g(E))
+          }        
+          summary(fit)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm(formula = model, data = df, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -9.388e-06  2.241e-06  4.537e-06  9.245e-06  4.688e-05 
+
+        Coefficients:
+                                      Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)                  7.267e-11  1.667e-12   43.60   <2e-16 ***
+        vector_length                2.518e-11  2.184e-13  115.32   <2e-16 ***
+        threads_number               3.026e-14  1.719e-15   17.60   <2e-16 ***
+        I(1/threads_number)          1.800e-09  7.972e-11   22.57   <2e-16 ***
+        vector_length:threads_number 4.195e-15  2.170e-16   19.33   <2e-16 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 9.472e-06 on 23115 degrees of freedom
+        Multiple R-squared:  0.9863,	Adjusted R-squared:  0.9863 
+        F-statistic: 4.175e+05 on 4 and 23115 DF,  p-value: < 2.2e-16
+#+end_example
+
+        #+begin_src R :results output :session :exports both
+          f <- function(x){
+              as.numeric(predict(fit,data.frame(threads_number=x[1], vector_length=x[2]),interval="none"))
+          }
+
+          res <- 8
+          combinations <- matrix(NA,nrow=(1024)/res,ncol=16)
+
+          i2 <- 1
+          for(i in seq(1,1024,res)){
+              j2 <- 1
+              for(j in 1:16){
+                combinations[i2,j2] <- f(c(i,j))
+                j2 <- j2 + 1
+              }
+                i2 <- i2 + 1
+          }
+                  
+        #+end_src
+
+        #+RESULTS:
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          library(plot3D)
+
+          persp3D(z=combinations, phi=20, theta=110)   
+
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-7841klr/figure7841I2a.png]]
 
 ******* Playing with optim 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
