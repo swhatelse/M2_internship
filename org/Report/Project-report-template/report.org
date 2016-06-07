@@ -1533,12 +1533,14 @@ Text
     | RQ      | 1.010 |  1.173 | 1.053 |  1.012 |     88.46 |
 
 * Analysis
-  This part explains the results of our approach. First we made a
-  detailed study of the search space to understand our results. As we
-  used the linear regression of expectation and the quantile
-  regression we studied there difference. Then we studied the impact
-  of the choice of the model and the sampling techniques on our
-  approach. Finally we dig into optimization techniques to converge
+  This part gives a study of the search space and an explanation of
+  the results of our approach. We also explain why the quantile
+  regression is more suited than regression of expectation in
+  optimization purpose. The automatisation of this approach is not the
+  best way to use it and results can be further improved. Hence this
+  part explains how results can be improved by using sampling strategy
+  and choosing and refining the model according to the target problem.   
+  Finally we dig into constrained optimization techniques to converge
   faster to the optimal solution using our model of the objective
   function. 
 ** DONE Characteristics of the search space
@@ -1653,7 +1655,7 @@ Text
    #+RESULTS:
    [[file:./img/heteroscedasticity.png]]
 
-** Differences between regression of expectation and quantile regression
+** DONE Differences between regression of expectation and quantile regression
    The previous results showed that using linear regression gives
    often good results. But there is a significant difference between
    regression of expectation and quantile regression. It is due to the
@@ -1780,7 +1782,6 @@ Text
    #+RESULTS:
    [[file:img/why_we_choose_quantile_reg.pdf]]
 
-
 **** 
     Quantile regression gives the estimate of quantile and has been
     proven successful in the ecologic field\cite{FEE:FEE200318412}
@@ -1788,33 +1789,33 @@ Text
     noise which is exactly the case of our Laplacian kernel. Moreover
     it has the ability to estimate multiple tendency from the minimum
     to the maximum. As we want to minimize the time to compute a pixel
-    need to estimate the minimum and regression on the 5th percentile is
-    a generally a good estimation of
+    we need to estimate the minimum and regression on the 5th
+    percentile is a generally a good estimation of 
     it\cite{books/daglib/0076234}. 
     Figure\ref{fig:qr-example} illustrates the comparison
-    between regression of expectation and quantile regression. Using
-    the regression of expectation estimates that the best version has
-    a x_component_number of 4 which is not true. While using quantile
-    regression of the 5th succeed in predict that the best version is
-    a version with a x_component_number of 1. So the regression of
-    expectation may not find the minimum while the quantile regression
-    will if the model is correct.
-    There are different ways of computing quantile regression we tried
-    the rq function of R it gives good estimation of the coefficient
-    of the different parameters but for some reason it fails with our
-    data to compute the standard error and the R-squared. Instead we
-    use another techniques that use performs weighted least square to
-    apply more weight to the desired quantile. And it iterates in
-    order to converge to the quantile regression of the wanted
-    quantile. Nevertheless, we do not yet master this technique
-    completely, we managed to get the correct coefficients but we do not
-    know how to determine correctly the minimum number of iterations
-    to converge and how to determine correct the bounds for the
-    weights. The other difficult with this method is that we do not
-    really know how to interpret the standard error, how to compute
-    confidence intervals and the R-squared values are too
-    optimistic. Hence it is a bit more complicated to make inferences
-    about models. 
+    between regression of expectation and quantile regression. The
+    regression of expectation estimates that the best performing
+    version has a x_component_number of 4 which is not true. While
+    the quantile regression of the 5th succeed in predicting that the
+    best performing version has a x_component_number of 1. So the
+    regression of expectation may not find the minimum while the
+    quantile regression does if the model is correct.
+    There are different ways of computing quantile regression. We tried
+    the rq function from the quantreg package of R, it gives good
+    estimation of the coefficient of the different parameters but for
+    some reason it fails with our data to compute the standard error
+    and the R-squared. Instead we use another techniques that use
+    performs weighted least square to apply more weight to the desired
+    quantile. And it iterates in order to converge to the quantile
+    regression of the wanted quantile. Nevertheless, we do not yet
+    master this technique completely, we managed to get the correct
+    coefficients but we do not know how to determine correctly the
+    minimum number of iterations to converge and how to determine
+    correct the bounds for the weights. The other difficulty with this
+    method is that we do not really know how to interpret the standard
+    error, how to compute confidence intervals and the R-squared
+    values are too optimistic. Hence it is a bit more complicated to
+    make inferences about models. 
 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
@@ -1824,11 +1825,11 @@ Text
    \end{figure}
    #+END_LaTeX
 
-
-** Model choice and refinement
-** Using less point as possible: sampling strategy
-** Model optimization
-* Future work
+** TODO Model choice and refinement
+   
+** TODO Using less point as possible: sampling strategy
+** TODO Model optimization
+* TODO Future work
 * Conclusion
 #+LaTeX: \nocite{*}
 #+LaTeX: \def\raggedright{}

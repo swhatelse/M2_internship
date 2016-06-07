@@ -20863,6 +20863,74 @@ h[g.name.to_sym] = 1024
         #+RESULTS:
         [[file:img/20160402/pilipili2/model_3D_elem_y_comp_barrier.png]]
       
+        #+begin_src R :results output :session :exports both
+            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+            g <- function(x) { f(x)/x^2 }
+            h <- function(x) {pmin(g(x),1e15)}
+
+          model <- time_per_pixel ~ # elements_number + I(1/elements_number) + 
+              # y_component_number + I(1/y_component_number) +
+              # vector_length + 
+              threads_number + I(1/threads_number) + 
+              lws_y + 
+              # elements_number:y_component_number 
+              threads_number:lws_y
+              # threads_number:elements_number
+
+          fit <- lm(data=df,formula=model)
+          for(i in 1:200){
+              E <- residuals(fit)
+              fit <- lm(data=df,formula=model,weight=g(E))
+          }        
+          summary(fit)
+        #+end_src
+
+        #+RESULTS:
+        #+begin_example
+
+        Call:
+        lm(formula = model, data = df, weights = g(E))
+
+        Weighted Residuals:
+               Min         1Q     Median         3Q        Max 
+        -1.354e-05  2.551e-06  4.462e-06  8.134e-06  4.617e-05 
+
+        Coefficients:
+                               Estimate Std. Error t value Pr(>|t|)    
+        (Intercept)           1.113e-10  1.641e-12   67.84   <2e-16 ***
+        threads_number       -8.332e-14  1.980e-15  -42.08   <2e-16 ***
+        I(1/threads_number)   3.625e-09  9.300e-11   38.98   <2e-16 ***
+        lws_y                 8.226e-12  3.023e-14  272.11   <2e-16 ***
+        threads_number:lws_y -4.881e-15  2.953e-17 -165.29   <2e-16 ***
+        ---
+        Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+        Residual standard error: 8.843e-06 on 23115 degrees of freedom
+        Multiple R-squared:  0.9928,	Adjusted R-squared:  0.9928 
+        F-statistic: 7.981e+05 on 4 and 23115 DF,  p-value: < 2.2e-16
+#+end_example
+
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          library(plot3D)
+          f <- function(x){
+              as.numeric(predict(fit,data.frame(threads_number=x[1], lws_y=x[2]),interval="none"))
+          }
+
+          res <- 4
+          combinations <- matrix(NA,nrow=(1024-32)/res,ncol=1024/res)
+          for(i in seq(32,1024,res)){
+              for(j in seq(1,1024,res)){
+                combinations[i,j] <- f(c(i,j))
+              }
+          }
+
+          persp3D(z=combinations, phi=20, theta=160)   
+
+        #+end_src
+
+        #+RESULTS:
+        [[file:/tmp/babel-7841klr/figure78416qN.png]]
+
 ******* Playing with optim 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          p <- poly.calc(-1:5)
