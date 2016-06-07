@@ -691,24 +691,24 @@ Text
   exhaustive search is thus prohibited. Hence many techniques have been
   used in the literature such as genetic algorithm, simulated
   annealing, tabu search or machine learning. But these  methods have
-  several limitations. First the number of combination 
-  tested is not optimal, thus the time to perform the optimization can
-  still be very long. In addition to this, it is difficult to know
-  whether further optimizations could be expected or not and how to
-  get them. Because it is complicated to estimate the quality of an
-  optimization. Comparing to the peak performance is generally 
-  meaningless and it is hard to know how the combination really
-  performed because the best optimization is unknown. As a result the
-  user is exclude from the tuning process by the lack of 
-  feed back and any valuable information.
+  several limitations. First, the number of combination 
+  tested is often large, thus the time to perform the optimization can
+  still be very long. In addition with such fully automated
+  approaches, it is difficult to know whether further optimizations
+  could be expected or not and how to get them. Because it is
+  complicated to estimate the quality of an optimization. Comparing to
+  the peak performance is generally meaningless and it is hard to know
+  how the combination really performed because the best optimization
+  is unknown. As a result the user is excluded from the tuning process
+  by the lack of valuable feedback.
 ** Our Goal
-   The idea is to give some power back to the user by investigating
-   the design of semi-automatic optimization framework, where the
-   application developer has control and understands how the 
-   optimizations works and guides it. For this, we relied on
-   BOAST\cite{}, a metaprogramming framework in ruby that can
-   generate portable code in C, Fortran and OpenCL. It provides a
-   domain specific language to describe the kernel and the
+   The idea we explored in this internship was to give some power back
+   to the user by investigating the design of semi-automatic
+   optimization framework, where the application developer has control
+   and understands how the optimizations works and guides it. For
+   this, we relied on BOAST\cite{}, a metaprogramming framework in
+   ruby that can generate portable code in C, Fortran and OpenCL. It
+   provides a domain specific language to describe the kernel and the
    optimizations and embeds a complete chain of tools to compile, run,
    benchmark and check the validity of a kernel. We investigate
    various statistical techniques inspired from the design of
