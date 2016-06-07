@@ -828,11 +828,11 @@ Text
   a data that is currently used is more likely to be re-used in a near
   future. Hence the idea is to keep that are the most frequently used
   data as close as possible to the CPUs, that is why CPUs embeds cache
-  memories. In a processors there can be up to 4 level of cache
-  (the registers, L1, L2, L3) and the fastest are the closest to the
-  CPU to have the lowest latency possible but they also are the smallest.
-  Thus the pattern to data access have to be chosen carefully so that
-  the most used stay close to the computation units.
+  memories. In a processor there can be up to 4 level of cache
+  (the registers, L1, L2, L3) and the closest to the
+  CPU have the lowest latency possible but are also the smallest.
+  Thus the pattern to access data has to be chosen carefully so that
+  the most used data stay close to the computation units.
 
   Another recent characteristic of HPCs is the increasing use of
   GPUs because for computation that can be well parallelized like it
