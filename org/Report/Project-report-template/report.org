@@ -714,28 +714,27 @@ Text
    various statistical techniques inspired from the design of
    experiments that emphasizes on reducing experiment cost.
 ** My contribution
-   My contribution during this internship was to try an approach 
-   that take into account the hypothesis the developer is doing to
-   make a model of the impact of the parameters in order to guide the
-   user in the tuning process. More precisely we investigated if
-   linear regression and design experiments could bring accurate
-   information using the least point as possible.  
+   My contribution during this internship was to prototype and
+   evaluate an approach that takes into account a performance model
+   hypothesized by in order to guide the tuning process.  
 
    Our approach consists in the following steps:
-   1. Explore the search space at very specific place
-   2. Find the more accurate and simplest model by refinement and
+   1. Propose a model
+   2. Explore the search space at very specific places that allow to
+      evaluate the quality of the model. 
+   3. Find the more accurate and simplest model by refinement and
       removing useless factors
-   3. Fixing parameters to prune the search space and add removed factors
-   4. Back to 1 until we are able to fix all the factors values.
+   4. Determine the optimal parameters of the refined model and
+      restrict the search space accordingly.
+   5. Back to 1 until we are able to fix all the factors values.
    
-   In the first time, we wanted to see if the linear regression was
-   suited to modeling the problem of code optimization and if we could
-   achieve to have a model that is simple and close to the reality. 
+   In a first time, we wanted to see if simple linear regression was
+   suited to the code performance modeling problem. 
    # To model 
    # computer phenomena, linear models are generally enough to get
    # accurate prediction because the models are not too 
    # complex. 
-   We tested this approach on a simple kernel that compute 
+   We tested this approach on a simple kernel that computes 
    the Laplacian of an image. 
    # We found that the linear regression is
    # able to be accurate enough while having simple models that traduce
@@ -758,11 +757,10 @@ Text
    # R-squared and standard error. This was mainly problematic for the
    # validation and refinement of the model.
 
-   In the second time, we try find a way reduce the number of points
-   need for the model and yet being accurate. To do so, sampling the
-   search space correctly is crucial, that is why, we investigated to
-   find how we can use efficiently techniques inspired from design of
-   experiments.  
+   In a second time, we try find a way to reduce the number of points
+   needed for checking and instanciating the model. To do so, sampling the
+   search space correctly is crucial. That is why, we investigated
+   techniques inspired from design of experiments.  
 
    # One important point to find correct model is that the model and the
    # sampling should start with the least underlying hypothesis as
