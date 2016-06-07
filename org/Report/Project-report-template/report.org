@@ -1174,16 +1174,18 @@ Text
 
 * DONE Methodology
 ** DONE Reproducible research
+  Such experimental process mandate rigorous methodology.
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
-  github\footnote{https://github.com/swhatelse/M2\_internship}. It
+  github\footnote{https://github.com/swhatelse/M2\_internship}. It 
   contains detailed about installation and configuration steps. It
   keeps tracks of every experiments including their description and
-  analysis. It is structured in a chronological way and thus follows
-  the natural evolution of the work. This gives the possibility to
-  easily understand what have been done at each step and why.
-  Every pieces of codes is explained using literate programming which
-  is very straight forward using the org-mode of emacs.
+  analysis. Now it has more than 27K lines with more 14K lines of code
+  and analysis. It is structured in a chronological way and thus
+  follows the natural evolution of the work. This gives the possibility to
+  easily understand what has been done at each step and why.
+  Every pieces of codes I wrote is explained using literate programming, which
+  is straightforward using the org-mode of emacs.
   The github repository also contains the complet set of scripts and
   data used for experiments giving the possibility to anyone to re-run
   the same experiments using the same data.
