@@ -1327,7 +1327,7 @@ Text
 
    #+RESULTS:
 
-   #+begin_src R :results output graphics :file img/warm_up.pdf :exports none :width 800 :height 600 :session
+   #+begin_src R :results output graphics :file img/warm_up.pdf :exports none :width 8 :height 6 :session
      library(plyr)
      library(ggplot2)
 
@@ -1397,15 +1397,15 @@ Text
    size. On the other size of images we have almost no variability.
 
    #+BEGIN_LaTeX
-   \begin{figure}[]
+   \begin{figure}[htb]
    \centering
-   \includegraphics[height=.15\textheight]{./img/warm_up.pdf}
+   \includegraphics[height=.5\textheight]{./img/warm_up.pdf}
    \caption{\label{fig:warmup}Warm-up effect}
    \end{figure}
    #+END_LaTeX
 * TODO Results
 ***                                                                :noexport:
-    #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 600 :height 800 :session
+    #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 6 :height 8 :session
       df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_2.csv", strip.white=T, header=T)  
         library(ggplot2)
         library(plyr)
@@ -1426,7 +1426,7 @@ Text
             geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=60, fill="red"), alpha=0.3) +
             geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
             geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
-            labs(y="Density", x="Slowdown compared best combination of the entire search space") +
+            labs(y="Frequency", x="Slowdown compared best combination of the entire search space") +
             scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
             ggtitle("") + 
             theme(legend.position="top") +
@@ -1450,54 +1450,72 @@ Text
       distance between the point to cover the full search
       space. However we want to see how a search based on it would
       perform. 
-    - GR: greedy search which is a derivative-free local search. From
-      a starting point it explores all the possible directions at
-      distance one and goes to the direction that gives the best
-      improvement. This kind of algorithm is very efficient on convex
-      objective function or if we already know where to search.  
+    - GR: we implemented a greedy search which is a derivative-free
+      local search. From a starting point it explores all the possible
+      directions at distance one and goes to the direction that gives
+      the best improvement. This kind of algorithm is very efficient
+      on convex objective function or if we already know where to
+      search.
     
     There are many ways of performing linear regression. We evaluated
     two of them: 
-    - LM: which is the least square regression which gives an estimate
+    - LM: it uses the least square regression which gives an estimate
       of the mean.
-    - RQ: which is the quantile regression which gives an estimate of
+    - RQ: it uses the quantile regression which gives an estimate of
       a given quantile.
 
     We measured each methods one hundred time with about 120 (0.5% of
-    the search space) points for GA, RS, LHS, LM and RQ and we
+    the search space) points for GA, RS, and LHS and we
     evaluated the slowdown achieved compared to the best solution
-    available in the entire search space. For GR 1 random point is
-    chosen as starting point.
+    available in the entire search space. For GR only 1 random point
+    is chosen as starting point.
 
-    Our approach uses the random uniform sampling techniques to sample
-    the search space. It starts with 50 random points and adds just
-    enough points after pruning to perform the regression. The total
-    number of points used lays between 84 and 89
-    additional points when needed to be able to perform the
-    regression but we do not use more than 120 points. In order to
-    automate our approach for evaluation purpose, we decided to apply
-    exactly the same strategy. This means we fixed the parameters in
-    the same order, thus pruning decisions are the same and we used
-    exactly the same model of without considering the structure of the
-    random set.
+    We evaluated our approach using the random uniform sampling
+    techniques to sample the search space. It starts with 50 random
+    points and adds just enough points after pruning to perform the
+    regression. The total number of points used lays between 84
+    and 89. Our approach is intended to be semi-automatic but for
+    evaluation purpose we automated the process. For this we decided
+    to apply exactly the same strategy each time.  We fixed the
+    parameters in the same order, thus pruning decisions are the same
+    and we used exactly the same model without considering the
+    structure of the random set and same things for the sampling
+    decisions.
 
-    Figure\ref{search_comparison} shows the  results. 
-    With this search space, the local search GR is inefficient,
-    half of the time we get a slowdown of higher than x2. It can be
-    every far from the optimal solution, up to x66 slower.
+    Figure\ref{fig:search_comparison} shows the results of the
+    different methods. With this search space, the local search GR is
+    inefficient, half of the time we get a slowdown of higher than
+    x2. It can be every far from the optimal solution, up to x66 slower\ref{tab:comparison-table}.
     The LHS search does a lot more better with a slowdown that is
-    never higher than 38.8%. 50% of the time we can get a slowdown of
-    17%.
+    never higher than 38.8%. 50% of the time we can get a slowdown
+    lower than 17%.
     The uniform random search RS is very efficient here. Half of the time
     we get a slowdown that is less than 7.9% and we do not get a
-    maximum slowdown of slowdown.
-    The genetic algorithm GA is the one that performs the best in
-    general with a slowdown which is less than 7.3% half of the time
-    and a maximum slowdown of 39%.
+    maximum slowdown of 34.1%.
+    The genetic algorithm GA gives even better results with a slowdown
+    which is less than 7.3% half of the time and a maximum slowdown of
+    39%. 
+    The technique using least square regression gives in general better
+    results than the genetic algorithm with a higher rate of good
+    performing versions, 50% of the time the slowdown is less than
+    6.8%. However, sometimes it fails to find high performing versions
+    and can be worst than GA with a maximum slowdown of x2.064.
+    The quantile regression is the most effective techniques here with
+    an even higher rate of high performing versions, half of the time
+    it is very close the optimal solution with a slowdown that is
+    lower than 1.2% with the worst versions that are not slower than
+    17.3%.
+
+    In brief, the regression of expectation gives generally better
+    results than the implementation of the genetic algorithm we used
+    but sometime can be worse. The quantile regression performed
+    better than the genetic algorithm all the time with near optimal
+    solutions half of the time.
+     
    #+BEGIN_LaTeX
-   \begin{figure}[]
+   \begin{figure}[htb]
    \centering
-   \includegraphics[height=.15\textheight]{./img/results_hist.pdf}
+   \includegraphics[width=\linewidth]{./img/results_hist.pdf}
    \caption{\label{fig:search_comparison}Search comparison}
    \end{figure}
    #+END_LaTeX
@@ -1513,7 +1531,6 @@ Text
     | GA      |  1.00 |  1.390 | 1.098 |  1.073 |       120 |
     | LM      |  1.06 |  2.064 | 1.187 |  1.068 |     88.25 |
     | RQ      | 1.010 |  1.173 | 1.053 |  1.012 |     88.46 |
-
 
 * Analysis
   This part explains the results of our approach. First we made a
