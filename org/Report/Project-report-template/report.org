@@ -1826,10 +1826,25 @@ Text
    #+END_LaTeX
 
 ** TODO Model choice, refinement and pruning decision
-   Usually the expert understand every optimization of its kernel and
+   Usually the expert understands every optimization of its kernel and
    has ideas about their potential effects. He needs not only check his
    hypothesis but also to have an accurate estimation of the impact of
    these optimization parameters.
+   In the case of our Laplacian kernel the elements_number parameter
+   is the number of component a thread compute and thus determines the
+   number of threads used to perform the computation of the
+   Laplacian. Using more threads allows to compute more component at
+   in parallel. However it can also lead to a less efficient sharing
+   of the cache resources as it will increase the number of memory
+   loads. Also the higher the number of threads the more important the
+   overhead due to their management. Hence the impact of the number of
+   elements can be modeled as follow:
+   #+BEGIN_LaTeX
+   \[ \displaystyle elements number + \frac{1}{elements number} \]
+   #+END_LaTeX  
+  
+   The parameter y_component_number
+
 ** TODO Using less point as possible: sampling strategy
 ** TODO Model optimization
 ***                                                                :noexport:
@@ -1845,7 +1860,7 @@ Text
     
     #+RESULTS:
     
-    #+begin_src R :results output graphics :file img/search_space_3D.pdf :exports both :width 12 :height 6 :session                                                                   
+    #+begin_src R :results output graphics :file img/search_space_3D.pdf :exports both :width 6 :height 6 :session                                                                   
       f <- function(x) { x * (0.05 - 1 * (x < 0)) }
       g <- function(x) { f(x)/x^2 }
       h <- function(x) {pmin(g(x),1e15)}
@@ -1870,15 +1885,15 @@ Text
               combinations[i,j] <- f(c(i,j))
           }
       }
-      persp3D(xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=220, clab=c("time per pixel in s"),colkey = list(side=1,length = 0.5, width=0.4))
+      persp3D(xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=220, clab=c("time per pixel in s"),colkey = list(side=1,length = 0.5))
     #+end_src
     
     #+RESULTS:
     [[file:img/search_space_3D.pdf]]
     
-    #+begin_src R :results output graphics :file img/search_space_3D_constrained.pdf :exports both :width 8 :height 6 :session
+    #+begin_src R :results output graphics :file img/search_space_3D_constrained.pdf :exports both :width 6 :height 6 :session
       g <- function(x){
-          ifelse(x[1] <= x[2] * 4, f(x), 0)
+          ifelse(x[1] <= x[2] * 4, f(x), NA)
       }
 
       resi = 5
@@ -1892,13 +1907,13 @@ Text
           }
       }
 
-      persp3D(x=1:(24*resi)/resi, y=1:(6*resj)/resj, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=220, clab=c("time per pixel in s"), colkey = list(side=1,length = 0.5, width=0.4))
+      persp3D(x=1:(24*resi)/resi, y=1:(6*resj)/resj, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=220, clab=c("time per pixel in s"), colkey = list(side=1,length = 0.5))
     #+end_src
     
     #+RESULTS:
     [[file:img/search_space_3D_constrained.pdf]]
     
-    #+begin_src R :results output graphics :file img/search_space_3D_barrier.pdf :exports both :width 8 :height 6 :session
+    #+begin_src R :results output graphics :file img/search_space_3D_barrier.pdf :exports both :width 6 :height 6 :session
       h <- function(x){
           ifelse(x[1] <= x[2] * 4, f(x), (1 + .05*abs(x[1]-4*x[2]) ) * f(x))
       }
@@ -1910,9 +1925,7 @@ Text
           }
       }
 
-
-
-      persp3D(xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=190, clab=c("time per pixel in s"),colkey = list(side=1,length = 0.5, width=0.4))
+      persp3D(xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=190, clab=c("time per pixel in s"),colkey = list(side=1,length = 0.5))
 
     #+end_src
     
@@ -1926,11 +1939,21 @@ Text
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D.pdf}
    \caption{\label{fig:search_space_3d}Search space 3D}
-   \end[{minipage}
+   \end{minipage}
    \begin{minipage}{.45\linewidth}
-   \includegraphics[width=\linewidth]{./img/search_space_3D.pdf}
-   \caption{\label{fig:search_space_3d}Search space 3D}
-   \end[{minipage}
+   \includegraphics[width=\linewidth]{./img/search_space_3D_constrained.pdf}
+   \caption{\label{fig:search_space_3d}Constrained Search space}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
+   \caption{\label{fig:search_space_3d}Barrier approach}
+   \end{minipage}
    \end{figure}
    #+END_LaTeX
 * TODO Future work
