@@ -652,43 +652,50 @@ Text
   In the last decade many attempt have been made to automate the
   generation of optimized code. Performing optimization is one of the
   primary functions of compiler. They are capable of detecting
-  instructions that can be vectorized or parallelized. They 
-  are also capable of many loop optimizations such  loop unrolling,
-  nest transformation, etc... Yet it exists many
-  other opportunities to perform optimizations but it is to difficult
-  to exploit them automatically because the compiler does not have the
-  necessary information at compile time. Moreover, it is sometimes necessary
-  to rewrite the code in a slightly different way to enable the
-  compiler to be effective. That is why frameworks such
+  instructions that can be vectorized or reorganized to favor
+  super-scalar execution. They 
+  are also capable of many loop optimizations such loop unrolling to
+  improve pipeline efficiency,
+  nest transformation to improve data locality and expose parallelism,
+  etc... It exists many other optimization opportunities but it is to
+  difficult to exploit them automatically because the compiler does
+  not have the necessary information at compile time. Moreover, it is
+  sometimes necessary to rewrite the code in a slightly different way
+  to enable the compiler to be effective. That is why frameworks such
   Orio\cite{Hartono:2009:AEP:1586640.1587666} 
   for source-to-source transformation have been developed. This
-  approach generally use annotations to describe the optimizations. It
+  approach generally use annotations to describe the transformations
+  to apply. It
   allows to bring user's knowledge in the process of generation of an
-  optimized code. The drawbacks are that the it is restricted to one
-  language because the input and output languages are the same and it
-  is difficult to exploit different accelerators. Also it does not
-  allow operations that change the memory mapping such transposing a
-  matrix. The meta-programming approach goes further by giving more
-  flexibility to the programmer as it provides a higher level of
-  abstraction. It consists in using high level languages to
-  descriptions the computation and the optimizations. This allow the
-  programmer to propose optimizations that the compiler would not be
-  allowed to do. But it requires to rewrite the application.  
+  optimized code. The main advantage of such approach is that the
+  original code is left unchanged, which is generally highly
+  appreciated by the application developer. The drawbacks are that the
+  it is restricted to one language because the input and output
+  languages are the same therefore it is difficult to exploit different
+  accelerators. Also it does not allow operations that would change the
+  data structure layout such as transposing a matrix beforehand. The
+  meta-programming approach goes further by giving more flexibility to
+  the programmer as it provides a higher level of abstraction. It
+  consists in using high level languages to descriptions the
+  computation and the optimizations. This allow the programmer to
+  propose optimizations that the compiler would not be allowed to
+  do. But it requires to rewrite the application.   
 ** Optimizing: the auto-tuning approach
-  The problem is, usually there are many optimization options, there
-  are the compiler flags, code generation parameters (e.g. the size of
-  the a tile, block or vector). Each combinations of parameters is a
-  generated implementation of a program and the auto-tuning consider
-  all this as a huge optimization problem and try to find the best
-  combination of parameters. The search space can be huge, and the
-  exhaustive search is prohibitive. Hence many techniques have been
-  used such genetic algorithm, simulated annealing, tabu search,
-  machine learning. But these kind of methods have some
-  limitations. First the number of combination tested is not optimal,
-  thus the time to perform the optimization can still be very long. In
-  addition to this, it is difficult to know whether further
-  optimizations could be expected or not and how to get them. Because
-  it is complicated to estimate the quality of an
+  Whatever the chosen approach, the application developer is left with
+  numerous optimization options: there are the compiler flags, code
+  generation parameters (e.g., the size of the a tile, block or
+  vector). Each combination of parameters leads to unique binary code
+  whose performance has to be evaluated. The auto-tuning approach considers
+  all this as a huge optimization problem and tries to find the best
+  combination of parameters. The search space can be huge, and an
+  exhaustive search is thus prohibited. Hence many techniques have been
+  used in the literature such as genetic algorithm, simulated
+  annealing, tabu search or machine learning. But these  methods have
+  several limitations. First the number of combination 
+  tested is not optimal, thus the time to perform the optimization can
+  still be very long. In addition to this, it is difficult to know
+  whether further optimizations could be expected or not and how to
+  get them. Because it is complicated to estimate the quality of an
   optimization. Comparing to the peak performance is generally 
   meaningless and it is hard to know how the combination really
   performed because the best optimization is unknown. As a result the
