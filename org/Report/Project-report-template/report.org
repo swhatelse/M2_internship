@@ -488,7 +488,7 @@ Text
       - Compilation
       - Bench-marking
 
-** Results [2/2]
+** Results [3/3]
     Considering slowdown with regard to the best.
     Comparison:
     - GA \to not tuned \to would have take time to tune it
@@ -1403,7 +1403,7 @@ Text
    \caption{\label{fig:warmup}Warm-up effect}
    \end{figure}
    #+END_LaTeX
-* TODO Results
+* DONE Results
 ***                                                                :noexport:
     #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 6 :height 8 :session
       df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_2.csv", strip.white=T, header=T)  
@@ -1485,10 +1485,10 @@ Text
     Figure\ref{fig:search_comparison} shows the results of the
     different methods. With this search space, the local search GR is
     inefficient, half of the time we get a slowdown of higher than
-    x2. It can be every far from the optimal solution, up to x66 slower\ref{tab:comparison-table}.
-    The LHS search does a lot more better with a slowdown that is
-    never higher than 38.8%. 50% of the time we can get a slowdown
-    lower than 17%.
+    x2. It can be every far from the optimal solution, up to x66
+    slower\ref{tab:comparison-table}. The LHS search does a lot more
+    better with a slowdown that is never higher than 38.8%. 50% of the
+    time we can get a slowdown lower than 17%.
     The uniform random search RS is very efficient here. Half of the time
     we get a slowdown that is less than 7.9% and we do not get a
     maximum slowdown of 34.1%.
@@ -1534,12 +1534,13 @@ Text
 
 * Analysis
   This part explains the results of our approach. First we made a
-  detailed study of the search to understand our results. As we used the
-  linear regression of expectation and the quantile regression we
-  studied there difference. Then we studied the impact of the choice
-  of the model and the sampling techniques on our approach. Finally we
-  dig into optimization techniques to converge faster to the optimal
-  solution using our model of the objective function.
+  detailed study of the search space to understand our results. As we
+  used the linear regression of expectation and the quantile
+  regression we studied there difference. Then we studied the impact
+  of the choice of the model and the sampling techniques on our
+  approach. Finally we dig into optimization techniques to converge
+  faster to the optimal solution using our model of the objective
+  function. 
 ** DONE Characteristics of the search space
 ***                                                                :noexport:
    #+begin_src sh :results output :exports none
@@ -1751,11 +1752,14 @@ Text
    need another estimator for the minimum. 
 
 *** The choice of quantile regression
+****                                                               :noexport:
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
 
-   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg.png :exports results :width 600 :height 400 :session
+   #+RESULTS:
+
+   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg.pdf :exports results :width 6 :height 4 :session
      library(ggplot2)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -1765,19 +1769,19 @@ Text
          aes(x=x_component_number, y=time_per_pixel) +
          geom_point(alpha=0.1) + 
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-         geom_smooth(method="lm", formula = y ~ x + I(1/x), aes(colour="linear regression")) +           
-         stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), aes(colour="quantile regression")) +
+         geom_smooth(method="lm", formula = y ~ x + I(1/x), aes(colour="Least square regression")) +           
+         stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), aes(colour="Quantile regression")) +
          ggtitle("Impact of number of component on the x-axis") +
-         labs(y="time per pixel in seconds", x="x component number") +
+         labs(y="Time per pixel in seconds", x="x component number") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
    #+end_src
 
-   #+CAPTION: Linear regression vs quantile regression
-   #+LABEL: fig:qr-example
    #+RESULTS:
-   [[file:img/why_we_choose_quantile_reg.png]]
+   [[file:img/why_we_choose_quantile_reg.pdf]]
 
+
+**** 
     Quantile regression gives the estimate of quantile and has been
     proven successful in the ecologic field\cite{FEE:FEE200318412}
     where complex interactions between factors lead to non-uniform
@@ -1786,13 +1790,40 @@ Text
     to the maximum. As we want to minimize the time to compute a pixel
     need to estimate the minimum and regression on the 5th percentile is
     a generally a good estimation of
-    it\cite{books/daglib/0076234}. There are different ways of
-    computing quantile regression we just tried one which is the
-    iterated weighted least squares. This techniques weighted least
-    square regression to add more weight to a particular quantile and
-    iterate until it has converge to the wanted quantile
-    regression. Figure\ref{fig:qr-example} illustrates the comparison
-    between regression of expectation and quantile regression.
+    it\cite{books/daglib/0076234}. 
+    Figure\ref{fig:qr-example} illustrates the comparison
+    between regression of expectation and quantile regression. Using
+    the regression of expectation estimates that the best version has
+    a x_component_number of 4 which is not true. While using quantile
+    regression of the 5th succeed in predict that the best version is
+    a version with a x_component_number of 1. So the regression of
+    expectation may not find the minimum while the quantile regression
+    will if the model is correct.
+    There are different ways of computing quantile regression we tried
+    the rq function of R it gives good estimation of the coefficient
+    of the different parameters but for some reason it fails with our
+    data to compute the standard error and the R-squared. Instead we
+    use another techniques that use performs weighted least square to
+    apply more weight to the desired quantile. And it iterates in
+    order to converge to the quantile regression of the wanted
+    quantile. Nevertheless, we do not yet master this technique
+    completely, we managed to get the correct coefficients but we do not
+    know how to determine correctly the minimum number of iterations
+    to converge and how to determine correct the bounds for the
+    weights. The other difficult with this method is that we do not
+    really know how to interpret the standard error, how to compute
+    confidence intervals and the R-squared values are too
+    optimistic. Hence it is a bit more complicated to make inferences
+    about models. 
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \includegraphics[width=.9\linewidth]{./img/why_we_choose_quantile_reg.pdf}
+   \caption{\label{fig:qr-example}Linear regression vs quantile regression}
+   \end{figure}
+   #+END_LaTeX
+
 
 ** Model choice and refinement
 ** Using less point as possible: sampling strategy
