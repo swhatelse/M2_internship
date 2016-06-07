@@ -835,10 +835,10 @@ Text
   the most used data stay close to the computation units.
 
   Another recent characteristic of HPCs is the increasing use of
-  GPUs because for computation that can be well parallelized like it
-  is the case generally the with case with scientific computation they
-  are faster than GPUs. However GPUs do not work exactlty the same as
-  CPUs and need to be programmed in a slighly different manner, the
+  *GPUs* because for computation that can be well parallelized which
+  is the case generally the case with scientific computation, they
+  are faster than CPUs. However GPUs do not work exactlty the same as
+  CPUs and need to be programmed in a quite different manner, the
   cache and number of cores are different.
   # the architectures of the GPUs is
   # different from the one of the CPUs, the amount of cache memory is
