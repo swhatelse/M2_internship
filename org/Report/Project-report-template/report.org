@@ -760,7 +760,7 @@ Text
    In a second time, we try find a way to reduce the number of points
    needed for checking and instanciating the model. To do so, sampling the
    search space correctly is crucial. That is why, we investigated
-   techniques inspired from design of experiments.  
+   techniques inspired from the design of experiments.  
 
    # One important point to find correct model is that the model and the
    # sampling should start with the least underlying hypothesis as
@@ -783,35 +783,37 @@ Text
 * TODO Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
-  correctly. Indeed with a not carefully tuned code it is likely to
+  correctly. Indeed a not carefully tuned code is likely to
   have poor performances. Optimizing the code correctly by taking into
-  account the characteristic can bring major speedup and increasing
-  the performance x10 is not rare. The current trend in HPCs is to
-  have CPUs with an ever increasing amount of cores and a tendency to
+  account the characteristics of both the application and the machine
+  can bring major speedup and increasing 
+  the performance by a factor 10 is not rare. The current trend in HPCs is to
+  have CPUs with an ever increasing amount of cores to
   reduce the frequency in order to reduce the power consumption and
-  the heat. Thus to get performances it is mandatory to exploit
+  the heat. Thus to obtain performances it is mandatory to exploit
   correctly the parallelism of the platform. The computation has to be
-  described in a parallel way. Traducing directly a sequential
-  application into a parallel one generally bring poor
+  described in a parallel way. Translating automatically a sequential
+  application into a parallel one generally brings poor
   performances. Hence, the developer has to define which are the parts that
   can be performed in parallel and how they are parallelized. The code
-  has to be written in a way such the work is distributed among all
-  the cores available and keep them busy when I/Os occur to have the
-  less possible cores idle. It is important to use the correct amount
-  threads. Too many threads can bring more overhead due to the
+  has to be written in a way such that the work is *distributed among all*
+  *the cores* available and keep them busy when I/Os occur to have the
+  less possible cores idle. It is important to use the correct amount of
+  *threads*. Too many threads often leads to more overhead due to the
   management of the threads. Too little and all the cores are not
   exploited correctly. Also the more the threads are independent from
-  each other, the better, which means there should be less
+  each other, the better, which means there should be as little
   synchronization as possible.  
 
-  Pipelining is another kind of parallelism in which the treatment of
+  *Pipelining* is another kind of parallelism in which the treatment of
   instructions is split into a sequence of steps (fetch, decode,
   execute, etc...) and goes through a pipeline. Multiple instructions
   can be in the pipeline at the same time but only at different state
   of the processing, like in an assembly line. A correct scheduling of
   the instructions in the pipeline leads to a better occupancy of
-  it. Instruction Level Parallelism is a mechanism that can change the
-  order of the instructions to have a better overlapping of the
+  it. For example conditions are a disaster because prevent this kind
+  of things *Instruction Level Parallelism* is a mechanism that can
+  change the order of the instructions to have a better overlapping of the
   instructions in the pipeline. In addition some CPUs have vector
   support. Such processors can manipulate not only scalar variables
   but also vector variables. The vector is loaded into a vector
