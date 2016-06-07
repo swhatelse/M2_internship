@@ -703,13 +703,13 @@ Text
   by the lack of valuable feedback.
 ** Our Goal
    The idea we explored in this internship was to give some power back
-   to the user by investigating the design of semi-automatic
+   to the user by investigating the design of a semi-automatic
    optimization framework, where the application developer has control
    and understands how the optimizations works and guides it. For
    this, we relied on BOAST\cite{}, a metaprogramming framework in
    ruby that can generate portable code in C, Fortran and OpenCL. It
    provides a domain specific language to describe the kernel and the
-   optimizations and embeds a complete chain of tools to compile, run,
+   optimizations and embeds a complete tool chain to compile, run,
    benchmark and check the validity of a kernel. We investigate
    various statistical techniques inspired from the design of
    experiments that emphasizes on reducing experiment cost.
