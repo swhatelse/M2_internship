@@ -602,6 +602,7 @@ Text
         which points are choosen.
         Usefull to make refinement \to when the model is already known.
     - Copying with constraints
+    - Points budget
 ** Future work [0/2]
    - Constraints
    - Find more suited design of experiments techniques
@@ -611,7 +612,7 @@ Text
 ** Conclusion [0/2]
    And finally I saved the world...
 
-* TODO Introduction
+* DONE Introduction
 ** Why is performance optimization difficult?
   From genome sequencing to molecular dynamics, including climate or
   earthquake modeling, or aerodynamics, there is an ever increasing
@@ -912,13 +913,13 @@ Text
     transformation, thus he can exactly specify how the transformation
     is performed. Hence, the developer has to know what he is doing
     and it can be error prone. In this work we used the
-    meta-programming framework BOAST\cite{}. BOAST gives the ability
+    meta-programming framework BOAST\cite{videau:hal-00953119}. BOAST gives the ability
     to user to meta-program his kernels in ruby with a Description
     Specific Language (DSL), then BOAST can generate it in many target
     languages (C, Fortran, Cuda, OpenCL), compilate it and benchmark
     the resulting executable.  
-** Summary
-  In a word, optimizing HPC applications is tricky and porting even is
+** Problem analysis
+  In a word, optimizing HPC applications is tricky and porting is even
   more difficult but tools exist to assist the developer in this
   complicated task. However a major problem remains, generally the
   developer know what should be vectorized or what should be
@@ -928,14 +929,14 @@ Text
   in tuning correctly the different optimization parameters of the
   applications. 
 
-** Problem analysis
   The tuning of applications is a non-trivial problem, because the
   search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
-  testing all the combinations to find the best one, even if this
-  process is automated (auto-tuning). Thus it is formulated as a mathematical
-  optimzation problem where the optimization function gives metrics
-  of combination of parameters \vec{x}. 
+  testing all the combinations (i.e, 2^500 ~ 10^50 combinations) to find
+  the best one is simply impossible. Thus
+  it is formulated as a mathematical optimization problem where the
+  optimization function gives metrics of combination of parameters
+  \vec{x}.  
   
   #+BEGIN_LaTeX
   \( \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \)
@@ -951,13 +952,18 @@ Text
  
 * TODO State of the art
 ** Auto-tuning
-   In auto-tuning one can find two major categories of
-   approaches. Some has focus on the is of machine learning techniques
-   Machine learning is used to build models over a large training set to make
-   predictions. Thus, there is a will of generalization, the knowledge  
-   is reuse from previous experiences. It is used to identify category
-   of programs that have the same characteristics, and to determine
-   what is the best action to apply for this category of programs.
+   In auto-tuning one can two major categories of approaches. Some
+   have focused on the use of machine learning techniques to build
+   models make predictions. While others have worked more around the
+   optimization side to find more suited search techniques that are
+   able to find the near-optimal solution by exploring as little
+   points of the search space as possible. 
+*** Machine learning
+   This technique is generally used to identify category of programs
+   that have the same characteristics by building models over large
+   training sets, and to determine what is the best action to apply
+   for this category of programs. Thus, there is a will of
+   generalization, the knowledge is reuse from previous experiences. 
 
    This approach has been proven successful by the project Milepost
    GCC from Grigori Fursin\cite{fursin:hal-00685276}, which is now part of GCC. He used
@@ -994,44 +1000,104 @@ Text
    crowdtuning\cite{memon:hal-00944513}. Informations are collected in
    a shared database and machine learning is applied to continuously
    update the model. 
-   
-   Other have worked more around the optimization side to find more
-   suited search techniques that are able to find the near-optimal
-   solution by exploring the least points of the search space
-   possible. Many techniques are applied to the auto-tuning
+*** Optimization techniques
+****                                                               :noexport:
+     #+begin_src R :results output graphics :file ./img/convex_function.pdf :exports results :width 8 :height 6 :session
+       library(polynom)
+       plot(poly.calc(1:2), xlim=range(-10:10))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/convex_function.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/non_convex_function.pdf :exports results :width 8 :height 6 :session
+       library(polynom)
+       plot(poly.calc(-1:5))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/non_convex_function.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/non_smooth_function.pdf :exports results :width 8 :height 6 :session
+       library(polynom)
+       f <-function(x){
+         ifelse(x < 2, abs(x), x+1)
+       }
+       
+       plot(f, xlim=range(-5,5))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/non_smooth_function.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/auto_tuning_function.pdf :exports results :width 8 :height 6 :session
+       library(polynom)
+       
+       g <- function(x){
+         ifelse(x > 1 & x < 2, NA, as.function(poly.calc(-3:5))(x) + rnorm(1,sd=.9)*1000 )
+       }
+
+       plot(g, xlim=range(-3.05,3.05))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/auto_tuning_function.pdf]]
+
+
+
+**** 
+   Many optimization techniques are applied to the auto-tuning
    problems. Some of them use the derivatives such gradient
    descent which is a kind of local search techniques. It exploits the
    locality of the search space and has particularity to converge
    quickly to a the optimal solution but it requires that the search
    space has a specific geometry and convexity of the objective
-   function. But these hypothesis are not necessarily true\ref{fig:obj-func-ex}. The
-   objective function may not be convex, hence with many local optimum
-   and a local search search would be stuck in a local optimum. The
-   problem is that local optimum can be far from the global
-   optimum. That is why, to escape from this, global search are more
-   suited such the simulated annealing, or genetic algorithm (kind of
-   multiple local search).    
+   function\ref{fig:convex_function}. But these hypothesis are not
+   necessarily true. The objective function may not be convex
+   \ref{fig:non_convex_function}, hence with many local optimum and a
+   local search would be stuck in a local optimum. The problem is that
+   local optimum can be far from the global optimum. That is why, to
+   escape from this, global search and randomization are more suited
+   such the simulated annealing, or genetic algorithm (kind of
+   multiple local search). The derivative may also be not available,
+   for this reason, derivative based searches are
+   inefficient\ref{fig:non_smooth_function}. The auto-tuning problem
+   combines all these characteristics\ref{fig:auto_tuning_function}.     
 
-   #+begin_src R :results output graphics :file img/function_examples.png :exports results :width 600 :height 400 :session
-     library(polynom)
-     default <- par()
-     par(mfrow = c(2, 2), oma = c(0, 0, 0, 0))
-     plot(poly.calc(1:2), xlim=range(-10:10))
-     plot(poly.calc(-1:5))
-     plot(abs, xlim=range(-5,5))
-     par(default)
-   #+end_src
 
    #+CAPTION: Objective function characterics
    #+LABEL: fig:obj-func-ex
-   #+RESULTS:
-   [[file:img/function_examples.png]]
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/convex_function.pdf}
+   \caption{\label{fig:convex_function}Convex function}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/non_convex_function.pdf}
+   \caption{\label{fig:non_convex_function}Non-convex function}
+   \end{minipage}
+   \end{figure}
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/non_smooth_function.pdf}
+   \caption{\label{fig:non_smooth_function}Non-smooth function}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/auto_tuning_function.pdf}
+   \caption{\label{fig:auto_tuning_function}Objective function in auto-tuning}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX
 
    Another concern is that, the objective function is an empirical
    function, hence it can be necessary to build a surrogate. This is
    usefull to remove the noise and as a result it facilitates the
-   search. Also the derivative estimation may not be always possible and
-   derivated-based searches cannot work, and the alternative is to use
+   search. Also as the derivative estimation may not be always possible and
+   derivative-based searches cannot work, the alternative is to use
    derivative-free based searches such as Nelder Mead Simplex.
    The previous search methods are used in
    Orio\cite{Hartono:2009:AEP:1586640.1587666}, a source to source 
@@ -1481,10 +1547,10 @@ Text
     is chosen as starting point.
 
     We evaluated our approach using the random uniform sampling
-    techniques to sample the search space. It starts with 50 random
+    techniques to sample the search space. It starts with 90 random
     points and adds just enough points after pruning to perform the
-    regression. The total number of points used lays between 84
-    and 89. Our approach is intended to be semi-automatic but for
+    regression. The total number of points used lays between 114
+    and 119. Our approach is intended to be semi-automatic but for
     evaluation purpose we automated the process. For this we decided
     to apply exactly the same strategy each time.  We fixed the
     parameters in the same order, thus pruning decisions are the same
@@ -1505,16 +1571,16 @@ Text
     The genetic algorithm GA gives even better results with a slowdown
     which is less than 7.3% half of the time and a maximum slowdown of
     39%. 
-    The technique using least square regression gives in general better
-    results than the genetic algorithm with a higher rate of good
-    performing versions, 50% of the time the slowdown is less than
-    6.8%. However, sometimes it fails to find high performing versions
-    and can be worst than GA with a maximum slowdown of x2.064.
-    The quantile regression is the most effective techniques here with
-    an even higher rate of high performing versions, half of the time
-    it is very close the optimal solution with a slowdown that is
-    lower than 1.2% with the worst versions that are not slower than
-    17.3%.
+    The technique using least square regression has a higher rate of
+    high quality solution than the genetic algorithm. 50% of the time
+    the slowdown is less than 8%. However, sometimes it fails to find
+    high performing versions and can be worst than GA with a maximum
+    slowdown of x2.102. The quantile regression is the most effective
+    techniques here with an even higher rate of high performing
+    versions, half of the time it is very close the optimal solution
+    with a slowdown that is lower than 1.2%. The worst solution is
+    better than with LM with a maximum slowdown of x1.805 however that
+    is still 29% higher than the worst solution of the GA.
 
     In brief, the regression of expectation gives generally better
     results than the implementation of the genetic algorithm we used
@@ -1539,20 +1605,22 @@ Text
     | LHS     | 1.009 |  1.388 | 1.155 |  1.172 |      99.6 |
     | RS      | 1.011 |  1.341 | 1.098 |  1.079 |       120 |
     | GA      |  1.00 |  1.390 | 1.098 |  1.073 |       120 |
-    | LM      |  1.06 |  2.064 | 1.187 |  1.068 |     88.25 |
-    | RQ      | 1.010 |  1.173 | 1.053 |  1.012 |     88.46 |
+    | LM      | 1.010 |  2.102 | 1.165 |  1.080 |     118.8 |
+    | RQ      | 1.010 |  1.805 | 1.094 |  1.012 |       119 |
 
 * Analysis
   This part gives a study of the search space and an explanation of
   the results of our approach. We also explain why the quantile
   regression is more suited than regression of expectation in
-  optimization purpose. The automatisation of this approach is not the
-  best way to use it and results can be further improved. Hence this
-  part explains how results can be improved by using sampling strategy
-  and choosing and refining the model according to the target problem.   
-  Finally we dig into constrained optimization techniques to converge
-  faster to the optimal solution using our model of the objective
-  function. 
+  optimization purpose. In order to perform our experiment we
+  automatized our approach by blindly using the same model without
+  considering the working set of points and by using exactly the same
+  strategy. This gives us an overview of how it could perform but it
+  is not intended to use like this. Hence this part explains how
+  results can be improved by using sampling strategy and choosing and
+  refining the model according to the target problem. Finally we dig
+  into constrained optimization techniques to converge faster to the
+  optimal solution using our model of the objective function. 
 ** DONE Characteristics of the search space
 ***                                                                :noexport:
    #+begin_src sh :results output :exports none
@@ -1837,9 +1905,11 @@ Text
 
 ** TODO Model choice, refinement and pruning decision
    Usually the expert understands every optimization of its kernel and
-   has ideas about their potential effects. He needs not only check his
+   has ideas about their potential effects. He does not only need to check his
    hypothesis but also to have an accurate estimation of the impact of
    these optimization parameters.
+*** Starting hypothesis
+   These hypothesis facilitate the task of finding the model.
    In the case of our Laplacian kernel the elements_number parameter
    is the number of component a thread compute and thus determines the
    number of threads used to perform the computation of the
@@ -1853,7 +1923,246 @@ Text
    \[ \displaystyle elements number + \frac{1}{elements number} \]
    #+END_LaTeX  
   
-   The parameter y_component_number
+   The parameter y_component_number determines the number of components
+   on the y-axis a thread compute. This tilling optimization may take
+   advantage of the organization of memory banks on Nvidia GPUs and
+   thus improve the data usage. The impact is suspect to have an
+   almost quadratic shape and we can try either a model like this:
+   #+BEGIN_LaTeX
+   \[ \displaystyle y component number + y component number^2 \]
+   #+END_LaTeX  
+  
+   Or either like this:
+   
+   #+BEGIN_LaTeX
+   \[ \displaystyle y component number + \frac{1}{y component number} \]
+   #+END_LaTeX  
+
+   The parameter vector_length allow to specify the size of vector
+   variables. However on Nvidia GPUs does not provides vector support
+   and variable are manipulate like scalar variable. Hence we can
+   suppose that the effect of vector length should be negative and we
+   can for example try a simple linear model.
+
+   The threads_number parameter determines the size of a work
+   group. Threads in a group can share data, bigger groups means
+   better data usage. However smaller groups gives more scheduling
+   opportunity but there might be an overhead due to a higher number
+   of work groups to manage. We can either try this model:
+
+   #+BEGIN_LaTeX
+   \[ \displaystyle threads number + threads number^2 \]
+   #+END_LaTeX  
+  
+   Or this one:
+   
+   #+BEGIN_LaTeX
+   \[ \displaystyle threads number + \frac{1}{threads number} \]
+   #+END_LaTeX  
+
+   The lws_y parameter organizes the threads on a work group in 2
+   dimensions and tells how many threads there is on the y-axis. For
+   this parameter it can be difficult what kind of impact it could
+   have. It can have a linear or quadratic in impact. Between the two
+   it is better to start the simpler one, the simple linear model.
+
+   The parameters load_overlap and temporary_size are factors with
+   only two levels thus only a simple linear model is needed.   
+
+   If the application developer does not have a vague idea of the
+   model, he can start we a simple linear combination of the
+   parameters and refine it later. 
+
+*** Finding and refining the model
+****                                                               :noexport:
+     #+begin_src sh :results output :exports both
+       ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       logs <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_2.csv",strip.white=T,header=T)
+       df_lm_random <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_trial_2.csv",strip.white=T,header=T)
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       working_set <- logs[logs$run == df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),]$run,]
+       set.seed(1) 
+     #+end_src                                                              
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       vector_length_val = as.numeric(levels(as.factor(df$vector_length)))
+       threads_number_val = as.numeric(levels(as.factor(df$threads_number)))
+       lws_y_val = as.numeric(levels(as.factor(df$lws_y)))
+
+       form_v_len <- time_per_pixel ~ vector_length 
+       form_th_nb <- time_per_pixel ~ threads_number 
+       form_lws_y <- time_per_pixel ~ lws_y 
+
+       model_v_len <- lm(data=working_set,formula=form_v_len)
+       model_th_nb <- lm(data=working_set,formula=form_th_nb)
+       model_lws_y <- lm(data=working_set,formula=form_lws_y)
+
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+     summary(lm(time_per_pixel ~ threads_number + vector_length + lws_y + elements_number + y_component_number + temporary_size + load_overlap, working_set))
+     summary(lm(time_per_pixel ~ threads_number + vector_length + lws_y + elements_number, working_set))
+     summary(lm(time_per_pixel ~ threads_number + vector_length + lws_y, working_set))
+     #+end_src                                                              
+
+     #+RESULTS:
+     #+begin_example
+
+     Call:
+     lm(formula = time_per_pixel ~ threads_number + vector_length + 
+         lws_y + elements_number + y_component_number + temporary_size + 
+         load_overlap, data = working_set)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -6.232e-09 -1.239e-09 -6.730e-11  6.137e-10  2.105e-08 
+
+     Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)        -4.497e-10  1.481e-09  -0.304  0.76219    
+     threads_number     -2.706e-12  1.015e-12  -2.667  0.00922 ** 
+     vector_length       1.945e-10  5.991e-11   3.246  0.00170 ** 
+     lws_y               1.221e-11  2.569e-12   4.751 8.49e-06 ***
+     elements_number    -2.269e-10  7.762e-11  -2.924  0.00447 ** 
+     y_component_number  6.975e-10  2.679e-10   2.604  0.01094 *  
+     temporary_size      2.251e-10  3.375e-10   0.667  0.50661    
+     load_overlaptrue    7.050e-10  6.887e-10   1.024  0.30901    
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 3.102e-09 on 82 degrees of freedom
+     Multiple R-squared:  0.3564,	Adjusted R-squared:  0.3015 
+     F-statistic: 6.488 on 7 and 82 DF,  p-value: 4.317e-06
+
+     Call:
+     lm(formula = time_per_pixel ~ threads_number + vector_length + 
+         lws_y + elements_number, data = working_set)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -6.820e-09 -1.457e-09 -4.633e-10  6.700e-10  2.195e-08 
+
+     Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)      2.060e-09  8.016e-10   2.570  0.01191 *  
+     threads_number  -3.062e-12  1.007e-12  -3.041  0.00313 ** 
+     vector_length    1.897e-10  6.097e-11   3.112  0.00253 ** 
+     lws_y            1.215e-11  2.622e-12   4.632 1.29e-05 ***
+     elements_number -9.060e-11  5.935e-11  -1.527  0.13058    
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 3.181e-09 on 85 degrees of freedom
+     Multiple R-squared:  0.2987,	Adjusted R-squared:  0.2657 
+     F-statistic:  9.05 on 4 and 85 DF,  p-value: 3.87e-06
+
+     Call:
+     lm(formula = time_per_pixel ~ threads_number + vector_length + 
+         lws_y, data = working_set)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -6.206e-09 -1.405e-09 -5.497e-10  5.942e-10  2.238e-08 
+
+     Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)     1.278e-09  6.212e-10   2.057  0.04270 *  
+     threads_number -2.996e-12  1.014e-12  -2.956  0.00403 ** 
+     vector_length   1.998e-10  6.107e-11   3.272  0.00154 ** 
+     lws_y           1.146e-11  2.603e-12   4.402 3.07e-05 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 3.205e-09 on 86 degrees of freedom
+     Multiple R-squared:  0.2795,	Adjusted R-squared:  0.2543 
+     F-statistic: 11.12 on 3 and 86 DF,  p-value: 3.073e-06
+#+end_example
+
+     #+begin_src R :results output graphics :file ./img/reg_threads_number.pdf :exports both :width 6 :height 4 :session
+       ggplot(working_set) +
+           aes(x=threads_number, y=time_per_pixel) +
+           geom_point() + 
+           theme_bw() +
+           geom_smooth(method="lm", formula = y ~ x) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/reg_threads_number.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/reg_vector_length.pdf :exports both :width 6 :height 4 :session
+       ggplot(working_set) +
+           aes(x=vector_length, y=time_per_pixel) +
+           geom_point() + 
+           theme_bw() +
+           geom_smooth(method="lm", formula = y ~ x) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/reg_vector_length.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/reg_lws_y.pdf :exports both :width 6 :height 4 :session
+       ggplot(working_set) +
+           aes(x=lws_y, y=time_per_pixel) +
+           geom_point() + 
+           theme_bw() + 
+           geom_smooth(method="lm", formula = y ~ x) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/reg_lws_y.pdf]]
+
+**** 
+    In order to illustrate how it should be done, we choose to take the
+    case from the results where the LM algorithm gave the worst
+    result and tried to improve it. For this we used exactly the same
+    random starting set and the same number of points allocation at
+    each step. 
+    The first step is to find the relevant parameters by doing a
+    regression using the simplest model, the linear combination of
+    factors. By taking into consideration the p-values and the
+    standard we can identify the parameters that have the biggest
+    impact and then we can try to see which model fit the most based
+    on our hypothesis. Once we have a correct
+    model\ref{fig:reg_threads_number} we can predict the best values
+    the different factors, prune the search space accordingly and
+    restart until all the factors have been fixed. 
+    By doing this we achieved a speedup of x1.51 on the worst case
+    which gives a slowdown of x1.395 compare to the best solution of
+    the entire search space which is very close to GA.
+
+   #+BEGIN_LaTeX
+
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/reg_threads_number.pdf}
+   \caption{\label{fig:reg_threads_number}Linear regression on threads_number}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/reg_vector_length.pdf}
+   \caption{\label{fig:reg_vector_length}Linear regression on vector_length}
+   \end{minipage}
+   \end{figure}
+   
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/reg_lws_y.pdf}
+   \caption{\label{fig:reg_lws_y}Linear regression on lws_y}
+   \end{minipage}
+   \end{figure}
+
+   #+END_LaTeX
+    
 
 ** TODO Using less point as possible: sampling strategy
 ** TODO Model optimization

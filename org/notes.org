@@ -796,6 +796,21 @@
       year = {2003},
       }
     #+END_SRC
+** 
+*** Bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+      @inproceedings{videau:hal-00953119,
+        TITLE = {{BOAST: Bringing Optimization through Automatic Source-to-Source Tranformations}},
+        AUTHOR = {Videau, Brice and Marangozova-Martin, Vania and Cronsioe, Johan},
+        URL = {https://hal.inria.fr/hal-00953119},
+        BOOKTITLE = {{Proceedings of the 7th International Symposium on Embedded Multicore/Manycore System-on-Chip (MCSoC)}},
+        ADDRESS = {Tokyo, Japan},
+        PUBLISHER = {{IEEE Computer Society}},
+        YEAR = {2013},
+        HAL_ID = {hal-00953119},
+        HAL_VERSION = {v1},
+      }   
+    #+END_SRC
 * Mathematical notions
 ** Non-smooth
    Discontinous and non differentiable functions. 
