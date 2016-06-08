@@ -24053,6 +24053,7 @@ h[g.name.to_sym] = 1024
 **** Comparison
 ***** Run
 ****** Genetic Algo
+******* Old
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
@@ -24073,6 +24074,41 @@ h[g.name.to_sym] = 1024
         for i in `seq 1 100`; do
             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $INPOUT -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
         done
+      #+end_src
+
+      #+begin_src sh :results output :exports none
+        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt.yaml
+      #+end_src
+      
+      #+RESULTS:
+
+      #+begin_src R :results output :session :exports both
+        df_gen <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+        df_gen <- cbind(df_gen, point_number=rep(120,100), method=rep("GA",nrow(df_gen)))
+        write.csv(df_gen, "../data/2016_04_08/pilipili2/18_08_24/ga_search.csv", row.names=FALSE)
+      #+end_src
+
+      #+RESULTS:
+ 
+******* New
+       #+begin_src sh :results output :exports none
+         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+       #+end_src
+
+       #+RESULTS:
+
+       # Load the full space first
+       #+begin_src R :results output :session :exports none
+         df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+       #+end_src
+
+       #+RESULTS:
+
+      #+begin_src sh :results output :exports none
+        INPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+        PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+        OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt_200.yaml"
+        ruby ../boast/optimizer_benchmarks/bench_gen.rb $PARAM $INPUT -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null &
       #+end_src
 
       #+begin_src sh :results output :exports none
