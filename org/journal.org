@@ -29418,3 +29418,11 @@ h[g.name.to_sym] = 1024
      #+RESULTS:
      : [1] 1.395576
 
+     Improvement:
+     #+begin_src R :results output :session :exports both
+     df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),]$slowdown /(min(subset$time_per_pixel) / min(df$time_per_pixel))
+     #+end_src
+
+     #+RESULTS:
+     : [1] 1.506222
+
