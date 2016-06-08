@@ -611,7 +611,7 @@ Text
 ** Conclusion [0/2]
    And finally I saved the world...
 
-* TODO Introduction
+* DONE Introduction
 ** Why is performance optimization difficult?
   From genome sequencing to molecular dynamics, including climate or
   earthquake modeling, or aerodynamics, there is an ever increasing
@@ -917,8 +917,8 @@ Text
     Specific Language (DSL), then BOAST can generate it in many target
     languages (C, Fortran, Cuda, OpenCL), compilate it and benchmark
     the resulting executable.  
-** Summary
-  In a word, optimizing HPC applications is tricky and porting even is
+** Problem analysis
+  In a word, optimizing HPC applications is tricky and porting is even
   more difficult but tools exist to assist the developer in this
   complicated task. However a major problem remains, generally the
   developer know what should be vectorized or what should be
@@ -928,14 +928,14 @@ Text
   in tuning correctly the different optimization parameters of the
   applications. 
 
-** Problem analysis
   The tuning of applications is a non-trivial problem, because the
   search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
-  testing all the combinations to find the best one, even if this
-  process is automated (auto-tuning). Thus it is formulated as a mathematical
-  optimzation problem where the optimization function gives metrics
-  of combination of parameters \vec{x}. 
+  testing all the combinations (i.e, 2⁵⁰⁰ ~ 10⁵⁰ combinations) to find
+  the best one is simply impossible. Thus
+  it is formulated as a mathematical optimization problem where the
+  optimization function gives metrics of combination of parameters
+  \vec{x}.  
   
   #+BEGIN_LaTeX
   \( \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \)
