@@ -912,7 +912,7 @@ Text
     transformation, thus he can exactly specify how the transformation
     is performed. Hence, the developer has to know what he is doing
     and it can be error prone. In this work we used the
-    meta-programming framework BOAST\cite{}. BOAST gives the ability
+    meta-programming framework BOAST\cite{videau:hal-00953119}. BOAST gives the ability
     to user to meta-program his kernels in ruby with a Description
     Specific Language (DSL), then BOAST can generate it in many target
     languages (C, Fortran, Cuda, OpenCL), compilate it and benchmark
@@ -931,7 +931,7 @@ Text
   The tuning of applications is a non-trivial problem, because the
   search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
-  testing all the combinations (i.e, 2⁵⁰⁰ ~ 10⁵⁰ combinations) to find
+  testing all the combinations (i.e, 2^500 ~ 10^50 combinations) to find
   the best one is simply impossible. Thus
   it is formulated as a mathematical optimization problem where the
   optimization function gives metrics of combination of parameters
@@ -1051,17 +1051,17 @@ Text
    locality of the search space and has particularity to converge
    quickly to a the optimal solution but it requires that the search
    space has a specific geometry and convexity of the objective
-   function\ref{convex_function}. But these hypothesis are not
+   function\ref{fig:convex_function}. But these hypothesis are not
    necessarily true. The objective function may not be convex
-   \ref{non_convex_function}, hence with many local optimum and a
+   \ref{fig:non_convex_function}, hence with many local optimum and a
    local search would be stuck in a local optimum. The problem is that
    local optimum can be far from the global optimum. That is why, to
    escape from this, global search and randomization are more suited
    such the simulated annealing, or genetic algorithm (kind of
    multiple local search). The derivative may also be not available,
    for this reason, derivative based searches are
-   inefficient\ref{non_smooth_function}. The auto-tuning problem
-   combines all these characteristics\ref{auto_tuning_function}.     
+   inefficient\ref{fig:non_smooth_function}. The auto-tuning problem
+   combines all these characteristics\ref{fig:auto_tuning_function}.     
 
 
    #+CAPTION: Objective function characterics
