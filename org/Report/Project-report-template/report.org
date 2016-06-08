@@ -602,6 +602,7 @@ Text
         which points are choosen.
         Usefull to make refinement \to when the model is already known.
     - Copying with constraints
+    - Points budget
 ** Future work [0/2]
    - Constraints
    - Find more suited design of experiments techniques
@@ -1609,13 +1610,15 @@ Text
   This part gives a study of the search space and an explanation of
   the results of our approach. We also explain why the quantile
   regression is more suited than regression of expectation in
-  optimization purpose. The automatisation of this approach is not the
-  best way to use it and results can be further improved. Hence this
-  part explains how results can be improved by using sampling strategy
-  and choosing and refining the model according to the target problem.   
-  Finally we dig into constrained optimization techniques to converge
-  faster to the optimal solution using our model of the objective
-  function. 
+  optimization purpose. In order to perform our experiment we
+  automatized our approach by blindly using the same model without
+  considering the working set of points and by using exactly the same
+  strategy. This gives us an overview of how it could perform but it
+  is not intended to use like this. Hence this part explains how
+  results can be improved by using sampling strategy and choosing and
+  refining the model according to the target problem. Finally we dig
+  into constrained optimization techniques to converge faster to the
+  optimal solution using our model of the objective function. 
 ** DONE Characteristics of the search space
 ***                                                                :noexport:
    #+begin_src sh :results output :exports none
@@ -1899,11 +1902,12 @@ Text
    #+END_LaTeX
 
 ** TODO Model choice, refinement and pruning decision
-*** Model approximation
    Usually the expert understands every optimization of its kernel and
-   has ideas about their potential effects. He not only needs to check his
+   has ideas about their potential effects. He does not only need to check his
    hypothesis but also to have an accurate estimation of the impact of
    these optimization parameters.
+*** Starting hypothesis
+   These hypothesis facilitate the task of finding the model.
    In the case of our Laplacian kernel the elements_number parameter
    is the number of component a thread compute and thus determines the
    number of threads used to perform the computation of the
@@ -1967,7 +1971,7 @@ Text
    model, he can start we a simple linear combination of the
    parameters and refine it later. 
 
-*** Model refining
+*** Finding and refining the model
 ****                                                               :noexport:
      #+begin_src sh :results output :exports both
        ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -1976,83 +1980,188 @@ Text
      #+RESULTS:
 
      #+begin_src R :results output :session :exports both
-       f <- function(x) { x * (0.05 - 1 * (x < 0)) }
-       g <- function(x) { f(x)/x^2 }
-
+       logs <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_2.csv",strip.white=T,header=T)
+       df_lm_random <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_trial_2.csv",strip.white=T,header=T)
        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       working_set <- logs[logs$run == df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),]$run,]
+       set.seed(1) 
+     #+end_src                                                              
 
-       elements_number_val = as.numeric(levels(as.factor(df$elements_number)))
-       y_component_number_val = as.numeric(levels(as.factor(df$y_component_number)))
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
        vector_length_val = as.numeric(levels(as.factor(df$vector_length)))
        threads_number_val = as.numeric(levels(as.factor(df$threads_number)))
        lws_y_val = as.numeric(levels(as.factor(df$lws_y)))
 
-       form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number) 
-       form_y_comp <- time_per_pixel ~ I(1/y_component_number)
        form_v_len <- time_per_pixel ~ vector_length 
-       form_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2)
+       form_th_nb <- time_per_pixel ~ threads_number 
        form_lws_y <- time_per_pixel ~ lws_y 
 
-       model_elem_nb <- lm(data=df,formula=form_elem_nb)
-       model_y_comp <- lm(data=df,formula=form_y_comp)
-       model_v_len <- lm(data=df,formula=form_v_len)
-       model_th_nb <- lm(data=df,formula=form_th_nb)
-       model_lws_y <- lm(data=df,formula=form_lws_y)
+       model_v_len <- lm(data=working_set,formula=form_v_len)
+       model_th_nb <- lm(data=working_set,formula=form_th_nb)
+       model_lws_y <- lm(data=working_set,formula=form_lws_y)
 
-       for(i in 1:200){
-           E <- residuals(model_elem_nb)
-           model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=g(E))
-
-           E <- residuals(model_y_comp)
-           model_y_comp <- lm(data=df,formula=form_y_comp,weight=g(E))
-
-           E <- residuals(model_v_len)
-           model_v_len <- lm(data=df,formula=form_v_len,weight=g(E))
-
-           E <- residuals(model_th_nb)
-           model_th_nb <- lm(data=df,formula=form_th_nb,weight=g(E))
-
-           E <- residuals(model_lws_y)
-           model_lws_y <- lm(data=df,formula=form_lws_y,weight=g(E))
-       }
-
-     #+end_src
-
-     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-       default <- par()
-       par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
-
-       # plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,4e-10))
-       plot(y=df$time_per_pixel,df$elements_number)
-       lines(elements_number_val,predict(model_elem_nb,data.frame(elements_number=elements_number_val),interval="none"),col="red")  
-
-       # plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
-       plot(y=df$time_per_pixel,df$y_component_number)
-       lines(y_component_number_val,predict(model_y_comp,data.frame(y_component_number=y_component_number_val),interval="none"),col="red")  
-
-       # plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
-       plot(y=df$time_per_pixel,df$vector_length)
-       lines(vector_length_val,predict(model_v_len,data.frame(vector_length=vector_length_val),interval="none"),col="red")  
-
-       # plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,4e-10))
-       plot(y=df$time_per_pixel,df$threads_number)
-       lines(threads_number_val,predict(model_th_nb,data.frame(threads_number=threads_number_val),interval="none"),col="red")  
-
-       # plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
-       plot(y=df$time_per_pixel,df$lws_y)
-       lines(lws_y_val,predict(model_lws_y,data.frame(lws_y=lws_y_val)),col="red")  
-
-       par(default)        
-
-     
      #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-3768Xi7/figure3768UNk.png]]
+
+     #+begin_src R :results output :session :exports both
+     summary(lm(time_per_pixel ~ threads_number + vector_length + lws_y + elements_number + y_component_number + temporary_size + load_overlap, working_set))
+     summary(lm(time_per_pixel ~ threads_number + vector_length + lws_y + elements_number, working_set))
+     summary(lm(time_per_pixel ~ threads_number + vector_length + lws_y, working_set))
+     #+end_src                                                              
+
+     #+RESULTS:
+     #+begin_example
+
+     Call:
+     lm(formula = time_per_pixel ~ threads_number + vector_length + 
+         lws_y + elements_number + y_component_number + temporary_size + 
+         load_overlap, data = working_set)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -6.232e-09 -1.239e-09 -6.730e-11  6.137e-10  2.105e-08 
+
+     Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)        -4.497e-10  1.481e-09  -0.304  0.76219    
+     threads_number     -2.706e-12  1.015e-12  -2.667  0.00922 ** 
+     vector_length       1.945e-10  5.991e-11   3.246  0.00170 ** 
+     lws_y               1.221e-11  2.569e-12   4.751 8.49e-06 ***
+     elements_number    -2.269e-10  7.762e-11  -2.924  0.00447 ** 
+     y_component_number  6.975e-10  2.679e-10   2.604  0.01094 *  
+     temporary_size      2.251e-10  3.375e-10   0.667  0.50661    
+     load_overlaptrue    7.050e-10  6.887e-10   1.024  0.30901    
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 3.102e-09 on 82 degrees of freedom
+     Multiple R-squared:  0.3564,	Adjusted R-squared:  0.3015 
+     F-statistic: 6.488 on 7 and 82 DF,  p-value: 4.317e-06
+
+     Call:
+     lm(formula = time_per_pixel ~ threads_number + vector_length + 
+         lws_y + elements_number, data = working_set)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -6.820e-09 -1.457e-09 -4.633e-10  6.700e-10  2.195e-08 
+
+     Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)      2.060e-09  8.016e-10   2.570  0.01191 *  
+     threads_number  -3.062e-12  1.007e-12  -3.041  0.00313 ** 
+     vector_length    1.897e-10  6.097e-11   3.112  0.00253 ** 
+     lws_y            1.215e-11  2.622e-12   4.632 1.29e-05 ***
+     elements_number -9.060e-11  5.935e-11  -1.527  0.13058    
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 3.181e-09 on 85 degrees of freedom
+     Multiple R-squared:  0.2987,	Adjusted R-squared:  0.2657 
+     F-statistic:  9.05 on 4 and 85 DF,  p-value: 3.87e-06
+
+     Call:
+     lm(formula = time_per_pixel ~ threads_number + vector_length + 
+         lws_y, data = working_set)
+
+     Residuals:
+            Min         1Q     Median         3Q        Max 
+     -6.206e-09 -1.405e-09 -5.497e-10  5.942e-10  2.238e-08 
+
+     Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+     (Intercept)     1.278e-09  6.212e-10   2.057  0.04270 *  
+     threads_number -2.996e-12  1.014e-12  -2.956  0.00403 ** 
+     vector_length   1.998e-10  6.107e-11   3.272  0.00154 ** 
+     lws_y           1.146e-11  2.603e-12   4.402 3.07e-05 ***
+     ---
+     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+     Residual standard error: 3.205e-09 on 86 degrees of freedom
+     Multiple R-squared:  0.2795,	Adjusted R-squared:  0.2543 
+     F-statistic: 11.12 on 3 and 86 DF,  p-value: 3.073e-06
+#+end_example
+
+     #+begin_src R :results output graphics :file ./img/reg_threads_number.pdf :exports both :width 6 :height 4 :session
+       ggplot(working_set) +
+           aes(x=threads_number, y=time_per_pixel) +
+           geom_point() + 
+           theme_bw() +
+           geom_smooth(method="lm", formula = y ~ x) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/reg_threads_number.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/reg_vector_length.pdf :exports both :width 6 :height 4 :session
+       ggplot(working_set) +
+           aes(x=vector_length, y=time_per_pixel) +
+           geom_point() + 
+           theme_bw() +
+           geom_smooth(method="lm", formula = y ~ x) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/reg_vector_length.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/reg_lws_y.pdf :exports both :width 6 :height 4 :session
+       ggplot(working_set) +
+           aes(x=lws_y, y=time_per_pixel) +
+           geom_point() + 
+           theme_bw() + 
+           geom_smooth(method="lm", formula = y ~ x) 
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/reg_lws_y.pdf]]
 
 **** 
-    Our approach allows the expert to check his hypothesis to refine
-    his model. The first step is
+    In order to illustrate how it should be done, we choose to take the
+    case from the results where the LM algorithm gave the worst
+    result and tried to improve it. For this we used exactly the same
+    random starting set and the same number of points allocation at
+    each step. 
+    The first step is to find the relevant parameters by doing a
+    regression using the simplest model, the linear combination of
+    factors. By taking into consideration the p-values and the
+    standard we can identify the parameters that have the biggest
+    impact and then we can try to see which model fit the most based
+    on our hypothesis. Once we have a correct
+    model\ref{fig:reg_threads_number} we can predict the best values
+    the different factors, prune the search space accordingly and
+    restart until all the factors have been fixed. 
+    By doing this we achieved a speedup of x1.51 on the worst case
+    which gives a slowdown of x1.395 compare to the best solution of
+    the entire search space which is very close to GA.
+
+   #+BEGIN_LaTeX
+
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/reg_threads_number.pdf}
+   \caption{\label{fig:reg_threads_number}Linear regression on threads_number}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/reg_vector_length.pdf}
+   \caption{\label{fig:reg_vector_length}Linear regression on vector_length}
+   \end{minipage}
+   \end{figure}
+   
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/reg_lws_y.pdf}
+   \caption{\label{fig:reg_lws_y}Linear regression on lws_y}
+   \end{minipage}
+   \end{figure}
+
+   #+END_LaTeX
+    
+
 ** TODO Using less point as possible: sampling strategy
 ** TODO Model optimization
 ***                                                                :noexport:
