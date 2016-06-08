@@ -1899,8 +1899,9 @@ Text
    #+END_LaTeX
 
 ** TODO Model choice, refinement and pruning decision
+*** Model approximation
    Usually the expert understands every optimization of its kernel and
-   has ideas about their potential effects. He needs not only check his
+   has ideas about their potential effects. He not only needs to check his
    hypothesis but also to have an accurate estimation of the impact of
    these optimization parameters.
    In the case of our Laplacian kernel the elements_number parameter
@@ -1916,8 +1917,142 @@ Text
    \[ \displaystyle elements number + \frac{1}{elements number} \]
    #+END_LaTeX  
   
-   The parameter y_component_number
+   The parameter y_component_number determines the number of components
+   on the y-axis a thread compute. This tilling optimization may take
+   advantage of the organization of memory banks on Nvidia GPUs and
+   thus improve the data usage. The impact is suspect to have an
+   almost quadratic shape and we can try either a model like this:
+   #+BEGIN_LaTeX
+   \[ \displaystyle y component number + y component number^2 \]
+   #+END_LaTeX  
+  
+   Or either like this:
+   
+   #+BEGIN_LaTeX
+   \[ \displaystyle y component number + \frac{1}{y component number} \]
+   #+END_LaTeX  
 
+   The parameter vector_length allow to specify the size of vector
+   variables. However on Nvidia GPUs does not provides vector support
+   and variable are manipulate like scalar variable. Hence we can
+   suppose that the effect of vector length should be negative and we
+   can for example try a simple linear model.
+
+   The threads_number parameter determines the size of a work
+   group. Threads in a group can share data, bigger groups means
+   better data usage. However smaller groups gives more scheduling
+   opportunity but there might be an overhead due to a higher number
+   of work groups to manage. We can either try this model:
+
+   #+BEGIN_LaTeX
+   \[ \displaystyle threads number + threads number^2 \]
+   #+END_LaTeX  
+  
+   Or this one:
+   
+   #+BEGIN_LaTeX
+   \[ \displaystyle threads number + \frac{1}{threads number} \]
+   #+END_LaTeX  
+
+   The lws_y parameter organizes the threads on a work group in 2
+   dimensions and tells how many threads there is on the y-axis. For
+   this parameter it can be difficult what kind of impact it could
+   have. It can have a linear or quadratic in impact. Between the two
+   it is better to start the simpler one, the simple linear model.
+
+   The parameters load_overlap and temporary_size are factors with
+   only two levels thus only a simple linear model is needed.   
+
+   If the application developer does not have a vague idea of the
+   model, he can start we a simple linear combination of the
+   parameters and refine it later. 
+
+*** Model refining
+****                                                               :noexport:
+     #+begin_src sh :results output :exports both
+       ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+     #+end_src
+
+     #+RESULTS:
+
+     #+begin_src R :results output :session :exports both
+       f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+       g <- function(x) { f(x)/x^2 }
+
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+       elements_number_val = as.numeric(levels(as.factor(df$elements_number)))
+       y_component_number_val = as.numeric(levels(as.factor(df$y_component_number)))
+       vector_length_val = as.numeric(levels(as.factor(df$vector_length)))
+       threads_number_val = as.numeric(levels(as.factor(df$threads_number)))
+       lws_y_val = as.numeric(levels(as.factor(df$lws_y)))
+
+       form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number) 
+       form_y_comp <- time_per_pixel ~ I(1/y_component_number)
+       form_v_len <- time_per_pixel ~ vector_length 
+       form_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2)
+       form_lws_y <- time_per_pixel ~ lws_y 
+
+       model_elem_nb <- lm(data=df,formula=form_elem_nb)
+       model_y_comp <- lm(data=df,formula=form_y_comp)
+       model_v_len <- lm(data=df,formula=form_v_len)
+       model_th_nb <- lm(data=df,formula=form_th_nb)
+       model_lws_y <- lm(data=df,formula=form_lws_y)
+
+       for(i in 1:200){
+           E <- residuals(model_elem_nb)
+           model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=g(E))
+
+           E <- residuals(model_y_comp)
+           model_y_comp <- lm(data=df,formula=form_y_comp,weight=g(E))
+
+           E <- residuals(model_v_len)
+           model_v_len <- lm(data=df,formula=form_v_len,weight=g(E))
+
+           E <- residuals(model_th_nb)
+           model_th_nb <- lm(data=df,formula=form_th_nb,weight=g(E))
+
+           E <- residuals(model_lws_y)
+           model_lws_y <- lm(data=df,formula=form_lws_y,weight=g(E))
+       }
+
+     #+end_src
+
+     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       default <- par()
+       par(mfrow = c(2, 3), oma = c(0, 0, 2, 0))
+
+       # plot(y=df$time_per_pixel,df$elements_number, ylim=c(0,4e-10))
+       plot(y=df$time_per_pixel,df$elements_number)
+       lines(elements_number_val,predict(model_elem_nb,data.frame(elements_number=elements_number_val),interval="none"),col="red")  
+
+       # plot(y=df$time_per_pixel,df$y_component_number, ylim=c(0,5e-10))
+       plot(y=df$time_per_pixel,df$y_component_number)
+       lines(y_component_number_val,predict(model_y_comp,data.frame(y_component_number=y_component_number_val),interval="none"),col="red")  
+
+       # plot(y=df$time_per_pixel,df$vector_length, ylim=c(0,5e-10))
+       plot(y=df$time_per_pixel,df$vector_length)
+       lines(vector_length_val,predict(model_v_len,data.frame(vector_length=vector_length_val),interval="none"),col="red")  
+
+       # plot(y=df$time_per_pixel,df$threads_number, ylim=c(0,4e-10))
+       plot(y=df$time_per_pixel,df$threads_number)
+       lines(threads_number_val,predict(model_th_nb,data.frame(threads_number=threads_number_val),interval="none"),col="red")  
+
+       # plot(y=df$time_per_pixel,df$lws_y, ylim=c(0,4e-9))
+       plot(y=df$time_per_pixel,df$lws_y)
+       lines(lws_y_val,predict(model_lws_y,data.frame(lws_y=lws_y_val)),col="red")  
+
+       par(default)        
+
+     
+     #+end_src
+
+     #+RESULTS:
+     [[file:/tmp/babel-3768Xi7/figure3768UNk.png]]
+
+**** 
+    Our approach allows the expert to check his hypothesis to refine
+    his model. The first step is
 ** TODO Using less point as possible: sampling strategy
 ** TODO Model optimization
 ***                                                                :noexport:
