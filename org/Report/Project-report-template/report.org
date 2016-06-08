@@ -999,44 +999,104 @@ Text
    crowdtuning\cite{memon:hal-00944513}. Informations are collected in
    a shared database and machine learning is applied to continuously
    update the model. 
-*** Continuous optimization
-   Other have worked more around the optimization side to find more
-   suited search techniques that are able to find the near-optimal
-   solution by exploring the least points of the search space
-   possible. Many techniques are applied to the auto-tuning
+*** Optimization techniques
+****                                                               :noexport:
+     #+begin_src R :results output graphics :file ./img/convex_function.pdf :exports results :width 8 :height 6 :session
+       library(polynom)
+       plot(poly.calc(1:2), xlim=range(-10:10))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/convex_function.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/non_convex_function.pdf :exports results :width 8 :height 6 :session
+       library(polynom)
+       plot(poly.calc(-1:5))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/non_convex_function.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/non_smooth_function.pdf :exports results :width 8 :height 6 :session
+       library(polynom)
+       f <-function(x){
+         ifelse(x < 2, abs(x), x+1)
+       }
+       
+       plot(f, xlim=range(-5,5))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/non_smooth_function.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/auto_tuning_function.pdf :exports results :width 8 :height 6 :session
+       library(polynom)
+       
+       g <- function(x){
+         ifelse(x > 1 & x < 2, NA, as.function(poly.calc(-3:5))(x) + rnorm(1,sd=.9)*1000 )
+       }
+
+       plot(g, xlim=range(-3.05,3.05))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/auto_tuning_function.pdf]]
+
+
+
+**** 
+   Many optimization techniques are applied to the auto-tuning
    problems. Some of them use the derivatives such gradient
    descent which is a kind of local search techniques. It exploits the
    locality of the search space and has particularity to converge
    quickly to a the optimal solution but it requires that the search
    space has a specific geometry and convexity of the objective
-   function. But these hypothesis are not necessarily true\ref{fig:obj-func-ex}. The
-   objective function may not be convex, hence with many local optimum
-   and a local search search would be stuck in a local optimum. The
-   problem is that local optimum can be far from the global
-   optimum. That is why, to escape from this, global search are more
-   suited such the simulated annealing, or genetic algorithm (kind of
-   multiple local search).    
+   function\ref{convex_function}. But these hypothesis are not
+   necessarily true. The objective function may not be convex
+   \ref{non_convex_function}, hence with many local optimum and a
+   local search would be stuck in a local optimum. The problem is that
+   local optimum can be far from the global optimum. That is why, to
+   escape from this, global search and randomization are more suited
+   such the simulated annealing, or genetic algorithm (kind of
+   multiple local search). The derivative may also be not available,
+   for this reason, derivative based searches are
+   inefficient\ref{non_smooth_function}. The auto-tuning problem
+   combines all these characteristics\ref{auto_tuning_function}.     
 
-   #+begin_src R :results output graphics :file img/function_examples.png :exports results :width 600 :height 400 :session
-     library(polynom)
-     default <- par()
-     par(mfrow = c(2, 2), oma = c(0, 0, 0, 0))
-     plot(poly.calc(1:2), xlim=range(-10:10))
-     plot(poly.calc(-1:5))
-     plot(abs, xlim=range(-5,5))
-     par(default)
-   #+end_src
 
    #+CAPTION: Objective function characterics
    #+LABEL: fig:obj-func-ex
-   #+RESULTS:
-   [[file:img/function_examples.png]]
-*** Discrete optimization
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/convex_function.pdf}
+   \caption{\label{fig:convex_function}Convex function}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/non_convex_function.pdf}
+   \caption{\label{fig:non_convex_function}Non-convex function}
+   \end{minipage}
+   \end{figure}
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/non_smooth_function.pdf}
+   \caption{\label{fig:non_smooth_function}Non-smooth function}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/auto_tuning_function.pdf}
+   \caption{\label{fig:auto_tuning_function}Objective function in auto-tuning}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX
+
    Another concern is that, the objective function is an empirical
    function, hence it can be necessary to build a surrogate. This is
    usefull to remove the noise and as a result it facilitates the
-   search. Also the derivative estimation may not be always possible and
-   derivated-based searches cannot work, and the alternative is to use
+   search. Also as the derivative estimation may not be always possible and
+   derivative-based searches cannot work, the alternative is to use
    derivative-free based searches such as Nelder Mead Simplex.
    The previous search methods are used in
    Orio\cite{Hartono:2009:AEP:1586640.1587666}, a source to source 
