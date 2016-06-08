@@ -951,13 +951,18 @@ Text
  
 * TODO State of the art
 ** Auto-tuning
-   In auto-tuning one can find two major categories of
-   approaches. Some has focus on the is of machine learning techniques
-   Machine learning is used to build models over a large training set to make
-   predictions. Thus, there is a will of generalization, the knowledge  
-   is reuse from previous experiences. It is used to identify category
-   of programs that have the same characteristics, and to determine
-   what is the best action to apply for this category of programs.
+   In auto-tuning one can two major categories of approaches. Some
+   have focused on the use of machine learning techniques to build
+   models make predictions. While others have worked more around the
+   optimization side to find more suited search techniques that are
+   able to find the near-optimal solution by exploring as little
+   points of the search space as possible. 
+*** Machine learning
+   This technique is generally used to identify category of programs
+   that have the same characteristics by building models over large
+   training sets, and to determine what is the best action to apply
+   for this category of programs. Thus, there is a will of
+   generalization, the knowledge is reuse from previous experiences. 
 
    This approach has been proven successful by the project Milepost
    GCC from Grigori Fursin\cite{fursin:hal-00685276}, which is now part of GCC. He used
@@ -994,7 +999,7 @@ Text
    crowdtuning\cite{memon:hal-00944513}. Informations are collected in
    a shared database and machine learning is applied to continuously
    update the model. 
-   
+*** Continuous optimization
    Other have worked more around the optimization side to find more
    suited search techniques that are able to find the near-optimal
    solution by exploring the least points of the search space
@@ -1026,7 +1031,7 @@ Text
    #+LABEL: fig:obj-func-ex
    #+RESULTS:
    [[file:img/function_examples.png]]
-
+*** Discrete optimization
    Another concern is that, the objective function is an empirical
    function, hence it can be necessary to build a surrogate. This is
    usefull to remove the noise and as a result it facilitates the
