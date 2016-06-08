@@ -1544,10 +1544,10 @@ Text
     is chosen as starting point.
 
     We evaluated our approach using the random uniform sampling
-    techniques to sample the search space. It starts with 50 random
+    techniques to sample the search space. It starts with 90 random
     points and adds just enough points after pruning to perform the
-    regression. The total number of points used lays between 84
-    and 89. Our approach is intended to be semi-automatic but for
+    regression. The total number of points used lays between 114
+    and 119. Our approach is intended to be semi-automatic but for
     evaluation purpose we automated the process. For this we decided
     to apply exactly the same strategy each time.  We fixed the
     parameters in the same order, thus pruning decisions are the same
@@ -1568,16 +1568,16 @@ Text
     The genetic algorithm GA gives even better results with a slowdown
     which is less than 7.3% half of the time and a maximum slowdown of
     39%. 
-    The technique using least square regression gives in general better
-    results than the genetic algorithm with a higher rate of good
-    performing versions, 50% of the time the slowdown is less than
-    6.8%. However, sometimes it fails to find high performing versions
-    and can be worst than GA with a maximum slowdown of x2.064.
-    The quantile regression is the most effective techniques here with
-    an even higher rate of high performing versions, half of the time
-    it is very close the optimal solution with a slowdown that is
-    lower than 1.2% with the worst versions that are not slower than
-    17.3%.
+    The technique using least square regression has a higher rate of
+    high quality solution than the genetic algorithm. 50% of the time
+    the slowdown is less than 8%. However, sometimes it fails to find
+    high performing versions and can be worst than GA with a maximum
+    slowdown of x2.102. The quantile regression is the most effective
+    techniques here with an even higher rate of high performing
+    versions, half of the time it is very close the optimal solution
+    with a slowdown that is lower than 1.2%. The worst solution is
+    better than with LM with a maximum slowdown of x1.805 however that
+    is still 29% higher than the worst solution of the GA.
 
     In brief, the regression of expectation gives generally better
     results than the implementation of the genetic algorithm we used
@@ -1604,7 +1604,6 @@ Text
     | GA      |  1.00 |  1.390 | 1.098 |  1.073 |       120 |
     | LM      | 1.010 |  2.102 | 1.165 |  1.080 |     118.8 |
     | RQ      | 1.010 |  1.805 | 1.094 |  1.012 |       119 |
-
 
 * Analysis
   This part gives a study of the search space and an explanation of
