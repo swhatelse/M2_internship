@@ -2436,6 +2436,8 @@ Text
     general it does not have the best space covering, in our case
     which has a constraints and is discrete it provides a good covering.
 *** Screening design
+    The screening design was not suited in our case due to the
+    constraints of the search space.
 *** LHS
 *** D-Optimal
 *** Managing the budget of points
