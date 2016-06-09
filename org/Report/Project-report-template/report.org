@@ -2430,19 +2430,35 @@ Text
    most information, we did the sampling and the linear regression 100
    times to see which converge the closest to the regression linear
    regression a full search space. 
+*** Principle
+   Our approach is an iterative process in which the user questions
+   the search space to build and refine his model. Even if the user
+   has a clear idea about the model he should start the process with
+   the most generic techniques because not intuitive good points can be
+   missed and expressing hypothesis too early will direct the
+   exploration and would induce some biais. As explained earlier the
+   first step is to estimate factors that have a significant impact. For
+   this it is interesting to have points that are far enough to avoid
+   perturbation due to noise and to get the global impact. Then to find
+   any tendency points should be choosen such way that provide a good
+   covering of the space.
+   
+   
 *** Random
     Uniform sampling chooses points at random with the same
     probability. It is the simplest sampling method and even if  in
     general it does not have the best space covering, in our case
     which has a constraints and is discrete it provides a good covering.
 *** Screening design
-    The screening design was not suited in our case due to the
-    constraints of the search space. It samples only the low and high
-    value of the factors. Which means it only take points that are at
+    The screening is generally a good starting to interrogate the
+    search space as it allows to detect parameters that the biggest
+    impact. For this it considers the points that are the furthest from
+    each other. It samples only the low and high value of the
+    factors. Which means it only take points that are at 
     the border of the search space. This gives a total of 128 possible
-    combinations. However because of the constraints of the search
-    space we only have 15 points left which is not enough with a
-    search space of this size.
+    combinations. However because of the constraints of our search
+    space we only have at most about 32 points.
+
 *** LHS
 *** D-Optimal
 *** Managing the budget of points
