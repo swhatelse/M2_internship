@@ -572,16 +572,6 @@ Text
         3D? I can not make regression for each factor because it's not
         the same than one regression including all the factors. But we
         could optimize each parameters independently.
-      
-*** Model Optimization [0/2]
-   - Non-convex optimization 
-     Constraint \to unfeasible points
-     Barrier approach
-   - Exhaustive search
-*** Importance of the search space expression [0/1]              :deprecated:
-    # Will see if I have more time to dig the subject
-    - Easier modelization
-    - Better capture of the search space features
 *** Using as little points as possible [0/4]
     - Design of experiment
       - Random
@@ -601,8 +591,21 @@ Text
         explain the model \to there many possible models, it depends
         which points are choosen.
         Usefull to make refinement \to when the model is already known.
+    - Strategy
+      - Start sampling with less hypothesis as possible \to to avoid biais
+      - Points budget \to distributing correctly the budget of point
+        between each step is crucial
     - Copying with constraints
-    - Points budget
+      
+*** Model Optimization [0/2]
+   - Non-convex optimization 
+     Constraint \to unfeasible points
+     Barrier approach
+   - Exhaustive search
+*** Importance of the search space expression [0/1]              :deprecated:
+    # Will see if I have more time to dig the subject
+    - Easier modelization
+    - Better capture of the search space features
 ** Future work [0/2]
    - Constraints
    - Find more suited design of experiments techniques
@@ -2417,7 +2420,25 @@ Text
    #+END_LaTeX
     
 
-** TODO Using less point as possible: sampling strategy
+** TODO Sampling strategy
+   The accuracy of a model is highly dependent of the set of points
+   used to build it. Design of experiments methods propose techniques
+   for sampling the space with the objective of maximizing the
+   informations and reducing the number of points needed. For this
+   reason we investigated some of this tools to find what are the most
+   suited and how we can use them. To see which are able to bring the
+   most information, we did the sampling and the linear regression 100
+   times to see which converge the closest to the regression linear
+   regression a full search space. 
+*** Random
+    Uniform sampling chooses points at random with the same
+    probability. It is the simplest sampling method and even if  in
+    general it does not have the best space covering, in our case
+    which has a constraints and is discrete it provides a good covering.
+*** Screening design
+*** LHS
+*** D-Optimal
+*** Managing the budget of points
 ** TODO Model optimization
 ***                                                                :noexport:
     #+begin_src sh :results output :exports both
