@@ -29168,7 +29168,7 @@ h[g.name.to_sym] = 1024
      #+RESULTS:
      : [1] 1.397591
 
-***** Strategy 2
+***** DONE Strategy 2
      What if at the begining we fixed 
      #+begin_src R :results output :session :exports both
        model <-time_per_pixel ~ vector_length + threads_number + lws_y 
@@ -29317,6 +29317,18 @@ h[g.name.to_sym] = 1024
      #+RESULTS:
      [[file:img/20160402/pilipili2/lm_model3_plot.png]]
 
+    #+begin_src R :results output graphics :file img/20160402/pilipili2/lm_model4_plot.png :exports both :width 600 :height 400 :session
+       default <- par()
+       par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+       model <-time_per_pixel ~ threads_number + vector_length + lws_y + threads_number:lws_y
+       fit <- lm(model,working_set)
+       plot(fit)
+       par(default)    
+     #+end_src
+
+    #+RESULTS:
+    [[file:img/20160402/pilipili2/lm_model4_plot.png]]
+
      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
        model1 <-time_per_pixel ~ (vector_length + threads_number + lws_y )^2
        fit1 <- lm(model1,working_set)
@@ -29324,6 +29336,9 @@ h[g.name.to_sym] = 1024
        fit2 <- lm(model2,working_set)
        model3 <-time_per_pixel ~ threads_number+ vector_length+lws_y + lws_y:vector_length + threads_number:lws_y
        fit3 <- lm(model3,working_set)
+
+       model4 <- time_per_pixel ~ vector_length + threads_number + lws_y + lws_y:threads_number
+       fit4 <- lm(model4,working_set)
 
        default <- par()
        par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
@@ -29337,12 +29352,15 @@ h[g.name.to_sym] = 1024
        plot(fitted(fit3),residuals(fit3))
        abline(0,0,lty=2)       
 
+       plot(fitted(fit4),residuals(fit4))
+       abline(0,0,lty=2)       
+
        par(default)    
 
      #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-3507TqQ/figure3507Rd0.png]]
+     [[file:/tmp/babel-3507TqQ/figure3507d7P.png]]
 
 
      #+begin_src R :results output graphics :file img/20160402/pilipili2/model_comparison_fitted_vs_predict.png :exports both :width 800 :height 600 :session
@@ -29352,6 +29370,8 @@ h[g.name.to_sym] = 1024
        fit2 <- lm(model2,working_set)
        model3 <-time_per_pixel ~ threads_number+ vector_length+lws_y + lws_y:vector_length + threads_number:lws_y
        fit3 <- lm(model3,working_set)
+       model4 <- time_per_pixel ~ vector_length + threads_number + lws_y + lws_y:threads_number
+       fit4 <- lm(model4,working_set)
 
        default <- par()
        par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
@@ -29363,6 +29383,9 @@ h[g.name.to_sym] = 1024
        abline(0,0,lty=2)       
 
        plot(fitted(fit3),residuals(fit3) + fitted(fit3))
+       abline(0,0,lty=2)       
+
+       plot(fitted(fit4),residuals(fit4) + fitted(fit4))
        abline(0,0,lty=2)       
 
        par(default)    
