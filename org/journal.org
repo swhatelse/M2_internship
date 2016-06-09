@@ -29315,7 +29315,7 @@ h[g.name.to_sym] = 1024
      #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-3507TqQ/figure3507czU.png]]
+     [[file:img/20160402/pilipili2/lm_model3_plot.png]]
 
      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
        model1 <-time_per_pixel ~ (vector_length + threads_number + lws_y )^2
