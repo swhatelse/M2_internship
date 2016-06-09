@@ -29834,7 +29834,6 @@ h[g.name.to_sym] = 1024
          #+end_src
 
      
-
 ***** Interactions 
       #+begin_src R :results output :session :exports both
         library(DoE.base)
@@ -29897,7 +29896,69 @@ h[g.name.to_sym] = 1024
         }
         saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/Dopt_interact_fits.rds")
          #+end_src
+***** Absurd
+      #+begin_src R :results output :session :exports both
+        library(DoE.base)
+        library(DoE.wrapper)
 
-     
+        f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+        g <- function(x) { f(x)/x^2 }
+        h <- function(x) {pmin(g(x),1e10)}
 
-      
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+        elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+        y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+        vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+        threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+        lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+        temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+        load_overlap_val <- levels(df$load_overlap)
+
+        form_elem_nb <- time_per_pixel ~ elements_number + I(elements_number^2) + I(elements_number^3)
+        form_y_comp <- time_per_pixel ~ y_component_number + I(y_component_number^2) + I(y_component_number^3)
+        form_v_len <- time_per_pixel ~ vector_length + I(vector_length^2) + I(vector_length^3)
+        form_th_nb <- time_per_pixel ~ threads_number + I(threads_number^2) + I(threads_number^3)
+        form_lws_y <- time_per_pixel ~ lws_y + I(lws_y^2) + I(lws_y^3)
+
+        runs = 100   
+        fits <- list()
+        for(j in 1:runs){
+            set <- Dopt.design( 100 , data=df, formula="~ elements_number + I(elements_number^2) + I(elements_number^3) +
+                                             y_component_number + I(y_component_number^2) + I(y_component_number^3) +
+                                             vector_length + I(vector_length^2) + I(vector_length^3) +
+                                             threads_number + I(threads_number^2) + I(threads_number^3) +
+                                             lws_y + I(lws_y^2) + I(lws_y^3)", nRepeat= 20 ,randomize= TRUE)
+            model_subset_elem_nb <- lm(data=set,formula=form_elem_nb)
+            model_subset_y_comp <- lm(data=set,formula=form_y_comp)
+            model_subset_v_len <- lm(data=set,formula=form_v_len)
+            model_subset_th_nb <- lm(data=set,formula=form_th_nb)
+            model_subset_lws_y <- lm(data=set,formula=form_lws_y)
+            for(i in 1:200){
+                E <- residuals(model_subset_elem_nb)
+                model_subset_elem_nb <- lm(data=set,formula=form_elem_nb,weight=h(E))
+
+                E <- residuals(model_subset_y_comp)
+                model_subset_y_comp <- lm(data=set,formula=form_y_comp,weight=h(E))
+
+                E <- residuals(model_subset_v_len)
+                model_subset_v_len <- lm(data=set,formula=form_v_len,weight=h(E))
+
+                E <- residuals(model_subset_th_nb)
+                model_subset_th_nb <- lm(data=set,formula=form_th_nb,weight=h(E))
+
+                E <- residuals(model_subset_lws_y)
+                model_subset_lws_y <- lm(data=set,formula=form_lws_y,weight=h(E))
+
+            }
+            l <- list()
+            l[["elements_number"]] <- model_subset_elem_nb
+            l[["y_component_number"]] <- model_subset_y_comp
+            l[["vector_length"]] <- model_subset_v_len
+            l[["threads_number"]] <- model_subset_th_nb
+            l[["lws_y"]] <- model_subset_lws_y
+            
+            fits[[j]] <- l
+        }
+        saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/Dopt_absurd_fits.rds")
+         #+end_src
