@@ -29589,3 +29589,315 @@ h[g.name.to_sym] = 1024
      #+RESULTS:
      : [1] 1.953286
 
+** 2016-06-09
+*** TODO DoE for LM
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+**** Random
+     #+begin_src R :results output :session :exports both
+        f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+        g <- function(x) { f(x)/x^2 }
+        h <- function(x) {pmin(g(x),1e15)}
+
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+       elements_number_val = as.numeric(levels(as.factor(df$elements_number)))
+       y_component_number_val = as.numeric(levels(as.factor(df$y_component_number)))
+       vector_length_val = as.numeric(levels(as.factor(df$vector_length)))
+       threads_number_val = as.numeric(levels(as.factor(df$threads_number)))
+       lws_y_val = as.numeric(levels(as.factor(df$lws_y)))
+
+       form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+       form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+       form_v_len <- time_per_pixel ~ vector_length 
+       form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+       form_lws_y <- time_per_pixel ~ lws_y
+
+       runs = 100 
+
+       fits = list()  
+
+       for(j in 1:runs){
+           random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+           model_subset_elem_nb <- lm(data=random_set,formula=form_elem_nb)
+           model_subset_y_comp <- lm(data=random_set,formula=form_y_comp)
+           model_subset_v_len <- lm(data=random_set,formula=form_v_len)
+           model_subset_th_nb <- lm(data=random_set,formula=form_th_nb)
+           model_subset_lws_y <- lm(data=random_set,formula=form_lws_y)
+           for(i in 1:200){
+               E <- residuals(model_subset_elem_nb)
+               model_subset_elem_nb <- lm(data=random_set,formula=form_elem_nb,weight=h(E))
+               
+               E <- residuals(model_subset_y_comp)
+               model_subset_y_comp <- lm(data=random_set,formula=form_y_comp,weight=h(E))
+               
+               E <- residuals(model_subset_v_len)
+               model_subset_v_len <- lm(data=random_set,formula=form_v_len,weight=h(E))
+               
+               E <- residuals(model_subset_th_nb)
+               model_subset_th_nb <- lm(data=random_set,formula=form_th_nb,weight=h(E))
+               
+               E <- residuals(model_subset_lws_y)
+               model_subset_lws_y <- lm(data=random_set,formula=form_lws_y,weight=h(E))
+               
+           }
+           l <- list()
+           l[["elements_number"]] <- model_subset_elem_nb
+           l[["y_component_number"]] <- model_subset_y_comp
+           l[["vector_length"]] <- model_subset_v_len
+           l[["threads_number"]] <- model_subset_th_nb
+           l[["lws_y"]] <- model_subset_lws_y
+         
+           fits[[j]] <- l
+       }
+
+       saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/random_fits.rds")
+    #+end_src
+
+     #+RESULTS:
+
+**** LHS
+    #+begin_src R :results output :session :exports both
+      library(DoE.base)
+      library(DoE.wrapper)
+
+      elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+      y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+      vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+      threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+      lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+      temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+      load_overlap_val <- levels(df$load_overlap)
+
+      form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+      form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+      form_v_len <- time_per_pixel ~ vector_length 
+      form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+      form_lws_y <- time_per_pixel ~ lws_y
+
+      model_elem_nb <- lm(data=df,formula=form_elem_nb)
+      model_y_comp <- lm(data=df,formula=form_y_comp)
+      model_v_len <- lm(data=df,formula=form_v_len)
+      model_th_nb <- lm(data=df,formula=form_th_nb)
+      model_lws_y <- lm(data=df,formula=form_lws_y)
+      for(i in 1:200){
+          E <- residuals(model_elem_nb)
+          model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=h(E))
+
+          E <- residuals(model_y_comp)
+          model_y_comp <- lm(data=df,formula=form_y_comp,weight=h(E))
+
+          E <- residuals(model_v_len)
+          model_v_len <- lm(data=df,formula=form_v_len,weight=h(E))
+
+          E <- residuals(model_th_nb)
+          model_th_nb <- lm(data=df,formula=form_th_nb,weight=h(E))
+
+          E <- residuals(model_lws_y)
+          model_lws_y <- lm(data=df,formula=form_lws_y,weight=h(E))
+
+      }
+
+      fits = list()  
+      runs = 100   
+
+      for(j in 1:runs){
+          Design.1 <- lhs.design( type= "maximin" , nruns= 441 ,nfactors= 7, randomize=TRUE ,digits= NULL, factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
+                                                                                                                             idx_y_component_number = c(1,length(y_component_number_val)),
+                                                                                                                             idx_vector_length = c(1,length(vector_length_val)), 
+                                                                                                                             idx_threads_number = c(1,length(threads_number_val)),
+                                                                                                                             idx_temporary_size = c(1,length(temporary_size_val)), 
+                                                                                                                             idx_lws_y = c(1,length(lws_y_val)), 
+                                                                                                                             idx_load_overlap = c(1,length(load_overlap_val)) 
+                                                                                                                             ) 
+                                 )
+
+          Design.1.rounded <- round(Design.1) 
+
+          set <- data.frame()
+          for(i in 1:nrow(Design.1)){
+              set <- rbind(set, df[ df$elements_number == elements_number_val[Design.1$idx_elements_number[i]]
+                                   & df$y_component_number == y_component_number_val[Design.1$idx_y_component_number[i]]
+                                   & df$vector_length == vector_length_val[Design.1$idx_vector_length[i]]
+                                   & df$threads_number == threads_number_val[Design.1$idx_threads_number[i]]
+                                   & df$lws_y == lws_y_val[Design.1$idx_lws_y[i]]
+                                   & df$temporary_size == temporary_size_val[Design.1$idx_temporary_size[i]]
+                                   & df$load_overlap == load_overlap_val[Design.1$idx_load_overlap[i]], ])
+          }
+
+          set1 <- df[ df$elements_number %in% elements_number_val[Design.1$idx_elements_number[i]]
+                                   & df$y_component_number %in% y_component_number_val[Design.1$idx_y_component_number[i]]
+                                   & df$vector_length %in% vector_length_val[Design.1$idx_vector_length[i]]
+                                   & df$threads_number %in% threads_number_val[Design.1$idx_threads_number[i]]
+                                   & df$lws_y %in% lws_y_val[Design.1$idx_lws_y[i]]
+                                   & df$temporary_size %in% temporary_size_val[Design.1$idx_temporary_size[i]]
+                                   & df$load_overlap %in% load_overlap_val[Design.1$idx_load_overlap[i]], ])        
+
+          model_subset_elem_nb <- lm(data=set,formula=form_elem_nb)
+          model_subset_y_comp <- lm(data=set,formula=form_y_comp)
+          model_subset_v_len <- lm(data=set,formula=form_v_len)
+          model_subset_th_nb <- lm(data=set,formula=form_th_nb)
+          model_subset_lws_y <- lm(data=set,formula=form_lws_y)
+          for(i in 1:200){
+              E <- residuals(model_subset_elem_nb)
+              model_subset_elem_nb <- lm(data=set,formula=form_elem_nb,weight=h(E))
+
+              E <- residuals(model_subset_y_comp)
+              model_subset_y_comp <- lm(data=set,formula=form_y_comp,weight=h(E))
+
+              E <- residuals(model_subset_v_len)
+              model_subset_v_len <- lm(data=set,formula=form_v_len,weight=h(E))
+
+              E <- residuals(model_subset_th_nb)
+              model_subset_th_nb <- lm(data=set,formula=form_th_nb,weight=h(E))
+
+              E <- residuals(model_subset_lws_y)
+              model_subset_lws_y <- lm(data=set,formula=form_lws_y,weight=h(E))
+
+          }
+           l <- list()
+           l[["elements_number"]] <- model_subset_elem_nb
+           l[["y_component_number"]] <- model_subset_y_comp
+           l[["vector_length"]] <- model_subset_v_len
+           l[["threads_number"]] <- model_subset_th_nb
+           l[["lws_y"]] <- model_subset_lws_y
+           fits[[j]] <- l
+      }
+      saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/lhs_fits.rds")
+    #+end_src
+
+   
+**** D-Optimal
+***** Linear 
+      #+begin_src R :results output :session :exports both
+        library(DoE.base)
+        library(DoE.wrapper)
+
+        f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+        g <- function(x) { f(x)/x^2 }
+        h <- function(x) {pmin(g(x),1e10)}
+
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+        elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+        y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+        vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+        threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+        lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+        temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+        load_overlap_val <- levels(df$load_overlap)
+
+        form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+        form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+        form_v_len <- time_per_pixel ~ vector_length 
+        form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+        form_lws_y <- time_per_pixel ~ lws_y
+
+        runs = 100   
+        fits <- list()
+        for(j in 1:runs){
+            set <- Dopt.design( 100 , data=df, formula="~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size + load_overlap)" , nRepeat= 20 ,randomize= TRUE)
+            model_subset_elem_nb <- lm(data=set,formula=form_elem_nb)
+            model_subset_y_comp <- lm(data=set,formula=form_y_comp)
+            model_subset_v_len <- lm(data=set,formula=form_v_len)
+            model_subset_th_nb <- lm(data=set,formula=form_th_nb)
+            model_subset_lws_y <- lm(data=set,formula=form_lws_y)
+            for(i in 1:200){
+                E <- residuals(model_subset_elem_nb)
+                model_subset_elem_nb <- lm(data=set,formula=form_elem_nb,weight=h(E))
+
+                E <- residuals(model_subset_y_comp)
+                model_subset_y_comp <- lm(data=set,formula=form_y_comp,weight=h(E))
+
+                E <- residuals(model_subset_v_len)
+                model_subset_v_len <- lm(data=set,formula=form_v_len,weight=h(E))
+
+                E <- residuals(model_subset_th_nb)
+                model_subset_th_nb <- lm(data=set,formula=form_th_nb,weight=h(E))
+
+                E <- residuals(model_subset_lws_y)
+                model_subset_lws_y <- lm(data=set,formula=form_lws_y,weight=h(E))
+
+            }
+            l <- list()
+            l[["elements_number"]] <- model_subset_elem_nb
+            l[["y_component_number"]] <- model_subset_y_comp
+            l[["vector_length"]] <- model_subset_v_len
+            l[["threads_number"]] <- model_subset_th_nb
+            l[["lws_y"]] <- model_subset_lws_y
+            
+            fits[[j]] <- l
+        }
+        saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/Dopt_lin_fits.rds")
+         #+end_src
+
+     
+
+***** Interactions 
+      #+begin_src R :results output :session :exports both
+        library(DoE.base)
+        library(DoE.wrapper)
+
+        f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+        g <- function(x) { f(x)/x^2 }
+        h <- function(x) {pmin(g(x),1e10)}
+
+        df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+        elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
+        y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
+        vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
+        threads_number_val <- as.numeric(levels(as.factor(df$threads_number)))
+        lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
+        temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
+        load_overlap_val <- levels(df$load_overlap)
+
+        form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
+        form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
+        form_v_len <- time_per_pixel ~ vector_length 
+        form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
+        form_lws_y <- time_per_pixel ~ lws_y
+
+        runs = 100   
+        fits <- list()
+        for(j in 1:runs){
+            set <- Dopt.design( 100 , data=df, formula="~(elements_number  + y_component_number  + vector_length  + threads_number + lws_y  + temporary_size + load_overlap)^2" , nRepeat= 20 ,randomize= TRUE)
+            model_subset_elem_nb <- lm(data=set,formula=form_elem_nb)
+            model_subset_y_comp <- lm(data=set,formula=form_y_comp)
+            model_subset_v_len <- lm(data=set,formula=form_v_len)
+            model_subset_th_nb <- lm(data=set,formula=form_th_nb)
+            model_subset_lws_y <- lm(data=set,formula=form_lws_y)
+            for(i in 1:200){
+                E <- residuals(model_subset_elem_nb)
+                model_subset_elem_nb <- lm(data=set,formula=form_elem_nb,weight=h(E))
+
+                E <- residuals(model_subset_y_comp)
+                model_subset_y_comp <- lm(data=set,formula=form_y_comp,weight=h(E))
+
+                E <- residuals(model_subset_v_len)
+                model_subset_v_len <- lm(data=set,formula=form_v_len,weight=h(E))
+
+                E <- residuals(model_subset_th_nb)
+                model_subset_th_nb <- lm(data=set,formula=form_th_nb,weight=h(E))
+
+                E <- residuals(model_subset_lws_y)
+                model_subset_lws_y <- lm(data=set,formula=form_lws_y,weight=h(E))
+
+            }
+            l <- list()
+            l[["elements_number"]] <- model_subset_elem_nb
+            l[["y_component_number"]] <- model_subset_y_comp
+            l[["vector_length"]] <- model_subset_v_len
+            l[["threads_number"]] <- model_subset_th_nb
+            l[["lws_y"]] <- model_subset_lws_y
+            
+            fits[[j]] <- l
+        }
+        saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/Dopt_interact_fits.rds")
+         #+end_src
+
+     
+
+      
