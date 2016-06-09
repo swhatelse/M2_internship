@@ -30103,8 +30103,8 @@ h[g.name.to_sym] = 1024
     #+end_src
 
     #+RESULTS:
-    :  Error in eval(expr, envir, enclos) (from #3) : could not find function "h"
-    :  Error in eval(expr, envir, enclos) (from #32) : could not find function "h"
+    :  Error in model.frame.default(formula = form_v_len, data = set, weights = h(E),  (from #38) : 
+    :   variable lengths differ (found for '(weights)')
 
    
 **** D-Optimal
@@ -30170,6 +30170,8 @@ h[g.name.to_sym] = 1024
         }
         saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/Dopt_lin_fits.rds")
          #+end_src
+
+      #+RESULTS:
 
      
 ***** Interactions 

@@ -2440,9 +2440,10 @@ Text
    first step is to estimate factors that have a significant impact. For
    this it is interesting to have points that are far enough to avoid
    perturbation due to noise and to get the global impact. Then to find
-   any tendency points should be choosen such way that provide a good
-   covering of the space.
-   
+   any tendency, points should be choosen in way that provides a good
+   covering of the space. And finally when the structure starts to
+   appear or if there is a lot of variability we can focus the
+   sampling where additional information is needed.
    
 *** Random
     Uniform sampling chooses points at random with the same
