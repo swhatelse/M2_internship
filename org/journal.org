@@ -17051,7 +17051,7 @@ h[g.name.to_sym] = 1024
          Mean   :2.013e-09  
          3rd Qu.:2.001e-09  
          Max.   :4.452e-08
-         #+end_example
+#+end_example
 
         Create the screening desgin:
         #+begin_src R :results output :session :exports both
@@ -17070,23 +17070,6 @@ h[g.name.to_sym] = 1024
 
         #+RESULTS:
         #+begin_example
-        Le chargement a nécessité le package : DoE.base
-        Le chargement a nécessité le package : grid
-        Le chargement a nécessité le package : conf.design
-
-        Attachement du package : ‘DoE.base’
-
-        The following objects are masked from ‘package:stats’:
-
-            aov, lm
-
-        The following object is masked from ‘package:graphics’:
-
-            plot.design
-
-        The following object is masked from ‘package:base’:
-
-            lengths
            elements_number y_component_number vector_length temporary_size load_overlap
         1                1                 -1            -1             -1           -1
         2                1                  1             1              1            1
@@ -17591,12 +17574,363 @@ h[g.name.to_sym] = 1024
        #+RESULTS:
        : Error in rq.fit.br(x, y, tau = tau, ...) : Singular design matrix
 
-       The main problem with methods is that supposed to be used with
-       a "symetric" search space, I mean rectangular or
-       square. Because of the constraints this is not the case and we
-       lose lots of points and we and up with not enough points to do
-       the regression correctly, it fails to compute some
-       coefficients. 
+       *Warning wrong thinking:* The main problem with methods is that
+       supposed to be used with a "symetric" search space, I mean
+       rectangular or square. Because of the constraints this is not
+       the case and we lose lots of points and we and up with not
+       enough points to do the regression correctly, it fails to
+       compute some coefficients.
+
+       If we had NA value on the model ealier is it not because we do
+       not had enough points but because by taking low and high point
+       we consider only linear combination of factors. Not something
+       like 1/a + b^2 + c. Lets try to use it how it is suppose to be. 
+       #+begin_src R :results output :session :exports both
+         library(FrF2)
+         screening_d <-  pb(nruns= 100 ,n12.taguchi= FALSE ,nfactors= 7, ncenter= 0 , 
+         replications= 1 ,repeat.only= FALSE ,randomize= TRUE ,seed= 26654 , 
+         factor.names=list( elements_number=c(-1,1),
+                           y_component_number=c(-1,1),
+                           vector_length=c(-1,1),
+                           temporary_size=c(-1,1),
+                           load_overlap=c(-1,1),
+                           threads_number=c(-1,1),
+                           lws_y=c(-1, 1) ) )
+
+       decode <- function(code,x){
+              if(code == -1){
+                  res <- min(x)
+              }
+              else{
+                  res <- max(x)
+              }
+              res
+          }
+
+          set <- data.frame()
+          for(i in 1:nrow(screening_d)){
+              set <- rbind(set,
+                           df[df$elements_number == decode(screening_d[i,]$elements_number, df$elements_number) &
+                           df$y_component_number == decode(screening_d[i,]$y_component_number, df$y_component_number) &
+                           df$vector_length == decode(screening_d[i,]$vector_length, df$vector_length) &
+                           df$temporary_size == decode(screening_d[i,]$temporary_size, df$temporary_size) &
+                           df$load_overlap == (if (screening_d[i,]$load_overlap == -1) "false" else "true") &
+                           df$threads_number == decode(screening_d[i,]$threads_number, df$threads_number) &
+                           df$lws_y == decode(screening_d[i,]$lws_y, df$lws_y)
+                              ,])
+          }
+          nrow(set)
+       #+end_src
+
+       #+RESULTS:
+       : [1] 32
+
+       
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+         plot(set[,!names(set) %in% c("vector_recompute")])
+       #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-4119VUY/figure4119ECc.png]]
+
+          With quantile regression we could remove load overlap and
+          temporary size but could not compute y component number. The
+          problem come from our method to perform quantile regression
+          #+begin_src R :results output :session :exports both
+            f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+            g <- function(x) { f(x)/x^2 }
+            h <- function(x) {pmin(g(x),1e15)}
+            
+            model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + load_overlap + temporary_size
+            
+            fit <- lm(data=set,formula=model)
+            for(i in 1:50){
+                E <- residuals(fit)
+                fit <- lm(data=set,formula=model,weight=h(E))
+            }
+            
+            summary(fit)
+            
+            model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y
+            
+            fit <- lm(data=set,formula=model)
+            for(i in 1:50){
+                E <- residuals(fit)
+                fit <- lm(data=set,formula=model,weight=h(E))
+            }
+            
+            summary(fit)
+        #+end_src
+
+          #+RESULTS:
+          #+begin_example
+
+          Call:
+          lm.default(formula = model, data = set, weights = h(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -7.000e-09 -1.000e-09  4.850e-07  7.798e-06  4.325e-05 
+
+          Coefficients: (1 not defined because of singularities)
+                               Estimate Std. Error   t value Pr(>|t|)    
+          (Intercept)         5.583e-10  3.513e-11    15.892 1.41e-14 ***
+          elements_number    -7.103e-11  1.537e-12   -46.222  < 2e-16 ***
+          y_component_number         NA         NA        NA       NA    
+          vector_length       9.966e-11  1.179e-12    84.563  < 2e-16 ***
+          threads_number     -3.142e-13  1.782e-14   -17.634 1.29e-15 ***
+          lws_y               4.993e-12  4.124e-16 12109.393  < 2e-16 ***
+          load_overlaptrue    4.397e-12  1.768e-11     0.249    0.806    
+          temporary_size     -1.835e-12  8.835e-12    -0.208    0.837    
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 1.334e-05 on 25 degrees of freedom
+          Multiple R-squared:      1,	Adjusted R-squared:      1 
+          F-statistic: 4.093e+07 on 6 and 25 DF,  p-value: < 2.2e-16
+
+          Call:
+          lm.default(formula = model, data = set, weights = h(E))
+
+          Weighted Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -7.000e-09 -1.000e-09  6.470e-07  7.822e-06  4.325e-05 
+
+          Coefficients: (1 not defined because of singularities)
+                               Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)         5.506e-10  4.468e-13    1232   <2e-16 ***
+          elements_number    -7.106e-11  1.765e-14   -4025   <2e-16 ***
+          y_component_number         NA         NA      NA       NA    
+          vector_length       9.985e-11  4.280e-14    2333   <2e-16 ***
+          threads_number     -3.098e-13  5.013e-16    -618   <2e-16 ***
+          lws_y               4.993e-12  3.969e-16   12581   <2e-16 ***
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 1.284e-05 on 27 degrees of freedom
+          Multiple R-squared:      1,	Adjusted R-squared:      1 
+          F-statistic: 6.251e+07 on 4 and 27 DF,  p-value: < 2.2e-16
+          #+end_example
+
+          Lets try with lm. Obsviously it work better with lm even if
+          first we have NA for y component number:
+          #+begin_src R :results output :session :exports both
+            model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + load_overlap + temporary_size
+            fit <- lm(data=set,formula=model)
+            summary(fit)
+
+            model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y 
+            fit <- lm(data=set,formula=model)
+            summary(fit)
+
+            model <- time_per_pixel ~ vector_length  + lws_y 
+            fit <- lm(data=set,formula=model)
+            summary(fit)
+          #+end_src
+
+          #+RESULTS:
+          #+begin_example
+
+          Call:
+          lm.default(formula = model, data = set)
+
+          Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -8.280e-09 -4.633e-09 -1.169e-09  2.579e-09  1.990e-08 
+
+          Coefficients: (1 not defined because of singularities)
+                               Estimate Std. Error t value Pr(>|t|)   
+          (Intercept)         3.517e-09  5.515e-09   0.638  0.52946   
+          elements_number    -1.428e-10  1.294e-10  -1.104  0.28027   
+          y_component_number         NA         NA      NA       NA   
+          vector_length       6.049e-10  2.126e-10   2.845  0.00873 **
+          threads_number      3.082e-12  3.484e-12   0.885  0.38483   
+          lws_y               1.103e-11  3.964e-12   2.783  0.01011 * 
+          load_overlaptrue   -2.553e-09  3.054e-09  -0.836  0.41118   
+          temporary_size     -1.562e-09  1.520e-09  -1.028  0.31394   
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 7.803e-09 on 25 degrees of freedom
+          Multiple R-squared:  0.5672,	Adjusted R-squared:  0.4633 
+          F-statistic:  5.46 on 6 and 25 DF,  p-value: 0.001001
+
+          Call:
+          lm.default(formula = model, data = set)
+
+          Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -7.561e-09 -5.107e-09  5.095e-10  2.910e-09  2.194e-08 
+
+          Coefficients: (1 not defined because of singularities)
+                               Estimate Std. Error t value Pr(>|t|)   
+          (Intercept)        -2.932e-09  3.293e-09  -0.890  0.38127   
+          elements_number    -1.033e-10  1.266e-10  -0.816  0.42168   
+          y_component_number         NA         NA      NA       NA   
+          vector_length       6.274e-10  2.035e-10   3.083  0.00468 **
+          threads_number      2.102e-12  3.440e-12   0.611  0.54633   
+          lws_y               1.288e-11  3.770e-12   3.417  0.00202 **
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 7.852e-09 on 27 degrees of freedom
+          Multiple R-squared:  0.5267,	Adjusted R-squared:  0.4566 
+          F-statistic: 7.511 on 4 and 27 DF,  p-value: 0.0003338
+
+          Call:
+          lm.default(formula = model, data = set)
+
+          Residuals:
+                 Min         1Q     Median         3Q        Max 
+          -8.618e-09 -6.195e-09  2.871e-09  2.975e-09  2.258e-08 
+
+          Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+          (Intercept)   -3.345e-09  2.035e-09  -1.644  0.11097    
+          vector_length  6.228e-10  1.933e-10   3.222  0.00313 ** 
+          lws_y          1.473e-11  3.108e-12   4.738 5.25e-05 ***
+          ---
+          Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+          Residual standard error: 7.738e-09 on 29 degrees of freedom
+          Multiple R-squared:  0.5063,	Adjusted R-squared:  0.4723 
+          F-statistic: 14.87 on 2 and 29 DF,  p-value: 3.591e-05
+#+end_example
+
+          #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          default <- par()
+          par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+           plot(fit)
+          par(default)
+          #+end_src
+
+          #+RESULTS:
+          [[file:/tmp/babel-4119VUY/figure4119RMi.png]]
+
+                 #+begin_src R :results output :session :exports both
+         library(FrF2)
+         screening_d <-  pb(nruns= 80 ,n12.taguchi= FALSE ,nfactors= 7, ncenter= 0 , 
+         replications= 1 ,repeat.only= FALSE ,randomize= TRUE ,seed= 26654 , 
+         factor.names=list( elements_number=c(-1,1),
+                           y_component_number=c(-1,1),
+                           vector_length=c(-1,1),
+                           temporary_size=c(-1,1),
+                           load_overlap=c(-1,1),
+                           threads_number=c(-1,1),
+                           lws_y=c(-1, 1) ) )
+
+       decode <- function(code,x){
+              if(code == -1){
+                  res <- min(x)
+              }
+              else{
+                  res <- max(x)
+              }
+              res
+          }
+
+          set <- data.frame()
+          for(i in 1:nrow(screening_d)){
+              set <- rbind(set,
+                           df[df$elements_number == decode(screening_d[i,]$elements_number, df$elements_number) &
+                           df$y_component_number == decode(screening_d[i,]$y_component_number, df$y_component_number) &
+                           df$vector_length == decode(screening_d[i,]$vector_length, df$vector_length) &
+                           df$temporary_size == decode(screening_d[i,]$temporary_size, df$temporary_size) &
+                           df$load_overlap == (if (screening_d[i,]$load_overlap == -1) "false" else "true") &
+                           df$threads_number == decode(screening_d[i,]$threads_number, df$threads_number) &
+                           df$lws_y == decode(screening_d[i,]$lws_y, df$lws_y)
+                              ,])
+          }
+          nrow(set)
+       #+end_src
+
+                 #+RESULTS:
+                 : [1] 24
+
+         With about 20 points we can detect that vector_length and lws_y
+         have the more significant impact:
+         #+begin_src R :results output :session :exports both
+            model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + load_overlap + temporary_size
+            fit <- lm(data=set,formula=model)
+            summary(fit)
+
+            model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y 
+            fit <- lm(data=set,formula=model)
+            summary(fit)
+
+            model <- time_per_pixel ~ vector_length  + lws_y 
+            fit <- lm(data=set,formula=model)
+            summary(fit)
+          #+end_src
+
+         #+RESULTS:
+         #+begin_example
+
+         Call:
+         lm.default(formula = model, data = set)
+
+         Residuals:
+                Min         1Q     Median         3Q        Max 
+         -1.121e-08 -5.648e-09  8.391e-10  3.778e-09  1.640e-08 
+
+         Coefficients: (1 not defined because of singularities)
+                              Estimate Std. Error t value Pr(>|t|)   
+         (Intercept)         5.850e-09  7.909e-09   0.740  0.46960   
+         elements_number    -2.132e-10  1.930e-10  -1.105  0.28462   
+         y_component_number         NA         NA      NA       NA   
+         vector_length       5.901e-10  2.677e-10   2.205  0.04154 * 
+         threads_number     -3.043e-12  4.444e-12  -0.685  0.50274   
+         lws_y               1.923e-11  4.896e-12   3.927  0.00109 **
+         load_overlaptrue   -5.931e-10  3.727e-09  -0.159  0.87545   
+         temporary_size     -1.552e-09  1.876e-09  -0.827  0.41951   
+         ---
+         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         Residual standard error: 8.479e-09 on 17 degrees of freedom
+         Multiple R-squared:  0.6439,	Adjusted R-squared:  0.5182 
+         F-statistic: 5.123 on 6 and 17 DF,  p-value: 0.003584
+
+         Call:
+         lm.default(formula = model, data = set)
+
+         Residuals:
+                Min         1Q     Median         3Q        Max 
+         -1.297e-08 -4.786e-09  1.004e-09  3.894e-09  1.685e-08 
+
+         Coefficients: (1 not defined because of singularities)
+                              Estimate Std. Error t value Pr(>|t|)    
+         (Intercept)         1.753e-10  4.027e-09   0.044 0.965728    
+         elements_number    -1.860e-10  1.741e-10  -1.068 0.298969    
+         y_component_number         NA         NA      NA       NA    
+         vector_length       6.107e-10  2.552e-10   2.393 0.027205 *  
+         threads_number     -2.269e-12  4.155e-12  -0.546 0.591369    
+         lws_y               1.960e-11  4.697e-12   4.172 0.000517 ***
+         ---
+         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         Residual standard error: 8.187e-09 on 19 degrees of freedom
+         Multiple R-squared:  0.6289,	Adjusted R-squared:  0.5508 
+         F-statistic: 8.051 on 4 and 19 DF,  p-value: 0.0005667
+
+         Call:
+         lm.default(formula = model, data = set)
+
+         Residuals:
+                Min         1Q     Median         3Q        Max 
+         -1.233e-08 -5.498e-09  2.589e-09  2.697e-09  1.771e-08 
+
+         Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+         (Intercept)   -3.148e-09  2.273e-09  -1.385 0.180640    
+         vector_length  7.054e-10  2.322e-10   3.038 0.006259 ** 
+         lws_y          1.807e-11  3.952e-12   4.573 0.000165 ***
+         ---
+         Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         Residual standard error: 8.023e-09 on 21 degrees of freedom
+         Multiple R-squared:  0.6062,	Adjusted R-squared:  0.5687 
+         F-statistic: 16.16 on 2 and 21 DF,  p-value: 5.632e-05
+#+end_example
 
 ******* DONE LHS
         #+begin_src sh :results output :exports both
@@ -29595,6 +29929,8 @@ h[g.name.to_sym] = 1024
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
     #+end_src
 
+    #+RESULTS:
+
 **** Random
      #+begin_src R :results output :session :exports both
         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
@@ -29662,7 +29998,13 @@ h[g.name.to_sym] = 1024
     #+begin_src R :results output :session :exports both
       library(DoE.base)
       library(DoE.wrapper)
-
+      
+      f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+      g <- function(x) { f(x)/x^2 }
+      h <- function(x) {pmin(g(x),1e15)}
+      
+      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+      
       elements_number_val <- as.numeric(levels(as.factor(df$elements_number)))
       y_component_number_val <- as.numeric(levels(as.factor(df$y_component_number)))
       vector_length_val <- as.numeric(levels(as.factor(df$vector_length)))
@@ -29670,13 +30012,13 @@ h[g.name.to_sym] = 1024
       lws_y_val <- as.numeric(levels(as.factor(df$lws_y)))
       temporary_size_val <- as.numeric(levels(as.factor(df$temporary_size)))
       load_overlap_val <- levels(df$load_overlap)
-
+      
       form_elem_nb <- time_per_pixel ~ elements_number + I(1/elements_number)
       form_y_comp <- time_per_pixel ~ y_component_number + I(1/y_component_number)
       form_v_len <- time_per_pixel ~ vector_length 
       form_th_nb <- time_per_pixel ~ threads_number + I(1/threads_number)
       form_lws_y <- time_per_pixel ~ lws_y
-
+      
       model_elem_nb <- lm(data=df,formula=form_elem_nb)
       model_y_comp <- lm(data=df,formula=form_y_comp)
       model_v_len <- lm(data=df,formula=form_v_len)
@@ -29685,24 +30027,24 @@ h[g.name.to_sym] = 1024
       for(i in 1:200){
           E <- residuals(model_elem_nb)
           model_elem_nb <- lm(data=df,formula=form_elem_nb,weight=h(E))
-
+      
           E <- residuals(model_y_comp)
           model_y_comp <- lm(data=df,formula=form_y_comp,weight=h(E))
-
+      
           E <- residuals(model_v_len)
           model_v_len <- lm(data=df,formula=form_v_len,weight=h(E))
-
+      
           E <- residuals(model_th_nb)
           model_th_nb <- lm(data=df,formula=form_th_nb,weight=h(E))
-
+      
           E <- residuals(model_lws_y)
           model_lws_y <- lm(data=df,formula=form_lws_y,weight=h(E))
-
+      
       }
-
+      
       fits = list()  
       runs = 100   
-
+      
       for(j in 1:runs){
           Design.1 <- lhs.design( type= "maximin" , nruns= 441 ,nfactors= 7, randomize=TRUE ,digits= NULL, factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
                                                                                                                              idx_y_component_number = c(1,length(y_component_number_val)),
@@ -29713,9 +30055,9 @@ h[g.name.to_sym] = 1024
                                                                                                                              idx_load_overlap = c(1,length(load_overlap_val)) 
                                                                                                                              ) 
                                  )
-
+      
           Design.1.rounded <- round(Design.1) 
-
+      
           set <- data.frame()
           for(i in 1:nrow(Design.1)){
               set <- rbind(set, df[ df$elements_number == elements_number_val[Design.1$idx_elements_number[i]]
@@ -29726,15 +30068,7 @@ h[g.name.to_sym] = 1024
                                    & df$temporary_size == temporary_size_val[Design.1$idx_temporary_size[i]]
                                    & df$load_overlap == load_overlap_val[Design.1$idx_load_overlap[i]], ])
           }
-
-          set1 <- df[ df$elements_number %in% elements_number_val[Design.1$idx_elements_number[i]]
-                                   & df$y_component_number %in% y_component_number_val[Design.1$idx_y_component_number[i]]
-                                   & df$vector_length %in% vector_length_val[Design.1$idx_vector_length[i]]
-                                   & df$threads_number %in% threads_number_val[Design.1$idx_threads_number[i]]
-                                   & df$lws_y %in% lws_y_val[Design.1$idx_lws_y[i]]
-                                   & df$temporary_size %in% temporary_size_val[Design.1$idx_temporary_size[i]]
-                                   & df$load_overlap %in% load_overlap_val[Design.1$idx_load_overlap[i]], ])        
-
+      
           model_subset_elem_nb <- lm(data=set,formula=form_elem_nb)
           model_subset_y_comp <- lm(data=set,formula=form_y_comp)
           model_subset_v_len <- lm(data=set,formula=form_v_len)
@@ -29743,30 +30077,34 @@ h[g.name.to_sym] = 1024
           for(i in 1:200){
               E <- residuals(model_subset_elem_nb)
               model_subset_elem_nb <- lm(data=set,formula=form_elem_nb,weight=h(E))
-
+      
               E <- residuals(model_subset_y_comp)
               model_subset_y_comp <- lm(data=set,formula=form_y_comp,weight=h(E))
-
+      
               E <- residuals(model_subset_v_len)
               model_subset_v_len <- lm(data=set,formula=form_v_len,weight=h(E))
-
+      
               E <- residuals(model_subset_th_nb)
               model_subset_th_nb <- lm(data=set,formula=form_th_nb,weight=h(E))
-
+      
               E <- residuals(model_subset_lws_y)
               model_subset_lws_y <- lm(data=set,formula=form_lws_y,weight=h(E))
-
+      
           }
-           l <- list()
-           l[["elements_number"]] <- model_subset_elem_nb
-           l[["y_component_number"]] <- model_subset_y_comp
-           l[["vector_length"]] <- model_subset_v_len
-           l[["threads_number"]] <- model_subset_th_nb
-           l[["lws_y"]] <- model_subset_lws_y
-           fits[[j]] <- l
+          l <- list()
+          l[["elements_number"]] <- model_subset_elem_nb
+          l[["y_component_number"]] <- model_subset_y_comp
+          l[["vector_length"]] <- model_subset_v_len
+          l[["threads_number"]] <- model_subset_th_nb
+          l[["lws_y"]] <- model_subset_lws_y
+          fits[[j]] <- l
       }
       saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/lhs_fits.rds")
     #+end_src
+
+    #+RESULTS:
+    :  Error in eval(expr, envir, enclos) (from #3) : could not find function "h"
+    :  Error in eval(expr, envir, enclos) (from #32) : could not find function "h"
 
    
 **** D-Optimal
