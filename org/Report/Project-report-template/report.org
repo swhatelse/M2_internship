@@ -2437,7 +2437,12 @@ Text
     which has a constraints and is discrete it provides a good covering.
 *** Screening design
     The screening design was not suited in our case due to the
-    constraints of the search space.
+    constraints of the search space. It samples only the low and high
+    value of the factors. Which means it only take points that are at
+    the border of the search space. This gives a total of 128 possible
+    combinations. However because of the constraints of the search
+    space we only have 15 points left which is not enough with a
+    search space of this size.
 *** LHS
 *** D-Optimal
 *** Managing the budget of points
