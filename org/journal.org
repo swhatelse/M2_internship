@@ -29281,7 +29281,7 @@ h[g.name.to_sym] = 1024
      :      threads_number vector_length lws_y
      : 6467           1024             1     1
 
-     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/lm_model1_plot.png :exports both :width 600 :height 400 :session
        default <- par()
        par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
        model <-time_per_pixel ~ (vector_length + threads_number + lws_y )^2
@@ -29291,9 +29291,9 @@ h[g.name.to_sym] = 1024
      #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-3507TqQ/figure35071UC.png]]
+     [[file:img/20160402/pilipili2/lm_model1_plot.png]]
 
-     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/lm_model2_plot.png :exports both :width 600 :height 400 :session
        default <- par()
        par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
        model <-time_per_pixel ~ vector_length + threads_number + lws_y
@@ -29303,9 +29303,9 @@ h[g.name.to_sym] = 1024
      #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-3507TqQ/figure3507PpO.png]]
+     [[file:img/20160402/pilipili2/lm_model2_plot.png]]
 
-     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/lm_model3_plot.png :exports both :width 600 :height 400 :session
        default <- par()
        par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
        model <-time_per_pixel ~ threads_number+ vector_length+lws_y + lws_y:vector_length + threads_number:lws_y
@@ -29345,7 +29345,7 @@ h[g.name.to_sym] = 1024
      [[file:/tmp/babel-3507TqQ/figure3507Rd0.png]]
 
 
-     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+     #+begin_src R :results output graphics :file img/20160402/pilipili2/model_comparison_fitted_vs_predict.png :exports both :width 800 :height 600 :session
        model1 <-time_per_pixel ~ (vector_length + threads_number + lws_y )^2
        fit1 <- lm(model1,working_set)
        model2 <-time_per_pixel ~ vector_length + threads_number + lws_y
@@ -29370,7 +29370,7 @@ h[g.name.to_sym] = 1024
      #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-3507TqQ/figure3507QxJ.png]]
+     [[file:img/20160402/pilipili2/model_comparison_fitted_vs_predict.png]]
 
      Fixing param:
      #+begin_src R :results output :session :exports both
