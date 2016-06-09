@@ -2444,21 +2444,51 @@ Text
    covering of the space. And finally when the structure starts to
    appear or if there is a lot of variability we can focus the
    sampling where additional information is needed.
-   
-*** Random
-    Uniform sampling chooses points at random with the same
-    probability. It is the simplest sampling method and even if  in
-    general it does not have the best space covering, in our case
-    which has a constraints and is discrete it provides a good covering.
 *** Screening design
+****                                                               :noexport:
+     #+begin_src R :results output :session :exports both
+     
+     #+end_src
+**** 
     The screening is generally a good starting to interrogate the
     search space as it allows to detect parameters that the biggest
     impact. For this it considers the points that are the furthest from
-    each other. It samples only the low and high value of the
+    each other. It samples only the minimum and maximum values of the
     factors. Which means it only take points that are at 
-    the border of the search space. This gives a total of 128 possible
-    combinations. However because of the constraints of our search
-    space we only have at most about 32 points.
+    the border of the search space. With our search space, this gives
+    a total of 128 possible combinations. However because of the
+    constraints of our search space we only have at most 32 points. By
+    using only about 20 points we were able to find that vector_length
+    and lws_y have the most significant impact. By modifying this
+    method to take into account constraints in order choose points at
+    the border of the constrained domain could gives better results.
+   
+*** Random
+****                                                               :noexport:
+     #+begin_src R :results output graphics :file ./img/random_space_coverage.pdf :exports both :width 6 :height 4 :session
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       set.seed(1)
+       random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+       plot(random_set[,!names(random_set) %in% c("vector_recompute", "time_per_pixel")])
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/random_space_coverage.pdf]]
+
+**** 
+    Uniform sampling chooses points at random with the same
+    probability. It is the simplest sampling method and even if in
+    general it does not have the best space covering, in our case
+    which has a constraints and is discrete it provides a good
+    covering.
+
+    #+BEGIN_LaTeX
+    \begin{figure}[htb]
+    \centering
+    \includegraphics[width=\linewidth]{./img/./img/random_space_coverage.pdf}
+    \caption{\label{fig:random_space_coverage}Space coverage of the random sampling}
+    \end{figure}
+    #+END_LaTeX
 
 *** LHS
 *** D-Optimal
