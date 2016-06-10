@@ -24461,7 +24461,7 @@ h[g.name.to_sym] = 1024
         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt.yaml"
         for i in `seq 1 100`; do
-            ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $INPOUT -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+            ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $INPUT -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
         done
       #+end_src
 
@@ -24496,7 +24496,7 @@ h[g.name.to_sym] = 1024
       #+begin_src sh :results output :exports none
         INPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
-        OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt_200.yaml"
+        OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_1000_g5_p20_m01_e1_tt_200.yaml"
         ruby ../boast/optimizer_benchmarks/bench_gen.rb $PARAM $INPUT -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null &
       #+end_src
 
