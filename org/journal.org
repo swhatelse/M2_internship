@@ -24606,6 +24606,8 @@ h[g.name.to_sym] = 1024
           }
         #+end_src
 
+        #+RESULTS:
+
 ******* Experiment
 ******** One descent
        #+begin_src sh :results output :exports none
@@ -24636,6 +24638,9 @@ h[g.name.to_sym] = 1024
          write.csv(df_greedy_start, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_start.csv", row.names=FALSE)
        #+end_src
 
+       #+RESULTS:
+       :  Erreur : impossible de trouver la fonction "gradient_descent"
+
 ******** Multiple descents
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -24660,11 +24665,13 @@ h[g.name.to_sym] = 1024
              }
              df_greedy <- rbind(df_greedy, solutions[solutions$time_per_pixel == min(solutions$time_per_pixel),])
          }
-         df_greedy <- cbind(df_greedy, method=rep("GR",nrow(df_greedy))) 
+         df_greedy <- cbind(df_greedy, method=rep("GRM",nrow(df_greedy))) 
 
          write.csv(df_greedy, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_multiple.csv", row.names=FALSE)
          write.csv(df_greedy_start, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_start_multiple.csv", row.names=FALSE)
        #+end_src
+
+       #+RESULTS:
 
 
 ****** LHS
@@ -25482,6 +25489,7 @@ h[g.name.to_sym] = 1024
         df_gen <- read.csv("../data/2016_04_08/pilipili2/18_08_24/ga_search.csv", strip.white=T, header=T)
         df_uniform <- read.csv("../data/2016_04_08/pilipili2/18_08_24/uniform_search.csv", strip.white=T, header=T)
         df_greedy <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search.csv", strip.white=T, header=T)
+        df_greedy_multiple <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search_multiple.csv", strip.white=T, header=T)
         df_lhs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lhs_search.csv", strip.white=T, header=T)
         # df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random.csv", strip.white=T, header=T)
         df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_improve_budget_2.csv", strip.white=T, header=T)
@@ -25489,10 +25497,10 @@ h[g.name.to_sym] = 1024
         df_rq_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/rq_random_budget_2.csv", strip.white=T, header=T)
 
         # df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random[,c(1,2,3,4,5,6,7,8,9,12,13)], df_rq_random)
-        df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random, df_rq_random)
+        df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random, df_rq_random, df_greedy_multiple)
         df_merged <- cbind(df_merged,slowdown = df_merged$time_per_pixel / min(df$time_per_pixel) )
         # write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search.csv", row.names=FALSE)
-        write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search_2.csv", row.names=FALSE)
+        write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search_3.csv", row.names=FALSE)
       #+end_src
 
       #+RESULTS:
@@ -25630,7 +25638,7 @@ h[g.name.to_sym] = 1024
 ****** All
       #+begin_src R :results output :session :exports both
         df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
-        df_all_methods <- read.csv("../data/2016_04_08/pilipili2/18_08_24/all_search_2.csv", strip.white=T, header=T)  
+        df_all_methods <- read.csv("../data/2016_04_08/pilipili2/18_08_24/all_search_3.csv", strip.white=T, header=T)  
       #+end_src
 
       #+RESULTS:
@@ -25681,7 +25689,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
-      [[file:/tmp/babel-5040GO8/figure5040PXA.png]]
+      [[file:/tmp/babel-4627fyl/figure4627AjE.png]]
 
       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
         ggplot() + 
