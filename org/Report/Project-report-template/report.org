@@ -1573,9 +1573,17 @@ Text
     we get a slowdown that is less than 7.9% and we do not get a
     maximum slowdown of 34.1%.
     The genetic algorithm GA gives even better results with a slowdown
-    which is less than 7.3% half of the time and a maximum slowdown of
-    39%. 
-    The technique using least square regression has a higher rate of
+    which is less than 7.3% half of the time, a mean slowdown of 9.8%
+    and a maximum slowdown of 39%. 
+    The technique using least square regression is extremely efficient,
+    most of the time it converges to the same solution which
+    has a slowdown of 1.2%. With a mean slowdown of 1.4% it is 6.7
+    times better than GA. It only failed one time giving a solutions
+    with a slowdown of 21.4% which is still better than worst solution
+    of the GA.
+
+    
+    has a higher rate of
     high quality solution than the genetic algorithm. 50% of the time
     the slowdown is less than 8%. However, sometimes it fails to find
     high performing versions and can be worst than GA with a maximum
