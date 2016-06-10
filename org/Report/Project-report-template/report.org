@@ -1576,29 +1576,23 @@ Text
     which is less than 7.3% half of the time, a mean slowdown of 9.8%
     and a maximum slowdown of 39%. 
     The technique using least square regression is extremely efficient,
-    most of the time it converges to the same solution which
-    has a slowdown of 1.2%. With a mean slowdown of 1.4% it is 6.7
-    times better than GA. It only failed one time giving a solutions
-    with a slowdown of 21.4% which is still better than worst solution
-    of the GA.
+    most of the time it converges to the same solution 99% of the time
+    which has a slowdown of 1.2%. However it never find the best
+    solution.With a mean slowdown of 1.4% it is 6.7 times better than
+    GA. It only failed one time giving a solutions with a slowdown of
+    21.4% which is still better than worst solution of the GA.
+    Using quantile regression we managed to improve the results of the
+    classical least square regression. Almost every time it converge
+    to the same solution as with LM and the worst solution has a
+    slowdown of 2.2% which almost 10 times better than LM and better
+    than the mean of GA. However like LM it does not find the optimal
+    solution.
 
-    
-    has a higher rate of
-    high quality solution than the genetic algorithm. 50% of the time
-    the slowdown is less than 8%. However, sometimes it fails to find
-    high performing versions and can be worst than GA with a maximum
-    slowdown of x2.102. The quantile regression is the most effective
-    techniques here with an even higher rate of high performing
-    versions, half of the time it is very close the optimal solution
-    with a slowdown that is lower than 1.2%. The worst solution is
-    better than with LM with a maximum slowdown of x1.805 however that
-    is still 29% higher than the worst solution of the GA.
-
-    In brief, the regression of expectation gives generally better
-    results than the implementation of the genetic algorithm we used
-    but sometime can be worse. The quantile regression performed
-    better than the genetic algorithm all the time with near optimal
-    solutions half of the time.
+    In brief, the regression of expectation gives almost every time
+    the exactly same results which is very close to the best solution
+    of the entire search space but it never reaches it. With the
+    quantile regression we managed to improve the worst solution but
+    we could not improve the best solution return by LM.
      
    #+BEGIN_LaTeX
    \begin{figure}[htb]
@@ -1629,11 +1623,9 @@ Text
   automatized our approach by blindly using the same model without
   considering the working set of points and by using exactly the same
   strategy. This gives us an overview of how it could perform but it
-  is not intended to use like this. Hence this part explains how
-  results can be improved by using sampling strategy and choosing and
-  refining the model according to the target problem. Finally we dig
-  into constrained optimization techniques to converge faster to the
-  optimal solution using our model of the objective function. 
+  is not intended to use like this. Hence this part explains why some
+  time we never get the same solution and why we do not get the best
+  optimal solution.
 ** DONE Characteristics of the search space
 ***                                                                :noexport:
    #+begin_src sh :results output :exports none
@@ -1645,6 +1637,53 @@ Text
    #+end_src
 
    #+RESULTS:
+**** Chance of getting the best solution
+     Number of random try to get solution with a slowdown lower than
+     10%  with a probability  of 0.9
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       df$slowdown <- df$time_per_pixel / min(df$time_per_pixel)
+       nrow(df[df$slowdown <= 1.1,])
+       p1 <- nrow(df[df$slowdown <= 1.1,]) / nrow(df) 
+       p1
+       log(0.1)/log(1-p1)
+     #+end_src
+
+     #+RESULTS:
+     : [1] 170
+     : [1] 0.007352941
+     : [1] 311.9989
+
+     #+begin_src R :results output :session :exports both
+       nrow(df[df$slowdown <= 1.012,])
+       p2 <- nrow(df[df$slowdown <= 1.012,]) / nrow(df) 
+       p2
+       log(0.1)/log(1-p2)
+     #+end_src
+
+     #+RESULTS:
+     : [1] 8
+     : [1] 0.0003460208
+     : [1] 6653.32
+
+       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       x <- 1:7000
+        library(ggplot2)
+
+        d1 <- data.frame(points_number=1:7000, proba=1-(1-p1)**x, slowdown=rep(1.1,7000))
+        d2 <- data.frame(points_number=1:7000, proba=1-(1-p2)**x, slowdown=rep(1.012,7000))
+        d3 <- rbind(d1,d2)
+        ggplot(d3) +
+             aes(x=points_number,y=proba,group=slowdown) +
+             theme_bw() +
+             geom_line() +
+             labs(y="1-(1-p1)^x", x="Number of points") +
+             scale_linetype_manual(name="Slowdown",values=c("1.2%","10"))
+      #+end_src
+
+       #+RESULTS:
+       [[file:/tmp/babel-36309sl/figure3630H3w.png]]
+
 *** 
    #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.png :exports results :width 800 :height 600 :session
      library(ggplot2)
@@ -1692,7 +1731,12 @@ Text
   there are few bad ones with the worst at a slowdown of x382. Thus
   the probability of finding a good performing combination is high,
   this is the reason why randomized algorithms such as the RS, GA and
-  LHS good results. Yet, this search space remains complicated,
+  LHS good results. Among the 23120 combinations there are 170 which
+  have a slowdown lower than 10%. In order get less than this slowdown
+  with a probability of 0.9 with the random search we would need to
+  pick at least 312 points at random. And if we hope to get the same
+  level of performance as with LM, we would need 6654 points at least.
+  Yet, this search space remains complicated,
   because as we saw previously our local search GR failed which means
   there are a lot of local optimum in which it is stuck and some are
   far from the optimal one. 
