@@ -1503,14 +1503,14 @@ Text
             facet_grid(method~.) +
             theme_bw() +
             geom_histogram(aes(slowdown),binwidth=.05,color="white", fill="gray48") +
-            geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=60, fill="red"), alpha=0.3) +
+            geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=100, fill="red"), alpha=0.3) +
             geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
             geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
             labs(y="Frequency", x="Slowdown compared best combination of the entire search space") +
             scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
             ggtitle("") + 
             theme(legend.position="top") +
-            coord_cartesian(xlim=c(.9,3), ylim=c(0,60))
+            coord_cartesian(xlim=c(.9,3), ylim=c(0,100))
     #+end_src
 
     #+RESULTS:
