@@ -83,6 +83,7 @@ Prof Noel DEPALMA\\
 Prof Martin HEUSSE\\
 Dr Thomas ROPARS\\
 Prof Olivier GRUBER\\
+Dr Henri-Pierre CHARLES\\
 }
 \session{$June$\hfill 2016}
 #+END_LaTeX
@@ -1485,7 +1486,7 @@ Text
 * DONE Results
 ***                                                                :noexport:
     #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 6 :height 8 :session
-      df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_2.csv", strip.white=T, header=T)  
+      df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_3.csv", strip.white=T, header=T)  
         library(ggplot2)
         library(plyr)
 
@@ -2420,7 +2421,7 @@ Text
    #+END_LaTeX
     
 
-** TODO Sampling strategy
+** TODO Sampling strategy                                          :noexport:
    The accuracy of a model is highly dependent of the set of points
    used to build it. Design of experiments methods propose techniques
    for sampling the space with the objective of maximizing the
@@ -2493,7 +2494,9 @@ Text
 *** LHS
 *** D-Optimal
 *** Managing the budget of points
-** TODO Model optimization
+* Difficulties
+** Constraints
+*** TODO Model optimization
 ***                                                                :noexport:
     #+begin_src sh :results output :exports both
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -2603,6 +2606,8 @@ Text
    \end{minipage}
    \end{figure}
    #+END_LaTeX
+*** LHS sampling
+** Quantile regression
 * TODO Future work
 * Conclusion
 #+LaTeX: \nocite{*}
