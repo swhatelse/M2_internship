@@ -24522,16 +24522,16 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
 
-      #+begin_src R :results output :session :exports none
+      #+begin_src R :results output :session :exports none :tangle ../scripts/rs_bench.R
         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
         df_uniform <- data.frame()
-        for (i in 1:100){
+        for (i in 1:1000){
             s <- df[sample(1:nrow(df), size = 120, replace = FALSE),]
             df_uniform <- rbind(df_uniform, s[s$time_per_pixel==min(s$time_per_pixel) ,])
         }
 
-        df_uniform <- cbind(df_uniform, point_number=rep(120,100), method=rep("RS",nrow(df_uniform)))
-        write.csv(df_uniform, "../data/2016_04_08/pilipili2/18_08_24/uniform_search.csv", row.names=FALSE)
+        df_uniform <- cbind(df_uniform, point_number=rep(120,nrow(df_uniform)), method=rep("RS",nrow(df_uniform)))
+        write.csv(df_uniform, "../data/2016_04_08/pilipili2/18_08_24/uniform_search_1000.csv", row.names=FALSE)
       #+end_src
 
       #+RESULTS:
@@ -24671,11 +24671,11 @@ h[g.name.to_sym] = 1024
 
        #+RESULTS:
 
-       #+begin_src R :results output :session :exports none
+       #+begin_src R :results output :session :exports none :tangle ../scripts/gr_bench.R
          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
          df_greedy <- data.frame()
          df_greedy_start <- data.frame()
-         for(k in 1:100){
+         for(k in 1:1000){
              budget <- 120
              solutions <- data.frame()
 
@@ -24689,8 +24689,8 @@ h[g.name.to_sym] = 1024
          }
          df_greedy <- cbind(df_greedy, method=rep("GR",nrow(df_greedy))) 
 
-         write.csv(df_greedy, "../data/2016_04_08/pilipili2/18_08_24/greedy_search.csv", row.names=FALSE)
-         write.csv(df_greedy_start, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_start.csv", row.names=FALSE)
+         write.csv(df_greedy, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_1000.csv", row.names=FALSE)
+         write.csv(df_greedy_start, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_start_1000.csv", row.names=FALSE)
        #+end_src
 
        #+RESULTS:
@@ -24703,11 +24703,11 @@ h[g.name.to_sym] = 1024
 
        #+RESULTS:
 
-       #+begin_src R :results output :session :exports none
+       #+begin_src R :results output :session :exports none :tangle ../scripts/grm_bench.R
          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
          df_greedy <- data.frame()
          df_greedy_start <- data.frame()
-         for(k in 1:100){
+         for(k in 1:1000){
              budget <- 120
              solutions <- data.frame()
              while(budget > 0){ 
@@ -24724,8 +24724,8 @@ h[g.name.to_sym] = 1024
          }
          df_greedy <- cbind(df_greedy, method=rep("GRM",nrow(df_greedy))) 
 
-         write.csv(df_greedy, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_multiple.csv", row.names=FALSE)
-         write.csv(df_greedy_start, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_start_multiple.csv", row.names=FALSE)
+         write.csv(df_greedy, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_multiple_1000.csv", row.names=FALSE)
+         write.csv(df_greedy_start, "../data/2016_04_08/pilipili2/18_08_24/greedy_search_start_multiple_1000.csv", row.names=FALSE)
        #+end_src
 
        #+RESULTS:
@@ -24738,11 +24738,8 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
 
-      #+begin_src R :results output :session :exports none
+      #+begin_src R :results output :session :exports none :tangle ../scripts/lhs_bench.R
         df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-      #+end_src
-
-      #+begin_src R :results output :session :exports none
         library(DoE.base)
         library(DoE.wrapper)
 
@@ -24756,7 +24753,7 @@ h[g.name.to_sym] = 1024
 
         df_lhs <- data.frame()
         point_count <- c()
-        runs = 100  
+        runs = 1000  
         for(j in 1:runs){
             Design.1 <- lhs.design( type= "maximin" , nruns= 441 ,nfactors= 7, randomize=TRUE ,digits= NULL, factor.names=list(idx_elements_number = c(1,length(elements_number_val)), 
                                                                                                                                idx_y_component_number = c(1,length(y_component_number_val)),
@@ -24784,7 +24781,7 @@ h[g.name.to_sym] = 1024
             df_lhs <- rbind(df_lhs, set[set$time_per_pixel==min(set$time_per_pixel) ,])
         }
         df_lhs <- cbind(df_lhs, point_number=point_count, method=rep("LHS",nrow(df_lhs)))
-        write.csv(df_lhs, "../data/2016_04_08/pilipili2/18_08_24/lhs_search.csv", row.names=FALSE)
+        write.csv(df_lhs, "../data/2016_04_08/pilipili2/18_08_24/lhs_search_1000.csv", row.names=FALSE)
       #+end_src
 
       #+RESULTS:
@@ -25173,7 +25170,7 @@ h[g.name.to_sym] = 1024
      #+RESULTS:
      [[file:/tmp/babel-5040GO8/figure5040D5k.png]]
 ******** V3
-    #+begin_src R :results output :session :exports both
+    #+begin_src R :results output :session :exports both :tangle ../scripts/LM_bench.R
       objective_predict <- function(fit,x){
           names <- colnames(x)
           s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
@@ -25198,13 +25195,13 @@ h[g.name.to_sym] = 1024
       }
 
       df_lm_random <- data.frame()
+      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
-      runs <- 100
+      runs <- 1000
       logs <- list()
       for(i in 1:runs){
           l <- list()
-          df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-
+          
           # Step 1
           working_set <- df[sample(1:nrow(df), size = 50, replace = FALSE),]
           l[["starting_set"]] <- working_set
@@ -25272,8 +25269,10 @@ h[g.name.to_sym] = 1024
           l[["added4"]] <- added4
           subset4 <- rbind(subset4, added4)
           solution <- subset4[subset4$time_per_pixel == min(subset4$time_per_pixel),][1,]
-          solution$time_per_pixel / min(df$time_per_pixel)
+          
           solution$point_number <- point_count 
+          l[["solution"]] <- solution
+          l[["slowdown"]] <- solution$time_per_pixel / min(df$time_per_pixel)
           logs[[i]] <- l    
           df_lm_random <- rbind(df_lm_random,solution)
       }
@@ -25281,56 +25280,54 @@ h[g.name.to_sym] = 1024
       df_lm_random <- cbind(df_lm_random, method=rep("LM",nrow(df_lm_random)))
       summary(df_lm_random)
 
-      write.csv(df_lm_random, "../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat.csv", row.names=FALSE)
-      saveRDS(logs, "../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat.rds")
+      write.csv(df_lm_random, "../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", row.names=FALSE)
+      saveRDS(logs, "../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
       summary(df_lm_random)
     #+end_src
 
     #+RESULTS:
     #+begin_example
-    Error in set.seed() : 
-      l'argument "seed" est manquant, avec aucune valeur par défaut
      elements_number y_component_number vector_length temporary_size
-     Min.   : 6.00   Min.   :6          Min.   :1     Min.   :2.00  
-     1st Qu.: 6.00   1st Qu.:6          1st Qu.:1     1st Qu.:2.00  
-     Median : 6.00   Median :6          Median :1     Median :2.00  
-     Mean   : 6.18   Mean   :6          Mean   :1     Mean   :2.02  
-     3rd Qu.: 6.00   3rd Qu.:6          3rd Qu.:1     3rd Qu.:2.00  
-     Max.   :24.00   Max.   :6          Max.   :1     Max.   :4.00  
+     Min.   :6       Min.   :6          Min.   :1     Min.   :2     
+     1st Qu.:6       1st Qu.:6          1st Qu.:1     1st Qu.:2     
+     Median :6       Median :6          Median :1     Median :2     
+     Mean   :6       Mean   :6          Mean   :1     Mean   :2     
+     3rd Qu.:6       3rd Qu.:6          3rd Qu.:1     3rd Qu.:2     
+     Max.   :6       Max.   :6          Max.   :1     Max.   :2     
      vector_recompute load_overlap threads_number     lws_y   time_per_pixel     
-     true:100         false: 1     Min.   :128    Min.   :1   Min.   :1.179e-10  
-                      true :99     1st Qu.:256    1st Qu.:1   1st Qu.:1.179e-10  
+     true:10          false: 0     Min.   :256    Min.   :1   Min.   :1.179e-10  
+                      true :10     1st Qu.:256    1st Qu.:1   1st Qu.:1.179e-10  
                                    Median :256    Median :1   Median :1.179e-10  
-                                   Mean   :256    Mean   :1   Mean   :1.182e-10  
+                                   Mean   :256    Mean   :1   Mean   :1.179e-10  
                                    3rd Qu.:256    3rd Qu.:1   3rd Qu.:1.179e-10  
-                                   Max.   :512    Max.   :1   Max.   :1.415e-10  
-      point_number method  
-     Min.   :119   LM:100  
-     1st Qu.:119           
-     Median :119           
-     Mean   :119           
-     3rd Qu.:119           
+                                   Max.   :256    Max.   :1   Max.   :1.179e-10  
+      point_number method 
+     Min.   :119   LM:10  
+     1st Qu.:119          
+     Median :119          
+     Mean   :119          
+     3rd Qu.:119          
      Max.   :119
      elements_number y_component_number vector_length temporary_size
-     Min.   : 6.00   Min.   :6          Min.   :1     Min.   :2.00  
-     1st Qu.: 6.00   1st Qu.:6          1st Qu.:1     1st Qu.:2.00  
-     Median : 6.00   Median :6          Median :1     Median :2.00  
-     Mean   : 6.18   Mean   :6          Mean   :1     Mean   :2.02  
-     3rd Qu.: 6.00   3rd Qu.:6          3rd Qu.:1     3rd Qu.:2.00  
-     Max.   :24.00   Max.   :6          Max.   :1     Max.   :4.00  
+     Min.   :6       Min.   :6          Min.   :1     Min.   :2     
+     1st Qu.:6       1st Qu.:6          1st Qu.:1     1st Qu.:2     
+     Median :6       Median :6          Median :1     Median :2     
+     Mean   :6       Mean   :6          Mean   :1     Mean   :2     
+     3rd Qu.:6       3rd Qu.:6          3rd Qu.:1     3rd Qu.:2     
+     Max.   :6       Max.   :6          Max.   :1     Max.   :2     
      vector_recompute load_overlap threads_number     lws_y   time_per_pixel     
-     true:100         false: 1     Min.   :128    Min.   :1   Min.   :1.179e-10  
-                      true :99     1st Qu.:256    1st Qu.:1   1st Qu.:1.179e-10  
+     true:10          false: 0     Min.   :256    Min.   :1   Min.   :1.179e-10  
+                      true :10     1st Qu.:256    1st Qu.:1   1st Qu.:1.179e-10  
                                    Median :256    Median :1   Median :1.179e-10  
-                                   Mean   :256    Mean   :1   Mean   :1.182e-10  
+                                   Mean   :256    Mean   :1   Mean   :1.179e-10  
                                    3rd Qu.:256    3rd Qu.:1   3rd Qu.:1.179e-10  
-                                   Max.   :512    Max.   :1   Max.   :1.415e-10  
-      point_number method  
-     Min.   :119   LM:100  
-     1st Qu.:119           
-     Median :119           
-     Mean   :119           
-     3rd Qu.:119           
+                                   Max.   :256    Max.   :1   Max.   :1.179e-10  
+      point_number method 
+     Min.   :119   LM:10  
+     1st Qu.:119          
+     Median :119          
+     Mean   :119          
+     3rd Qu.:119          
      Max.   :119
 #+end_example
 
@@ -25703,7 +25700,7 @@ h[g.name.to_sym] = 1024
     [[file:/tmp/babel-5040GO8/figure50402ue.png]]
 
 ******** V3
-    #+begin_src R :results output :session :exports both
+    #+begin_src R :results output :session :exports both :tangle ../scripts/rq_bench.R
       f <- function(x) { x * (0.05 - 1 * (x < 0)) }
       g <- function(x) { f(x)/x^2 }
       h <- function(x) {pmin(g(x),1e15)}
@@ -25733,12 +25730,12 @@ h[g.name.to_sym] = 1024
        }
 
        df_rq_random <- data.frame()
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
-       runs <- 100
+       runs <- 1000
        logs <- list()
        for(i in 1:runs){
            l <- list()
-           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
            # Step 1
            working_set <- df[sample(1:nrow(df), size = 50, replace = FALSE),]
@@ -25829,15 +25826,19 @@ h[g.name.to_sym] = 1024
            solution <- subset4[subset4$time_per_pixel == min(subset4$time_per_pixel),][1,]
            solution$time_per_pixel / min(df$time_per_pixel)
            solution$point_number <- point_count 
+
+           l[["solution"]] <- solution
+           l[["slowdown"]] <- solution$time_per_pixel / min(df$time_per_pixel)
            logs[[i]] <- l    
+
            df_rq_random <- rbind(df_rq_random,solution)
        }
 
        df_rq_random <- cbind(df_rq_random, method=rep("RQ",nrow(df_rq_random)))
        summary(df_rq_random)
 
-       write.csv(df_rq_random, "../data/2016_04_08/pilipili2/18_08_24/rq_random_new_strat.csv", row.names=FALSE)
-       saveRDS(logs, "../data/2016_04_08/pilipili2/18_08_24/rq_random_logs_new_strat.rds")
+       write.csv(df_rq_random, "../data/2016_04_08/pilipili2/18_08_24/rq_random_new_strat_1000.csv", row.names=FALSE)
+       saveRDS(logs, "../data/2016_04_08/pilipili2/18_08_24/rq_random_logs_new_strat_1000.rds")
        summary(df_rq_random)
     #+end_src
 
