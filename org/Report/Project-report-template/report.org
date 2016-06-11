@@ -573,9 +573,22 @@ Text
         3D? I can not make regression for each factor because it's not
         the same than one regression including all the factors. But we
         could optimize each parameters independently.
-*** Explanation of LM worst case
-    
-*** Why LM and RQ never find the best solution
+*** Explanation of LM success and "failures"
+    - Failure :
+      Happened 2 times
+      Due to the automatic strategy. Misprediction of vector
+      length. Tried instantiate not accurate model \to lot of predicted
+      good point are bad indeed.
+      This can be detect by the user it, and can act considering this
+      by either remove the factors or asking more points.
+    - Success:
+      Instantiation of correct model with only relevant factors with
+      low error \to low uncertainty of the estimate. The more factors
+      are fixed the lower the noise \to converge to the same solution
+      most of the time.
+    - Vector_length either 1 or 16 because simple linear
+      model. Crucial to fix correctly this parameters correctly
+    - Never reach best case because of the lack of acuraccy of the model  
 *** Using as little points as possible [0/4]                     :deprecated:
     - Design of experiment
       - Random
@@ -611,8 +624,9 @@ Text
    objective function. 
    However \to Non-convex optimization 
      Constraint \to unfeasible points
-     - Gradient descent + Barrier approach \to not enough time to implement
+     - Barrier approach \to guide the search to feasible regions
      - Simulated annealing \to need to tune it correctly
+     - Gradient descent
    - Exhaustive search \to ensure that we get the best response and
      allowed us to evaluate the model.
 *** LHS
@@ -2038,7 +2052,8 @@ Text
    \end{figure}
    #+END_LaTeX
 
-** TODO Model choice, refinement and pruning decision              :noexport:
+** 
+** Model choice, refinement and pruning decision                   :noexport:
    Usually the expert understands every optimization of its kernel and
    has ideas about their potential effects. He does not only need to check his
    hypothesis but also to have an accurate estimation of the impact of
@@ -2551,7 +2566,7 @@ Text
 
    #+END_LaTeX
     
-** TODO Sampling strategy                                          :noexport:
+** Sampling strategy                                               :noexport:
    The accuracy of a model is highly dependent of the set of points
    used to build it. Design of experiments methods propose techniques
    for sampling the space with the objective of maximizing the
