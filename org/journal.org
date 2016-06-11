@@ -24503,19 +24503,19 @@ h[g.name.to_sym] = 1024
       #+RESULTS:
 
       #+begin_src sh :results output :exports none
-        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_100_g5_p20_m01_e1_tt.yaml
+        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_1000_g5_p20_m01_e1_tt_200.yaml
       #+end_src
       
       #+RESULTS:
 
       #+begin_src R :results output :session :exports both
         df_gen <- read.csv("/tmp/test.csv", strip.white=T, header=T)
-        df_gen <- cbind(df_gen, point_number=rep(120,100), method=rep("GA",nrow(df_gen)))
-        write.csv(df_gen, "../data/2016_04_08/pilipili2/18_08_24/ga_search.csv", row.names=FALSE)
+        df_gen <- cbind(df_gen, point_number=rep(120,nrow(df_gen)), method=rep("GA",nrow(df_gen)))
+        write.csv(df_gen, "../data/2016_04_08/pilipili2/18_08_24/ga_search_1000.csv", row.names=FALSE)
       #+end_src
 
       #+RESULTS:
- 
+
 ****** Random 
       Formating the full search space to csv:
       #+begin_src sh :results output :exports none
@@ -24800,15 +24800,14 @@ h[g.name.to_sym] = 1024
          df_greedy_start <- data.frame()
          for(k in 1:1000){
              budget <- 120
-             solutions <- data.frame()
 
              p <- df[sample(1:nrow(df), size = 1, replace = FALSE),]
              budget <- budget - 1
              df_greedy_start <- rbind(df_greedy_start,p)
              res <- gradient_descent(p,budget)
-             solutions <- rbind(solutions,res[[1]])
-
-             df_greedy <- rbind(df_greedy, solutions[solutions$time_per_pixel == min(solutions$time_per_pixel),])
+             solution <- res[[1]]
+             solution$point_number <- 120 - res[[2]]
+             df_greedy <- rbind(df_greedy, solution)
          }
          df_greedy <- cbind(df_greedy, method=rep("GR",nrow(df_greedy))) 
 
@@ -24959,7 +24958,7 @@ h[g.name.to_sym] = 1024
                  budget <- budget - 1
                  df_greedy_start <- rbind(df_greedy_start,p)
                  res <- gradient_descent(p,budget)
-                 solutions <- rbind(solutions,res[[1]])
+                     solutions <- rbind(solutions,res[[1]])
                  budget <- res[[2]]
              }
              sol <- solutions[solutions$time_per_pixel == min(solutions$time_per_pixel),][1,]
@@ -31968,22 +31967,28 @@ h[g.name.to_sym] = 1024
 
     #+begin_src R :results output :session :exports both
       df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
-      # df_gen <- read.csv("../data/2016_04_08/pilipili2/18_08_24/ga_search.csv", strip.white=T, header=T)
+      df_gen <- read.csv("../data/2016_04_08/pilipili2/18_08_24/ga_search_1000.csv", strip.white=T, header=T)
       df_uniform <- read.csv("../data/2016_04_08/pilipili2/18_08_24/uniform_search_1000.csv", strip.white=T, header=T)
-      # df_greedy <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search.csv", strip.white=T, header=T)
-      # df_greedy_multiple <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search_multiple.csv", strip.white=T, header=T)
-      # df_lhs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lhs_search.csv", strip.white=T, header=T)
-
+      df_greedy <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search_1000.csv", strip.white=T, header=T)
+      df_greedy_multiple <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search_multiple_1000.csv", strip.white=T, header=T)
+      df_lhs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lhs_search_1000.csv", strip.white=T, header=T)
       df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
       df_rq_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/rq_random_new_strat_1000.csv", strip.white=T, header=T)
 
 
-      # df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random, df_rq_random, df_greedy_multiple)
-      df_merged <- rbind(df_uniform, df_lm_random, df_rq_random)
+      df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random, df_rq_random, df_greedy_multiple)
+      # df_merged <- rbind(df_uniform, df_lm_random, df_rq_random)
       df_merged <- cbind(df_merged,slowdown = df_merged$time_per_pixel / min(df$time_per_pixel) )
 
       write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", row.names=FALSE)
       #+end_src
+
+    #+RESULTS:
+    : Error in rbind(deparse.level, ...) : 
+    :   les nombres de colonnes des arguments ne correspondent pas
+    : Error in cbind(df_merged, slowdown = df_merged$time_per_pixel/min(df$time_per_pixel)) : 
+    :   objet 'df_merged' introuvable
+    : Error in is.data.frame(x) : objet 'df_merged' introuvable
 
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
       library(ggplot2)
@@ -32196,3 +32201,4 @@ h[g.name.to_sym] = 1024
     172589             true         true            256     1     1.1792e-10     GR
 #+end_example
 
+    

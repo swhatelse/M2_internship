@@ -3,8 +3,6 @@ f <- function(x) { x * (0.05 - 1 * (x < 0)) }
 g <- function(x) { f(x)/x^2 }
 h <- function(x) {pmin(g(x),1e15)}
 
-library(quantreg)
-
  objective_predict <- function(fit,x){
      names <- colnames(x)
      s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
