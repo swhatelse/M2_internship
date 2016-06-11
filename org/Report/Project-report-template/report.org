@@ -574,6 +574,7 @@ Text
         the same than one regression including all the factors. But we
         could optimize each parameters independently.
 *** Explanation of LM worst case
+    
 *** Why LM and RQ never find the best solution
 *** Using as little points as possible [0/4]                     :deprecated:
     - Design of experiment
@@ -606,10 +607,16 @@ Text
       
 ** Technical difficulties
 *** Model Optimization [0/2]
-   - Non-convex optimization 
+   After modelization we need to perform search on the estimated
+   objective function. 
+   However \to Non-convex optimization 
      Constraint \to unfeasible points
-     Barrier approach
-   - Exhaustive search
+     - Gradient descent + Barrier approach \to not enough time to implement
+     - Simulated annealing \to need to tune it correctly
+   - Exhaustive search \to ensure that we get the best response and
+     allowed us to evaluate the model.
+*** LHS
+*** RQ
 ** Future work [0/2]
    - Constraints
    - Find more suited design of experiments techniques
@@ -2544,7 +2551,6 @@ Text
 
    #+END_LaTeX
     
-
 ** TODO Sampling strategy                                          :noexport:
    The accuracy of a model is highly dependent of the set of points
    used to build it. Design of experiments methods propose techniques
