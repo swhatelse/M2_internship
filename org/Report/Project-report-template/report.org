@@ -2340,13 +2340,14 @@ Text
     or negative, hence we do not know if the best value for vector
     length should be the smallest or the biggest possible. Another way
     of accessing the quality of a model is to compare the predicted
-    values and the real ones, the more they correlated the more
-    accurate the model. The figure\ref{fig:bad_prediction} 
-    This kind
-    of cases can be detected easily by the user and thus take correct
-    decision. The explanation of why this worst case happened is because
-    our automated experiment process did not make the previous analysis and
-    applied the same strategy whether the model is correct or not.   
+    values and the real ones, the more they are correlated the more
+    accurate the model. The figure\ref{fig:bad_prediction} shows the
+    prediction against the real values, good predicted values are not
+    that good and some can be very bad. This kind of situations can be
+    detected easily by the user and thus take correct decision. The
+    explanation of why this worst case happened is because our
+    automated experiment process did not make the previous analysis
+    and applied the same strategy whether the model is correct or not.   
  
   #+CAPTION: This table presents the fit of an incorrect model
   #+NAME:   tab:incorrect-fit
