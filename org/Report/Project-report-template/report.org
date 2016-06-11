@@ -2052,7 +2052,254 @@ Text
    \end{figure}
    #+END_LaTeX
 
-** 
+** LM: Success and "failures" 
+***                                                                :noexport:
+**** Bad case
+    #+begin_src sh :results output :exports none
+      ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      logs <- readRDS("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+      df_lm_random <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),][1,]
+      df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),][1,]$time_per_pixel / min(df$time_per_pixel)
+      working_set <- logs[[544]]$starting_set
+
+      model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + load_overlap + temporary_size
+      fit <- lm(model,working_set)
+      summary(fit)
+
+      model <- time_per_pixel ~ vector_length  + lws_y 
+      fit <- lm(model,working_set)
+      summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+        elements_number y_component_number vector_length temporary_size
+    544              24                  6            16              2
+        vector_recompute load_overlap threads_number lws_y time_per_pixel
+    544             true        false             64     1   4.393478e-10
+        point_number method
+    544          119     LM
+    [1] 3.771183
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -3.205e-09 -1.315e-09 -4.193e-10  3.619e-10  7.396e-09 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         4.503e-09  1.348e-09   3.340  0.00176 ** 
+    elements_number    -9.059e-11  8.247e-11  -1.098  0.27829    
+    y_component_number -2.341e-10  3.055e-10  -0.766  0.44787    
+    vector_length       1.941e-12  6.063e-11   0.032  0.97462    
+    threads_number     -2.445e-12  1.348e-12  -1.813  0.07691 .  
+    lws_y               8.072e-12  1.854e-12   4.354 8.41e-05 ***
+    load_overlaptrue    2.150e-10  6.540e-10   0.329  0.74402    
+    temporary_size     -4.210e-10  3.362e-10  -1.252  0.21738    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.255e-09 on 42 degrees of freedom
+    Multiple R-squared:  0.3723,	Adjusted R-squared:  0.2677 
+    F-statistic: 3.559 on 7 and 42 DF,  p-value: 0.004306
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -3.108e-09 -1.197e-09 -7.358e-10 -5.630e-11  8.891e-09 
+
+    Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)    1.594e-09  5.691e-10   2.800  0.00738 **
+    vector_length -2.316e-11  5.953e-11  -0.389  0.69904   
+    lws_y          5.572e-12  1.625e-12   3.428  0.00127 **
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.395e-09 on 47 degrees of freedom
+    Multiple R-squared:  0.2081,	Adjusted R-squared:  0.1744 
+    F-statistic: 6.174 on 2 and 47 DF,  p-value: 0.004161
+    #+end_example
+
+    #+begin_src R :results output graphics :file ./img/bad_prediction.pdf :exports both :width 4 :height 4 :session
+      library(ggplot2)
+      ggplot() +
+      theme_bw() +
+      geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
+      geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
+      labs(y="Real", x="Predicted") +
+      ggtitle("Prediction vs reality") +
+      coord_cartesian(xlim=c(0,7.5e-9), ylim=c(0,7.5e-9))
+    #+end_src
+
+    #+RESULTS:
+    [[file:./img/bad_prediction.pdf]]
+
+**** Good case
+    #+begin_src sh :results output :exports none
+      ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      logs <- readRDS("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+      df_lm_random <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      working_set <- logs[[2]]$starting_set
+
+      model <- time_per_pixel ~ vector_length  + lws_y 
+      fit <- lm(model,working_set)
+      summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -1.537e-09 -5.136e-10 -4.230e-11  1.875e-10  3.356e-09 
+
+    Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   -4.712e-12  2.211e-10  -0.021  0.98308    
+    vector_length  8.794e-11  3.025e-11   2.907  0.00555 ** 
+    lws_y          1.987e-11  2.882e-12   6.894 1.18e-08 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 9.821e-10 on 47 degrees of freedom
+    Multiple R-squared:  0.5617,	Adjusted R-squared:  0.5431 
+    F-statistic: 30.12 on 2 and 47 DF,  p-value: 3.812e-09
+#+end_example
+
+    #+begin_src R :results output graphics :file ./img/good_prediction.pdf :exports both :width 4 :height 4 :session
+      library(ggplot2)
+      ggplot() +
+      theme_bw() +
+      geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
+      geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
+      labs(y="Real", x="Predicted") +
+      ggtitle("Prediction vs reality") +
+      coord_cartesian(xlim=c(0,6e-9), ylim=c(0,6e-9))
+    #+end_src
+
+    #+RESULTS:
+    [[file:./img/good_prediction.pdf]]
+
+
+****  Lucky case
+    #+begin_src sh :results output :exports none
+      ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      logs <- readRDS("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+      df_lm_random <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      working_set <- logs[[1]]$starting_set
+
+      model <- time_per_pixel ~ vector_length  + lws_y 
+      fit <- lm(model,working_set)
+      summary(fit)
+
+      model <- time_per_pixel ~ threads_number  + lws_y 
+      fit <- lm(model,working_set)
+      summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -6.610e-09 -1.287e-09 -6.651e-10  9.950e-11  1.290e-08 
+
+    Coefficients:
+                   Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)   5.685e-10  8.229e-10   0.691  0.49310   
+    vector_length 1.438e-10  8.941e-11   1.608  0.11453   
+    lws_y         1.507e-11  4.596e-12   3.278  0.00197 **
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.181e-09 on 47 degrees of freedom
+    Multiple R-squared:  0.2005,	Adjusted R-squared:  0.1665 
+    F-statistic: 5.894 on 2 and 47 DF,  p-value: 0.005202
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -6.249e-09 -1.440e-09 -7.497e-10  1.096e-09  1.158e-08 
+
+    Coefficients:
+                     Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)     2.621e-09  5.982e-10   4.381 6.57e-05 ***
+    threads_number -3.816e-12  1.216e-12  -3.138 0.002936 ** 
+    lws_y           1.826e-11  4.463e-12   4.093 0.000166 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.971e-09 on 47 degrees of freedom
+    Multiple R-squared:  0.3026,	Adjusted R-squared:  0.2729 
+    F-statistic:  10.2 on 2 and 47 DF,  p-value: 0.0002096
+#+end_example
+
+    #+begin_src R :results output graphics :file ./img/lucky_prediction.pdf :exports both :width 4 :height 4 :session
+      model <- time_per_pixel ~ vector_length  + lws_y 
+      fit <- lm(model,working_set)
+
+      library(ggplot2)
+      ggplot() +
+          theme_bw() +
+          geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
+          geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
+          labs(y="Real", x="Predicted") +
+          ggtitle("Prediction vs reality") +
+          coord_cartesian(xlim=c(0,2e-8), ylim=c(0,2e-8))
+    #+end_src
+
+    #+RESULTS:
+    [[file:./img/lucky_prediction.pdf]]
+
+*** 
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/bad_prediction.pdf}
+   \caption{\label{fig:bad_prediction}Incorrect model}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/good_prediction.pdf}
+   \caption{\label{fig:good_prediction}Correct model}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/lucky_prediction.pdf}
+   \caption{\label{fig:lucky_prediction}Lucky case}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX
+
 ** Model choice, refinement and pruning decision                   :noexport:
    Usually the expert understands every optimization of its kernel and
    has ideas about their potential effects. He does not only need to check his
