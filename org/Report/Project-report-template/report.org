@@ -2336,8 +2336,13 @@ Text
     error is equal to 5.953e-11 and the estimate is equal to
     -2.316e-11, the standard error is very big compared to the
     estimate. Which means that the coefficient is between -8.269e-11
-    and 3.637e-11 and we do not in fact if the best value for vector
-    length should be the smallest or the biggest possible.    
+    and 3.637e-11. Thus we do not know if the coefficient is positive
+    or negative, hence we do not know if the best value for vector
+    length should be the smallest or the biggest possible. This kind
+    of cases can be detected easily by the user and thus take correct
+    decision. The explanation of why this worst case happened is because
+    our automated experiment process did not make the previous analysis and
+    applied the same strategy whether the model is correct or not.   
  
   #+CAPTION: This table presents the fit of an incorrect model
   #+NAME:   tab:incorrect-fit
@@ -2346,6 +2351,8 @@ Text
     | /             |         <> |        <> |        < |
     | vector_length | -2.316e-11 | 5.953e-11 |  0.69904 |
     | lws y         |  5.572e-12 | 1.625e-12 |  0.00127 |
+
+   
 
   #+CAPTION: This table presents the fit of a correct model
   #+NAME:   tab:correct-fit

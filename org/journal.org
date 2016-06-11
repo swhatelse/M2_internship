@@ -32271,6 +32271,10 @@ h[g.name.to_sym] = 1024
     model <- time_per_pixel ~ vector_length  + lws_y 
     fit <- lm(model,working_set)
     summary(fit)
+
+    model <- time_per_pixel ~ vector_length
+    fit <- lm(model,working_set)
+    summary(fit)
     #+end_src
 
     #+RESULTS:
@@ -32281,44 +32285,73 @@ h[g.name.to_sym] = 1024
 
     Residuals:
            Min         1Q     Median         3Q        Max 
-    -3.205e-09 -1.315e-09 -4.193e-10  3.619e-10  7.396e-09 
+    -5.854e-09 -1.467e-09 -3.838e-10  9.082e-10  1.101e-08 
 
     Coefficients:
                          Estimate Std. Error t value Pr(>|t|)    
-    (Intercept)         4.503e-09  1.348e-09   3.340  0.00176 ** 
-    elements_number    -9.059e-11  8.247e-11  -1.098  0.27829    
-    y_component_number -2.341e-10  3.055e-10  -0.766  0.44787    
-    vector_length       1.941e-12  6.063e-11   0.032  0.97462    
-    threads_number     -2.445e-12  1.348e-12  -1.813  0.07691 .  
-    lws_y               8.072e-12  1.854e-12   4.354 8.41e-05 ***
-    load_overlaptrue    2.150e-10  6.540e-10   0.329  0.74402    
-    temporary_size     -4.210e-10  3.362e-10  -1.252  0.21738    
+    (Intercept)         2.449e-09  1.615e-09   1.516  0.13704    
+    elements_number    -2.064e-10  9.844e-11  -2.097  0.04207 *  
+    y_component_number  4.549e-10  3.544e-10   1.284  0.20631    
+    vector_length       1.358e-10  8.473e-11   1.602  0.11659    
+    threads_number     -3.475e-12  1.207e-12  -2.879  0.00626 ** 
+    lws_y               1.947e-11  4.420e-12   4.404 7.18e-05 ***
+    load_overlaptrue   -1.295e-10  8.729e-10  -0.148  0.88276    
+    temporary_size     -2.260e-10  4.246e-10  -0.532  0.59745    
     ---
     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-    Residual standard error: 2.255e-09 on 42 degrees of freedom
-    Multiple R-squared:  0.3723,	Adjusted R-squared:  0.2677 
-    F-statistic: 3.559 on 7 and 42 DF,  p-value: 0.004306
+    Residual standard error: 2.908e-09 on 42 degrees of freedom
+    Multiple R-squared:  0.4031,	Adjusted R-squared:  0.3036 
+    F-statistic: 4.051 on 7 and 42 DF,  p-value: 0.001787
 
     Call:
     lm(formula = model, data = working_set)
 
     Residuals:
            Min         1Q     Median         3Q        Max 
-    -3.108e-09 -1.197e-09 -7.358e-10 -5.630e-11  8.891e-09 
+    -6.610e-09 -1.287e-09 -6.651e-10  9.950e-11  1.290e-08 
 
     Coefficients:
-                    Estimate Std. Error t value Pr(>|t|)   
-    (Intercept)    1.594e-09  5.691e-10   2.800  0.00738 **
-    vector_length -2.316e-11  5.953e-11  -0.389  0.69904   
-    lws_y          5.572e-12  1.625e-12   3.428  0.00127 **
+                   Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)   5.685e-10  8.229e-10   0.691  0.49310   
+    vector_length 1.438e-10  8.941e-11   1.608  0.11453   
+    lws_y         1.507e-11  4.596e-12   3.278  0.00197 **
     ---
     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-    Residual standard error: 2.395e-09 on 47 degrees of freedom
-    Multiple R-squared:  0.2081,	Adjusted R-squared:  0.1744 
-    F-statistic: 6.174 on 2 and 47 DF,  p-value: 0.004161
-   #+end_example
+    Residual standard error: 3.181e-09 on 47 degrees of freedom
+    Multiple R-squared:  0.2005,	Adjusted R-squared:  0.1665 
+    F-statistic: 5.894 on 2 and 47 DF,  p-value: 0.005202
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -2.750e-09 -1.739e-09 -1.275e-09  2.824e-10  1.567e-08 
+
+    Coefficients:
+                   Estimate Std. Error t value Pr(>|t|)  
+    (Intercept)   1.865e-09  7.915e-10   2.356   0.0226 *
+    vector_length 8.977e-11  9.639e-11   0.931   0.3563  
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.489e-09 on 48 degrees of freedom
+    Multiple R-squared:  0.01775,	Adjusted R-squared:  -0.002714 
+    F-statistic: 0.8674 on 1 and 48 DF,  p-value: 0.3563
+#+end_example
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      library(ggplot2)
+      ggplot(working_set[working_set$vector_length > 3,]) +
+          aes(x=vector_length,y=time_per_pixel) +
+          geom_point() +
+          geom_smooth(method="lm", formula=y~x)
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure3912kEC.png]]
 
     We can see lot of good predicted value that are bad indeed:
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
