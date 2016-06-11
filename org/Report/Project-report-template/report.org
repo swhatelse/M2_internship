@@ -1684,6 +1684,42 @@ Text
        #+RESULTS:
        [[file:/tmp/babel-36309sl/figure3630H3w.png]]
 
+**** Best combinations
+     #+begin_src R :results output :session :exports both
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       w <- getOption("width")
+       options(width=150)
+       sorted <- df[order(df$time_per_pixel),] 
+       sorted$slowdown <- sorted$time_per_pixel / sorted$time_per_pixel[1]
+       head(sorted[,!names(sorted) %in% c("vector_recompute")],20)
+       options(width=w)
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+           elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y time_per_pixel slowdown
+     13752               6                  6             1              2         true           1024     2   1.165013e-10 1.000000
+     9843                6                  6             1              2        false            256     4   1.171493e-10 1.005562
+     17930               5                  5             1              2         true            256     4   1.173798e-10 1.007540
+     10660               5                  5             1              2        false            256     4   1.175615e-10 1.009100
+     19494               6                  6             1              2        false           1024     8   1.176425e-10 1.009796
+     14258               6                  6             1              2        false            128     4   1.177325e-10 1.010568
+     12261               6                  6             1              2         true           1024     4   1.178422e-10 1.011509
+     22098               5                  5             1              2        false            512     4   1.178655e-10 1.011710
+     17258               6                  6             1              2         true            256     1   1.179200e-10 1.012177
+     6468                6                  6             1              2        false            128     2   1.179765e-10 1.012663
+     11332               6                  6             1              2         true            128     2   1.180805e-10 1.013555
+     21903               6                  6             1              2         true            256     2   1.180832e-10 1.013578
+     12450               5                  5             1              2         true            512     4   1.180929e-10 1.013662
+     16041               6                  6             1              4        false           1024     4   1.180968e-10 1.013695
+     8830                6                  6             1              4         true            512     8   1.181440e-10 1.014100
+     12719               6                  6             1              4         true           1024     4   1.181529e-10 1.014177
+     19283               6                  6             1              2        false            256     1   1.182020e-10 1.014598
+     9305                6                  6             1              2         true           1024     8   1.182351e-10 1.014882
+     16588               6                  6             1              2         true            128     1   1.182590e-10 1.015087
+     17018               6                  6             1              2         true            512     8   1.182839e-10 1.015301
+#+end_example
+
 *** 
    #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.png :exports results :width 800 :height 600 :session
      library(ggplot2)
