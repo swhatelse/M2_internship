@@ -420,7 +420,7 @@ Text
            Select points according to a model.
          - I-Optimal
          - A-Optimal
-** Methodology [2/2]
+** Methodology [3/3]
 *** Reproducible work
     - Lab book on github  
     - Literate programming 
@@ -448,6 +448,20 @@ Text
 **** Search space characteristics
      - Qualitative observation in term of speed up
 **** Comparison with random and genetic algo
+*** Controlling measurement 
+    - Time per pixel \to total time / number of pixel. Because we test
+      different size of image.
+    - min(x_1,...,x_10) ? how to protect against potential warm-up
+      - Energy saving mode of current hardware(CPU and GPUs)
+      - Mostly present just after the compilation of the kernel.
+      - 4 runs \to take the minimum
+    - randomizing to protect against bias, even for full search
+      space. But run and image size not randomized.
+
+    - Process
+      - Code generation
+      - Compilation
+      - Bench-marking
 
 ** Envisioned general approach[1/1]
    # Maybe need more explanation 
@@ -474,20 +488,6 @@ Text
          - remove factors from the model
          - model and optimize
     2. Loop back to 1 to refine the model
-** Controlling measurement [1/1]
-    - Time per pixel \to total time / number of pixel. Because we test
-      different size of image.
-    - min(x_1,...,x_10) ? how to protect against potential warm-up
-      - Energy saving mode of current hardware(CPU and GPUs)
-      - Mostly present just after the compilation of the kernel.
-      - 4 runs \to take the minimum
-    - randomizing to protect against bias, even for full search
-      space. But run and image size not randomized.
-
-    - Process
-      - Code generation
-      - Compilation
-      - Bench-marking
 
 ** Results [3/3]
     Considering slowdown with regard to the best.
@@ -573,7 +573,9 @@ Text
         3D? I can not make regression for each factor because it's not
         the same than one regression including all the factors. But we
         could optimize each parameters independently.
-*** Using as little points as possible [0/4]
+*** Explanation of LM worst case
+*** Why LM and RQ never find the best solution
+*** Using as little points as possible [0/4]                     :deprecated:
     - Design of experiment
       - Random
       - Screenning design
@@ -597,16 +599,17 @@ Text
       - Points budget \to distributing correctly the budget of point
         between each step is crucial
     - Copying with constraints
+*** Importance of the search space expression [0/1]              :deprecated:
+    # Will see if I have more time to dig the subject
+    - Easier modelization
+    - Better capture of the search space features
       
+** Technical difficulties
 *** Model Optimization [0/2]
    - Non-convex optimization 
      Constraint \to unfeasible points
      Barrier approach
    - Exhaustive search
-*** Importance of the search space expression [0/1]              :deprecated:
-    # Will see if I have more time to dig the subject
-    - Easier modelization
-    - Better capture of the search space features
 ** Future work [0/2]
    - Constraints
    - Find more suited design of experiments techniques
@@ -1637,6 +1640,38 @@ Text
    #+end_src
 
    #+RESULTS:
+**** Repartition of combination
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.png :exports results :width 800 :height 600 :session
+     library(ggplot2)
+     library(grid)
+     library(gridExtra)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+     slowdown <-  df$time_per_pixel / min(df$time_per_pixel)
+     df$slowdown <- slowdown
+
+     p2 <- qplot(data=df) +
+         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+         ggtitle("Density of the combinations slowdown compared to the best") +
+         labs(y="Density", x="Slowdown")
+
+     p3 <- qplot(data=df) +
+         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+         ggtitle("Density of the combinations slowdown compared to the best") +
+         coord_cartesian(xlim=c(.9,17)) +
+         labs(y="Density", x="Slowdown")
+
+     grid.arrange(p2, p3,  ncol=2, top=textGrob("Repartition of the performance combination")) 
+   #+end_src
 **** Chance of getting the best solution
      Number of random try to get solution with a slowdown lower than
      10%  with a probability  of 0.9
@@ -1691,112 +1726,39 @@ Text
        options(width=150)
        sorted <- df[order(df$time_per_pixel),] 
        sorted$slowdown <- sorted$time_per_pixel / sorted$time_per_pixel[1]
-       head(sorted[,!names(sorted) %in% c("vector_recompute")],20)
+       head(sorted[,!names(sorted) %in% c("vector_recompute","time_per_pixel")],20)
        options(width=w)
      #+end_src
 
      #+RESULTS:
      #+begin_example
-           elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y time_per_pixel slowdown
-     13752               6                  6             1              2         true           1024     2   1.165013e-10 1.000000
-     9843                6                  6             1              2        false            256     4   1.171493e-10 1.005562
-     17930               5                  5             1              2         true            256     4   1.173798e-10 1.007540
-     10660               5                  5             1              2        false            256     4   1.175615e-10 1.009100
-     19494               6                  6             1              2        false           1024     8   1.176425e-10 1.009796
-     14258               6                  6             1              2        false            128     4   1.177325e-10 1.010568
-     12261               6                  6             1              2         true           1024     4   1.178422e-10 1.011509
-     22098               5                  5             1              2        false            512     4   1.178655e-10 1.011710
-     17258               6                  6             1              2         true            256     1   1.179200e-10 1.012177
-     6468                6                  6             1              2        false            128     2   1.179765e-10 1.012663
-     11332               6                  6             1              2         true            128     2   1.180805e-10 1.013555
-     21903               6                  6             1              2         true            256     2   1.180832e-10 1.013578
-     12450               5                  5             1              2         true            512     4   1.180929e-10 1.013662
-     16041               6                  6             1              4        false           1024     4   1.180968e-10 1.013695
-     8830                6                  6             1              4         true            512     8   1.181440e-10 1.014100
-     12719               6                  6             1              4         true           1024     4   1.181529e-10 1.014177
-     19283               6                  6             1              2        false            256     1   1.182020e-10 1.014598
-     9305                6                  6             1              2         true           1024     8   1.182351e-10 1.014882
-     16588               6                  6             1              2         true            128     1   1.182590e-10 1.015087
-     17018               6                  6             1              2         true            512     8   1.182839e-10 1.015301
+           elements_number y_component_number vector_length temporary_size load_overlap threads_number lws_y slowdown
+     13752               6                  6             1              2         true           1024     2 1.000000
+     9843                6                  6             1              2        false            256     4 1.005562
+     17930               5                  5             1              2         true            256     4 1.007540
+     10660               5                  5             1              2        false            256     4 1.009100
+     19494               6                  6             1              2        false           1024     8 1.009796
+     14258               6                  6             1              2        false            128     4 1.010568
+     12261               6                  6             1              2         true           1024     4 1.011509
+     22098               5                  5             1              2        false            512     4 1.011710
+     17258               6                  6             1              2         true            256     1 1.012177
+     6468                6                  6             1              2        false            128     2 1.012663
+     11332               6                  6             1              2         true            128     2 1.013555
+     21903               6                  6             1              2         true            256     2 1.013578
+     12450               5                  5             1              2         true            512     4 1.013662
+     16041               6                  6             1              4        false           1024     4 1.013695
+     8830                6                  6             1              4         true            512     8 1.014100
+     12719               6                  6             1              4         true           1024     4 1.014177
+     19283               6                  6             1              2        false            256     1 1.014598
+     9305                6                  6             1              2         true           1024     8 1.014882
+     16588               6                  6             1              2         true            128     1 1.015087
+     17018               6                  6             1              2         true            512     8 1.015301
 #+end_example
 
-*** 
-   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.png :exports results :width 800 :height 600 :session
-     library(ggplot2)
-     library(grid)
-     library(gridExtra)
-
-     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-
-     slowdown <-  df$time_per_pixel / min(df$time_per_pixel)
-     df$slowdown <- slowdown
-
-     p2 <- qplot(data=df) +
-         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
-         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
-         geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
-         ggtitle("Density of the combinations slowdown compared to the best") +
-         labs(y="Density", x="Slowdown")
-
-     p3 <- qplot(data=df) +
-         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
-         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
-         geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
-         ggtitle("Density of the combinations slowdown compared to the best") +
-         coord_cartesian(xlim=c(.9,17)) +
-         labs(y="Density", x="Slowdown")
-
-     grid.arrange(p2, p3,  ncol=2, top=textGrob("Repartition of the performance combination")) 
-   #+end_src
-
-   #+RESULTS:
-   [[file:./img/search_combination_rep_slowdown.png]]
-
-  By studying the characteristics of the search space we can
-  understand the structure of the problem in order to be able to
-  understand the results of the different search techniques. 
-  The figure\ref{} and the table\ref{search-space-characteristics}
-  show the distribution of the combinations over the 
-  search space in term of slowdown. This search space contains a lot
-  of good combinations, half of them have a slowdown that
-  is less x6.1 which is x2.8 faster than the mean slowdown. However
-  there are few bad ones with the worst at a slowdown of x382. Thus
-  the probability of finding a good performing combination is high,
-  this is the reason why randomized algorithms such as the RS, GA and
-  LHS good results. Among the 23120 combinations there are 170 which
-  have a slowdown lower than 10%. In order get less than this slowdown
-  with a probability of 0.9 with the random search we would need to
-  pick at least 312 points at random. And if we hope to get the same
-  level of performance as with LM, we would need 6654 points at least.
-  Yet, this search space remains complicated,
-  because as we saw previously our local search GR failed which means
-  there are a lot of local optimum in which it is stuck and some are
-  far from the optimal one. 
-
-  #+CAPTION: This presents the slowdown characteristics of the search space
-  #+NAME:   tab:search-space-characteristics
-  | Min  | 1st Q. | Median | Mean   | 3rd Q. |     Max |
-  |------+--------+--------+--------+--------+---------|
-  | /    | <>     | <>     | <>     | <>     |         |
-  | 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
-
-
-   We can also notice in the figure\ref{} that the variability is not
-   the same everywhere, hence our random variables are
-   heteroscedastics. This  because the noise does not 
-   follow the same law for the different value of the same
-   parameters. This noise is due to complex interactions between
-   parameters.  
-
+**** Heteroscedasticity
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
-
-   #+RESULTS:
 
    #+begin_src R :results output graphics :file ./img/heteroscedasticity.png :exports results :width 700 :height 400 :session
      library(ggplot2)
@@ -1822,6 +1784,79 @@ Text
      grid.arrange(p1,p2,  ncol=2, top="") 
 
    #+end_src
+*** 
+   #+RESULTS:
+   [[file:./img/search_combination_rep_slowdown.png]]
+
+  By studying the characteristics of the search space we can
+  understand the structure of the problem in order to be able to
+  understand the results of the different search techniques. 
+  The figure\ref{} and the table\ref{search-space-characteristics}
+  show the distribution of the combinations over the 
+  search space in term of slowdown. This search space contains a lot
+  of good combinations, half of them have a slowdown that
+  is less x6.1 which is x2.8 faster than the mean slowdown. However
+  there are few bad ones with the worst at a slowdown of x382. Thus
+  the probability of finding a good performing combination is high,
+  this is the reason why randomized algorithms such as the RS, GA and
+  LHS good results. Among the 23120 combinations there are 170 which
+  have a slowdown lower than 10%. In order get less than this slowdown
+  with a probability of 0.9 with the random search we would need to
+  pick at least 312 points at random. And if we hope to get the same
+  level of performance as with LM, we would need 6654 points at least.
+  Yet, this search space remains complicated,
+  because as we saw previously our local search GR failed which means
+  there are a lot of local optimum in which it is stuck and some are
+  far from the optimal one. The table\ref{tab:top-20} shows the best
+  20 combinations, they are very similar, they all have vector length
+  of size 1 and a number of elements and a y component number of 5
+  or 6. Which means that they are very located but there is still some
+  local optimum is this area because we try to run the GR and the
+  result of LM it did not make any progress.
+
+  #+CAPTION: This table presents the slowdown characteristics of the search space
+  #+NAME:   tab:search-space-characteristics
+  | Min  | 1st Q. | Median | Mean   | 3rd Q. |     Max |
+  |------+--------+--------+--------+--------+---------|
+  | /    | <>     | <>     | <>     | <>     |         |
+  | 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
+
+  #+CAPTION: This table presents the top 20 of the best combinations
+  #+NAME:   tab:top-20
+  | elements | y component | vector | temporary | load    | threads | lws_y | slowdown |
+  | number   | number      | length | size      | overlap | number  |       |          |
+  | <c>      | <c>         | <c>    | <c>       | <c>     | <c>     | <c>   | <c>      |
+  | /        | <>          | <>     | <>        | <>      | <>      | <>    |          |
+  |----------+-------------+--------+-----------+---------+---------+-------+----------|
+  | 6        | 6           | 1      | 2         | true    | 1024    | 2     | 1.000000 |
+  | 6        | 6           | 1      | 2         | false   | 256     | 4     | 1.005562 |
+  | 5        | 5           | 1      | 2         | true    | 256     | 4     | 1.007540 |
+  | 5        | 5           | 1      | 2         | false   | 256     | 4     | 1.009100 |
+  | 6        | 6           | 1      | 2         | false   | 1024    | 8     | 1.009796 |
+  | 6        | 6           | 1      | 2         | false   | 128     | 4     | 1.010568 |
+  | 6        | 6           | 1      | 2         | true    | 1024    | 4     | 1.011509 |
+  | 5        | 5           | 1      | 2         | false   | 512     | 4     | 1.011710 |
+  | 6        | 6           | 1      | 2         | true    | 256     | 1     | 1.012177 |
+  | 6        | 6           | 1      | 2         | false   | 128     | 2     | 1.012663 |
+  | 6        | 6           | 1      | 2         | true    | 128     | 2     | 1.013555 |
+  | 6        | 6           | 1      | 2         | true    | 256     | 2     | 1.013578 |
+  | 5        | 5           | 1      | 2         | true    | 512     | 4     | 1.013662 |
+  | 6        | 6           | 1      | 4         | false   | 1024    | 4     | 1.013695 |
+  | 6        | 6           | 1      | 4         | true    | 512     | 8     | 1.014100 |
+  | 6        | 6           | 1      | 4         | true    | 1024    | 4     | 1.014177 |
+  | 6        | 6           | 1      | 2         | false   | 256     | 1     | 1.014598 |
+  | 6        | 6           | 1      | 2         | true    | 1024    | 8     | 1.014882 |
+  | 6        | 6           | 1      | 2         | true    | 128     | 1     | 1.015087 |
+  | 6        | 6           | 1      | 2         | true    | 512     | 8     | 1.015301 |
+
+
+   We can also notice in the figure\ref{} that the variability is not
+   the same everywhere, hence our random variables are
+   heteroscedastics. This  because the noise does not 
+   follow the same law for the different value of the same
+   parameters. This noise is due to complex interactions between
+   parameters.  
+
 
    #+RESULTS:
    [[file:./img/heteroscedasticity.png]]
@@ -1996,7 +2031,7 @@ Text
    \end{figure}
    #+END_LaTeX
 
-** TODO Model choice, refinement and pruning decision
+** TODO Model choice, refinement and pruning decision              :noexport:
    Usually the expert understands every optimization of its kernel and
    has ideas about their potential effects. He does not only need to check his
    hypothesis but also to have an accurate estimation of the impact of
