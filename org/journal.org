@@ -32322,7 +32322,7 @@ h[g.name.to_sym] = 1024
 
     We can see lot of good predicted value that are bad indeed:
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
-    plot(fitted(fit), fitted(fit) + residuals(fit), xlim=c(0,1e-8))
+      plot(fitted(fit), fitted(fit) + residuals(fit), xlim=c(0,1e-8))
     #+end_src
 
     #+RESULTS:
@@ -32626,6 +32626,25 @@ h[g.name.to_sym] = 1024
     Multiple R-squared:  0.3026,	Adjusted R-squared:  0.2729 
     F-statistic:  10.2 on 2 and 47 DF,  p-value: 0.0002096
 #+end_example
+
+    
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
+      model <- time_per_pixel ~ vector_length  + lws_y 
+      fit <- lm(model,working_set)
+      plot(fitted(fit), fitted(fit) + residuals(fit), xlim=c(0,2e-8), ylim=c(0,2e-8))
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure3912LVs.png]]
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
+      model <- time_per_pixel ~ threads_number  + lws_y 
+      fit <- lm(model,working_set)
+      plot(fitted(fit), fitted(fit) + residuals(fit), xlim=c(0,2e-8), ylim=c(0,2e-8))
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure3912Yfy.png]]
 
     
     We fix lws_y and vector_length as it is done is the result:
