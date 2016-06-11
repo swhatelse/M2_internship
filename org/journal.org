@@ -31984,11 +31984,6 @@ h[g.name.to_sym] = 1024
       #+end_src
 
     #+RESULTS:
-    : Error in rbind(deparse.level, ...) : 
-    :   les nombres de colonnes des arguments ne correspondent pas
-    : Error in cbind(df_merged, slowdown = df_merged$time_per_pixel/min(df$time_per_pixel)) : 
-    :   objet 'df_merged' introuvable
-    : Error in is.data.frame(x) : objet 'df_merged' introuvable
 
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
       library(ggplot2)
@@ -32021,7 +32016,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-3987TY5/figure3987qBn.png]]
+    [[file:/tmp/babel-3912W-5/figure3912WWw.png]]
 
 *** Local search with our starting point
     It does not make any progress:
@@ -32201,4 +32196,831 @@ h[g.name.to_sym] = 1024
     172589             true         true            256     1     1.1792e-10     GR
 #+end_example
 
+*** LM worst case
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      logs <- readRDS("../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+      df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),][1,]
+      df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),][1,]$time_per_pixel / min(df$time_per_pixel)
+      logs[[544]]$slowdown
+    #+end_src
+
+    #+RESULTS:
+    :     elements_number y_component_number vector_length temporary_size
+    : 544              24                  6            16              2
+    :     vector_recompute load_overlap threads_number lws_y time_per_pixel
+    : 544             true        false             64     1   4.393478e-10
+    :     point_number method
+    : 544          119     LM
+    : [1] 3.771183
+    : [1] 3.771183
+
+    One of the worst case is at the run 544
+    #+begin_src R :results output :session :exports both
+      working_set <- logs[[544]]$starting_set
+      summary(working_set)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+     elements_number y_component_number vector_length   temporary_size
+     Min.   : 1.00   Min.   :1.00       Min.   : 1.00   Min.   :2.00  
+     1st Qu.: 2.25   1st Qu.:2.00       1st Qu.: 2.00   1st Qu.:2.00  
+     Median : 6.00   Median :3.00       Median : 4.00   Median :2.00  
+     Mean   : 7.90   Mean   :3.12       Mean   : 7.14   Mean   :2.84  
+     3rd Qu.:12.00   3rd Qu.:4.75       3rd Qu.:14.00   3rd Qu.:4.00  
+     Max.   :24.00   Max.   :6.00       Max.   :16.00   Max.   :4.00  
+     vector_recompute load_overlap threads_number       lws_y        
+     true:50          false:25     Min.   :  32.0   Min.   :   1.00  
+                      true :25     1st Qu.:  64.0   1st Qu.:   2.00  
+                                   Median : 192.0   Median :   8.00  
+                                   Mean   : 307.2   Mean   :  78.94  
+                                   3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                   Max.   :1024.0   Max.   :1024.00  
+     time_per_pixel     
+     Min.   :1.272e-10  
+     1st Qu.:4.326e-10  
+     Median :7.162e-10  
+     Mean   :1.868e-09  
+     3rd Qu.:1.609e-09  
+     Max.   :1.079e-08
+    #+end_example
+
     
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+     plot(working_set[,!names(working_set) %in% c("vector_recompute")])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure3912VqF.png]]
+
+    It fails to set the correct value for vector_length because was not
+    detected as significant and has a to big standard error:
+    #+begin_src R :results output :session :exports both
+    model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + load_overlap + temporary_size
+    fit <- lm(model,working_set)
+    summary(fit)
+
+    model <- time_per_pixel ~ vector_length  + lws_y 
+    fit <- lm(model,working_set)
+    summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -3.205e-09 -1.315e-09 -4.193e-10  3.619e-10  7.396e-09 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         4.503e-09  1.348e-09   3.340  0.00176 ** 
+    elements_number    -9.059e-11  8.247e-11  -1.098  0.27829    
+    y_component_number -2.341e-10  3.055e-10  -0.766  0.44787    
+    vector_length       1.941e-12  6.063e-11   0.032  0.97462    
+    threads_number     -2.445e-12  1.348e-12  -1.813  0.07691 .  
+    lws_y               8.072e-12  1.854e-12   4.354 8.41e-05 ***
+    load_overlaptrue    2.150e-10  6.540e-10   0.329  0.74402    
+    temporary_size     -4.210e-10  3.362e-10  -1.252  0.21738    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.255e-09 on 42 degrees of freedom
+    Multiple R-squared:  0.3723,	Adjusted R-squared:  0.2677 
+    F-statistic: 3.559 on 7 and 42 DF,  p-value: 0.004306
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -3.108e-09 -1.197e-09 -7.358e-10 -5.630e-11  8.891e-09 
+
+    Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)    1.594e-09  5.691e-10   2.800  0.00738 **
+    vector_length -2.316e-11  5.953e-11  -0.389  0.69904   
+    lws_y          5.572e-12  1.625e-12   3.428  0.00127 **
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.395e-09 on 47 degrees of freedom
+    Multiple R-squared:  0.2081,	Adjusted R-squared:  0.1744 
+    F-statistic: 6.174 on 2 and 47 DF,  p-value: 0.004161
+   #+end_example
+
+    We can see lot of good predicted value that are bad indeed:
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
+    plot(fitted(fit), fitted(fit) + residuals(fit), xlim=c(0,1e-8))
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure39128PM.png]]
+
+*** LM best case
+**** The very good case
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      logs <- readRDS("../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+      df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      df_lm_random[df_lm_random$time_per_pixel == min(df_lm_random$time_per_pixel),][1,]
+      df_lm_random[df_lm_random$time_per_pixel == min(df_lm_random$time_per_pixel),][1,]$time_per_pixel / min(df$time_per_pixel)
+      logs[[2]]$slowdown
+    #+end_src    
+
+    #+RESULTS:
+    :   elements_number y_component_number vector_length temporary_size
+    : 1               6                  6             1              2
+    :   vector_recompute load_overlap threads_number lws_y time_per_pixel
+    : 1             true         true            256     1     1.1792e-10
+    :   point_number method
+    : 1          119     LM
+    : [1] 1.012177
+    : [1] 1.012177
+
+    One of the worst case is at the run 1
+    #+begin_src R :results output :session :exports both
+      working_set <- logs[[2]]$starting_set
+      summary(working_set)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+     elements_number y_component_number vector_length   temporary_size
+     Min.   : 1.00   Min.   :1.00       Min.   : 1.00   Min.   :2.00  
+     1st Qu.: 6.00   1st Qu.:2.25       1st Qu.: 2.00   1st Qu.:2.00  
+     Median : 9.50   Median :4.00       Median : 4.00   Median :2.00  
+     Mean   :10.44   Mean   :3.76       Mean   : 5.18   Mean   :2.84  
+     3rd Qu.:15.00   3rd Qu.:5.00       3rd Qu.: 8.00   3rd Qu.:4.00  
+     Max.   :24.00   Max.   :6.00       Max.   :16.00   Max.   :4.00  
+     vector_recompute load_overlap threads_number       lws_y       
+     true:50          false:25     Min.   :  32.0   Min.   :  1.00  
+                      true :25     1st Qu.: 128.0   1st Qu.:  4.00  
+                                   Median : 256.0   Median :  8.00  
+                                   Mean   : 331.5   Mean   : 30.18  
+                                   3rd Qu.: 512.0   3rd Qu.: 32.00  
+                                   Max.   :1024.0   Max.   :256.00  
+     time_per_pixel     
+     Min.   :1.506e-10  
+     1st Qu.:2.959e-10  
+     Median :4.866e-10  
+     Mean   :1.050e-09  
+     3rd Qu.:1.283e-09  
+     Max.   :8.016e-09
+#+end_example
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      plot(working_set[,!names(working_set) %in% c("vector_recompute")])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure3912WkY.png]]
+
+    #+begin_src R :results output :session :exports both
+    model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + load_overlap + temporary_size
+    fit <- lm(model,working_set)
+    summary(fit)
+
+    model <- time_per_pixel ~ vector_length  + lws_y 
+    fit <- lm(model,working_set)
+    summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -1.645e-09 -5.478e-10  2.865e-11  3.668e-10  2.740e-09 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         1.639e-10  5.474e-10   0.299 0.766055    
+    elements_number    -5.686e-11  3.474e-11  -1.637 0.109131    
+    y_component_number  1.140e-10  1.190e-10   0.958 0.343666    
+    vector_length       1.155e-10  2.969e-11   3.892 0.000349 ***
+    threads_number     -1.142e-12  4.340e-13  -2.631 0.011863 *  
+    lws_y               2.064e-11  2.777e-12   7.434  3.5e-09 ***
+    load_overlaptrue   -4.200e-10  2.744e-10  -1.531 0.133360    
+    temporary_size      1.474e-10  1.409e-10   1.046 0.301436    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 8.996e-10 on 42 degrees of freedom
+    Multiple R-squared:  0.6713,	Adjusted R-squared:  0.6166 
+    F-statistic: 12.26 on 7 and 42 DF,  p-value: 2.059e-08
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -1.537e-09 -5.136e-10 -4.230e-11  1.875e-10  3.356e-09 
+
+    Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   -4.712e-12  2.211e-10  -0.021  0.98308    
+    vector_length  8.794e-11  3.025e-11   2.907  0.00555 ** 
+    lws_y          1.987e-11  2.882e-12   6.894 1.18e-08 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 9.821e-10 on 47 degrees of freedom
+    Multiple R-squared:  0.5617,	Adjusted R-squared:  0.5431 
+    F-statistic: 30.12 on 2 and 47 DF,  p-value: 3.812e-09
+   #+end_example
+
+    Here we have a not that bad correlation:
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 600 :session
+      plot(fitted(fit), fitted(fit) + residuals(fit), xlim=c(0,1e-8))
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure3912jue.png]]
+
+**** The lucky case
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      logs <- readRDS("../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+      df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      df_lm_random[df_lm_random$time_per_pixel == min(df_lm_random$time_per_pixel),][1,]
+      df_lm_random[df_lm_random$time_per_pixel == min(df_lm_random$time_per_pixel),][1,]$time_per_pixel / min(df$time_per_pixel)
+      logs[[1]]$slowdown
+    #+end_src    
+
+    #+RESULTS:
+    :   elements_number y_component_number vector_length temporary_size
+    : 1               6                  6             1              2
+    :   vector_recompute load_overlap threads_number lws_y time_per_pixel
+    : 1             true         true            256     1     1.1792e-10
+    :   point_number method
+    : 1          119     LM
+    : [1] 1.012177
+    : [1] 1.012177
+
+    One of the worst case is at the run 1
+    #+begin_src R :results output :session :exports both
+      working_set <- logs[[1]]$starting_set
+      summary(working_set)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+     elements_number y_component_number vector_length   temporary_size
+     Min.   : 1.00   Min.   :1.0        Min.   : 1.00   Min.   :2     
+     1st Qu.: 3.00   1st Qu.:2.0        1st Qu.: 2.00   1st Qu.:2     
+     Median : 6.00   Median :3.0        Median : 4.00   Median :3     
+     Mean   : 7.98   Mean   :3.3        Mean   : 6.42   Mean   :3     
+     3rd Qu.:10.00   3rd Qu.:5.0        3rd Qu.: 8.00   3rd Qu.:4     
+     Max.   :24.00   Max.   :6.0        Max.   :16.00   Max.   :4     
+     vector_recompute load_overlap threads_number       lws_y       
+     true:50          false:23     Min.   :  32.0   Min.   :  1.00  
+                      true :27     1st Qu.:  64.0   1st Qu.:  8.00  
+                                   Median : 128.0   Median : 16.00  
+                                   Mean   : 348.8   Mean   : 63.04  
+                                   3rd Qu.: 512.0   3rd Qu.: 56.00  
+                                   Max.   :1024.0   Max.   :512.00  
+     time_per_pixel     
+     Min.   :1.758e-10  
+     1st Qu.:4.227e-10  
+     Median :1.287e-09  
+     Mean   :2.441e-09  
+     3rd Qu.:2.719e-09  
+     Max.   :1.790e-08
+#+end_example
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+    plot(working_set[,!names(working_set) %in% c("vector_recompute")])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure39128WA.png]]
+
+    Here woud should have fixed threads_number instead:
+    #+begin_src R :results output :session :exports both
+      model <- time_per_pixel ~ elements_number + y_component_number + vector_length + threads_number + lws_y + load_overlap + temporary_size
+      fit <- lm(model,working_set)
+      summary(fit)
+
+      model <- time_per_pixel ~ vector_length  + lws_y 
+      fit <- lm(model,working_set)
+      summary(fit)
+
+      model <- time_per_pixel ~ threads_number  + lws_y 
+      fit <- lm(model,working_set)
+      summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.854e-09 -1.467e-09 -3.838e-10  9.082e-10  1.101e-08 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         2.449e-09  1.615e-09   1.516  0.13704    
+    elements_number    -2.064e-10  9.844e-11  -2.097  0.04207 *  
+    y_component_number  4.549e-10  3.544e-10   1.284  0.20631    
+    vector_length       1.358e-10  8.473e-11   1.602  0.11659    
+    threads_number     -3.475e-12  1.207e-12  -2.879  0.00626 ** 
+    lws_y               1.947e-11  4.420e-12   4.404 7.18e-05 ***
+    load_overlaptrue   -1.295e-10  8.729e-10  -0.148  0.88276    
+    temporary_size     -2.260e-10  4.246e-10  -0.532  0.59745    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.908e-09 on 42 degrees of freedom
+    Multiple R-squared:  0.4031,	Adjusted R-squared:  0.3036 
+    F-statistic: 4.051 on 7 and 42 DF,  p-value: 0.001787
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.854e-09 -1.467e-09 -3.838e-10  9.082e-10  1.101e-08 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         2.449e-09  1.615e-09   1.516  0.13704    
+    elements_number    -2.064e-10  9.844e-11  -2.097  0.04207 *  
+    y_component_number  4.549e-10  3.544e-10   1.284  0.20631    
+    vector_length       1.358e-10  8.473e-11   1.602  0.11659    
+    threads_number     -3.475e-12  1.207e-12  -2.879  0.00626 ** 
+    lws_y               1.947e-11  4.420e-12   4.404 7.18e-05 ***
+    load_overlaptrue   -1.295e-10  8.729e-10  -0.148  0.88276    
+    temporary_size     -2.260e-10  4.246e-10  -0.532  0.59745    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.908e-09 on 42 degrees of freedom
+    Multiple R-squared:  0.4031,	Adjusted R-squared:  0.3036 
+    F-statistic: 4.051 on 7 and 42 DF,  p-value: 0.001787
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -6.610e-09 -1.287e-09 -6.651e-10  9.950e-11  1.290e-08 
+
+    Coefficients:
+                   Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)   5.685e-10  8.229e-10   0.691  0.49310   
+    vector_length 1.438e-10  8.941e-11   1.608  0.11453   
+    lws_y         1.507e-11  4.596e-12   3.278  0.00197 **
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.181e-09 on 47 degrees of freedom
+    Multiple R-squared:  0.2005,	Adjusted R-squared:  0.1665 
+    F-statistic: 5.894 on 2 and 47 DF,  p-value: 0.005202
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -6.249e-09 -1.440e-09 -7.497e-10  1.096e-09  1.158e-08 
+
+    Coefficients:
+                     Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)     2.621e-09  5.982e-10   4.381 6.57e-05 ***
+    threads_number -3.816e-12  1.216e-12  -3.138 0.002936 ** 
+    lws_y           1.826e-11  4.463e-12   4.093 0.000166 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 2.971e-09 on 47 degrees of freedom
+    Multiple R-squared:  0.3026,	Adjusted R-squared:  0.2729 
+    F-statistic:  10.2 on 2 and 47 DF,  p-value: 0.0002096
+#+end_example
+
+    
+    We fix lws_y and vector_length as it is done is the result:
+    #+begin_src R :results output :session :exports both
+      subset1 <- working_set[working_set$vector_length == 1 & working_set$lws_y == 1,]
+      pruned1 <- df[df$vector_length == 1 & df$lws_y == 1,]
+      nrow(subset1)
+      nrow(pruned1)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 1
+    : [1] 576
+
+    Additional points:
+    #+begin_src R :results output :session :exports both
+    subset1 <- rbind(subset1,logs[[1]]$added1)
+    nrow(subset1)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 41
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      plot(working_set[,!names(working_set) %in% c("vector_recompute","vector_length","lws_y")])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure39129Jf.png]]
+
+    Here we sould have sample. We are very lucky get the best value:
+    #+begin_src R :results output :session :exports both
+      model <- time_per_pixel ~ elements_number + y_component_number + threads_number 
+      fit <- lm(model,working_set)
+      summary(fit)
+
+      model <- time_per_pixel ~ y_component_number 
+      fit <- lm(model,working_set)
+      summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -3.296e-09 -1.826e-09 -7.242e-10  5.474e-10  1.489e-08 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)         3.323e-09  1.140e-09   2.915  0.00548 **
+    elements_number    -1.810e-10  1.116e-10  -1.621  0.11179   
+    y_component_number  3.886e-10  3.933e-10   0.988  0.32827   
+    threads_number     -2.065e-12  1.323e-12  -1.561  0.12536   
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.399e-09 on 46 degrees of freedom
+    Multiple R-squared:  0.1067,	Adjusted R-squared:  0.04844 
+    F-statistic: 1.831 on 3 and 46 DF,  p-value: 0.1547
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -2.305e-09 -1.975e-09 -1.227e-09  3.037e-10  1.536e-08 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)  
+    (Intercept)         2.582e-09  1.043e-09   2.475   0.0169 *
+    y_component_number -4.257e-11  2.778e-10  -0.153   0.8789  
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.52e-09 on 48 degrees of freedom
+    Multiple R-squared:  0.000489,	Adjusted R-squared:  -0.02033 
+    F-statistic: 0.02348 on 1 and 48 DF,  p-value: 0.8789
+#+end_example
+
+    What if we did things correctly:
+   #+begin_src R :results output :session :exports both
+      objective_predict <- function(fit,x){
+           names <- colnames(x)
+           s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
+           eval(parse(text=s))
+           as.numeric(predict(fit, values, interval="none"))
+       }
+
+       objective_predict_one <- function(fit,x,colname){
+           s <- paste("values <-data.frame(", paste(paste(colname,"=x",sep=""),collapse=","), ")")
+           eval(parse(text=s))
+           as.numeric(predict(fit, values, interval="none"))
+       }
+
+       find_best <- function(model,subset,full_set,colnames){
+           fit <- lm(data=subset,formula=formula(model))
+           if( length(colnames) > 1) {
+               return(full_set[objective_predict(fit,full_set[,colnames]) == min(objective_predict(fit,full_set[,colnames])), colnames][1,])
+           }
+           else{
+               return(full_set[objective_predict_one(fit, full_set[,colnames], colnames) == min(objective_predict_one(fit, full_set[,colnames], colnames)), colnames][1])
+           }
+       }
+     #+end_src
+
+   #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      model <- time_per_pixel ~ threads_number  + lws_y 
+      best1 <- find_best(model, working_set, df, c("threads_number","lws_y")) 
+      best1
+    #+end_src
+
+    #+RESULTS:
+    :      threads_number lws_y
+    : 6467           1024     1
+
+    #+begin_src R :results output :session :exports both
+    subset1 <- working_set[working_set$threads_number == best1$threads_number & working_set$lws_y == best1$lws_y,]
+    pruned1 <- df[df$threads_number == best1$threads_number & df$lws_y == best1$lws_y,]
+    nrow(subset1)
+    nrow(pruned1)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 1
+    : [1] 380
+
+    #+begin_src R :results output :session :exports both
+      added1 <- pruned1[sample(1:nrow(pruned1), size = 20, replace = FALSE),]
+      subset1 <- rbind(subset1,added1)
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      plot(subset1[,!names(subset1) %in% c("vector_recompute","threads_number","lws_y")])
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure3912wGN.png]]
+
+    #+begin_src R :results output :session :exports both
+      model <- time_per_pixel ~ elements_number + y_component_number + vector_length 
+      fit <- lm(model,subset1)
+      summary(fit)
+
+      model <- time_per_pixel ~ vector_length 
+      fit <- lm(model,subset1)
+      summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = model, data = subset1)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -3.572e-10 -6.365e-11  7.670e-12  1.020e-10  2.710e-10 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         2.162e-10  9.065e-11   2.385    0.029 *  
+    elements_number    -1.400e-11  9.268e-12  -1.511    0.149    
+    y_component_number -1.798e-11  3.105e-11  -0.579    0.570    
+    vector_length       9.341e-11  9.890e-12   9.445 3.55e-08 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 1.614e-10 on 17 degrees of freedom
+    Multiple R-squared:  0.8603,	Adjusted R-squared:  0.8356 
+    F-statistic: 34.89 on 3 and 17 DF,  p-value: 1.744e-07
+
+    Call:
+    lm(formula = model, data = subset1)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -3.289e-10 -1.078e-10  8.900e-13  1.677e-10  3.297e-10 
+
+    Coefficients:
+                   Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   4.241e-11  5.854e-11   0.724    0.478    
+    vector_length 9.660e-11  1.127e-11   8.574  5.9e-08 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 1.851e-10 on 19 degrees of freedom
+    Multiple R-squared:  0.7946,	Adjusted R-squared:  0.7838 
+    F-statistic: 73.52 on 1 and 19 DF,  p-value: 5.896e-08
+#+end_example
+
+    #+begin_src R :results output :session :exports both
+      subset2 <- subset1[subset1$vector_length == 1,] 
+      pruned2 <- pruned1[pruned1$vector_length == 1,] 
+      nrow(subset2)
+      nrow(pruned2)
+
+      added2 <- pruned2[sample(1:nrow(pruned2), size = 20, replace = FALSE),] 
+      subset2 <- rbind(subset2,added2)
+
+      model <- time_per_pixel ~ y_component_number + elements_number
+      fit <- lm(model,subset2)
+      summary(fit)
+
+      model <- time_per_pixel ~ (y_component_number + elements_number)^2
+      fit <- lm(model,subset2)
+      summary(fit)
+
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+    [1] 7
+    [1] 96
+
+    Call:
+    lm(formula = model, data = subset2)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.235e-11 -3.124e-11  3.436e-12  3.239e-11  7.174e-11 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         3.251e-10  1.306e-11  24.889  < 2e-16 ***
+    y_component_number -5.368e-11  6.279e-12  -8.548 9.58e-09 ***
+    elements_number     8.426e-12  1.745e-12   4.828 6.43e-05 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.544e-11 on 24 degrees of freedom
+    Multiple R-squared:  0.7724,	Adjusted R-squared:  0.7535 
+    F-statistic: 40.73 on 2 and 24 DF,  p-value: 1.928e-08
+
+    Call:
+    lm(formula = model, data = subset2)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.217e-11 -3.166e-11  3.636e-12  3.227e-11  7.188e-11 
+
+    Coefficients:
+                                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)                         3.245e-10  2.197e-11  14.772 3.15e-13 ***
+    y_component_number                 -5.358e-11  6.979e-12  -7.677 8.63e-08 ***
+    elements_number                     8.624e-12  5.823e-12   1.481    0.152    
+    y_component_number:elements_number -3.589e-14  1.006e-12  -0.036    0.972    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 3.62e-11 on 23 degrees of freedom
+    Multiple R-squared:  0.7725,	Adjusted R-squared:  0.7428 
+    F-statistic: 26.03 on 3 and 23 DF,  p-value: 1.418e-07
+    #+end_example
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+      plot(subset2[,!names(subset2) %in% c("vector_recompute","threads_number","lws_y","vector_length")])    
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3912W-5/figure3912XsT.png]]
+
+    #+begin_src R :results output :session :exports both
+      model <- time_per_pixel ~ y_component_number + elements_number
+      best2 <- find_best(model, subset2, pruned2, c("y_component_number","elements_number")) 
+      best2
+    #+end_src
+
+    #+RESULTS:
+    :       y_component_number elements_number
+    : 14403                  6               6
+
+    The solution is not better but still acceptable:
+    #+begin_src R :results output :session :exports both
+      subset3 <- subset2[subset2$y_component_number == best2$y_component_number & subset2$elements_number == best2$elements_number,]
+      pruned3 <- pruned2[pruned2$y_component_number == best2$y_component_number & pruned2$elements_number == best2$elements_number,]
+      nrow(subset3)
+      nrow(pruned3)
+      min(pruned3$time_per_pixel) / min(df$time_per_pixel)
+    #+end_src
+
+    #+RESULTS:
+    : [1] 1
+    : [1] 4
+    : [1] 1.076159
+
+*** Can we reach the best one?
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      logs <- readRDS("../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+      df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      df_lm_random[df_lm_random$time_per_pixel == min(df_lm_random$time_per_pixel),][1,]
+      df_lm_random[df_lm_random$time_per_pixel == min(df_lm_random$time_per_pixel),][1,]$time_per_pixel / min(df$time_per_pixel)
+      logs[[2]]$slowdown
+    #+end_src    
+
+    #+RESULTS:
+    :   elements_number y_component_number vector_length temporary_size
+    : 1               6                  6             1              2
+    :   vector_recompute load_overlap threads_number lws_y time_per_pixel
+    : 1             true         true            256     1     1.1792e-10
+    :   point_number method
+    : 1          119     LM
+    : [1] 1.012177
+    : [1] 1.012177
+
+    #+begin_src R :results output :session :exports both
+    working_set <- logs[[2]]$starting_set
+
+    model <- time_per_pixel ~ vector_length  + lws_y + I(1/lws_y)
+    fit <- lm(model,working_set)
+    summary(fit)
+
+    model <- time_per_pixel ~ vector_length  + lws_y 
+    fit <- lm(model,working_set)
+    summary(fit)
+
+    model <- time_per_pixel ~ (vector_length  + lws_y)^2
+    fit <- lm(model,working_set)
+    summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -1.537e-09 -5.155e-10 -4.300e-11  1.890e-10  3.353e-09 
+
+    Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)    4.432e-12  2.920e-10   0.015  0.98796    
+    vector_length  8.781e-11  3.069e-11   2.861  0.00633 ** 
+    lws_y          1.980e-11  3.246e-12   6.099 2.06e-07 ***
+    I(1/lws_y)    -2.603e-11  5.352e-10  -0.049  0.96142    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 9.927e-10 on 46 degrees of freedom
+    Multiple R-squared:  0.5617,	Adjusted R-squared:  0.5332 
+    F-statistic: 19.65 on 3 and 46 DF,  p-value: 2.409e-08
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -1.537e-09 -5.136e-10 -4.230e-11  1.875e-10  3.356e-09 
+
+    Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)   -4.712e-12  2.211e-10  -0.021  0.98308    
+    vector_length  8.794e-11  3.025e-11   2.907  0.00555 ** 
+    lws_y          1.987e-11  2.882e-12   6.894 1.18e-08 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 9.821e-10 on 47 degrees of freedom
+    Multiple R-squared:  0.5617,	Adjusted R-squared:  0.5431 
+    F-statistic: 30.12 on 2 and 47 DF,  p-value: 3.812e-09
+
+    Call:
+    lm(formula = model, data = working_set)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -9.632e-10 -3.858e-10 -2.504e-10 -1.810e-11  3.447e-09 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)   
+    (Intercept)         3.586e-10  2.317e-10   1.548  0.12851   
+    vector_length       3.963e-11  3.149e-11   1.259  0.21456   
+    lws_y               8.705e-12  4.367e-12   1.994  0.05215 . 
+    vector_length:lws_y 1.264e-12  3.944e-13   3.205  0.00246 **
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 8.976e-10 on 46 degrees of freedom
+    Multiple R-squared:  0.6417,	Adjusted R-squared:  0.6183 
+    F-statistic: 27.46 on 3 and 46 DF,  p-value: 2.49e-10
+#+end_example
+
