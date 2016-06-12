@@ -21274,7 +21274,7 @@ h[g.name.to_sym] = 1024
                              # persp3D(x=1:(24*resi)/resi, y=1:(6*resj)/resj, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=220, clab=c("time per pixel in s"), colkey = list(side=1,length = 0.5, width=0.4))
                              #scatter3D(x=x, y=y, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=z, pch=20, 
                               #         phi=20, type="h", theta=220, clab=c("time per pixel in s"), colkey = list(side=1,length = 0.5, width=0.4))
-          scatter3D(x, y, z, phi = 20, theta= 200, type = "h", surf = list(x=1:24,y=1:6,z=combinations),
+          scatter3D(x, y, z, phi = 20, theta= 200, type = "h", surf = list(x=1:24,y=1:6,z=combinations,facet=NA),
                      ticktype = "detailed")
 
         #+end_src

@@ -3113,8 +3113,9 @@ Text
   are some points that are still problematic. First one is due to
   the characteristics of our search space which is discrete and
   constrained. The other come from the use of quantile regression. 
-** TODO Model optimization
-***                                                                :noexport:
+** Constrained and discrete search space
+*** DONE Model optimization
+****                                                               :noexport:
     #+begin_src sh :results output :exports both
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
     #+end_src
@@ -3230,7 +3231,7 @@ Text
     #+RESULTS:
     [[file:img/search_space_3D_barrier.pdf]]
 
-*** 
+**** 
     Once the model is instantiated to find the optimal values it is
     necessary to perform a search. The predicted function is
     continuous\ref{fig:search_space_3d} whereas our search space is
@@ -3287,10 +3288,26 @@ Text
    \end{minipage}
    \end{figure}
    #+END_LaTeX
-** LHS sampling
-** Quantile regression
+*** TODO LHS sampling
+    We planned to use LHS sampling as a basis because of its good
+    space covering characteristics. However it is not made for
+    discrete and constrained problem. To use it we had to discretise
+    the values which makes it lose its most interesting property which
+    is the maximum distance between points. Hence we end up we multiple
+    replicates. In addition, as it does not handle constraints to 
+    select points, we need generate first a set of points with LHS and
+    then we reject points using constraints. But to obtain
+    approximately the wanted number of points we need to aks more
+    points but we can not end up with the exact number of
+    points. Finally in our case, the random sampling provided the same
+    covering space capability and we could obtain exactly the wanted
+    number of points. That is why we chose the random sampling over
+    LHS. 
+
+** TODO Quantile regression
 * TODO Future work
 * Conclusion
+* Thanks
 #+LaTeX: \nocite{*}
 #+LaTeX: \def\raggedright{}
 \bibliographystyle{plain}
