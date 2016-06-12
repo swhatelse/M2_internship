@@ -509,10 +509,11 @@ Text
 
 ** Analysis [0/14]
 *** Characteristics of the search space [1/2]
+   - Discrete and constrained
    - Repartition of good combinations
    - Lots of local optimum \to local search failed
    - Heteroscedasticity \to noise due to interactions
-*** Linear regression of expectation: why it cannot work and how it can be circumvented [1/3]
+*** Linear regression of expectation: why it cannot work and how it can be circumvented [2/3]
    OLS gives often good results but sometime can fail.
    Prediction of two different things:
    - Mean / Expected value
@@ -546,7 +547,23 @@ Text
        - Iterated weighted least squares 
          - But optimist R-squared
          - Don't know how to interpret the standard error
-*** Model choice and refinement [0/2]
+*** Explanation of LM success and "failures" [3/3]
+    - Failure :
+      Happened 2 times
+      Due to the automatic strategy. Misprediction of vector
+      length. Tried instantiate not accurate model \to lot of predicted
+      good point are bad indeed.
+      This can be detect by the user it, and can act considering this
+      by either remove the factors or asking more points.
+    - Success:
+      Instantiation of correct model with only relevant factors with
+      low error \to low uncertainty of the estimate. The more factors
+      are fixed the lower the noise \to converge to the same solution
+      most of the time.
+    - Vector_length either 1 or 16 because simple linear
+      model. Crucial to fix correctly this parameters correctly
+    - Never reach best case because of the lack of acuraccy of the model  
+*** Model choice and refinement [0/2]                            :deprecated:
     - Hypothesis based on the kernel
       The expert knows his kernel and have hypothesis of how the
       optimization will influence the performances.
@@ -573,22 +590,6 @@ Text
         3D? I can not make regression for each factor because it's not
         the same than one regression including all the factors. But we
         could optimize each parameters independently.
-*** Explanation of LM success and "failures"
-    - Failure :
-      Happened 2 times
-      Due to the automatic strategy. Misprediction of vector
-      length. Tried instantiate not accurate model \to lot of predicted
-      good point are bad indeed.
-      This can be detect by the user it, and can act considering this
-      by either remove the factors or asking more points.
-    - Success:
-      Instantiation of correct model with only relevant factors with
-      low error \to low uncertainty of the estimate. The more factors
-      are fixed the lower the noise \to converge to the same solution
-      most of the time.
-    - Vector_length either 1 or 16 because simple linear
-      model. Crucial to fix correctly this parameters correctly
-    - Never reach best case because of the lack of acuraccy of the model  
 *** Using as little points as possible [0/4]                     :deprecated:
     - Design of experiment
       - Random
@@ -630,6 +631,8 @@ Text
    - Exhaustive search \to ensure that we get the best response and
      allowed us to evaluate the model.
 *** LHS
+    - Pb with constraints lots of points rejected
+    - Continuous to discrete
 *** RQ
 ** Future work [0/2]
    - Constraints
@@ -2453,6 +2456,12 @@ Text
    \end{figure}
    #+END_LaTeX
 
+  In short the reason why sometime we get worse values comes from the
+  automatization of our process and involving the user in the
+  optimization process improves the quality of the results. And the
+  reason why we converge to the same solution most of the time come
+  from our pruning strategy and the model we apply.
+
 ** Model choice, refinement and pruning decision                   :noexport:
    Usually the expert understands every optimization of its kernel and
    has ideas about their potential effects. He does not only need to check his
@@ -3039,9 +3048,12 @@ Text
 *** LHS
 *** D-Optimal
 *** Managing the budget of points
-* Difficulties
-** Constraints
-*** TODO Model optimization
+* Technical difficulties
+  With our approach we manage to get very good results, however there
+  are some points that are still problematic. First one is due to
+  the characteristics of our search space which is discrete and
+  constrained. The other come from the use of quantile regression 
+** TODO Model optimization
 ***                                                                :noexport:
     #+begin_src sh :results output :exports both
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -3139,19 +3151,13 @@ Text
    \includegraphics[width=\linewidth]{./img/search_space_3D_constrained.pdf}
    \caption{\label{fig:search_space_3d}Constrained Search space}
    \end{minipage}
-   \end{figure}
-   #+END_LaTeX
-
-   #+BEGIN_LaTeX
-   \begin{figure}[htb]
-   \centering
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
    \caption{\label{fig:search_space_3d}Barrier approach}
    \end{minipage}
    \end{figure}
    #+END_LaTeX
-*** LHS sampling
+** LHS sampling
 ** Quantile regression
 * TODO Future work
 * Conclusion
