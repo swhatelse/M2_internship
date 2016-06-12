@@ -643,11 +643,16 @@ Text
     interpret std err and compute confidence interval. 
     Pb to make inference about the model and compare them.
 ** Future work [0/2]
-   - Constraints \to barrier approach
-   - Find more suited design of experiments techniques
-   - Validate approach on more complex kernel and different
-     architectures
-     
+   - Validation 
+     - Testing more complex case such matrix multiply and different
+       architectures 
+   - Technical
+     - Constraints \to barrier approach
+     - Find more suited design of experiments techniques for quantile
+       regression
+     - Mix discrete and continuous
+     - Sampling and pruning strategy
+   - Integration in boast
 ** Conclusion [0/2]
    And finally I saved the world...
 
@@ -3093,7 +3098,7 @@ Text
 *** LHS
 *** D-Optimal
 *** Managing the budget of points
-* Technical difficulties
+* DONE Technical difficulties
   With our approach we manage to get very good results, however there
   are some points that are still problematic. First one is due to
   the characteristics of our search space which is discrete and
@@ -3396,6 +3401,7 @@ Text
    intervals and the R-squared values are too optimistic. Hence it is
    more complicated to make inferences about models. 
 * TODO Future work
+  To finalize our approach it remains 
 * Conclusion
 * Thanks
 #+LaTeX: \nocite{*}
