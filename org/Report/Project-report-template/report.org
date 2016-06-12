@@ -623,8 +623,10 @@ Text
 *** Model Optimization [0/2]
    After modelization we need to perform search on the estimated
    objective function. 
-   However \to Non-convex optimization 
+   - Model continuous but we work on discrete pb
+   However \to Non-convex optimization  
      Constraint \to unfeasible points
+     Optimization quickly stuck
      - Barrier approach \to guide the search to feasible regions
      - Simulated annealing \to need to tune it correctly
      - Gradient descent
@@ -633,13 +635,19 @@ Text
 *** LHS
     - Pb with constraints lots of points rejected
     - Continuous to discrete
+    - Not better than random is our case.
 *** RQ
+    Rq didn't works reimplement it \to iterated weighted least square.
+    How many iteration to converge? Too optimistic R-squared maybe
+    because of the weight and too much iteration. Don't know how to
+    interpret std err and compute confidence interval. 
+    Pb to make inference about the model and compare them.
 ** Future work [0/2]
-   - Constraints
+   - Constraints \to barrier approach
    - Find more suited design of experiments techniques
    - Validate approach on more complex kernel and different
      architectures
-   - Automatization
+     
 ** Conclusion [0/2]
    And finally I saved the world...
 
@@ -1621,23 +1629,22 @@ Text
     - RQ: it uses the quantile regression which gives an estimate of
       a given quantile.
 
-    We measured each methods one hundred time with about 120 (0.5% of
+    We measured each methods one 1000 time with about 120 (0.5% of
     the search space) points for GA, RS, and LHS and we
     evaluated the slowdown achieved compared to the best solution
     available in the entire search space. For GR only 1 random point
     is chosen as starting point.
 
     We evaluated our approach using the random uniform sampling
-    techniques to sample the search space. It starts with 90 random
+    techniques to sample the search space. It starts with 50 random
     points and adds just enough points after pruning to perform the
-    regression. The total number of points used lays between 114
-    and 119. Our approach is intended to be semi-automatic but for
-    evaluation purpose we automated the process. For this we decided
-    to apply exactly the same strategy each time.  We fixed the
-    parameters in the same order, thus pruning decisions are the same
-    and we used exactly the same model without considering the
-    structure of the random set and same things for the sampling
-    decisions.
+    regression. The total number of points used is 119. Our approach
+    is intended to be semi-automatic but for evaluation purpose we
+    automated the process. For this we decided to apply exactly the
+    same strategy each time. We fixed the parameters in the same
+    order, thus pruning decisions are the same and we used exactly the
+    same model without considering the structure of the random set and
+    same things for the sampling decisions.
 
     Figure\ref{fig:search_comparison} shows the results of the
     different methods. With this search space, the local search GR is
@@ -1694,7 +1701,6 @@ Text
     | GA     | 1.000 |   1.018 |  1.086 | 1.118 |   1.187 |   1.646 |       120 |
     | LM     | 1.012 |   1.012 |  1.012 | 1.022 |   1.012 |   3.771 |       119 |
     | RQ     | 1.012 |   1.012 |  1.012 | 1.019 |   1.012 |   2.064 |       119 |
-
 
 * Analysis
   This part gives a study of the search space and an explanation of
@@ -2108,7 +2114,7 @@ Text
    \end{figure}
    #+END_LaTeX
 
-** LM: Success and "failures"
+** DONE LM: Success and "failures"
 ***                                                                :noexport:
 **** Bad case
     #+begin_src sh :results output :exports none
@@ -3106,7 +3112,7 @@ Text
   With our approach we manage to get very good results, however there
   are some points that are still problematic. First one is due to
   the characteristics of our search space which is discrete and
-  constrained. The other come from the use of quantile regression 
+  constrained. The other come from the use of quantile regression. 
 ** TODO Model optimization
 ***                                                                :noexport:
     #+begin_src sh :results output :exports both
@@ -3120,7 +3126,7 @@ Text
     #+end_src
     
     #+RESULTS:
-    
+
     #+begin_src R :results output graphics :file img/search_space_3D.pdf :exports both :width 6 :height 6 :session                                                                   
       f <- function(x) { x * (0.05 - 1 * (x < 0)) }
       g <- function(x) { f(x)/x^2 }
@@ -3173,6 +3179,37 @@ Text
     
     #+RESULTS:
     [[file:img/search_space_3D_constrained.pdf]]
+
+    #+begin_src R :results output graphics :file img/search_space_3D_constrained_ugly.pdf :exports both :width 6 :height 6 :session
+      g <- function(x){
+          ifelse(x[1] <= x[2] * 4 & x[1] %% x[2] == 0, f(x), NA)
+      }
+
+      resi = 1
+      resj = 1
+      offi = 1
+      offj = 1
+      x <- c()
+      y <- c()
+      z <- c()
+
+      combinations <- matrix(NA,nrow=24*resi,ncol=6*resj)
+      count <- 1
+      for(i in 1:(24*resi)){
+          for(j in 1:(6*resj)){
+              x[count] <- i
+              y[count] <- j
+              z[count] <- g(c((i+offi)/resi,(j+offj)/resj))
+              count <- count +1
+          }
+      }
+
+      scatter3D(x=x, y=y, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=z, phi=20, pch=20, theta=220, clab=c("time per pixel in s"), type="h", colkey = list(side=1,length = 0.5))
+    #+end_src
+
+    #+RESULTS:
+    [[file:img/search_space_3D_constrained_ugly.pdf]]
+
     
     #+begin_src R :results output graphics :file img/search_space_3D_barrier.pdf :exports both :width 6 :height 6 :session
       h <- function(x){
@@ -3194,6 +3231,41 @@ Text
     [[file:img/search_space_3D_barrier.pdf]]
 
 *** 
+    Once the model is instantiated to find the optimal values it is
+    necessary to perform a search. The predicted function is
+    continuous\ref{fig:search_space_3d} whereas our search space is
+    discrete\ref{fig:search_space_3d_constrained2}. Hence continuous
+    optimizations techniques does not work correctly with such search
+    space. 
+    Our search space also has multiple constraints that restricts greatly
+    the set of feasible points. There are constraints that ensure the
+    consistency of the combinations of factors. For example
+    elements_number being the number of component for a thread and
+    y_component_number the number of component on the y-axis for a
+    thread, we cannot have more component on the y-axis than the
+    number of component itself, for this reason combinations such as
+    elements_number = 1 and y_component_number = 2 are unfeasible. 
+    Another constraint on elements_number and y_component_number is
+    that elements_number is a multiple of y_component_number in order
+    to work only on square or rectangular tiles.
+    So we have this:
+    #+BEGIN_LaTeX
+     \[elements\,number \geq y\,component\,number\]    
+     \[elements\,number\quad mod\quad y\,component\,number = 0\]    
+    #+END_LaTeX
+    There is also another kind of constraints more complex that reject
+    combinations that would generate a too big kernel. In OpenCL and
+    Cuda, kernel are limited by physical resources of the device, a
+    kernel too big simply does not compile.
+
+    For these reason it is necessary to use discrete and constrained
+    optimization techniques. However we did not use yet such methods in
+    order to avoid bias that could be induced by search methods that
+    could bias our analysis. We put aside this aspect and for the
+    moment we perform an exhaustive search only on feasible points
+    using our predict objective function to estimate the minimum
+    values of factors.  
+
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
@@ -3202,12 +3274,16 @@ Text
    \caption{\label{fig:search_space_3d}Search space 3D}
    \end{minipage}
    \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/search_space_3D_constrained_ugly.pdf}
+   \caption{\label{fig:search_space_3d_constrained2}Constrained search space}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D_constrained.pdf}
-   \caption{\label{fig:search_space_3d}Constrained Search space}
+   \caption{\label{fig:search_space_3d_constrained1}Constrained Search space but rounded}
    \end{minipage}
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
-   \caption{\label{fig:search_space_3d}Barrier approach}
+   \caption{\label{fig:search_space_3d_barrier}Barrier approach}
    \end{minipage}
    \end{figure}
    #+END_LaTeX

@@ -21240,6 +21240,48 @@ h[g.name.to_sym] = 1024
         #+RESULTS:
         [[file:img/20160402/pilipili2/model_3D_elem_y_comp_constraint.png]]
 
+        #+begin_src R :results output graphics :file img/20160402/pilipili2/model_3D_elem_y_comp_constraint_2.png :exports both :width 400 :height 400 :session     
+                             g <- function(x){
+                                 ifelse((x[1] <= x[2] * 4) & (x[1] %% x[2] == 0), f(x), NA)
+                             }
+
+                             resi = 1
+                             resj = 1
+                             offi = 1
+                             offj = 1
+                             x <- c()
+                             y <- c()
+                             z <- c()
+
+                             count <- 1
+                             for(i in 1:(24*resi)){
+                                 for(j in 1:(6*resj)){
+                                   x[count] <- i
+                                   y[count] <- j
+                                   z[count] <- g(c((i+offi)/resi,(j+offj)/resj))
+                                   count <- count +1
+                                 }
+                             }
+
+          combinations <- matrix(NA,nrow=24,ncol=6)
+          for(i in 1:24){
+              for(j in 1:6){
+                  combinations[i,j] <- f(c(i,j))
+              }
+          }
+
+
+                             # persp3D(x=1:(24*resi)/resi, y=1:(6*resj)/resj, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=combinations, phi=20, theta=220, clab=c("time per pixel in s"), colkey = list(side=1,length = 0.5, width=0.4))
+                             #scatter3D(x=x, y=y, xlab="elements_number", ylab="y_component_number", zlab="time per pixel in s", z=z, pch=20, 
+                              #         phi=20, type="h", theta=220, clab=c("time per pixel in s"), colkey = list(side=1,length = 0.5, width=0.4))
+          scatter3D(x, y, z, phi = 20, theta= 200, type = "h", surf = list(x=1:24,y=1:6,z=combinations),
+                     ticktype = "detailed")
+
+        #+end_src
+
+        #+RESULTS:
+        [[file:img/20160402/pilipili2/model_3D_elem_y_comp_constraint_2.png]]
+
         #+begin_src R :results output graphics :file img/20160402/pilipili2/model_3D_elem_y_comp_barrier.png :exports both :width 600 :height 400 :session
           h <- function(x){
             # x <- c(x[1], )
