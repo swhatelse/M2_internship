@@ -2391,7 +2391,7 @@ Text
     | vector length | 8.794e-11 | 3.025e-11 |  0.00555 |
     | lws y         | 1.987e-11 | 2.882e-12 | 1.18e-08 |
 
-   It exists also cases, where the applied model was not very good but
+   It exists also lucky cases, where the applied model was not very good but
    which still gives the same solution as with the favorable cases. One
    of these cases\ref{tab:lucky-fit} when fitting the model vector
    length + lws y has a poor R-squared of 0.1665. Only lws y is
@@ -2404,15 +2404,7 @@ Text
    coefficient is negative or positive. Also when comparing the
    predicted values and the observed ones\ref{fig:lucky_prediction} it
    looks like favorable cases, there is a strong correlation for the
-   low values. Fixing vector length and lws y at the same values as
-   in the good cases strongly directs the process to the same
-   solution because each time it restricts the search space to the
-   same set of point. Pruning the search space reduces the noise due to
-   the complex interactions between factors. When fixing vector length
-   at the value 1 and lws y at the value 1 it remains only 576 points
-   in the search space. The process converge to the same information
-   about the search space, that is why we get the same results as
-   favorable cases.  
+   low values. 
 
   #+CAPTION: This table presents the fit an incorrect model but which gives the values
   #+NAME:   tab:lucky-fit
@@ -2422,6 +2414,26 @@ Text
     | vector_length | 1.438e-10 | 8.941e-11 |  0.11453 |
     | lws y         | 1.507e-11 | 4.596e-12 |  0.00197 |
 
+   The reason why in favorable cases and lucky cases we get the same
+   results if because in the first stage, we fix vector length and lws
+   y to the same values. This strongly directs the process to the same
+   solution, because each time it restricts the search space to the
+   same set of point. Pruning the search space reduces the noise due
+   to the complex interactions between factors. When fixing vector
+   length at the value 1 and lws y at the value 1 it remains only 576
+   points in the search space. The process converges to the same
+   information about the search space, that is why we get the same
+   results in favorable cases and lucky cases. 
+
+   The reason why we never get better solution with a slowdown lower
+   than 1.012177 comes also from the first stage of the process. In
+   the previous table of the 20 best performing
+   combinations\ref{tab:top-20} there is no better solution with a lws
+   y of 1. At this step it is not possible to estimate it very
+   precisely because of the noise and the most suited model is a
+   simple linear one. The estimation of lws y is made too
+   early. Trying to fix it later with less may probably gives a better
+   result but we did not find a case where it is possible.
     
    #+BEGIN_LaTeX
    \begin{figure}[htb]
