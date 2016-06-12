@@ -3401,10 +3401,47 @@ Text
    intervals and the R-squared values are too optimistic. Hence it is
    more complicated to make inferences about models. 
 * TODO Future work
-  To finalize our approach it remains to overcome technical
-  challenges. Concerning the constraints, we will use a barrier
-  approach. We also need to find more suited design of experiments
-  techniques for quantile 
+  Now that we have tested our approach on the simple case of a
+  Laplacian kernel and we managed to get good results we need to test
+  it on more complex cases such as matrix multiply and try different
+  architectures to see if our approach still works on real life
+  cases. 
+
+  The previous raised technical difficulties are also a major axis of
+  improvement. The most important one is to be able to compute
+  confidence interval, standard error, coefficients of determination
+  for the quantile regression to be able to access the quality of a
+  model. We know that the quantile regression is better than the
+  classical least square regression but if we cannot access if the
+  model is accurate our not we are stuck. Thus is it crucial to
+  improve this points.
+
+  Sampling techniques are the other main axis of improvement. They
+  are crucial for the accuracy of the model. Efficient techniques are
+  able to maximize information with a minimal number of
+  points. Methods such as screening design or LHS are not suited to
+  constrained and/or discrete space. It would be interesting to find
+  more suited techniques or to adapt them to this kind of search
+  spaces. 
+
+  Our optimization process is a sequence of sampling, modeling and
+  pruning. The strategy we used in our experiment to optimize the
+  performance of the Laplacian kernel greatly impact the results
+  whatever the sample looks like most of the time it converges to the
+  same solution. We would like to dig into this. Would it be possible
+  to reach the best solution and under which conditions? How to sample
+  the space correctly combining different sampling techniques? Is
+  there a particular strategy to choose which part of space pruning
+  over an other when there are multiple choices? Answering these kind a
+  questions could improve the efficiency of our approach.
+  
+  To find the best value of the predicted objective function we
+  performed an exhaustive search. On very large search space it would
+  be interesting to use optimization techniques to search the best
+  values of the factors on the predicted objective function. We can
+  deal with our constrained search space with a barrier approach is
+  order to guide the optimization in feasible regions.  
+
 * Conclusion
 * Thanks
 #+LaTeX: \nocite{*}
