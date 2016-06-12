@@ -2281,7 +2281,7 @@ Text
 
 *** 
     To study in more detailed the results of our approach, we took the
-    worst and the best solution to understand why some time it
+    worst and the best solutions to understand why some time it
     fails to converge to the same value and how look like a correct and
     an incorrect optimization process.
 
@@ -2302,26 +2302,39 @@ Text
       | /        | <>          | <>     | <>        | <>      | <>      | <>    | <        |
       | 24       | 6           | 16     | 2         | false   | 64      | 1     | 3.771183 |
 
-    First, the *p-values* give information about the importance of a
+    First, the *coefficient of* *determination* tells us about the fit of
+    a model, the closer to 1 it is the better the model explains the
+    variance. However when comparing model this is not sufficient. It
+    is possible to have an acceptable R-squared with a too high
+    uncertainty on the coefficients, e.g. by over-fitting, this will
+    gives a bad prediction.    
+ 
+    The *p-values* give information about the importance of a
     factor in the objective function, this gives us clues about the
     structure of the search space. The closer to zero it is the bigger
     the impact, thus we only keep factors for which the p-values is
     lower than 0.001.It is important to go from high order factors to
     low order factors in order to refine the model properly. Trying
-    fix a factors that has a small impact to early would lead to a
+    fix a factor that has a small impact too early would lead to a
     premature pruning of the search and as a results lots of good
     combinations would be missed.
 
-    Then *coefficient of* *determination* tells about the fit of a model,
-    the closer to 1 it is the better the model explain the variance. 
-    However when comparing model this is not sufficient, and the order
-    of magnitude of the standard error compared to estimate of the
-    coefficients has to be taken into consideration. This gives
+    Then the order of magnitude of the *standard error* compared to
+    *estimate of the coefficients* has to be taken into
+    consideration. The coefficients gives the slope which indicates
+    what kind of impact the factor has. For example, in our case
+    vector length has a linear impact, a positive coefficient means
+    the lower vector length is the lower the time to compute a pixel. 
+    Comparing the coefficients with the standard errors gives
     information about the uncertainty in the estimate of the
-    coefficient, the bigger is the *standard error* compared to the
-    coefficient the more inaccurate the prediction. It is possible to
-    have an acceptable R-squared but a too high standard deviation
-    this will gives a bad prediction.  
+    coefficient, the bigger is the standard error compared to the
+    coefficient the more inaccurate the prediction.  
+    
+    An additional way of accessing the quality of a model is to
+    compare the predicted values with the real ones, the more they are
+    correlated the more accurate the model. The most important is
+    correlation between the low values as we are interested mostly by
+    the minimum values.
 
     All these information allows us to compare different models and
     evaluate the quality of the prediction. The
@@ -2332,19 +2345,17 @@ Text
     #+END_LaTeX 
     
     First, with this set of points, the factor vector length was not
-    significant enough and was fixed prematurely. Second the standard
+    significant enough and was fixed prematurely. Second, the standard
     error is equal to 5.953e-11 and the estimate is equal to
-    -2.316e-11, the standard error is very big compared to the
+    -2.316e-11, the standard error is too big compared to the
     estimate. Which means that the coefficient is between -8.269e-11
     and 3.637e-11. Thus we do not know if the coefficient is positive
     or negative, hence we do not know if the best value for vector
-    length should be the smallest or the biggest possible. Another way
-    of accessing the quality of a model is to compare the predicted
-    values and the real ones, the more they are correlated the more
-    accurate the model. The figure\ref{fig:bad_prediction} shows the
+    length should be the smallest or the biggest possible. The
+    figure\ref{fig:bad_prediction} shows the 
     prediction against the real values, good predicted values are not
     that good and some can be very bad. This kind of situations can be
-    detected easily by the user and thus take correct decision. The
+    detected easily by the user and thus he can take correct decision. The
     explanation of why this worst case happened is because our
     automated experiment process did not make the previous analysis
     and applied the same strategy whether the model is correct or not.   
@@ -2357,15 +2368,51 @@ Text
     | vector_length | -2.316e-11 | 5.953e-11 |  0.69904 |
     | lws y         |  5.572e-12 | 1.625e-12 |  0.00127 |
 
-   
+   The good case happens when our strategy is applied like we
+   expected. When using the model vector length + lws y the
+   fit is acceptable with a coefficient of determination of
+   0.5431. The prediction is only made with relevant factors for
+   example in the table\ref{tab:correct-fit} the p-values of vector
+   length and lws y are below 0.001. The standard errors compared to
+   the estimates of the coefficients are good enough, e.g. for lws y the
+   coefficient is 1.987e-11 the standard error 2.882e-12, then the real
+   coefficient is between 1.6988e-11 and 2.2752e-11, there is a low
+   uncertainty, we are sure that the coefficient is positive and we
+   know the best value for lws y is the lower as
+   possible. Figure\ref{fig:good_prediction} shows that even if the
+   prediction is not perfect, the correlation between low values is
+   good enough.
 
   #+CAPTION: This table presents the fit of a correct model
   #+NAME:   tab:correct-fit
     |               |      Coef | Std. err. | p-values |
     |---------------+-----------+-----------+----------|
     | /             |        <> |        <> |        < |
-    | vector_length | 8.794e-11 | 3.025e-11 |  0.00555 |
+    | vector length | 8.794e-11 | 3.025e-11 |  0.00555 |
     | lws y         | 1.987e-11 | 2.882e-12 | 1.18e-08 |
+
+   It exists also cases, where the applied model was not very good but
+   which still gives the same solution as with the favorable cases. One
+   of these cases\ref{tab:lucky-fit} when fitting the model vector
+   length + lws y has a poor R-squared of 0.1665. Only lws y is
+   significant. The standard error of vector length is high,
+   however even with uncertainty we can tell that the estimate of the
+   coefficient will be positive. This lack of accuracy in the
+   coefficient is problematic with factors which have complex impact
+   and interactions but with factors which have a simple linear
+   interaction such as vector length it is enough to know if the
+   coefficient is negative or positive. Also when comparing the
+   predicted values and the observed ones\ref{fig:lucky_prediction} it
+   looks like favorable cases, there is a strong correlation for the
+   low values. Fixing vector length and lws y at the same values as
+   in the good cases strongly directs the process to the same
+   solution because each time it restricts the search space to the
+   same set of point. Pruning the search space reduces the noise due to
+   the complex interactions between factors. When fixing vector length
+   at the value 1 and lws y at the value 1 it remains only 576 points
+   in the search space. The process converge to the same information
+   about the search space, that is why we get the same results as
+   favorable cases.  
 
   #+CAPTION: This table presents the fit an incorrect model but which gives the values
   #+NAME:   tab:lucky-fit
