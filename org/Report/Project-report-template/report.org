@@ -643,15 +643,15 @@ Text
     interpret std err and compute confidence interval. 
     Pb to make inference about the model and compare them.
 ** Future work [0/2]
-   - Validation 
-     - Testing more complex case such matrix multiply and different
-       architectures 
    - Technical
      - Constraints \to barrier approach
      - Find more suited design of experiments techniques for quantile
        regression
      - Mix discrete and continuous
      - Sampling and pruning strategy
+   - Validation 
+     - Testing more complex case such matrix multiply and different
+       architectures 
    - Integration in boast
 ** Conclusion [0/2]
    And finally I saved the world...
@@ -3401,7 +3401,10 @@ Text
    intervals and the R-squared values are too optimistic. Hence it is
    more complicated to make inferences about models. 
 * TODO Future work
-  To finalize our approach it remains 
+  To finalize our approach it remains to overcome technical
+  challenges. Concerning the constraints, we will use a barrier
+  approach. We also need to find more suited design of experiments
+  techniques for quantile 
 * Conclusion
 * Thanks
 #+LaTeX: \nocite{*}
