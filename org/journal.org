@@ -32939,7 +32939,7 @@ h[g.name.to_sym] = 1024
 
     #+RESULTS:
     #+begin_example
-    [1] 7
+    [1] 10
     [1] 96
 
     Call:
@@ -32947,40 +32947,40 @@ h[g.name.to_sym] = 1024
 
     Residuals:
            Min         1Q     Median         3Q        Max 
-    -5.235e-11 -3.124e-11  3.436e-12  3.239e-11  7.174e-11 
+    -5.545e-11 -1.314e-11 -7.777e-12  1.820e-11  6.691e-11 
 
     Coefficients:
                          Estimate Std. Error t value Pr(>|t|)    
-    (Intercept)         3.251e-10  1.306e-11  24.889  < 2e-16 ***
-    y_component_number -5.368e-11  6.279e-12  -8.548 9.58e-09 ***
-    elements_number     8.426e-12  1.745e-12   4.828 6.43e-05 ***
+    (Intercept)         2.993e-10  1.271e-11  23.550  < 2e-16 ***
+    y_component_number -3.696e-11  4.078e-12  -9.062 1.12e-09 ***
+    elements_number     5.069e-12  1.078e-12   4.700 6.82e-05 ***
     ---
     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-    Residual standard error: 3.544e-11 on 24 degrees of freedom
-    Multiple R-squared:  0.7724,	Adjusted R-squared:  0.7535 
-    F-statistic: 40.73 on 2 and 24 DF,  p-value: 1.928e-08
+    Residual standard error: 2.926e-11 on 27 degrees of freedom
+    Multiple R-squared:  0.7583,	Adjusted R-squared:  0.7404 
+    F-statistic: 42.36 on 2 and 27 DF,  p-value: 4.712e-09
 
     Call:
     lm(formula = model, data = subset2)
 
     Residuals:
            Min         1Q     Median         3Q        Max 
-    -5.217e-11 -3.166e-11  3.636e-12  3.227e-11  7.188e-11 
+    -5.748e-11 -1.062e-11 -7.733e-12  1.892e-11  6.317e-11 
 
     Coefficients:
                                          Estimate Std. Error t value Pr(>|t|)    
-    (Intercept)                         3.245e-10  2.197e-11  14.772 3.15e-13 ***
-    y_component_number                 -5.358e-11  6.979e-12  -7.677 8.63e-08 ***
-    elements_number                     8.624e-12  5.823e-12   1.481    0.152    
-    y_component_number:elements_number -3.589e-14  1.006e-12  -0.036    0.972    
+    (Intercept)                         3.091e-10  2.454e-11  12.596 1.42e-12 ***
+    y_component_number                 -3.874e-11  5.635e-12  -6.875 2.68e-07 ***
+    elements_number                     3.348e-12  3.842e-12   0.871    0.392    
+    y_component_number:elements_number  3.113e-13  6.661e-13   0.467    0.644    
     ---
     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-    Residual standard error: 3.62e-11 on 23 degrees of freedom
-    Multiple R-squared:  0.7725,	Adjusted R-squared:  0.7428 
-    F-statistic: 26.03 on 3 and 23 DF,  p-value: 1.418e-07
-    #+end_example
+    Residual standard error: 2.969e-11 on 26 degrees of freedom
+    Multiple R-squared:  0.7604,	Adjusted R-squared:  0.7327 
+    F-statistic:  27.5 on 3 and 26 DF,  p-value: 3.172e-08
+#+end_example
 
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
       plot(subset2[,!names(subset2) %in% c("vector_recompute","threads_number","lws_y","vector_length")])    
@@ -33006,12 +33006,17 @@ h[g.name.to_sym] = 1024
       nrow(subset3)
       nrow(pruned3)
       min(pruned3$time_per_pixel) / min(df$time_per_pixel)
+      pruned3[pruned3$time_per_pixel == min(pruned3$time_per_pixel),]
     #+end_src
 
     #+RESULTS:
-    : [1] 1
+    : [1] 2
     : [1] 4
     : [1] 1.076159
+    :       elements_number y_component_number vector_length temporary_size
+    : 19156               6                  6             1              4
+    :       vector_recompute load_overlap threads_number lws_y time_per_pixel
+    : 19156             true        false           1024     1    1.25374e-10
 
 *** Can we reach the best one?
     #+begin_src sh :results output :exports none

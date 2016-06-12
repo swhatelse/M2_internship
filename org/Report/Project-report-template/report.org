@@ -3400,7 +3400,7 @@ Text
    how to interpret the standard error, how to compute confidence
    intervals and the R-squared values are too optimistic. Hence it is
    more complicated to make inferences about models. 
-* TODO Future work
+* DONE Future work
   Now that we have tested our approach on the simple case of a
   Laplacian kernel and we managed to get good results we need to test
   it on more complex cases such as matrix multiply and try different
@@ -3443,7 +3443,40 @@ Text
   order to guide the optimization in feasible regions.  
 
 * Conclusion
-* Thanks
+  HPC platforms are very complex and unique machines, to exploit their
+  power it is necessary to write specialized codes which is a difficult
+  task. However tools exist to help user in this way by generating
+  code automatically. There are the compilers, the source-to-source
+  transformation framework, and the meta-programming framework. They
+  are all able to generate different variant of the same code and the
+  problem is to find which version is the best. The auto-tuning
+  consider this approach has mathematical optimization problem as the
+  search space can be huge and the exhaustive search is
+  prohibitive. In our knowledge all auto-tuning are fully automatic
+  process which exclude the user from the optimization phase of the
+  process. Thus he cannot access the quality of the solution and
+  cannot know if further improvements can be made. The main
+  contribution of this report was to design an innovative approach
+  which is semi-automatic and which involves the user in the
+  optimization process, uses its knowledge and also guides him. Our
+  approach relies on regression techniques to predict the objective
+  function, combined to techniques inspired from design of experiment
+  to build accurate models with a minimum number of experiences. We
+  compared our approach to other optimization techniques such as
+  random search, genetic algorithm, greedy search, etc... and our
+  method significantly outclassed them. The few cases where it did
+  worst than a random search and a genetic algorithm came from the
+  fact that for evaluation purpose we automated the process by using
+  the same models and the same pruning choices without considering the
+  working sample. By re-injecting the user is the optimization loop we
+  showed that such case can be detected and handled correctly in order
+  to improve the result. We also demonstrated that linear regression
+  can have limitation for this kind of application because we have no
+  certainty about the error law and the estimation of the mean is not
+  the same thing as estimating the minimum. We demonstrated that for
+  this, quantile regression is more suited and improve the worst case
+  of the simple linear regression.
+* Acknowledgments
 #+LaTeX: \nocite{*}
 #+LaTeX: \def\raggedright{}
 \bibliographystyle{plain}
