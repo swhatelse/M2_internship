@@ -1371,6 +1371,90 @@ Text
 
    The experiments are run on one machine with GPU Nvidia K40 using the
    driver 340.32 and two CPUs Intel E5-2630.
+** DONE Controlling measurement
+   #+begin_src sh :results output :exports none
+     ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
+   #+end_src
+
+   #+RESULTS:
+
+   #+begin_src R :results output graphics :file img/warm_up.pdf :exports none :width 8 :height 8 :session
+     library(plyr)
+     library(ggplot2)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+     attach(df)
+
+     d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$threads_number == 32,]
+     
+     df2 = ddply(d2,.(run_index,vector_length,image_size_index), summarize, 
+                      mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
+     
+     
+     ggplot(d2) +
+          geom_line(aes(x=run_index, y=time_per_pixel, color=factor(load_overlap),linetype=factor(temporary_size))) + 
+          geom_point(aes(x=run_index, y=time_per_pixel, shape=factor(load_overlap))) + 
+          theme(legend.position="top") + 
+          facet_grid(vector_length ~ image_size_index, scales="free_y", labeller=label_both) 
+   #+end_src
+
+   #+RESULTS:
+   [[file:img/warm_up.pdf]]
+   
+   Current hardware has became more and more complex and provides
+   features such that power saving, frequency scaling, etc... Thus it
+   is possible to have measurements that are different from an
+   experiment to another even if the set of inputs is the same exactly the
+   same. For instance, frequency scaling mechanism could chose to scale
+   down the frequency of the CPU because of the temperature inside the
+   computer case has increased which would have an impact on the
+   compute time. To have trusted measurements we are concerned about
+   kind of problems because the metric in our case which is the time to
+   compute a pixel, is sensitive to this. Thus we have to protected
+   against variability between the same measurements and especially
+   the warm-up effect. This phenomena can occurs on devices providing
+   energy saving features. This kind of devices generally have a
+   performance mode and an idle mode. As long as the device does not
+   have a lot of work it stays in idle mode but at a some threshold it
+   switches to the performances mode. Thus the device does not provides
+   all its capabilities immediately, hence the warm-up effect.
+
+   The measurement process is made as follows:
+   1. Generation of the next a version of the code
+   2. Compilation
+   3. Bench-marking on several image sizes multiple times.
+  
+   As the code is executed on a GPU, the latter has no work to do
+   during the code generation and compilation phases. For this reason
+   we suspected that warm-up effect can occurs at this moment and also
+   after an image is loaded. We tried to see if on the GPU Nvidia K40
+   there this effect is present. We also tried to quantify it along
+   with the variability we could have between the different runs of
+   the same version of the code in order to protect against it. The
+   figure\ref{warmup}, illustrates what we expected, there is a power
+   saving mechanism on Nvidia K40 which turns the GPU into idle mode
+   when the computational intensity is bellow a threshold. This effect
+   occurs on the first size of image tested, which is just after the
+   code generation and compilation phases. The more run are performed the
+   better the performances. It also could have been the case when
+   going from one image size to another, the GPU could have switched
+   to idle mode while the loading of the image but is not the case the
+   GPU does not have the time to switch to idle mode. So prevent to
+   protected against warm-up effect we just need to make at least four
+   runs on the first size of image and we keep the run the gives
+   minimal time to compute one pixel. However we also did the same
+   four all the size of images. An other concern is the variability
+   between multiple execution of the same version of code but as we
+   can see, it is only due to the warm-effect in the first image
+   size. On the other size of images we have almost no variability.
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \includegraphics[height=.5\textheight]{./img/warm_up.pdf}
+   \caption{\label{fig:warmup}Warm-up effect}
+   \end{figure}
+   #+END_LaTeX
 * DONE Envisioned general approach
    When using fully automated tools, the user has no feedback about
    the optimization process and does not have a lot of control. How
@@ -1433,89 +1517,6 @@ Text
    \centering
    \includegraphics[width=.8\linewidth]{./img/process.pdf}
    \caption{\label{fig:process}Workflow}
-   \end{figure}
-   #+END_LaTeX
-* DONE Controlling measurement
-   #+begin_src sh :results output :exports none
-     ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
-   #+end_src
-
-   #+RESULTS:
-
-   #+begin_src R :results output graphics :file img/warm_up.pdf :exports none :width 8 :height 6 :session
-     library(plyr)
-     library(ggplot2)
-
-     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-     attach(df)
-
-     d2 <- df[df$lws_y == 2 & df$elements_number == 1 & df$threads_number == 32,]
-     
-     df2 = ddply(d2,.(run_index,vector_length,image_size_index), summarize, 
-                      mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-     
-     
-     ggplot(d2) +
-          geom_line(aes(x=run_index, y=time_per_pixel, color=factor(load_overlap),linetype=factor(temporary_size))) + 
-          geom_errorbar(data=df2,aes(x=run_index,y=mean, ymin=mean-err, ymax=mean+err)) +
-          facet_grid(vector_length ~ image_size_index, scales="free_y", labeller=label_both) 
-   #+end_src
-
-   #+RESULTS:
-   [[file:img/warm_up.pdf]]
-   
-   Current hardware has became more and more complex and provides
-   features such that power saving, frequency scaling, etc... Thus it
-   is possible to have measurements that are different from an
-   experiment to another even if the set of inputs is the same exactly the
-   same. For instance, frequency scaling mechanism could chose to scale
-   down the frequency of the CPU because of the temperature inside the
-   computer case has increased which would have an impact on the
-   compute time. To have trusted measurements we are concerned about
-   kind of problems because the metric in our case which is the time to
-   compute a pixel, is sensitive to this. Thus we have to protected
-   against variability between the same measurements and especially
-   the warm-up effect. This phenomena can occurs on devices providing
-   energy saving features. This kind of devices generally have a
-   performance mode and an idle mode. As long as the device does not
-   have a lot of work it stays in idle mode but at a some threshold it
-   switches to the performances mode. Thus the device does not provides
-   all its capabilities immediately, hence the warm-up effect.
-
-   The measurement process is made as follows:
-   1. Generation of the next a version of the code
-   2. Compilation
-   3. Bench-marking on several image sizes multiple times.
-  
-   As the code is executed on a GPU, the latter has no work to do
-   during the code generation and compilation phases. For this reason
-   we suspected that warm-up effect can occurs at this moment and also
-   after an image is loaded. We tried to see if on the GPU Nvidia K40
-   there this effect is present. We also tried to quantify it along
-   with the variability we could have between the different runs of
-   the same version of the code in order to protect against it. The
-   figure\ref{warmup}, illustrates what we expected, there is a power
-   saving mechanism on Nvidia K40 which turns the GPU into idle mode
-   when the computational intensity is bellow a threshold. This effect
-   occurs on the first size of image tested, which is just after the
-   code generation and compilation phases. The more run are performed the
-   better the performances. It also could have been the case when
-   going from one image size to another, the GPU could have switched
-   to idle mode while the loading of the image but is not the case the
-   GPU does not have the time to switch to idle mode. So prevent to
-   protected against warm-up effect we just need to make at least four
-   runs on the first size of image and we keep the run the gives
-   minimal time to compute one pixel. However we also did the same
-   four all the size of images. An other concern is the variability
-   between multiple execution of the same version of code but as we
-   can see, it is only due to the warm-effect in the first image
-   size. On the other size of images we have almost no variability.
-
-   #+BEGIN_LaTeX
-   \begin{figure}[htb]
-   \centering
-   \includegraphics[height=.5\textheight]{./img/warm_up.pdf}
-   \caption{\label{fig:warmup}Warm-up effect}
    \end{figure}
    #+END_LaTeX
 * DONE Results
@@ -2089,23 +2090,7 @@ Text
     best performing version has a x_component_number of 1. So the
     regression of expectation may not find the minimum while the
     quantile regression does if the model is correct.
-    There are different ways of computing quantile regression. We tried
-    the rq function from the quantreg package of R, it gives good
-    estimation of the coefficient of the different parameters but for
-    some reason it fails with our data to compute the standard error
-    and the R-squared. Instead we use another techniques that use
-    performs weighted least square to apply more weight to the desired
-    quantile. And it iterates in order to converge to the quantile
-    regression of the wanted quantile. Nevertheless, we do not yet
-    master this technique completely, we managed to get the correct
-    coefficients but we do not know how to determine correctly the
-    minimum number of iterations to converge and how to determine
-    correct the bounds for the weights. The other difficulty with this
-    method is that we do not really know how to interpret the standard
-    error, how to compute confidence intervals and the R-squared
-    values are too optimistic. Hence it is a bit more complicated to
-    make inferences about models. 
-
+   
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
@@ -3288,15 +3273,15 @@ Text
    \end{minipage}
    \end{figure}
    #+END_LaTeX
-*** TODO LHS sampling
-**** 
+*** TODO Sampling techniques
+****                                                               :noexport:
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
      
      #+RESULTS:
      
-     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+     #+begin_src R :results output graphics :file ./img/lhs_cover_constraints.pdf :exports both :width 6 :height 4 :session
        library(DoE.base)
        library(DoE.wrapper)
 
@@ -3337,12 +3322,31 @@ Text
      #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-3574D5O/figure3574Mej.png]]
+     [[file:./img/lhs_cover_constraints.pdf]]
 
-     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-     
+     #+begin_src R :results output graphics :file ./img/rs_cover_constraints.pdf :exports both :width 6 :height 4 :session
+       random_set <- df[sample(1:nrow(df), size = 100, replace = FALSE),]
+       plot(random_set[,!names(random_set) %in% c("vector_recompute", "time_per_pixel")])
      #+end_src
-**** 
+
+     #+RESULTS:
+     [[file:./img/rs_cover_constraints.pdf]]
+     
+**** Screening design 
+    The screening is generally a good starting to interrogate the
+    search space as it allows to detect parameters that the biggest
+    impact we wanted to use in a preliminary phase to detect estimate
+    significant factors. For this it considers the points that are the furthest from
+    each other. It samples only the minimum and maximum values of
+    factors. Which means it only takes points that are at 
+    the border of the search space. With our search space without
+    constraints, this gives a total of 128 possible
+    combinations. However because of the constraints of our search
+    space we can only have at most 32 points. Lots of important points
+    combining high values are lost hence lots of information, while
+    points at the frontier could have been used instead. 
+
+**** LHS
     We planned to use LHS sampling as a basis because of its good
     space covering characteristics. However it is not made for
     discrete and constrained problem. To use it we had to discretise
@@ -3351,14 +3355,46 @@ Text
     replicates. In addition, as it does not handle constraints to 
     select points, we need generate first a set of points with LHS and
     then we reject points using constraints. But to obtain
-    approximately the wanted number of points we need to aks more
+    approximately the wanted number of points we need to ask more
     points but we can not end up with the exact number of
-    points. Finally in our case, the random sampling provided the same
-    covering space capability and we could obtain exactly the wanted
+    points. Finally in our case, the random
+    sampling\ref{fig:rs_cover_constraints} provided the same 
+    covering space capability\ref{fig:lhs_cover_constraints}  
+    and we could obtain exactly the wanted 
     number of points. That is why we chose the random sampling over
     LHS. 
 
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{\linewidth}
+   \includegraphics[width=\linewidth]{./img/lhs_cover_constraints.pdf}
+   \caption{\label{fig:lhs_cover_constraints}LHS space covering}
+   \end{minipage}
+   \begin{minipage}{\linewidth}
+   \includegraphics[width=\linewidth]{./img/rs_cover_constraints.pdf}
+   \caption{\label{fig:rs_cover_constraints}Random sampling space covering}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX    
 ** TODO Quantile regression
+   R provides a function for computing quantile regression through the
+   package quantreg. However with our data, sometimes it failed to compute the
+   estimate of coefficients, it could not compute the standard
+   error, the p-values, etc... which is crucial to access the quality
+   of a model. Thus we had to implement another methods to perform
+   quantile regression. There several ways to do it, we used a method
+   that performs weighted least square regression iteratively to add
+   more weight to the wanted quantile until the regression converges
+   to it. We managed to get the correct coefficient, nevertheless we
+   do not yet master this technique completely.  We do not know how to
+   determine correctly the minimum number of iterations needed to
+   converge to the solution. It is possible to add bound on weight but
+   we do not know how to determine them correctly yet.
+   The other difficulty with this method is that we do not really know
+   how to interpret the standard error, how to compute confidence
+   intervals and the R-squared values are too optimistic. Hence it is
+   more complicated to make inferences about models. 
 * TODO Future work
 * Conclusion
 * Thanks
