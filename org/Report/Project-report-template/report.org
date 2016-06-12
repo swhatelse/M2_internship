@@ -1512,8 +1512,14 @@ Text
    #+END_LaTeX
 * DONE Results
 ***                                                                :noexport:
+    #+begin_src sh :results output :exports none
+      ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
     #+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 6 :height 8 :session
-      df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_3.csv", strip.white=T, header=T)  
+      df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", strip.white=T, header=T)  
         library(ggplot2)
         library(plyr)
 
@@ -1529,19 +1535,63 @@ Text
         ggplot(df_all_methods ) + 
             facet_grid(method~.) +
             theme_bw() +
+            coord_cartesian(xlim=c(.9,3), ylim=c(0,1000)) +
             geom_histogram(aes(slowdown),binwidth=.05,color="white", fill="gray48") +
-            geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=100, fill="red"), alpha=0.3) +
+            geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=1000, fill="red"), alpha=0.3) +
             geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
             geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
             labs(y="Frequency", x="Slowdown compared best combination of the entire search space") +
             scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
             ggtitle("") + 
-            theme(legend.position="top") +
-            coord_cartesian(xlim=c(.9,3), ylim=c(0,100))
+            theme(legend.position="top")
     #+end_src
 
     #+RESULTS:
     [[file:./img/results_hist.pdf]]
+
+    #+begin_src R :results output :session :exports both
+      summary(df_all_methods[df_all_methods$method == "RS",]$slowdown)
+      summary(df_all_methods[df_all_methods$method == "LHS",]$slowdown)
+      summary(df_all_methods[df_all_methods$method == "GR",]$slowdown)
+      summary(df_all_methods[df_all_methods$method == "GRM",]$slowdown)
+      summary(df_all_methods[df_all_methods$method == "GA",]$slowdown)
+      summary(df_all_methods[df_all_methods$method == "LM",]$slowdown)
+      summary(df_all_methods[df_all_methods$method == "RQ",]$slowdown)
+
+      mean(df_all_methods[df_all_methods$method == "RS",]$point_number)
+      mean(df_all_methods[df_all_methods$method == "LHS",]$point_number)
+      mean(df_all_methods[df_all_methods$method == "GR",]$point_number)
+      mean(df_all_methods[df_all_methods$method == "GRM",]$point_number)
+      mean(df_all_methods[df_all_methods$method == "GA",]$point_number)
+      mean(df_all_methods[df_all_methods$method == "LM",]$point_number)
+      mean(df_all_methods[df_all_methods$method == "RQ",]$point_number)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+       Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1.000   1.027   1.079   1.102   1.178   1.388
+       Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1.000   1.087   1.188   1.175   1.244   1.524
+       Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1.000   1.348   1.799   6.460   6.314 124.800
+       Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1.000   1.072   1.187   1.227   1.333   3.164
+       Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1.000   1.018   1.086   1.118   1.187   1.646
+       Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1.012   1.012   1.012   1.022   1.012   3.771
+       Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1.012   1.012   1.012   1.019   1.012   2.064
+    [1] 120
+    [1] 98.918
+    [1] 22.171
+    [1] 120
+    [1] 120
+    [1] 119
+    [1] 119
+#+end_example
+
 *** 
     To evaluate our solution, we compared it against the following search
     methods that have already been used in auto-tuning:
@@ -1592,34 +1642,37 @@ Text
     Figure\ref{fig:search_comparison} shows the results of the
     different methods. With this search space, the local search GR is
     inefficient, half of the time we get a slowdown of higher than
-    x2. It can be every far from the optimal solution, up to x66
-    slower\ref{tab:comparison-table}. The LHS search does a lot more
-    better with a slowdown that is never higher than 38.8%. 50% of the
-    time we can get a slowdown lower than 17%.
+    x2. It can be every far from the optimal solution, up to x125
+    slower\ref{tab:comparison-table}. Combining multiple local
+    searches with random starting points greatly improves the result,
+    the worst solution is never slower than a factor of 3.164 and half
+    of the time the slowdown is below 18.7%. The LHS search does a
+    little bit better better with a slowdown that is never higher than
+    52.4%. 50% of the time we can get a slowdown lower than 18.8%.
     The uniform random search RS is very efficient here. Half of the time
     we get a slowdown that is less than 7.9% and we do not get a
-    maximum slowdown of 34.1%.
+    maximum slowdown of 38.8%.
     The genetic algorithm GA gives even better results with a slowdown
-    which is less than 7.3% half of the time, a mean slowdown of 9.8%
-    and a maximum slowdown of 39%. 
+    which is less than 7.3% half of the time, a mean slowdown of 10.2%
+    and a maximum slowdown of 38.8%. 
     The technique using least square regression is extremely efficient,
-    most of the time it converges to the same solution 99% of the time
+    most of the time it converges to the same solution 
     which has a slowdown of 1.2%. However it never find the best
-    solution.With a mean slowdown of 1.4% it is 6.7 times better than
-    GA. It only failed one time giving a solutions with a slowdown of
-    21.4% which is still better than worst solution of the GA.
+    solution.With a mean slowdown of 2.2% it is 7 times better than
+    GA. It only failed three times giving a solutions with a slowdown of
+    a factor 2.064 which is worse than worst solution of the GA.
     Using quantile regression we managed to improve the results of the
     classical least square regression. Almost every time it converge
     to the same solution as with LM and the worst solution has a
-    slowdown of 2.2% which almost 10 times better than LM and better
-    than the mean of GA. However like LM it does not find the optimal
-    solution.
+    slowdown of of a factor 2.064. However like LM it does not find
+    the optimal solution.
 
     In brief, the regression of expectation gives almost every time
     the exactly same results which is very close to the best solution
     of the entire search space but it never reaches it. With the
     quantile regression we managed to improve the worst solution but
-    we could not improve the best solution return by LM.
+    we could not improve the best solution return by LM. However both
+    LM and RQ very rarely gives worse solution than GA or RS.
      
    #+BEGIN_LaTeX
    \begin{figure}[htb]
@@ -1629,18 +1682,19 @@ Text
    \end{figure}
    #+END_LaTeX
 
-    #+CAPTION: This table shows the minimum, maximum, mean and median slowdown including the mean number of points used by each method
+    #+CAPTION: This table shows the minimum, first quartile, median, mean, third quartile and maximum slowdown including the mean number of points used by each method
     #+NAME:   tab:comparison-table
-    | Methods |   Min |    Max |  Mean | Median | Mean Cost |
-    |---------+-------+--------+-------+--------+-----------|
-    | /       |    <> |     <> |    <> |     <> |           |
-    | GR      | 1.006 | 66.010 | 7.964 |  2.161 |      2.33 |
-    | GRM     | 1.000 |  2.153 | 1.233 |  1.208 |     25.71 |
-    | LHS     | 1.009 |  1.388 | 1.155 |  1.172 |      99.6 |
-    | RS      | 1.011 |  1.341 | 1.098 |  1.079 |       120 |
-    | GA      |  1.00 |  1.390 | 1.098 |  1.073 |       120 |
-    | LM      | 1.012 |  1.214 | 1.014 |  1.012 |       119 |
-    | RQ      | 1.012 |  1.022 | 1.012 |  1.012 |       119 |
+    | Method |  Min. | 1st Qu. | Median |  Mean | 3rd Qu. |    Max. | Mean Cost |
+    |--------+-------+---------+--------+-------+---------+---------+-----------|
+    | /      |    <> |      <> |     <> |    <> |      <> |      <> |           |
+    | RS     | 1.000 |   1.027 |  1.079 | 1.102 |   1.178 |   1.388 |       120 |
+    | LHS    | 1.000 |   1.087 |  1.188 | 1.175 |   1.244 |   1.524 |    98.918 |
+    | GR     | 1.000 |   1.348 |  1.799 | 6.460 |   6.314 | 124.800 |    22.171 |
+    | GRM    | 1.000 |   1.072 |  1.187 | 1.227 |   1.333 |   3.164 |       120 |
+    | GA     | 1.000 |   1.018 |  1.086 | 1.118 |   1.187 |   1.646 |       120 |
+    | LM     | 1.012 |   1.012 |  1.012 | 1.022 |   1.012 |   3.771 |       119 |
+    | RQ     | 1.012 |   1.012 |  1.012 | 1.019 |   1.012 |   2.064 |       119 |
+
 
 * Analysis
   This part gives a study of the search space and an explanation of
