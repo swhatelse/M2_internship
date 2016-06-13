@@ -3520,19 +3520,22 @@ Text
     There is also another kind of constraints more complex that reject
     combinations that would generate a too large kernel. In OpenCL and
     Cuda, kernel are limited by physical resources of the device, a
-    kernel too big simply does not compile.
+    kernel too big simply does not compile. 
 
-    For these reason it is necessary to use discrete and constrained
-    optimization techniques. However we decided not to use such
-    methods yet. First, correctly implementing such involved
-    techniques requires some expertise that we were not able to
-    acquire in such a short amount of time and this could could have
-    biased our analysis of the whole approach. Second, evaluating the
-    prediction of the model is really quick so this analytic
-    optimization is not the bottleneck. Therefore, we simply decided
-    to perform an exhaustive search on all feasible points using our
-    predicted objective function to estimate the optimal combination
-    of factors. 
+    We could deal with our constrained search space by skipping some
+    constraints and using rounding\ref{fig:search_space_3d_constrained1},
+    we could use a barrier approach\ref{fig:search_space_3d_barrier} in
+    order to guide the optimization method in feasible regions and we
+    could also use discrete and constrained optimization
+    techniques. However we decided not to use such methods yet. First,
+    correctly implementing such involved techniques requires some
+    expertise that we were not able to acquire in such a short amount
+    of time and this could could have biased our analysis of the whole
+    approach. Second, evaluating the prediction of the model is really
+    quick so this analytic optimization is not the
+    bottleneck. Therefore, we simply decided to perform an exhaustive 
+    search on all feasible points using our predicted objective
+    function to estimate the optimal combination of factors. 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
@@ -3543,6 +3546,14 @@ Text
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D_constrained_ugly.pdf}
    \caption{\label{fig:search_space_3d_constrained2}Constrained search space}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/search_space_3D_constrained.pdf}
+   \caption{\label{fig:search_space_3d_constrained1}Constrained Search space but rounded}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
+   \caption{\label{fig:search_space_3d_barrier}Barrier approach}
    \end{minipage}
    \end{figure}
    #+END_LaTeX
@@ -3762,28 +3773,8 @@ Text
   over an other when there are multiple choices? Answering these kind a
   questions could improve the efficiency of our approach.
   
-  To find the best value of the predicted objective function we
-  performed an exhaustive search. On very large search space it would
-  be interesting to use optimization techniques to search the best
-  values of the factors on the predicted objective function. We can
-  deal with our constrained search space by skipping some of them and
-  using rounding\ref{fig:search_space_3d_constrained1} and using a
-  barrier approach\ref{fig:search_space_3d_barrier} in order to guide
-  the optimization method in feasible regions. 
 
-   #+BEGIN_LaTeX
-   \begin{figure}[htb]
-   \centering
-   \begin{minipage}{.45\linewidth}
-   \includegraphics[width=\linewidth]{./img/search_space_3D_constrained.pdf}
-   \caption{\label{fig:search_space_3d_constrained1}Constrained Search space but rounded}
-   \end{minipage}
-   \begin{minipage}{.45\linewidth}
-   \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
-   \caption{\label{fig:search_space_3d_barrier}Barrier approach}
-   \end{minipage}
-   \end{figure}
-   #+END_LaTeX
+
 * Acknowledgments
 #+LaTeX: \nocite{*}
 #+LaTeX: \def\raggedright{}
