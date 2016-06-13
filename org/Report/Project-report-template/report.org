@@ -3673,7 +3673,61 @@ Text
    optimistic. Hence it is more complicated to make inferences about
    models and for the moment we are not able to make correct
    assessment with this method.  
-* DONE Future work
+* DONE Conclusion
+  HPC platforms are very complex and unique machines, to exploit their
+  power it is necessary to write specialized codes, which is a difficult
+  task. Many tools have therefore been developed to assist the
+  developer in this task by automatically generating code variants and
+  optimizations: compilers, source-to-source transformation
+  frameworks, and meta-programming frameworks. Finding the code
+  variant with the best possible performance on a given machine is
+  extremely difficult and the auto-tuning problem can be seen as its
+  mathematical optimization problem counterpart. The corresponding
+  search space is generally huge and exhaustive search is
+  prohibitive. To the best of our knowledge most auto-tuning
+  frameworks mostly resort to generic optimization techniques combined
+  to fully automatic explorations which exclude the user from the
+  optimization phase. Thus he can hardly assess the quality of the
+  solution and cannot really know if further improvements can be
+  made. 
+
+  The main contribution of this report is to design an innovative
+  approach in which the user is put in a position of control by a
+  semi-automatic approach which involves the user in the optimization
+  process, uses its knowledge and also guides him. Our approach uses
+  the framework BOAST for the code generation and 
+  evaluation and relies on regression techniques to predict the objective
+  function, combined to techniques inspired from design of experiment
+  to build accurate models with a minimum number of experiences. We
+  compared our approach to other optimization techniques such as
+  random search, genetic algorithm, greedy search, etc... and our
+  method performed very efficiently and significantly outperformed
+  them. The few situations where it returned a poor combination of
+  parameters come from the fact that for evaluation purpose we
+  automated the process by using fix decisions without considering the
+  working sample. We explained how in such situation, when the analyst
+  is part of the the optimization loop, he is able to consider all the
+  available information of the search space to assess the quality 
+  of the model (coefficient of determination, p-values, standard
+  error compared to the estimate of the coefficients) and take
+  correct decisions. We also demonstrated the limitations of the
+  simple linear regression for this kind of problems because there is
+  have no certainty about the error law and the estimation of the mean
+  is not the same thing as estimating the minimum. We demonstrated
+  that for this, quantile regression is more suited and improves the
+  worst case of the simple linear regression. However we need
+  additional work compute correct coefficients of determination,
+  standard error and the p-values with it to be able to assess the
+  quality of a model as we are able to do it with the classical linear
+  regression. 
+
+  Finally, we want to stress that for such an experimental study, it
+  was of primary importance to have solid methodology. We have thus taken a
+  particular care on logging and detailing all our observations and
+  choices so that others can build upon it. Our experimental journal
+  is thus freely available at \url{https://github.com/swhatelse/M2_internship} 
+
+** DONE Future work
   Now that we have tested our approach on the simple case of a
   Laplacian kernel and we managed to get good results we need to test
   it on more complex cases such as matrix multiply and try different
@@ -3730,49 +3784,6 @@ Text
    \end{minipage}
    \end{figure}
    #+END_LaTeX
-
-* DONE Conclusion
-  HPC platforms are very complex and unique machines, to exploit their
-  power it is necessary to write specialized codes which is a difficult
-  task. However tools exist to help user in this way by generating
-  code automatically. There are the compilers, source-to-source
-  transformation frameworks, and meta-programming frameworks. They
-  are all able to generate different variant of the same code and the
-  problem is to find which version is the best. The auto-tuning
-  consider this as mathematical optimization problem where the
-  search space can be huge and exhaustive search is
-  prohibitive. In our knowledge all auto-tuning are fully automatic
-  processes which exclude the user from the optimization phase. Thus
-  he can hardly assess the quality of the solution and 
-  cannot really know if further improvements can be made. The main
-  contribution of this report is to design an innovative approach in
-  which the user is put in a position of control by a semi-automatic
-  approach which involves the user in the
-  optimization process, uses its knowledge and also guides him. Our
-  approach uses the framework BOAST for the code generation and
-  evaluation and relies on regression techniques to predict the objective
-  function, combined to techniques inspired from design of experiment
-  to build accurate models with a minimum number of experiences. We
-  compared our approach to other optimization techniques such as
-  random search, genetic algorithm, greedy search, etc... and our
-  method performed very efficiently by significantly outclassed
-  them. The few cases where it did worst than a random search and a
-  genetic algorithm came from the fact that for evaluation purpose we
-  automated the process by using fix decisions without considering the
-  working sample. By re-injecting the user is the optimization loop
-  considering the available information of the search space he can
-  assess the quality of the model using the coefficient of
-  determination, the standard error compared to the estimate of the
-  coefficients of the factors and the p-values to take correct
-  decisions. We also demonstrated the limitations of the simple linear
-  regression for this kind of problems because there is have no
-  certainty about the error law and the estimation of the mean is not
-  the same thing as estimating the minimum. We demonstrated that for
-  this, quantile regression is more suited and improves the worst case
-  of the simple linear regression. However we need additional work
-  compute correct coefficients of determination, standard error
-  and the p-values with it to be able to assess the quality of a model
-  as we are able to do it with the classical linear regression.
 * Acknowledgments
 #+LaTeX: \nocite{*}
 #+LaTeX: \def\raggedright{}
