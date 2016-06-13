@@ -24,6 +24,36 @@
 #+LATEX_HEADER:\usepackage[latin1]{inputenc}
 #+LATEX_HEADER:\usepackage{relsize}
 #+LATEX_HEADER:\usepackage{listings}
+#+LATEX_HEADER:\usepackage{color}
+
+#+BEGIN_LaTeX
+\lstset{ %
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,	                   % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=C,                 % the language of the code
+  otherkeywords={*,...},           % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2,	                   % sets default tabsize to 2 spaces
+  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+#+END_LaTeX
 
 #+BEGIN_LaTeX
 %Style des têtes de section, headings, chapitre
@@ -256,6 +286,8 @@ Text
       Specialized code \to not portable
 *** Obtaining efficient code
 **** Compilation
+     Many transformation possible \to many version but does not chose
+     the best but only the first one because it does not test them.
      Il fait ce qu'il peut mais pas de vision globale du code \to local
      optimization (intra procedure) \to because more easier no control
      flow
@@ -266,8 +298,14 @@ Text
      - loop transformation \to parallelization and data locality \to 
        finding parallelism into loops \to loop nest transformation /
        unroll. 
-     - Automatic parallelism \to multi-threaded, vectorized 
+     - Automatic parallelism \to find parallelism in loops, multi-threaded, vectorized 
        Pb with shared/global variable, IO, indirect addressing, etc...
+       E.g:
+       - Number of iterations must be know before entering the loop\to
+         no while loop
+       - No exit
+       - No dependencies btw iterations, no pointer aliasing
+       - function call because cannot determine side effect.
    
      Limited because stuck by semantic rules, not enough information
      at compile time, etc...
@@ -919,7 +957,7 @@ Text
     of the pipeline. In addition, automatic parallelism techniques
     are able to find sequential code that can be vectorized or
     multi-threaded. They can also perform loop transformation to
-    reduce the overhead of loops, henance data locality and facilitate
+    reduce the overhead of loops, enhance data locality and facilitate
     the parallelization using loop unroll / nest transformation
     techniques. But this require to still write the code with care to
     ease the job of the compiler. For instance automatic parallelism
@@ -931,6 +969,14 @@ Text
     they are not able to evaluate which transformation to choose among
     all correct transformations and they just take the one that is
     semantically correct.
+
+    #+BEGIN_LaTeX
+    \begin{lstlisting}
+    for(int i = 0; i < 1000; i++){
+      a[i] = a[i+1] + b[i];
+    }
+    \end{lstlisting}
+    #+END_LaTeX
 *** Source-to-source transformation
     Source-to-source transformation frameworks ease the task of both
     the developer and the compiler by taking a source code, working on
@@ -2138,7 +2184,6 @@ Text
    is correct. That is probably one of the reason why the worst case
    of RQ is better than the worst case of LM.
    
-
 ** DONE LM: Success and "failures"
 ***                                                                :noexport:
 **** Bad case
