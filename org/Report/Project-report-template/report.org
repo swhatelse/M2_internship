@@ -1955,54 +1955,57 @@ Text
    often good results. But there is a significant difference between
    regression of expectation and quantile regression. It is due to the
    fact that they do not predict the same thing.
-*** Linear regression of expectation: why it can be inefficient
+*** Linear regression of expectation: limitations
+****                                                               :noexport:
    #+begin_src sh :results output :exports none
        ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
 
    #+RESULTS:
 
-   #+begin_src R :results output graphics :file img/lm.png :exports results :width 800 :height 400 :session 
+    #+begin_src R :results output graphics :file ./img/lm_v_len.pdf :exports both :width 6 :height 4 :session
      library(ggplot2)
-     library(plyr)
-     library(gridExtra)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
-     attach(df)
 
-     err_x_comp = ddply(df,c("x_component_number"), summarize,
-                        mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-
-
-     err_v_len = ddply(df,c("vector_length"), summarize,
-                       mean = mean(time_per_pixel), err = 2*sd(time_per_pixel)/sqrt(length(time_per_pixel)))
-
-     p1 <- qplot(df$vector_length, df$time_per_pixel) + 
+     ggplot(df) + 
+         aes(x=vector_length, y=time_per_pixel) +
+         theme_bw() + 
          geom_point(alpha=0.1) + 
+         geom_smooth(method="lm", formula= y ~ x) +
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-         geom_errorbar(data=err_v_len,aes(x=vector_length,y=mean, ymin=mean-err, ymax=mean+err),colour="red") +
          ggtitle("Impact of the vector length") +
          labs(y="time per pixel in seconds", x="vector length") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
 
-     p2 <- qplot(df$x_component_number, df$time_per_pixel) + 
+    #+end_src
+
+    #+RESULTS:
+    [[file:./img/lm_v_len.pdf]]
+
+   #+begin_src R :results output graphics :file img/lm_x_comp.pdf :exports results :width 6 :height 4 :session 
+     library(ggplot2)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+     ggplot(df) + 
+         aes(x=x_component_number, y=time_per_pixel) + 
+         theme_bw() + 
          geom_point(alpha=0.1) + 
+         geom_smooth(method="lm", formula = y ~ x + I(1/x)) +
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-         geom_errorbar(data=err_x_comp,aes(x=x_component_number,y=mean, ymin=mean-err, ymax=mean+err),colour="red") +
          ggtitle("Impact of number of component on the x-axis") +
          labs(y="time per pixel in seconds", x="x component number") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
 
-     grid.arrange(p1, p2, ncol=2, top="") 
-
    #+end_src
-   
-   #+CAPTION: Linear regression and non-uniform noise
-   #+LABEL: fig:lm-1
+
    #+RESULTS:
-   [[file:img/lm.png]]
+   [[file:img/lm_x_comp.pdf]]
+
+****   
    
    Linear regression of expectation has already been used successfully
    with auto-tuning problems by Brewer in the
@@ -2026,6 +2029,20 @@ Text
    value of the objective function not the mean. With non-uniform
    noise the evaluation of the minimum value does not follows the
    evolution of the mean.
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/lm_v_len.pdf}
+   \caption{\label{fig:lm_v_len.pdf}Non-uniform noise but the minimum follows the evolution of the mean}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/lm_x_comp.pdf}
+   \caption{\label{fig:good_prediction}Non-uniform noise and the minimum does not follow the evolution of the mean}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX
    
    The reason why linear regression of expectation have been
    efficient in Brewer's work\cite{Brewer:1995:HOV:209937.209946} is
@@ -2056,13 +2073,14 @@ Text
 
    #+RESULTS:
 
-   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg.pdf :exports results :width 6 :height 4 :session
+   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg_x_comp.pdf :exports results :width 6 :height 4 :session
      library(ggplot2)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
      attach(df)
 
      ggplot(df) + 
+         theme_bw() + 
          aes(x=x_component_number, y=time_per_pixel) +
          geom_point(alpha=0.1) + 
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
@@ -2075,7 +2093,29 @@ Text
    #+end_src
 
    #+RESULTS:
-   [[file:img/why_we_choose_quantile_reg.pdf]]
+   [[file:img/why_we_choose_quantile_reg_x_comp.pdf]]
+
+   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg_v_len.pdf :exports results :width 6 :height 4 :session
+     library(ggplot2)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+     attach(df)
+
+     ggplot(df) + 
+         aes(x=vector_length, y=time_per_pixel) +
+         theme_bw() + 
+         geom_point(alpha=0.1) + 
+         geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
+         geom_smooth(method="lm", formula = y ~ x, aes(colour="Least square regression")) +           
+         stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), aes(colour="Quantile regression")) +
+         ggtitle("Impact of number of component on the x-axis") +
+         labs(y="Time per pixel in seconds", x="Vector length") +
+         theme(axis.text=element_text(size=12),
+               axis.title=element_text(size=14,face="bold"))
+   #+end_src
+
+   #+RESULTS:
+   [[file:img/why_we_choose_quantile_reg_v_len.pdf]]
 
 **** 
     Quantile regression gives the estimate of quantile and has been
@@ -2099,10 +2139,16 @@ Text
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
-   \includegraphics[width=.9\linewidth]{./img/why_we_choose_quantile_reg.pdf}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/why_we_choose_quantile_reg_v_len.pdf}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/why_we_choose_quantile_reg_x_comp.pdf}
+   \end{minipage}
    \caption{\label{fig:qr-example}Linear regression vs quantile regression}
    \end{figure}
    #+END_LaTeX
+
 
 ** DONE LM: Success and "failures"
 ***                                                                :noexport:
