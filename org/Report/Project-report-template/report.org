@@ -25,6 +25,7 @@
 #+LATEX_HEADER:\usepackage{relsize}
 #+LATEX_HEADER:\usepackage{listings}
 #+LATEX_HEADER:\usepackage{color}
+#+latex_header:\usepackage{xspace}
 
 #+BEGIN_LaTeX
 \lstset{ %
@@ -1826,7 +1827,19 @@ Text
        take the best remaining combination.  
 
     Figure\ref{fig:search_comparison} shows the results of the
-    different methods. With this search space, the local search GR is
+    different methods. 
+    Let us start with methods that do not exploit the geometry of
+    the space. The first observation that can be made is that the
+    uniform random search RS is quite efficient. Half of the time
+    we get a slowdown that is less than 7.9% and we do not get a
+    maximum slowdown of 38.8% RS a likely explanation of the efficient
+    of the random search will be given later. Surprisingly, the LHS
+    approach did not improve at all over RS since the expected
+    slowdown increases from 10.2% to 17.5% (see
+    Table\ref{tab:comparison-table}). We do not have  a convincing
+    explanation for this phenomenon. 
+
+    With this search space, the local search GR is
     inefficient, half of the time we get a slowdown of higher than
     x2. It can be every far from the optimal solution, up to x125
     slower\ref{tab:comparison-table}. Combining multiple local
@@ -1860,6 +1873,8 @@ Text
     we could not improve the best solution return by LM. However both
     LM and RQ very rarely gives worse solution than GA or RS.
      
+   #+LaTeX: \let\oldref=\ref
+   #+LaTeX: \def\ref#1{~\oldref{#1}\xspace} 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
