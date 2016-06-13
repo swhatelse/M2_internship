@@ -2017,7 +2017,8 @@ Text
 
    This techniques assumes that the noise is uniform and more
    specifically follows the Gaussian law, in this case we say that the
-   variable are homoscedastics. However the figure\ref{fig:lm-1} shows
+   variable are homoscedastics. However the
+   figures\ref{fig:lm_v_len.pdf} and\ref{fig:lm_x_comp} show 
    that in the case of our Laplacian kernel, which is a very simple case,
    we have heteroscedasticity, which means that the noise is
    non-uniform because it is due to complex interaction between
@@ -2027,8 +2028,8 @@ Text
    determination which makes it more difficult to evaluate the
    accuracy of the model. In addition, we want to predict the minimum
    value of the objective function not the mean. With non-uniform
-   noise the evaluation of the minimum value does not follows the
-   evolution of the mean.
+   noise the evaluation of the minimum value does not follow the
+   evolution of the mean\ref{fig:lm_x_comp}.
 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
@@ -2039,24 +2040,20 @@ Text
    \end{minipage}
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/lm_x_comp.pdf}
-   \caption{\label{fig:good_prediction}Non-uniform noise and the minimum does not follow the evolution of the mean}
+   \caption{\label{fig:lm_x_comp}Non-uniform noise and the minimum does not follow the evolution of the mean}
    \end{minipage}
    \end{figure}
    #+END_LaTeX
    
-   The reason why linear regression of expectation have been
-   efficient in Brewer's work\cite{Brewer:1995:HOV:209937.209946} is
-   probably because at that time the architecture of computers was
-   less complicated than today and the noise was uniform. If the error
-   law is the same everywhere as in the left in figure\ref{fig:lm-1}
-   we can still have the minimum values that follow the same evolution
-   as the mean and we can still predict the minimum. The resulting
-   model and approximation can still be correct and we can easily know
-   what is the best size of vector. But we would still need to make
-   assumptions that about the error and we do not know anything it. In
-   the right in figure\ref{fig:lm-1}, the evolution of the mean and
-   the evolution of the minimum is not correlated and the best value
-   is mispredicted.     
+   If the error law is the same everywhere as in the left in
+   figure\ref{fig:lm_v_len.pdf} we can still have the minimum values
+   that follow the same evolution as the mean and we can still predict
+   the minimum. The resulting model and approximation can still be
+   correct and we can easily know what is the best size of vector. But
+   we would still need to make assumptions that about the error and we
+   do not know anything it. In the figure\ref{fig:lm_x_comp}, the
+   evolution of the mean and the evolution of the minimum is not
+   correlated and the best value is not predicted correctly.     
 
    We conclude that in the case of heteroscedasticity and non-uniform
    error law, linear regression tracks the general tendency of impact
@@ -2131,10 +2128,12 @@ Text
     between regression of expectation and quantile regression. The
     regression of expectation estimates that the best performing
     version has a x_component_number of 4 which is not true. While
-    the quantile regression of the 5th succeed in predicting that the
-    best performing version has a x_component_number of 1. So the
-    regression of expectation may not find the minimum while the
-    quantile regression does if the model is correct.
+    the quantile regression of the 5th percentile succeed in
+    predicting that the best performing version has a
+    x_component_number of 1. So the regression of expectation may not
+    find the minimum while the quantile regression does if the model
+    is correct. That is probably the reason why the worst case of RQ
+    is better than the worst case of LM.
    
    #+BEGIN_LaTeX
    \begin{figure}[htb]
