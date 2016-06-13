@@ -1708,7 +1708,7 @@ Text
     | LM     | 1.012 |   1.012 |  1.012 | 1.022 |   1.012 |   3.771 |       119 |
     | RQ     | 1.012 |   1.012 |  1.012 | 1.019 |   1.012 |   2.064 |       119 |
 
-* Analysis
+* DONE Analysis
   This part gives a study of the search space and an explanation of
   the results of our approach. We also explain why the quantile
   regression is more suited than regression of expectation in
@@ -1950,13 +1950,8 @@ Text
    #+RESULTS:
    [[file:./img/heteroscedasticity.png]]
 
-** TODO Differences between regression of expectation and quantile regression
-   The previous results showed that using linear regression gives
-   often good results. But there is a significant difference between
-   regression of expectation and quantile regression. It is due to the
-   fact that they do not predict the same thing.
-*** Linear regression of expectation: limitations
-****                                                               :noexport:
+** DONE Differences between regression of expectation and quantile regression
+***                                                                :noexport:
    #+begin_src sh :results output :exports none
        ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
@@ -1972,7 +1967,7 @@ Text
          aes(x=vector_length, y=time_per_pixel) +
          theme_bw() + 
          geom_point(alpha=0.1) + 
-         geom_smooth(method="lm", formula= y ~ x) +
+         geom_smooth(method="lm", formula= y ~ x, aes(colour="Least square regression")) +
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
          ggtitle("Impact of the vector length") +
          labs(y="time per pixel in seconds", x="vector length") +
@@ -1993,7 +1988,7 @@ Text
          aes(x=x_component_number, y=time_per_pixel) + 
          theme_bw() + 
          geom_point(alpha=0.1) + 
-         geom_smooth(method="lm", formula = y ~ x + I(1/x)) +
+         geom_smooth(method="lm", formula = y ~ x + I(1/x), aes(colour="Least square regression")) +
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
          ggtitle("Impact of number of component on the x-axis") +
          labs(y="time per pixel in seconds", x="x component number") +
@@ -2004,66 +1999,6 @@ Text
 
    #+RESULTS:
    [[file:img/lm_x_comp.pdf]]
-
-****   
-   
-   Linear regression of expectation has already been used successfully
-   with auto-tuning problems by Brewer in the
-   1990s\cite{Brewer:1995:HOV:209937.209946}. But this method have
-   been put aside for no real reasons to our knowledge. Using this
-   method to study the impact of the parameters with using linear
-   models to approximate the behavior of the search space coupled with
-   efficient sampling strategies seemed very appealing to us. 
-
-   This techniques assumes that the noise is uniform and more
-   specifically follows the Gaussian law, in this case we say that the
-   variable are homoscedastics. However the
-   figures\ref{fig:lm_v_len.pdf} and\ref{fig:lm_x_comp} show 
-   that in the case of our Laplacian kernel, which is a very simple case,
-   we have heteroscedasticity, which means that the noise is
-   non-uniform because it is due to complex interaction between
-   parameters. Heteroscedasticity is problematic because
-   the least square is not the Best Linear Unbiased Estimator in this
-   case and it biases the variance and thus the coefficient of
-   determination which makes it more difficult to evaluate the
-   accuracy of the model. In addition, we want to predict the minimum
-   value of the objective function not the mean. With non-uniform
-   noise the evaluation of the minimum value does not follow the
-   evolution of the mean\ref{fig:lm_x_comp}.
-
-   #+BEGIN_LaTeX
-   \begin{figure}[htb]
-   \centering
-   \begin{minipage}{.45\linewidth}
-   \includegraphics[width=\linewidth]{./img/lm_v_len.pdf}
-   \caption{\label{fig:lm_v_len.pdf}Non-uniform noise but the minimum follows the evolution of the mean}
-   \end{minipage}
-   \begin{minipage}{.45\linewidth}
-   \includegraphics[width=\linewidth]{./img/lm_x_comp.pdf}
-   \caption{\label{fig:lm_x_comp}Non-uniform noise and the minimum does not follow the evolution of the mean}
-   \end{minipage}
-   \end{figure}
-   #+END_LaTeX
-   
-   If the error law is the same everywhere as in the left in
-   figure\ref{fig:lm_v_len.pdf} we can still have the minimum values
-   that follow the same evolution as the mean and we can still predict
-   the minimum. The resulting model and approximation can still be
-   correct and we can easily know what is the best size of vector. But
-   we would still need to make assumptions that about the error and we
-   do not know anything it. In the figure\ref{fig:lm_x_comp}, the
-   evolution of the mean and the evolution of the minimum is not
-   correlated and the best value is not predicted correctly.     
-
-   We conclude that in the case of heteroscedasticity and non-uniform
-   error law, linear regression tracks the general tendency of impact
-   of the parameters. But in our case in which we are interested about
-   the minimum which is uncorrelated to the mean, the linear
-   regression of expectation cannot lead to the global optimum and we
-   need another estimator for the minimum. 
-
-*** The choice of quantile regression
-****                                                               :noexport:
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
@@ -2113,31 +2048,49 @@ Text
 
    #+RESULTS:
    [[file:img/why_we_choose_quantile_reg_v_len.pdf]]
+*** 
+   The previous results showed that using linear regression gives
+   often good results. But there is a slight difference between
+   regression of expectation and quantile regression. It is due to the
+   fact that they do not predict the same thing.
 
-**** 
-    Quantile regression gives the estimate of quantile and has been
-    proven successful in the ecologic field\cite{FEE:FEE200318412}
-    where complex interactions between factors lead to non-uniform
-    noise which is exactly the case of our Laplacian kernel. Moreover
-    it has the ability to estimate multiple tendency from the minimum
-    to the maximum. As we want to minimize the time to compute a pixel
-    we need to estimate the minimum and regression on the 5th
-    percentile is a generally a good estimation of 
-    it\cite{books/daglib/0076234}. 
-    Figure\ref{fig:qr-example} illustrates the comparison
-    between regression of expectation and quantile regression. The
-    regression of expectation estimates that the best performing
-    version has a x_component_number of 4 which is not true. While
-    the quantile regression of the 5th percentile succeed in
-    predicting that the best performing version has a
-    x_component_number of 1. So the regression of expectation may not
-    find the minimum while the quantile regression does if the model
-    is correct. That is probably the reason why the worst case of RQ
-    is better than the worst case of LM.
-   
+   Linear regression of expectation has already been used successfully
+   with auto-tuning problems by Brewer in the
+   1990s\cite{Brewer:1995:HOV:209937.209946}. But this method have
+   been put aside for no real reasons to our knowledge. Using this
+   method to study the impact of the parameters with using linear
+   models to approximate the behavior of the search space coupled with
+   efficient sampling strategies seemed very appealing to us. 
+
+   This techniques assumes that the noise is uniform and more
+   specifically follows the Gaussian law, in this case we say that the
+   variable are homoscedastics. However the
+   figures\ref{fig:lm_v_len.pdf} and\ref{fig:lm_x_comp} show 
+   that in the case of our Laplacian kernel, which is a very simple case,
+   we have heteroscedasticity, which means that the noise is
+   non-uniform because it is due to complex interaction between
+   parameters. Heteroscedasticity is problematic because
+   the least square is not the Best Linear Unbiased Estimator in this
+   case and it biases the variance and thus the coefficient of
+   determination which makes it more difficult to evaluate the
+   accuracy of the model. In addition, we want to predict the minimum
+   value of the objective function not the mean. With non-uniform
+   noise the evaluation of the minimum value does not follow the
+   evolution of the mean\ref{fig:lm_x_comp}.
+
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
+
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/lm_v_len.pdf}
+   \caption{\label{fig:lm_v_len.pdf}Non-uniform noise but the minimum follows the evolution of the mean}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/lm_x_comp.pdf}
+   \caption{\label{fig:lm_x_comp}Non-uniform noise and the minimum does not follow the evolution of the mean}
+   \end{minipage}
+
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/why_we_choose_quantile_reg_v_len.pdf}
    \end{minipage}
@@ -2147,7 +2100,44 @@ Text
    \caption{\label{fig:qr-example}Linear regression vs quantile regression}
    \end{figure}
    #+END_LaTeX
+   
+   If the error law is the same everywhere as in the left in
+   figure\ref{fig:lm_v_len.pdf} we can still have the minimum values
+   that follow the same evolution as the mean and we can still predict
+   the minimum. The resulting model and approximation can still be
+   correct and we can easily know what is the best size of vector. But
+   we would still need to make assumptions that about the error and we
+   do not know anything it. In the figure\ref{fig:lm_x_comp}, the
+   evolution of the mean and the evolution of the minimum is not
+   correlated and the best value is not predicted correctly.     
 
+   We conclude that in the case of heteroscedasticity and non-uniform
+   error law, linear regression tracks the general tendency of impact
+   of the parameters. But in our case in which we are interested about
+   the minimum which is uncorrelated to the mean, the linear
+   regression of expectation cannot lead to the global optimum and we
+   need another estimator for the minimum. 
+
+   Quantile regression gives the estimate of quantile and has been
+   proven successful in the ecologic field\cite{FEE:FEE200318412}
+   where complex interactions between factors lead to non-uniform
+   noise which is exactly the case of our Laplacian kernel. Moreover
+   it has the ability to estimate multiple tendency from the minimum
+   to the maximum. As we want to minimize the time to compute a pixel
+   we need to estimate the minimum and regression on the 5th
+   percentile is a generally a good estimation of 
+   it\cite{books/daglib/0076234}. 
+   Figure\ref{fig:qr-example} illustrates the comparison
+   between regression of expectation and quantile regression. The
+   regression of expectation estimates that the best performing
+   version has a x_component_number of 4 which is not true. While
+   the quantile regression of the 5th percentile succeed in
+   predicting that the best performing version has a
+   x_component_number of 1. So the regression of expectation may not
+   find the minimum while the quantile regression does if the model
+   is correct. That is probably one of the reason why the worst case
+   of RQ is better than the worst case of LM.
+   
 
 ** DONE LM: Success and "failures"
 ***                                                                :noexport:
