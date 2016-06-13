@@ -3623,7 +3623,7 @@ Text
    \centering
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D.pdf}
-   \caption{\label{fig:search_space_3d}Search space 3D}
+   \caption{\label{fig:search_space_3d}Model of the objective function}
    \end{minipage}
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D_constrained_ugly.pdf}
@@ -3637,6 +3637,9 @@ Text
    \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
    \caption{\label{fig:search_space_3d_barrier}Barrier approach}
    \end{minipage}
+   \caption{\textbf{Search space constraints}: These figure represents the example of some of the 
+    constraints on the paramters elements number and y component number and the envisioned approach
+   to cope with it.}
    \end{figure}
    #+END_LaTeX
 *** DONE Sampling techniques
@@ -3742,6 +3745,9 @@ Text
    \includegraphics[width=\linewidth]{./img/rs_cover_constraints.pdf}
    \caption{\label{fig:rs_cover_constraints}Random sampling space covering}
    \end{minipage}
+   \caption{\textbf{Space coverage}: With our constrained search space, LHS 
+    loses it property of maximum distance between points and not have a better 
+    coverage capacity than random sampling.}
    \end{figure}
    #+END_LaTeX    
 ** Quantile regression
