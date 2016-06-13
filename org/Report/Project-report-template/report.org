@@ -53,6 +53,7 @@
   tabsize=2,	                   % sets default tabsize to 2 spaces
   title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
 }
+\renewcommand{\lstlistingname}{Code}
 #+END_LaTeX
 
 #+BEGIN_LaTeX
@@ -863,7 +864,7 @@ Text
    techniques. The nineth part provide a detailed analysis of the
    results. And finally the tenth part show what can be done to
    improve our process and results.
-* TODO Context
+* DONE Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
   correctly. Indeed a not carefully tuned code is likely to
@@ -962,36 +963,55 @@ Text
     techniques. But this require to still write the code with care to
     ease the job of the compiler. For instance automatic parallelism
     is difficult to apply when there are global or shared variable,
-    indirect address are used, etc... Further more, compilers generally
-    do not have global vision of the code and lack informations of
-    compile time and thus perform only local optimization. In
-    addition, they also can be limited by semantic rules. As a result,
-    they are not able to evaluate which transformation to choose among
-    all correct transformations and they just take the one that is
-    semantically correct.
+    dependencies between iterations\ref{lst:bad_for_auto_par},
+    indirect address are used, etc... Further more, compilers
+    generally do not have global vision of the code and lack
+    informations of compile time and thus perform only local
+    optimization. In addition, they also can be limited by semantic
+    rules. As a result, they are not able to evaluate which
+    transformation to choose among all correct transformations and 
+    they just take the one that is semantically correct.
 
     #+BEGIN_LaTeX
-    \begin{lstlisting}
-    for(int i = 0; i < 1000; i++){
-      a[i] = a[i+1] + b[i];
-    }
+    \begin{lstlisting}[caption={Example of code that cannot benefit from automatic parallelization because it uses the results of the previous iteration to compute the current value.},label={lst:bad_for_auto_par}]
+    for(int i = 1; i < 1000; i++)
+      a[i] = a[i-1] + b[i];
     \end{lstlisting}
     #+END_LaTeX
 *** Source-to-source transformation
     Source-to-source transformation frameworks ease the task of both
     the developer and the compiler by taking a source code, working on
     Abstract Syntax Trees and applying transformation such automatic
-    parallelization to generate a modified version of the original
-    code. Unlike with compilers, the developer can specify how he
-    wants the transformation to be done, for instance how many time
-    the loop is unrolled. Then the framework ensures that the
-    transformation is valid and generates a code that the compiler can
-    easily work with. This relieve the compiler from the complicated
-    tasks such the loop transform or the automatic parallelization and
-    this gives the possibity the user guide the transformation by
-    giving more information. The disadvantage of such tools it that
-    they generally target one language and one compiler and can be
-    still limited by semantic rules.  
+    parallelization\cite{Bondhugula:2008:PAP:1379022.1375595} to
+    generate a modified version of the original code. Unlike with
+    compilers, the developer can specify how he wants the
+    transformation to be done, for instance how many time the loop is
+    unrolled. Then the framework ensures that the transformation is
+    valid and generates a code that the compiler can easily work
+    with. This relieve the compiler from the complicated tasks such
+    the loop transform or the automatic parallelization and this gives
+    the possibity the user guide the transformation by giving more
+    information. The disadvantage of such tools it that they generally
+    target one language and one compiler and can be still limited by
+    semantic rules.   
+
+    #+BEGIN_LaTeX
+    \begin{lstlisting}[caption={Example of source-to-source code transformation\cite{Bondhugula:2008:PAP:1379022.1375595} which performs a loop fusion optimization. This reduces the loop overhead it remains 2 loops instead of 4. It also improve the data locality with the variable A which is re-used within a shorter period of time.}, label={lst:source-to-source1}]
+    // Original code
+    for ( i=0; i<N; i++)
+      for ( j=0; j<N; j++)
+        A[i,j] = A[i,j] + u1[i] * v1[j] + u2[i] * v2[j];
+    for (k=0; k<N; k++)
+      for ( l=0; l<N; l++)
+        x[k] = x[k] + A[l,k] * y[l];
+
+    // Transformed code
+    for (c1=0; c1<N; c1++)
+      for (c2=0; c2<N; c2++)
+        A[c2,c1] = A[c2,c1]+ u1[c2] * v1[c1] + u2[c2] * v2[c1];
+        x[c1] = x[c1] + A[c2,c1] * y[c2];
+    \end{lstlisting}
+    #+END_LaTeX
 *** Meta-programming: BOAST
     Meta-programming is a slightly different approach from
     source-to-source transformation in which the developer use high
@@ -1025,8 +1045,7 @@ Text
   testing all the combinations (i.e, 2^500 ~ 10^50 combinations) to find
   the best one is simply impossible. Thus
   it is formulated as a mathematical optimization problem where the
-  optimization function gives metrics of combination of parameters
-  \vec{x}.  
+  optimization function gives metrics of combination of parameters.
   
   #+BEGIN_LaTeX
   \( \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \)
