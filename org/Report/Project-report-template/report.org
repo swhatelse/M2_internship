@@ -696,7 +696,7 @@ Text
 ** Conclusion [0/2]
    And finally I saved the world...
 
-* TODO Introduction
+* Introduction
 ** Why is performance optimization difficult?
   From genome sequencing to molecular dynamics, including climate or
   earthquake modeling, or aerodynamics, there is an ever increasing
@@ -865,7 +865,7 @@ Text
    techniques. The nineth part provide a detailed analysis of the
    results. And finally the tenth part show what can be done to
    improve our process and results.
-* DONE Context
+* Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
   correctly. Indeed a not carefully tuned code is likely to
@@ -1060,7 +1060,7 @@ Text
   cause the compilation to fail or the program to crash. In addition
   parameters can be discrete and continuous. 
  
-* TODO State of the art
+* State of the art
 ** Auto-tuning
    In auto-tuning one can two distinguish major categories of approaches. Some
    have focused on the use of machine learning techniques to build
@@ -1266,6 +1266,53 @@ Text
    current platforms.
 
 ** Design of experiments
+***                                                                :noexport:
+   #+begin_src R :results output graphics :file img/DoE_examples_RS.pdf :exports results :width 6 :height 4 :session
+     library(ggplot2)
+
+     random <- data.frame(X1=runif(200,0,4),X2=runif(200,0,4))
+
+     ggplot(data=random) +
+         theme_bw() +
+         geom_point(aes(x=X1,y=X2)) +
+         ggtitle("Random")
+   #+end_src
+
+   #+RESULTS:
+   [[file:img/DoE_examples_RS.pdf]]
+
+   #+begin_src R :results output graphics :file img/DoE_examples_LHS.pdf :exports both :width 6 :height 4 :session
+     library(DoE.base)   
+     library(DoE.wrapper)   
+     library(ggplot2)
+
+     lhs <- lhs.design( type= "maximin" , nruns= 200 ,nfactors= 2 ,digits= NULL ,seed=20049 , factor.names=list(X1=c(0,4), X2=c(1,4) ) )
+
+     ggplot(data=lhs) +
+         theme_bw() +
+         geom_point(aes(x=X1,y=X2)) +
+         ggtitle("lhs")
+   #+end_src
+
+   #+RESULTS:
+   [[file:img/DoE_examples_LHS.pdf]]
+
+   #+begin_src R :results output graphics :file img/DoE_examples_Dopt.pdf :exports both :width 6 :height 4 :session
+     library(DoE.base)   
+     library(DoE.wrapper)   
+     library(ggplot2)
+
+     Dopt <- Dopt.design(50, data=lhs, formula="~ X1 + X2 + I(1/X2)", nRepeat=5, randomize=TRUE)
+     ggplot(data=Dopt) +
+         theme_bw() +
+         geom_point(aes(x=X1,y=X2)) +
+         ggtitle("D-optimal")
+   #+end_src
+
+   #+RESULTS:
+   [[file:img/DoE_examples_Dopt.pdf]]
+
+*** 
    When there are lots of factors, covering the entire space of
    possible values is prohibitive. The goal experimental design is to
    build experiments in order to study the behavior of a system for a
@@ -1285,13 +1332,35 @@ Text
    There are different kind of factorial designs. The first one is the
    full factorial design which consider the entire space. The simplest
    way of doing full factorial design is to chose points in the space 
-   uniformly\ref{fig:doe-examples}. The drawback is that the points
-   are not well distributed, there are part of space where there are
-   lots of points and some other where there just few. The Latin
-   Hyper-cube Sampling design provides a better coverage of the space
-   by dividing the space into pieces of equal sizes and taking the
-   same number of points at random in these areas. This method is made
-   for continuous factors.  
+   uniformly (see Figure\ref{fig:DoE_examples}). The drawback is that
+   the points are not well distributed, there are part of space where
+   there are lots of points and some other where there just few. The
+   Latin Hyper-cube Sampling design provides a better coverage of the
+   space by dividing the space into pieces of equal sizes and taking
+   the same number of points at random in these areas. This method is
+   made for continuous factors.  
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/DoE_examples_RS.pdf}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/DoE_examples_LHS.pdf}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/DoE_examples_Dopt.pdf}
+   \end{minipage}
+   \caption{\label{fig:DoE_examples} \textbf{Sampling techniques}: These figures shows the space coverage 
+    of random sampling, LHS and D-Optimal sampling. The random sampling the 
+    simplest sampling methods but it does not provide an efficient covering 
+    because there are some areas with more points and some areas with holes. LHS 
+    provides a better space covering as it tries to maximize the distances between  
+    points. The D-optimal design sample the search space sample the space at 
+    particular place using hypothesis about the model.}
+   \end{figure}
+   #+END_LaTeX    
 
    On other kind of factorial designs is the fractional factorial
    designs. Instead of considering the whole space it consider only a
@@ -1316,41 +1385,8 @@ Text
    experimental design can help us to sample the space efficiently to
    achieve the optimization with low experimental cost.
 
-   #+CAPTION: Space coverage by different DoE
-   #+LABEL: fig:doe-examples
-   #+begin_src R :results output graphics :file img/DoE_examples.png :exports results :width 600 :height 400 :session
-     library(DoE.base)   
-     library(DoE.wrapper)   
-     library(ggplot2)
-
-     library(grid)
-     library(gridExtra)
-
-     random <- data.frame(X1=runif(200,0,4),X2=runif(200,0,4))
-     lhs <- lhs.design( type= "maximin" , nruns= 200 ,nfactors= 2 ,digits= NULL ,seed=20049 , factor.names=list(X1=c(0,4), X2=c(1,4) ) )
-     Dopt <- Dopt.design(50, data=lhs, formula="~ X1 + X2 + I(1/X2)", nRepeat=5, randomize=TRUE)
-
-     p1 <- qplot(data=random) +
-         geom_point(aes(x=X1,y=X2)) +
-         ggtitle("Random")
-
-     p2 <- qplot(data=lhs) +
-         geom_point(aes(x=X1,y=X2)) +
-         ggtitle("lhs")
-
-     p3 <- qplot(data=Dopt) +
-         geom_point(aes(x=X1,y=X2)) +
-         ggtitle("D-optimal")
-         
-     grid.arrange(p1, p2, p3, ncol=2, top=textGrob("")) 
-
-   #+end_src
-
-   #+RESULTS:
-   [[file:img/DoE_examples.png]]
-
-* TODO Methodology
-** TODO Reproducible research
+* Methodology
+** Reproducible research
   Such experimental process mandate rigorous methodology.
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
@@ -1368,7 +1404,7 @@ Text
   experiments giving the possibility to anyone to re-run the same
   experiments using the same data. 
 
-** TODO Case study
+** Case study
    # Maybe cite Brice paper for this part
    In order to try our approach, we took a very simple example
    which is a kernel that computes the Laplacian of an image. We want
@@ -1493,7 +1529,7 @@ Text
    driver 340.32 and two CPUs Intel E5-2630. The OS is Debian and we
    used the GCC compiler version 4.8.3. All the details about each
    experiments environment are available in the git repository.
-** TODO Controlling measurement
+** Controlling measurement
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
    #+end_src
@@ -1582,7 +1618,7 @@ Text
    }
    \end{figure}
    #+END_LaTeX
-* TODO Envisioned general approach
+* Envisioned general approach
    When using fully automated tools, the user has no feedback about
    the optimization process and does not have a lot of control. How
    good is the optimized version of the code? How is it possible to
@@ -1646,7 +1682,7 @@ Text
    \caption{\label{fig:process}Workflow}
    \end{figure}
    #+END_LaTeX
-* DONE Results
+* Results
 ***                                                                :noexport:
     #+begin_src sh :results output :exports none
       ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
@@ -1659,6 +1695,8 @@ Text
         library(ggplot2)
         library(plyr)
 
+        df_all_methods$method <- factor(df_all_methods$method, levels = c("RS","LHS","GS","GSR","GA","LM","RQ"))
+
         df_mean = ddply(df_all_methods,.(method), summarize, 
                         mean = mean(slowdown))
 
@@ -1667,6 +1705,7 @@ Text
 
         df_err = ddply(df_all_methods,.(method), summarize,
                       mean = mean(slowdown), err = 2*sd(slowdown)/sqrt(length(slowdown)))
+
 
         ggplot(df_all_methods ) + 
             facet_grid(method~.) +
@@ -1904,20 +1943,21 @@ Text
    \end{figure}
    #+END_LaTeX
 
-    #+CAPTION: This table shows the minimum, first quartile, median, mean, third quartile and maximum slowdown including the mean number of points used by each method
+    #+CAPTION: This table shows the minimum, first quartile, median, mean, third quartile and maximum slowdown including the mean number of points used by each method.
     #+NAME:   tab:comparison-table
-    | Method |  Min. | 1st Qu. | Median |  Mean | 3rd Qu. |    Max. | Mean Cost |
-    |--------+-------+---------+--------+-------+---------+---------+-----------|
-    | /      |    <> |      <> |     <> |    <> |      <> |      <> |           |
-    | RS     | 1.000 |   1.027 |  1.079 | 1.102 |   1.178 |   1.388 |       120 |
-    | LHS    | 1.000 |   1.087 |  1.188 | 1.175 |   1.244 |   1.524 |    98.918 |
-    | GR     | 1.000 |   1.348 |  1.799 | 6.460 |   6.314 | 124.800 |    22.171 |
-    | GRM    | 1.000 |   1.072 |  1.187 | 1.227 |   1.333 |   3.164 |       120 |
-    | GA     | 1.000 |   1.018 |  1.086 | 1.118 |   1.187 |   1.646 |       120 |
-    | LM     | 1.012 |   1.012 |  1.012 | 1.022 |   1.012 |   3.771 |       119 |
-    | RQ     | 1.012 |   1.012 |  1.012 | 1.019 |   1.012 |   2.064 |       119 |
+    | Method |  Min. | 1st Qu. | Median | 3rd Qu. |    Max. |  Mean | Mean Cost |
+    |--------+-------+---------+--------+---------+---------+-------+-----------|
+    | /      |    <> |      <> |     <> |      <> |      <> |    <> |           |
+    | RS     | 1.000 |   1.027 |  1.079 |   1.178 |   1.388 | 1.102 |       120 |
+    | LHS    | 1.000 |   1.087 |  1.188 |   1.244 |   1.524 | 1.175 |    98.918 |
+    | GR     | 1.000 |   1.348 |  1.799 |   6.314 | 124.800 | 6.460 |    22.171 |
+    | GRM    | 1.000 |   1.072 |  1.187 |   1.333 |   3.164 | 1.227 |       120 |
+    | GA     | 1.000 |   1.018 |  1.086 |   1.187 |   1.646 | 1.118 |       120 |
+    | LM     | 1.012 |   1.012 |  1.012 |   1.012 |   3.771 | 1.022 |       119 |
+    | RQ     | 1.012 |   1.012 |  1.012 |   1.012 |   2.064 | 1.019 |       119 |
 
-* DONE Analysis
+
+* Analysis
   This part gives a study of the search space and an explanation of
   the results of our approach. We also explain why the quantile
   regression is more suited than regression of expectation in
@@ -1927,29 +1967,24 @@ Text
   points. This gives us an overview of how it could perform but it 
   is not intended to use like this. Hence this part explains the case
   where the prediction is made correctly and when it fails.
-** DONE Characteristics of the search space
+** Characteristics of the search space
 ***                                                                :noexport:
-   #+begin_src sh :results output :exports none
-       ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
-   #+end_src
-
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
    #+end_src
 
    #+RESULTS:
+                                                                
 **** Repartition of combination
-   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.png :exports results :width 800 :height 600 :session
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.pdf :exports results :width 4 :height 6 :session
      library(ggplot2)
-     library(grid)
-     library(gridExtra)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
      slowdown <-  df$time_per_pixel / min(df$time_per_pixel)
      df$slowdown <- slowdown
 
-     p2 <- qplot(data=df) +
+     ggplot(data=df) +
          geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
          geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
@@ -1958,7 +1993,13 @@ Text
          ggtitle("Density of the combinations slowdown compared to the best") +
          labs(y="Density", x="Slowdown")
 
-     p3 <- qplot(data=df) +
+   #+end_src
+
+   #+RESULTS:
+   [[file:./img/search_combination_rep_slowdown.pdf]]
+
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown_zoom.pdf :exports both :width 4 :height 6 :session
+     ggplot(data=df) +
          geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
          geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
@@ -1967,9 +2008,11 @@ Text
          ggtitle("Density of the combinations slowdown compared to the best") +
          coord_cartesian(xlim=c(.9,17)) +
          labs(y="Density", x="Slowdown")
-
-     grid.arrange(p2, p3,  ncol=2, top=textGrob("Repartition of the performance combination")) 
    #+end_src
+
+   #+RESULTS:
+   [[file:./img/search_combination_rep_slowdown_zoom.pdf]]
+
 **** Chance of getting the best solution
      Number of random try to get solution with a slowdown lower than
      10%  with a probability  of 0.9
@@ -2058,38 +2101,62 @@ Text
      ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
    #+end_src
 
-   #+begin_src R :results output graphics :file ./img/heteroscedasticity.png :exports results :width 700 :height 400 :session
+   #+RESULTS:
+
+   #+begin_src R :results output graphics :file ./img/heteroscedasticity_v_len.pdf :exports results :width 6 :height 6 :session
      library(ggplot2)
-     library(grid)
-     library(gridExtra)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
-      p1 <- qplot() + 
-          geom_point( aes(x=df$vector_length, y=df$time_per_pixel), alpha=0.1 ) + 
+      ggplot(df) + 
+          geom_point( aes(x=vector_length, y=time_per_pixel), alpha=0.1 ) + 
           ggtitle("Impact of the vector length") +
-          labs(y="time per pixel in seconds", x="vector length") +
+          theme_bw() +
+          labs(y="Time per pixel in seconds", x="Vector length") +
           theme(axis.text=element_text(size=12),
                 axis.title=element_text(size=14,face="bold"))
-
-      p2 <- qplot() + 
-          geom_point(aes(x=df$x_component_number, y=df$time_per_pixel),alpha=0.1) + 
-          ggtitle("Impact of number of component on the x-axis") +
-          labs(y="time per pixel in seconds", x="x component number") +
-          theme(axis.text=element_text(size=12),
-                axis.title=element_text(size=14,face="bold"))
-
-     grid.arrange(p1,p2,  ncol=2, top="") 
-
    #+end_src
-*** 
+
    #+RESULTS:
-   [[file:./img/search_combination_rep_slowdown.png]]
+   [[file:./img/heteroscedasticity_v_len.pdf]]
+
+     #+begin_src R :results output graphics :file ./img/heteroscedasticity_x_comp.pdf :exports both :width 6 :height 6 :session
+      ggplot(df) + 
+          geom_point(aes(x=x_component_number, y=time_per_pixel),alpha=0.1) + 
+          theme_bw() +
+          ggtitle("Impact of number of component on the x-axis") +
+          labs(y="Time per pixel in seconds", x="X component number") +
+          theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=14,face="bold"))
+     #+end_src
+
+     #+RESULTS:
+     [[file:./img/heteroscedasticity_x_comp.pdf]]
+
+*** 
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown.pdf}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown_zoom.pdf}
+   \end{minipage}
+   \caption{\label{fig:combination_distribution}These figures presents the slowdown of the combination 
+    of the entire search space. The left figure is a global view and the right figure focuses
+    on combination between a slowdown of 0 and 20. The red dotted line represents the mean, 
+    the green one the median, the blue one on the left the 1st. quartile and the blue one
+    on the right the 3rd. quartile.}
+   \end{figure}
+   #+END_LaTeX
 
   By studying the characteristics of the search space we can
   understand the structure of the problem in order to be able to
   understand the results of the different search techniques. 
-  The figure\ref{} and the table\ref{search-space-characteristics}
+  The figure\ref{fig:combination_distribution} and the table\ref{tab:search-space-characteristics}
   show the distribution of the combinations over the 
   search space in term of slowdown. This search space contains a lot
   of good combinations, half of them have a slowdown that
@@ -2147,19 +2214,28 @@ Text
   | 6        | 6           | 1      | 2         | true    | 128     | 1     | 1.015087 |
   | 6        | 6           | 1      | 2         | true    | 512     | 8     | 1.015301 |
 
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/heteroscedasticity_v_len.pdf}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/heteroscedasticity_x_comp.pdf}
+   \end{minipage}
+   \caption{\label{fig:heteroscedasticity}\textbf{Non-uniform variance}: This figures shows in our data the noise 
+    does not the same law.}
+   \end{figure}
+   #+END_LaTeX   
 
-   We can also notice in the figure\ref{} that the variability is not
+   We can also notice in the figure\ref{fig:heteroscedasticity} that the variability is not
    the same everywhere, hence our random variables are
    heteroscedastics. This  because the noise does not 
    follow the same law for the different value of the same
    parameters. This noise is due to complex interactions between
    parameters.  
 
-
-   #+RESULTS:
-   [[file:./img/heteroscedasticity.png]]
-
-** DONE Differences between regression of expectation and quantile regression
+** Differences between regression of expectation and quantile regression
 ***                                                                :noexport:
    #+begin_src sh :results output :exports none
        ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
@@ -2306,7 +2382,9 @@ Text
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/why_we_choose_quantile_reg_x_comp.pdf}
    \end{minipage}
-   \caption{\label{fig:qr-example}Linear regression vs quantile regression}
+   \caption{\label{fig:qr-example}\textbf{Linear regression vs quantile regression}: The 
+    classical linear regression fails to predict the evolution of the minimum when the error 
+    law is not uniform while quantile is more suited to this.}
    \end{figure}
    #+END_LaTeX
    
@@ -2347,7 +2425,7 @@ Text
    is correct. That is probably one of the reason why the worst case
    of RQ is better than the worst case of LM.
    
-** DONE LM: Success and "failures"
+** LM: Success and "failures"
 ***                                                                :noexport:
 **** Bad case
     #+begin_src sh :results output :exports none
@@ -2770,6 +2848,10 @@ Text
    \includegraphics[width=\linewidth]{./img/lucky_prediction.pdf}
    \caption{\label{fig:lucky_prediction}Lucky case}
    \end{minipage}
+   \caption{\textbf{Comparison between predicted and observed values}: A correct model has a correlation
+   between predicted and observed values. Even if the model is not perfect the most important is the 
+   correlation between low values. Which means the it correctly estimate good performing combinations 
+   (see Figure\ref{fig:good_prediction} and figure\ref{fig:lucky_prediction}).}
    \end{figure}
    #+END_LaTeX
 
@@ -3365,7 +3447,7 @@ Text
 *** LHS
 *** D-Optimal
 *** Managing the budget of points
-* DONE Technical difficulties
+* Technical difficulties
   The approach we proposed allowed us to obtain very good results
   in a constrained experimental budget. Implementing such approach
   raised however several technical difficulties which we haven't
@@ -3374,7 +3456,7 @@ Text
   is instead discrete and constrained. The other difficulty comes
   with the use of quantile regression in place of classical linear
   regression. 
-** DONE Constrained and discrete search space
+** Constrained and discrete search space
 *** DONE Model optimization
 ****                                                               :noexport:
     #+begin_src sh :results output :exports both
@@ -3662,7 +3744,7 @@ Text
    \end{minipage}
    \end{figure}
    #+END_LaTeX    
-** DONE Quantile regression
+** Quantile regression
    R provides a function for computing quantile regression through the
    package =quantreg=. However with our data, it failed to compute
    estimate of coefficients nor the standard error and the p-values,
@@ -3684,7 +3766,7 @@ Text
    optimistic. Hence it is more complicated to make inferences about
    models and for the moment we are not able to make correct
    assessment with this method.  
-* DONE Conclusion
+* Conclusion
   HPC platforms are very complex and unique machines, to exploit their
   power it is necessary to write specialized codes, which is a difficult
   task. Many tools have therefore been developed to assist the
@@ -3741,7 +3823,6 @@ Text
   choices so that others can build upon it. Our experimental journal
   is thus freely available at \url{https://github.com/swhatelse/M2_internship}. 
 
-** DONE Future work
   We managed to get good results on a Laplacian kernel but it remains
   a lot of work to do. In the future we would like to apply our approach
   to more complicated cases such as a matrix multiply and on
