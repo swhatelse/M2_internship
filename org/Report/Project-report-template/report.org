@@ -1084,12 +1084,13 @@ Text
    Stefan Wild et al. focused on porting optimization between similar
    platforms\cite{RoyBalHovWil2015}. By using machine learning
    techniques they were able to build performance model of
-   combinations on a platform to estimate performances on other
-   platforms. This allows them to find interesting part of the search
+   combinations on a platform to estimate their performances on other
+   platforms. This allows them to predict interesting part of the search
    space to explore. This approach is very efficient with similar
    platforms, they even managed to find correlation of good performing
-   combination between intel CPU and IBM Power but it fails with to
-   dissimilar platforms like with ARM in their case. 
+   combinations between an Intel Sandybridge CPU and an IBM
+   Power 7. However it fails with to dissimilar platforms like with
+   ARM in their case.  
 
    As efficiency of a search strategy is dependent on the structure of
    the search, machine learning can be used to learn what search
@@ -1270,14 +1271,15 @@ Text
    low experiments cost. For this reason many techniques has been
    developed to sample the space wisely.
  
-   The efficiency of One-Factors-At-a-Time (OFAT) is the method of
-   changing one factor at a time when the others are kept fixed. It is
-   very limited when there are many factors, because it requires high
-   number of experiments and it cannot find interactions between 
-   factors. For these reasons factorial designs are generally more
-   suited. They vary many parameters at the same time, hence
-   interactions can be trapped, the estimate of the impact of the
-   factors is more precise with a lower experiment cost.
+   The One-Factors-At-a-Time (OFAT) method consists in
+   changing one factor at a time while the others are kept
+   fixed. Although quite commonly used in computer science it suffers
+   from several drawbacks. It is very limited because it cannot find
+   interactions between  factors. For this reason factorial designs
+   are generally more suited. They vary many parameters at the same
+   time, hence interactions can be captured, the estimate of the impact
+   of the factors is more precise with a lower experiment
+   cost\cite{books/daglib/0076234}. 
   
    There are different kind of factorial designs. The first one is the
    full factorial design which consider the entire space. The simplest
@@ -1301,7 +1303,7 @@ Text
    Optimal design is another category of factorial design. It samples
    the space such way that the variance is minimum, hence the
    estimation of the factors as the minimum bias. The points are taken
-   according statistical model that means that means that the model
+   according statistical model that means that the model
    must be already known. The advantage of optimal designs over
    non-optimal is that the need less experiment, as the sampling is
    localized. The D-Optimal design is one of them, it chooses the
@@ -1309,7 +1311,7 @@ Text
    estimate of a model is minimized.
     
    The tuning of applications is in fact running multiple experiences in an
-   automated or semi-automatic process. We thing that techniques from
+   automated or semi-automatic process. We think that techniques from
    experimental design can help us to sample the space efficiently to
    achieve the optimization with low experimental cost.
 
@@ -1352,23 +1354,24 @@ Text
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
   github\footnote{https://github.com/swhatelse/M2\_internship}. It 
-  contains detailed about installation and configuration steps. It
-  keeps tracks of every experiments including their description and
-  analysis. Now it has more than 27K lines with more 14K lines of code
+  contains details about installation and configuration steps. It
+  keeps tracks of every experiment including their description and
+  analysis. Now it has more than 33K lines with more 18K lines of code
   and analysis. It is structured in a chronological way and thus
   follows the natural evolution of the work. This gives the possibility to
-  easily understand what has been done at each step and why.
-  Every pieces of codes I wrote is explained using literate programming, which
-  is straightforward using the org-mode of emacs.
-  The github repository also contains the complet set of scripts and
-  data used for experiments giving the possibility to anyone to re-run
-  the same experiments using the same data.
+  easily understand what has been done at each step and why. The
+  analysis is made by using the language R. Every pieces of codes I
+  wrote is explained using literate programming, which is
+  straightforward using the org-mode of emacs. The github repository
+  also contains the complet set of scripts and data used for
+  experiments giving the possibility to anyone to re-run the same
+  experiments using the same data. 
 
 ** TODO Case study
    # Maybe cite Brice paper for this part
-   In order to elaborate our approach, we took a very simple example
+   In order to try our approach, we took a very simple example
    which is a kernel that computes the Laplacian of an image. We want
-   the minimize the time to compute a pixel and there are multiple
+   to minimize the time to compute a pixel. There are multiple
    optimization that can be done to enhance the performance of this
    kernel. The parameters and their values we used to tune this
    applications are the following: 
@@ -1384,49 +1387,50 @@ Text
      | threads number     | 32,64,128,256,512,1024            |
      | local work size y  | 1,2,4,8,16,32,64,128,256,512,1024 |
 
-   The first parameter vector length allow to specify the size of the
-   vectors used to performs the computation. The Laplacian can be
-   easily vectorized and on hardware that provides vector support 
-   it allows to save some decoding phase as the same instruction is
-   applied to the entire vector. As each architecture have different
-   size of vectors, and some do not provide vector support we need to
-   try the different values of vector size.
+   1. Vector length allows to specify the size of the
+      vectors used to performs the computation. The Laplacian can be
+      easily vectorized and on hardware that provides vector support 
+      it allows to save some decoding phase as the same instruction is
+      applied to the entire vector. As each architecture have different
+      vector sizes, and some do not provide vector support we need to
+      try the different values of vector size. Thus we try all the
+      different vector size supported by OpenCL.
 
    # Not satisfying yet
-   The second parameter is related to the vectorization. As vectors
-   are manipulated, when loading, some data overlap. Thus it is
-   possible to synthetize the load from other data and consequently
-   reduce the number of loads. 
+   2. Load overlap is related to the vectorization. As vectors
+      are manipulated, when loading, some data overlap. Thus it is
+      possible to synthetize the load from other data and consequently
+      reduce the number of loads. 
 
-   The third parameter allows to specify the size of the variables used
-   for storing intermediary results. Using smaller type can reduce the
-   pressure on the registers but casting variable can also be
-   harmfull. Hence the default size is int (4) and we can also use
-   short (2). 
+   3. Temporary size allows to specify the size of the variables used
+      to store intermediary results. Using smaller type can reduce the
+      pressure on the registers but casting variables can also be
+      harmful. Hence the default size is int (4) and we can also use
+      short (2). 
 
-   The fourth parameter splits the image into pieces of the size of
-   elements number. This specifies the of component a threads will
-   process, that is the amount of work per thread, and as a
-   consequence defines the number of threads used to perform the 
-   computation. More threads can lead to better parallelism but also
-   more overhead due to the bigger number of threads to manage. 
+   4. Elements number splits the image into pieces of the size of
+      elements number. This specifies the of component (RGB) a threads will
+      process. That is the amount of work per thread, as a
+      consequence it defines the number of threads used to perform the 
+      computation. More threads can lead to better parallelism but also
+      more overhead due to the bigger number of threads to manage. 
    
    # Not satisfying yet
-   The fifth parameter is used to specify how the work for a thread is
-   organized by specifying the tiling. It gives how the components of
-   the image are distributed in the y-axis.
+   5. Y component number is used to specify how the work for a thread is
+      organized by specifying the tiling. It gives how the components of
+      the image are distributed in the y-axis.
 
-   Finally the two last parameters allow to tune two OpenCL/Cuda
-   parameters and describe the distribution of the work at coarse
-   grain. In OpenCL and Cuda, threads are grouped and scheduled 
-   by blocks on a compute unit. Which means that threads are not
-   scheduled individually but by blocks. Thus we use the parameter
-   threads number to specify the size of a group. The parameter local
-   work size y determines how the threads are organized in a block and
-   represent the number of threads in the y-axis. These parameters
-   have an impact on the scheduling, the data sharing and the
-   occupancy of the compute units. Thus they can lead to better usage
-   of the resources.
+   6. The two last parameters allow to tune two OpenCL/Cuda
+      parameters and describe the distribution of the work at coarse
+      grain. In OpenCL and Cuda, threads are grouped and scheduled 
+      by blocks on a compute unit. Which means that threads are not
+      scheduled individually but by blocks. Thus we use the parameter
+      threads number to specify the size of a group. The parameter local
+      work size y (lws y) determines how the threads are organized in
+      a block and represent the number of threads in the y-axis. These
+      parameters have an impact on the scheduling, the data sharing
+      and the occupancy of the compute units. Thus they can lead to
+      better usage of the resources.
 
    All the combinations of these parameters would gives a search space
    of 190080 points. However some points are unfeasible. For instance,
@@ -1436,10 +1440,14 @@ Text
    limited to the available resources on the device. Exceeding the
    resources cause the kernel to crash. That is why use constraints to
    reject all the that would produce a kernel to big or that is not
-   correct. Finally it remains 23100 points in the search space.
+   correct. Finally it remains 23120 points in the search space. For
+   comparison purpose we performed an exhaustive search which took
+   about 154 hours. 
 
-   The experiments are run on one machine with GPU Nvidia K40 using the
-   driver 340.32 and two CPUs Intel E5-2630.
+   The experiments are run on one machine with GPU Nvidia K40c using the
+   driver 340.32 and two CPUs Intel E5-2630. The OS is Debian and we
+   used the GCC compiler version 4.8.3. All the details about each
+   experiments environment are available in the git repository.
 ** TODO Controlling measurement
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
@@ -2620,7 +2628,7 @@ Text
    In the case of our Laplacian kernel the elements_number parameter
    is the number of component a thread compute and thus determines the
    number of threads used to perform the computation of the
-   Laplacian. Using more threads allows to compute more component at
+   Laplacian. Using more threads allows to compute more component
    in parallel. However it can also lead to a less efficient sharing
    of the cache resources as it will increase the number of memory
    loads. Also the higher the number of threads the more important the
