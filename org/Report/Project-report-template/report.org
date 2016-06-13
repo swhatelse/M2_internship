@@ -1674,9 +1674,9 @@ Text
             coord_cartesian(xlim=c(.9,3), ylim=c(0,1000)) +
             geom_histogram(aes(slowdown),binwidth=.05,color="white", fill="gray48") +
             geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=1000, fill="red"), alpha=0.3) +
-            geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
+            geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=3 ) +
             geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
-            labs(y="Frequency", x="Slowdown compared best combination of the entire search space") +
+            labs(y="Frequency", x="Slowdown compared to the optimal solution") +
             scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
             ggtitle("") + 
             theme(legend.position="top")
@@ -1839,33 +1839,49 @@ Text
     Table\ref{tab:comparison-table}). We do not have  a convincing
     explanation for this phenomenon. 
 
-    With this search space, the local search GR is
-    inefficient, half of the time we get a slowdown of higher than
-    x2. It can be every far from the optimal solution, up to x125
-    slower\ref{tab:comparison-table}. Combining multiple local
-    searches with random starting points greatly improves the result,
-    the worst solution is never slower than a factor of 3.164 and half
-    of the time the slowdown is below 18.7%. The LHS search does a
-    little bit better better with a slowdown that is never higher than
-    52.4%. 50% of the time we can get a slowdown lower than 18.8%.
-    The uniform random search RS is very efficient here. Half of the time
-    we get a slowdown that is less than 7.9% and we do not get a
-    maximum slowdown of 38.8%.
-    The genetic algorithm GA gives even better results with a slowdown
-    which is less than 7.3% half of the time, a mean slowdown of 10.2%
-    and a maximum slowdown of 38.8%. 
-    The technique using least square regression is extremely efficient,
-    most of the time it converges to the same solution 
-    which has a slowdown of 1.2%. However it never find the best
-    solution.With a mean slowdown of 2.2% it is 7 times better than
-    GA. It only failed three times giving a solutions with a slowdown of
-    a factor 2.064 which is worse than worst solution of the GA.
-    Using quantile regression we managed to improve the results of the
-    classical least square regression. Almost every time it converge
-    to the same solution as with LM and the worst solution has a
-    slowdown of of a factor 2.064. However like LM it does not find
-    the optimal solution.
+    Now, let us focus on strategies that build on local
+    search. The GS strategy is extremely inefficient since half of
+    the time we get a slowdown of higher than 2. It can be every
+    far from the optimal solution (up to 125 slower as reported in
+    Table\ref{fig:search_comparison}), which is why only a few
+    solutions are reported in the histograms of
+    Figure\ref{fig:search_comparison}. where we restrict to
+    slowdowns smaller than 3. The average number of configurations explored by
+    this greedy approach is also very low (about 22 in average),
+    which shows that our search space is riddled with local
+    minima. In this context, combining several starting points in
+    the GSR really makes it appears like a mix between RS and GS
+    and greatly improves upon GS. The worst solution is never
+    slower than a factor of 3.164 and half of the time the
+    slowdown is below 18.7%. Still, this remains worse than the
+    simple Random Sampling strategy and shows that locality is of
+    very little use. 
 
+    Now let us consider the GA that is a technique, which is known
+    to seamlessly handle local minimum as it is a specific form of
+    simulated annealing. Unfortunately, this generic technique
+    does not really improves upon the simple RS since the slowdown
+    is less than 8.6% half of the time (resp. 7.9% for a RS), the
+    mean slowdown is 11.8% (resp. 10.2% for a RS) and a maximum
+    slowdown of 64.6% (resp 38.8% for a RS). Again, exploiting
+    locality is quite difficult. It is possible that much better
+    solutions could be obtained with more experiments but these
+    experiments tend to disqualify the GA approach in a tight
+    experimental budget.
+
+    Finally, the results based on the global modeling approach
+    lead to surprisingly good results since most executions lead
+    to a solution that is only 1.2% away from the optimal
+    solution. This is explained by the fact that a few samples are
+    sufficient to detect trends and how several parameters should
+    be fixed and thus guide the analyst toward the right
+    region. The subsequent sampling allows to fix the remaining
+    parameters and to find good solution in all cases. However in only 3 cases
+    LM does worst than the worst case of GA (resp. 1.646) with
+    slowdown of 3.77 (see Table\ref{tab:comparison-table}. RQ managed
+    to have a worst case better than LM with a slowdown of 2.064 but
+    still higher than GA.  
+ 
     In brief, the regression of expectation gives almost every time
     the exactly same results which is very close to the best solution
     of the entire search space but it never reaches it. With the
@@ -1879,7 +1895,12 @@ Text
    \begin{figure}[htb]
    \centering
    \includegraphics[width=\linewidth]{./img/results_hist.pdf}
-   \caption{\label{fig:search_comparison}Search comparison}
+   \caption{\label{fig:search_comparison}Comparison of the efficiency of the different search
+      methods. The histogram of the normalized speed (1000 values for
+      each method) allows to better compare the different
+      heuristics. The red dashed line depicts the estimation of the
+      mean with the corresponding 95% confidence interval in gray. The
+      green dotted line depicts the sample median}
    \end{figure}
    #+END_LaTeX
 
@@ -2339,7 +2360,7 @@ Text
       df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
       logs <- readRDS("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
       df_lm_random <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
-      df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),][1,]
+      df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),]
       df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),][1,]$time_per_pixel / min(df$time_per_pixel)
       working_set <- logs[[544]]$starting_set
 
@@ -2356,10 +2377,13 @@ Text
     #+begin_example
         elements_number y_component_number vector_length temporary_size
     544              24                  6            16              2
+    778              24                  6            16              2
         vector_recompute load_overlap threads_number lws_y time_per_pixel
     544             true        false             64     1   4.393478e-10
+    778             true        false             64     1   4.393478e-10
         point_number method
     544          119     LM
+    778          119     LM
     [1] 3.771183
 
     Call:
@@ -2404,7 +2428,28 @@ Text
     Residual standard error: 2.395e-09 on 47 degrees of freedom
     Multiple R-squared:  0.2081,	Adjusted R-squared:  0.1744 
     F-statistic: 6.174 on 2 and 47 DF,  p-value: 0.004161
-    #+end_example
+#+end_example
+
+     #+begin_src R :results output :session :exports both
+     df_lm_random$slowdown <- df_lm_random$time_per_pixel / min(df$time_per_pixel)
+     df_lm_random[df_lm_random$slowdown > 1.646,]
+     #+end_src
+
+     #+RESULTS:
+     #+begin_example
+         elements_number y_component_number vector_length temporary_size
+     335              24                  6            16              4
+     544              24                  6            16              2
+     778              24                  6            16              2
+         vector_recompute load_overlap threads_number lws_y time_per_pixel
+     335             true        false             32     1   4.378793e-10
+     544             true        false             64     1   4.393478e-10
+     778             true        false             64     1   4.393478e-10
+         point_number method slowdown
+     335          119     LM 3.758578
+     544          119     LM 3.771183
+     778          119     LM 3.771183
+     #+end_example
 
     #+begin_src R :results output graphics :file ./img/bad_prediction.pdf :exports both :width 4 :height 4 :session
       library(ggplot2)
