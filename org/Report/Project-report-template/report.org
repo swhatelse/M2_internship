@@ -656,7 +656,7 @@ Text
 ** Conclusion [0/2]
    And finally I saved the world...
 
-* DONE Introduction
+* TODO Introduction
 ** Why is performance optimization difficult?
   From genome sequencing to molecular dynamics, including climate or
   earthquake modeling, or aerodynamics, there is an ever increasing
@@ -1282,8 +1282,8 @@ Text
    #+RESULTS:
    [[file:img/DoE_examples.png]]
 
-* DONE Methodology
-** DONE Reproducible research
+* TODO Methodology
+** TODO Reproducible research
   Such experimental process mandate rigorous methodology.
   In order for this work to be usefull for someone else a laboratory
   book is available publicly on
@@ -1300,7 +1300,7 @@ Text
   data used for experiments giving the possibility to anyone to re-run
   the same experiments using the same data.
 
-** DONE Case study
+** TODO Case study
    # Maybe cite Brice paper for this part
    In order to elaborate our approach, we took a very simple example
    which is a kernel that computes the Laplacian of an image. We want
@@ -1376,7 +1376,7 @@ Text
 
    The experiments are run on one machine with GPU Nvidia K40 using the
    driver 340.32 and two CPUs Intel E5-2630.
-** DONE Controlling measurement
+** TODO Controlling measurement
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
    #+end_src
@@ -1460,7 +1460,7 @@ Text
    \caption{\label{fig:warmup}Warm-up effect}
    \end{figure}
    #+END_LaTeX
-* DONE Envisioned general approach
+* TODO Envisioned general approach
    When using fully automated tools, the user has no feedback about
    the optimization process and does not have a lot of control. How
    good is the optimized version of the code? How is it possible to
@@ -1950,7 +1950,7 @@ Text
    #+RESULTS:
    [[file:./img/heteroscedasticity.png]]
 
-** DONE Differences between regression of expectation and quantile regression
+** TODO Differences between regression of expectation and quantile regression
    The previous results showed that using linear regression gives
    often good results. But there is a significant difference between
    regression of expectation and quantile regression. It is due to the
@@ -3103,7 +3103,7 @@ Text
   are some points that are still problematic. First one is due to
   the characteristics of our search space which is discrete and
   constrained. The other come from the use of quantile regression. 
-** Constrained and discrete search space
+** DONE Constrained and discrete search space
 *** DONE Model optimization
 ****                                                               :noexport:
     #+begin_src sh :results output :exports both
@@ -3268,17 +3268,9 @@ Text
    \includegraphics[width=\linewidth]{./img/search_space_3D_constrained_ugly.pdf}
    \caption{\label{fig:search_space_3d_constrained2}Constrained search space}
    \end{minipage}
-   \begin{minipage}{.45\linewidth}
-   \includegraphics[width=\linewidth]{./img/search_space_3D_constrained.pdf}
-   \caption{\label{fig:search_space_3d_constrained1}Constrained Search space but rounded}
-   \end{minipage}
-   \begin{minipage}{.45\linewidth}
-   \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
-   \caption{\label{fig:search_space_3d_barrier}Barrier approach}
-   \end{minipage}
    \end{figure}
    #+END_LaTeX
-*** TODO Sampling techniques
+*** DONE Sampling techniques
 ****                                                               :noexport:
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -3382,7 +3374,7 @@ Text
    \end{minipage}
    \end{figure}
    #+END_LaTeX    
-** TODO Quantile regression
+** DONE Quantile regression
    R provides a function for computing quantile regression through the
    package quantreg. However with our data, sometimes it failed to compute the
    estimate of coefficients, it could not compute the standard
@@ -3440,8 +3432,24 @@ Text
   performed an exhaustive search. On very large search space it would
   be interesting to use optimization techniques to search the best
   values of the factors on the predicted objective function. We can
-  deal with our constrained search space with a barrier approach is
-  order to guide the optimization in feasible regions.  
+  deal with our constrained search space by skipping some of them and
+  using rounding\ref{fig:search_space_3d_constrained1} and using a
+  barrier approach\ref{fig:search_space_3d_barrier} in order to guide
+  the optimization method in feasible regions. 
+
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/search_space_3D_constrained.pdf}
+   \caption{\label{fig:search_space_3d_constrained1}Constrained Search space but rounded}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
+   \caption{\label{fig:search_space_3d_barrier}Barrier approach}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX
 
 * DONE Conclusion
   HPC platforms are very complex and unique machines, to exploit their
