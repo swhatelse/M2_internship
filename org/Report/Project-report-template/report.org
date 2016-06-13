@@ -3366,10 +3366,14 @@ Text
 *** D-Optimal
 *** Managing the budget of points
 * DONE Technical difficulties
-  With our approach we manage to get very good results, however there
-  are some points that are still problematic. First one is due to
-  the characteristics of our search space which is discrete and
-  constrained. The other come from the use of quantile regression. 
+  The approach we proposed allowed us to obtain very good results
+  in a constrained experimental budget. Implementing such approach
+  raised however several technical difficulties which we haven't
+  explained yet. The first one comes from characteristics of our
+  search space which not a simple compact and convex $k$-cell but
+  is instead discrete and constrained. The other difficulty comes
+  with the use of quantile regression in place of classical linear
+  regression. 
 ** DONE Constrained and discrete search space
 *** DONE Model optimization
 ****                                                               :noexport:
@@ -3489,12 +3493,14 @@ Text
     [[file:img/search_space_3D_barrier.pdf]]
 
 **** 
-    Once the model is instantiated to find the optimal values it is
-    necessary to perform a search. The predicted function is
-    continuous\ref{fig:search_space_3d} whereas our search space is
-    discrete\ref{fig:search_space_3d_constrained2}. Hence continuous
-    optimizations techniques does not work correctly with such search
-    space. 
+    Once the model is correctly instantiated, it can be used to find
+    the optimal values. The predicted function is
+    continuous (see Figure\ref{fig:search_space_3d}) whereas our
+    search space is
+    discrete\ref{fig:search_space_3d_constrained2}. Hence classical 
+    continuous optimizations techniques such as the ones readily
+    available in R (Nelder-Mead, quasi-Newton and conjugate-gradient
+    algorithms) do not work correctly with such search space.
     Our search space also has multiple constraints that restricts greatly
     the set of feasible points. There are constraints that ensure the
     consistency of the combinations of factors. For example
@@ -3512,18 +3518,21 @@ Text
      \[elements\,number\quad mod\quad y\,component\,number = 0\]    
     #+END_LaTeX
     There is also another kind of constraints more complex that reject
-    combinations that would generate a too big kernel. In OpenCL and
+    combinations that would generate a too large kernel. In OpenCL and
     Cuda, kernel are limited by physical resources of the device, a
     kernel too big simply does not compile.
 
     For these reason it is necessary to use discrete and constrained
-    optimization techniques. However we did not use yet such methods in
-    order to avoid bias that could be induced by search methods that
-    could bias our analysis. We put aside this aspect and for the
-    moment we perform an exhaustive search only on feasible points
-    using our predict objective function to estimate the minimum
-    values of factors.  
-
+    optimization techniques. However we decided not to use such
+    methods yet. First, correctly implementing such involved
+    techniques requires some expertise that we were not able to
+    acquire in such a short amount of time and this could could have
+    biased our analysis of the whole approach. Second, evaluating the
+    prediction of the model is really quick so this analytic
+    optimization is not the bottleneck. Therefore, we simply decided
+    to perform an exhaustive search on all feasible points using our
+    predicted objective function to estimate the optimal combination
+    of factors. 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
