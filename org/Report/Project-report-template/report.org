@@ -2383,7 +2383,7 @@ Text
     coefficient, the bigger is the standard error compared to the
     coefficient the more inaccurate the prediction.  
     
-    An additional way of accessing the quality of a model is to
+    An additional way of assessing the quality of a model is to
     compare the predicted values with the real ones, the more they are
     correlated the more accurate the model. The most important is
     correlation between the low values as we are interested mostly by
@@ -3386,7 +3386,7 @@ Text
    R provides a function for computing quantile regression through the
    package quantreg. However with our data, sometimes it failed to compute the
    estimate of coefficients, it could not compute the standard
-   error, the p-values, etc... which is crucial to access the quality
+   error, the p-values, etc... which is crucial to assess the quality
    of a model. Thus we had to implement another methods to perform
    quantile regression. There several ways to do it, we used a method
    that performs weighted least square regression iteratively to add
@@ -3399,7 +3399,8 @@ Text
    The other difficulty with this method is that we do not really know
    how to interpret the standard error, how to compute confidence
    intervals and the R-squared values are too optimistic. Hence it is
-   more complicated to make inferences about models. 
+   more complicated to make inferences about models and for the moment
+   we are not able to make correct assessment with this method. 
 * DONE Future work
   Now that we have tested our approach on the simple case of a
   Laplacian kernel and we managed to get good results we need to test
@@ -3410,9 +3411,9 @@ Text
   The previous raised technical difficulties are also a major axis of
   improvement. The most important one is to be able to compute
   confidence interval, standard error, coefficients of determination
-  for the quantile regression to be able to access the quality of a
+  for the quantile regression to be able to assess the quality of a
   model. We know that the quantile regression is better than the
-  classical least square regression but if we cannot access if the
+  classical least square regression but if we cannot assess if the
   model is accurate our not we are stuck. Thus is it crucial to
   improve this points.
 
@@ -3442,40 +3443,48 @@ Text
   deal with our constrained search space with a barrier approach is
   order to guide the optimization in feasible regions.  
 
-* Conclusion
+* DONE Conclusion
   HPC platforms are very complex and unique machines, to exploit their
   power it is necessary to write specialized codes which is a difficult
   task. However tools exist to help user in this way by generating
-  code automatically. There are the compilers, the source-to-source
-  transformation framework, and the meta-programming framework. They
+  code automatically. There are the compilers, source-to-source
+  transformation frameworks, and meta-programming frameworks. They
   are all able to generate different variant of the same code and the
   problem is to find which version is the best. The auto-tuning
-  consider this approach has mathematical optimization problem as the
-  search space can be huge and the exhaustive search is
+  consider this as mathematical optimization problem where the
+  search space can be huge and exhaustive search is
   prohibitive. In our knowledge all auto-tuning are fully automatic
-  process which exclude the user from the optimization phase of the
-  process. Thus he cannot access the quality of the solution and
-  cannot know if further improvements can be made. The main
-  contribution of this report was to design an innovative approach
-  which is semi-automatic and which involves the user in the
+  processes which exclude the user from the optimization phase. Thus
+  he can hardly assess the quality of the solution and 
+  cannot really know if further improvements can be made. The main
+  contribution of this report is to design an innovative approach in
+  which the user is put in a position of control by a semi-automatic
+  approach which involves the user in the
   optimization process, uses its knowledge and also guides him. Our
-  approach relies on regression techniques to predict the objective
+  approach uses the framework BOAST for the code generation and
+  evaluation and relies on regression techniques to predict the objective
   function, combined to techniques inspired from design of experiment
   to build accurate models with a minimum number of experiences. We
   compared our approach to other optimization techniques such as
   random search, genetic algorithm, greedy search, etc... and our
-  method significantly outclassed them. The few cases where it did
-  worst than a random search and a genetic algorithm came from the
-  fact that for evaluation purpose we automated the process by using
-  the same models and the same pruning choices without considering the
-  working sample. By re-injecting the user is the optimization loop we
-  showed that such case can be detected and handled correctly in order
-  to improve the result. We also demonstrated that linear regression
-  can have limitation for this kind of application because we have no
+  method performed very efficiently by significantly outclassed
+  them. The few cases where it did worst than a random search and a
+  genetic algorithm came from the fact that for evaluation purpose we
+  automated the process by using fix decisions without considering the
+  working sample. By re-injecting the user is the optimization loop
+  considering the available information of the search space he can
+  assess the quality of the model using the coefficient of
+  determination, the standard error compared to the estimate of the
+  coefficients of the factors and the p-values to take correct
+  decisions. We also demonstrated the limitations of the simple linear
+  regression for this kind of problems because there is have no
   certainty about the error law and the estimation of the mean is not
   the same thing as estimating the minimum. We demonstrated that for
-  this, quantile regression is more suited and improve the worst case
-  of the simple linear regression.
+  this, quantile regression is more suited and improves the worst case
+  of the simple linear regression. However we need additional work
+  compute correct coefficients of determination, standard error
+  and the p-values with it to be able to assess the quality of a model
+  as we are able to do it with the classical linear regression.
 * Acknowledgments
 #+LaTeX: \nocite{*}
 #+LaTeX: \def\raggedright{}
