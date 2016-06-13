@@ -1552,7 +1552,7 @@ Text
    there this effect is present. We also tried to quantify it along
    with the variability we could have between the different runs of
    the same version of the code in order to protect against it. The
-   figure\ref{warmup}, illustrates what we expected, there is a power
+   figure\ref{fig:warmup}, illustrates what we expected, there is a power
    saving mechanism on Nvidia K40 which turns the GPU into idle mode
    when the computational intensity is bellow a threshold. This effect
    occurs on the first size of image tested, which is just after the
@@ -1564,16 +1564,21 @@ Text
    protected against warm-up effect we just need to make at least four
    runs on the first size of image and we keep the run the gives
    minimal time to compute one pixel. However we also did the same
-   four all the size of images. An other concern is the variability
-   between multiple execution of the same version of code but as we
-   can see, it is only due to the warm-effect in the first image
-   size. On the other size of images we have almost no variability.
+   four all the size of images.
 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
    \includegraphics[height=.5\textheight]{./img/warm_up.pdf}
-   \caption{\label{fig:warmup}Warm-up effect}
+   \caption{\label{fig:warmup}\textbf{Warm-up effect}: 
+     This figure presents the time to compute a pixel on 4 different runs
+     for 5 different image size and for different vector length. We can see
+     that in the first image size we have some variability and the time to
+     compute a pixel dicrease when the run index increase while for the other 
+     image size the performances are stable. The first image
+     size being the first one tested just after the compilation of the
+     kernel. This assess the presence of a warm-up effect on Nvidia GPUs.
+   }
    \end{figure}
    #+END_LaTeX
 * TODO Envisioned general approach
@@ -1582,9 +1587,9 @@ Text
    good is the optimized version of the code? How is it possible to
    improve it? What does the search space look like? What are the
    parameters that have a big impact (high-order parameters) and those
-   which have a small impact (low-order parameters)? All this
+   which have a small impact (low-order parameters)? All these
    questions are necessary to understand the structure of the
-   problem and provide valuable information for the expert to be able
+   problem and provide valuable information to the expert to be able
    to prune the search space correctly and to choose the most suited
    search techniques. Thus we investigated the design of a
    semi-automated approach where the user tunes his application in an
@@ -1594,8 +1599,8 @@ Text
    understands well his kernel and knows the reason each code
    optimization he used.  
 
-   As objective the function is empirical and is costly to evaluate, our
-   approach consist in sampling the space with only few points to
+   As the objective the function is empirical and is costly to evaluate, our
+   approach consists in sampling the space with only few points to
    build a model in order to approximate it at low cost. We focused
    on linear regression because usually, it is enough to model
    accurately computer phenomenon. However a correct modeling goes
@@ -1604,7 +1609,7 @@ Text
    maximize the amount of information and minimize the number of
    points.
 
-   The figure\ref{fig:process} show the work-flow of our approach: 
+   The figure\ref{fig:process} shows the workflow of our approach: 
    1. The user interrogate the search space for example to find what
       are the parameters that have the most impact and their
       interactions, check his hypothesis about the model, etc...
@@ -1621,15 +1626,15 @@ Text
    4. The best value for the studied parameters are predicted from the
       model.
    5. The result of the regression and estimated best value for the
-      parameters are return to the user. At this step, either he is
+      parameters are returned to the user. At this step, either he is
       satisfied by the result of the regression and he can prune the
       search space by fixing the parameters to the estimated values.
       Or he can ask to test another model, ask more points in a
       particular area to refine the model, etc...
-   6. This process iterate until all parameters are fixed.
+   6. This process iterates until all parameters are fixed.
 
    In short the tuning is done through an iterative and instrumented
-   process where the user refine is model according to the extracted
+   process where the user refines is model according to the extracted
    information.
      
  
@@ -1723,50 +1728,102 @@ Text
 #+end_example
 
 *** 
-    To evaluate our solution, we compared it against the following search
-    methods that have already been used in auto-tuning:
-    - RS: is the uniform random search that take points randomly in the
+    To evaluate our solution, we compared it against the following
+    search methods that have already been used in auto-tuning
+    literature using an exploration budget of 120 points (0.5% of the
+    search space) that must not be exceeded:
+    - *RS*: is the uniform random search that take points randomly in the
       search space with equal probabilities. 
-    - GA: BOAST embeds an implementation of a genetic algorithm. We
-      used a population size of 20, number of generations of 5 and
-      mutation rate of 0.1. Among the different configuration tested
-      it was the one that gives the best results, however it could be
-      possible to obtain better results by tuning further the options.
-    - LHS: it is not methods use to search, it is a sampling
+    - *LHS*: it is not methods use to search, it is a sampling
       techniques which take point randomly but which also maximize the
       distance between the point to cover the full search
       space. However we want to see how a search based on it would
       perform. 
-    - GR: we implemented a greedy search which is a derivative-free
-      local search. From a starting point it explores all the possible
-      directions at distance one and goes to the direction that gives
-      the best improvement. This kind of algorithm is very efficient
-      on convex objective function or if we already know where to
-      search.
+    - *GS* (Greedy Search): we implemented a greedy search which
+      is a derivative-free local search. From a random starting point,
+      this algorithm explores all the possible directions at distance
+      one and moves to the direction that leads to the best
+      improvement. This kind of algorithm is efficient on convex
+      objective function but can easily be trapped in local
+      minimum. In such case, the algorithm may not have used its whole
+      experimental budget. This is why to illustrate the geometry of
+      the search space through the performance of this algorithm, we
+      consider a variant of this algorithm, *GSR* (Greedy Search with
+      Restart), that will repeatedly pick another point uniformly
+      chosen at random (i.e., like the RS strategy) and perform greedy
+      local improvements until the maximum number of experiments is
+      reached. The best solution found so far is then returned. 
+    - GA: BOAST embeds an implementation of a genetic algorithm. We
+      used a population size of 20 and mutation rate of 0.1. Among the
+      different configuration tested it was the one that gives the
+      best results but it may be possible to obtain better results by
+      tuning further the genetic algorithm parameters.  
     
+    Although the linear regression is the classical tool to use in
+    combination with design of experiments, while performing our
+    study, we realized some of the underlying hypothesis (in
+    particular the uniformity of variance\footnote{homoscedasticity})
+    did not hold and that using instead a technique called quantile
+    regression may be more sound. We therefore report both approaches
+    and will explain later in more details their difference.
+
     There are many ways of performing linear regression. We evaluated
     two of them: 
-    - LM: it uses the least square regression which gives an estimate
-      of the mean.
-    - RQ: it uses the quantile regression which gives an estimate of
-      a given quantile.
+    - LM: this corresponds to the iterative approach described in the
+      previous section and relying on a classical least square
+      regression which allows to estimate the expectation of
+      performance. A first sample of the whole space (with slightly
+      less thant half of the experimental budget) is done and several
+      models are evaluated. The best and simpler ones are kept and
+      used to fix the corresponding parameters. The approach is
+      repeated on the restricted space. If there are no more clear
+      directions suggested by the model and a few more experiments can
+      be done, a small sampling of the restricted set is carried out
+      and the best solution is returned. 
 
-    We measured each methods one 1000 time with about 120 (0.5% of
-    the search space) points for GA, RS, and LHS and we
-    evaluated the slowdown achieved compared to the best solution
-    available in the entire search space. For GR only 1 random point
-    is chosen as starting point.
+    - RQ: this approach is similar to the previous one but relies on
+      quantile regression instead and tries to model how the 5%
+      smaller values depend on the various input parameters. 
 
-    We evaluated our approach using the random uniform sampling
-    techniques to sample the search space. It starts with 50 random
-    points and adds just enough points after pruning to perform the
-    regression. The total number of points used is 119. Our approach
-    is intended to be semi-automatic but for evaluation purpose we
-    automated the process. For this we decided to apply exactly the
-    same strategy each time. We fixed the parameters in the same
-    order, thus pruning decisions are the same and we used exactly the
-    same model without considering the structure of the random set and
-    same things for the sampling decisions.
+    We measured each methods 1000 times. The average time needed to
+    perform a single exploration (120 points) is approximately 43
+    minutes. Since we wanted to compare our method to the absolute
+    best solution, we have also measured the whole space, which takes
+    about 144 hours. For each algorithm, we have evaluated the
+    slowdown achieved compared to the best solution available in the
+    entire search space.  
+
+    Our approach is intended to be semi-automatic but for evaluation
+    purpose we automated the process. For this we decided to apply
+    exactly the same strategy each time without considering the
+    random set:
+    1. Sampling 50 points at random
+    2. Setting the factors vector length and lws y and pruning the
+       search space using the model:
+       #+BEGIN_LaTeX
+       \[time\, per\, pixel = vector\, length  + lws\, y\]
+       #+END_LaTeX
+    3. Sampling 40 additional points at random in the pruned search space  
+    4. Setting the factor y component number and pruning the
+       search space using the model:
+       #+BEGIN_LaTeX
+       \[time\, per\, pixel = y\, component\, number\]
+       #+END_LaTeX
+    5. Sampling 20 additional points at random in the pruned search space    
+    6. Setting the factor elements number and pruning the
+       search space using the model:
+       #+BEGIN_LaTeX
+       \[time\, per\, pixel = elements\, number\]
+       #+END_LaTeX
+    7. Sampling 5 additional points at random in the pruned search space    
+    8. Setting the factor threads number and pruning the
+       search space using the model:
+       #+BEGIN_LaTeX
+       \[time\, per\, pixel = threads\, number + \frac{1}{threads\, number}\]
+       #+END_LaTeX
+    9. Taking the last 4 remaining points in the pruned search space
+       as we are below (119 points) the maximum number of points and
+       take the best remaining combination.  
 
     Figure\ref{fig:search_comparison} shows the results of the
     different methods. With this search space, the local search GR is
