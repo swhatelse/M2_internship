@@ -1394,43 +1394,87 @@ Text
       applied to the entire vector. As each architecture have different
       vector sizes, and some do not provide vector support we need to
       try the different values of vector size. Thus we try all the
-      different vector size supported by OpenCL.
+      different vector size supported by OpenCL. Nvidia GPUs
+      do not provide any vector support and vector variables are
+      handle like scalar variable. However this can have a good effect
+      on the caching but it can also has negative effect because it
+      would increase data movement. Thus it is difficult to envision a
+      model for this factor and considering it has a linear impact
+      is a reasonable starting point.
 
-   # Not satisfying yet
    2. Load overlap is related to the vectorization. As vectors
       are manipulated, when loading, some data overlap. Thus it is
       possible to synthetize the load from other data and consequently
-      reduce the number of loads. 
+      reduce the number of loads. As it is a factors with only 2
+      levels (true or false) the model for its impact is necessarily
+      linear. 
 
    3. Temporary size allows to specify the size of the variables used
       to store intermediary results. Using smaller type can reduce the
       pressure on the registers but casting variables can also be
       harmful. Hence the default size is int (4) and we can also use
-      short (2). 
+      short (2). Like load overlap it is a 2 levels factor hence we
+      use a linear model for it. 
 
    4. Elements number splits the image into pieces of the size of
       elements number. This specifies the of component (RGB) a threads will
       process. That is the amount of work per thread, as a
       consequence it defines the number of threads used to perform the 
-      computation. More threads can lead to better parallelism but also
-      more overhead due to the bigger number of threads to manage. 
+      computation. Using more threads allows to compute more component
+      in parallel. However it can also lead to a less efficient sharing
+      of the cache resources as it will increase the number of memory
+      loads. Also the higher the number of threads the more important the
+      overhead due to their management. Hence the impact of the number of
+      elements may be modeled as follow:
+      #+BEGIN_LaTeX
+      \[ \displaystyle elements\, number + \frac{1}{elements\, number} \]
+      #+END_LaTeX  
+      
+      Or like this:
+      #+BEGIN_LaTeX
+      \[ \displaystyle elements\, number + elements\, number^2 \]
+      #+END_LaTeX  
    
-   # Not satisfying yet
    5. Y component number is used to specify how the work for a thread is
       organized by specifying the tiling. It gives how the components of
-      the image are distributed in the y-axis.
+      the image are distributed in the y-axis. This tilling optimization may take
+      advantage of the organization of memory banks on Nvidia GPUs and
+      thus improve the data usage. The impact is suspect to have an
+      almost quadratic shape and we can try either a model like this:
 
-   6. The two last parameters allow to tune two OpenCL/Cuda
-      parameters and describe the distribution of the work at coarse
-      grain. In OpenCL and Cuda, threads are grouped and scheduled 
+      #+BEGIN_LaTeX
+       \[ \displaystyle y component\, number + y\, component\, number^2 \]
+      #+END_LaTeX  
+  
+      Or either like this:
+   
+      #+BEGIN_LaTeX
+       \[ \displaystyle y\, component\, number\, + \frac{1}{y\, component\, number} \]
+      #+END_LaTeX
+
+   6. In OpenCL and Cuda, threads are grouped and scheduled 
       by blocks on a compute unit. Which means that threads are not
-      scheduled individually but by blocks. Thus we use the parameter
-      threads number to specify the size of a group. The parameter local
-      work size y (lws y) determines how the threads are organized in
-      a block and represent the number of threads in the y-axis. These
-      parameters have an impact on the scheduling, the data sharing
-      and the occupancy of the compute units. Thus they can lead to
-      better usage of the resources.
+      scheduled individually but by blocks. Threads number specifies
+      the size of a group. Threads in a 
+      group can share data, bigger groups can lead to  better data
+      usage. However smaller groups generally gives more scheduling
+      opportunity but there might be an overhead due to a higher
+      number of work  groups to manage. We can either try this model: 
+
+     #+BEGIN_LaTeX
+      \[ \displaystyle threads\, number + threads\, number^2 \]
+     #+END_LaTeX  
+  
+     Or this one:
+   
+     #+BEGIN_LaTeX
+      \[ \displaystyle threads\, number + \frac{1}{threads\, number} \]
+     #+END_LaTeX  
+
+   7. Local work size y (lws y) determines how the threads are
+      organized in a block and represent the number of threads in the
+      y-axis. For this parameter it is difficult to envision what kind
+      of impact it can have so we started with a simple linear model.
 
    All the combinations of these parameters would gives a search space
    of 190080 points. However some points are unfeasible. For instance,
