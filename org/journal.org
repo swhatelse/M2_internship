@@ -32017,6 +32017,8 @@ h[g.name.to_sym] = 1024
       df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
       df_rq_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/rq_random_new_strat_1000.csv", strip.white=T, header=T)
 
+      df_greedy$method <- "GS" 
+      df_greedy_multiple$method <- "GSR" 
 
       df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random, df_rq_random, df_greedy_multiple)
       # df_merged <- rbind(df_uniform, df_lm_random, df_rq_random)
@@ -32058,7 +32060,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-3912W-5/figure3912WWw.png]]
+    [[file:/tmp/babel-7579fhn/figure7579lRP.png]]
 
 *** Local search with our starting point
     It does not make any progress:
