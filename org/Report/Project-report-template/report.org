@@ -1061,36 +1061,35 @@ Text
  
 * TODO State of the art
 ** Auto-tuning
-   In auto-tuning one can two major categories of approaches. Some
+   In auto-tuning one can two distinguish major categories of approaches. Some
    have focused on the use of machine learning techniques to build
-   models make predictions. While others have worked more around the
-   optimization side to find more suited search techniques that are
-   able to find the near-optimal solution by exploring as little
-   points of the search space as possible. 
+   models that make predictions. While others have worked with more direct 
+   optimization techniques that are aim at finding the near-optimal
+   solution by exploring as little points of the search space as possible. 
 *** Machine learning
    This technique is generally used to identify category of programs
    that have the same characteristics by building models over large
    training sets, and to determine what is the best action to apply
    for this category of programs. Thus, there is a will of
-   generalization, the knowledge is reuse from previous experiences. 
+   generalization, the knowledge is reused from previous experiences. 
 
    This approach has been proven successful by the project Milepost
-   GCC from Grigori Fursin\cite{fursin:hal-00685276}, which is now part of GCC. He used
-   machine learning to learn characteristics of programs and the
-   distributions of combinations that gives the most speedup. The idea
-   is that good performing combinations have high probability to bring
-   good speedup for similar programs. This allowed to reuse knowledge
-   across programs.
+   GCC from Grigori Fursin\cite{fursin:hal-00685276}, which is now
+   part of GCC. He used machine learning to learn characteristics of
+   programs and the distributions of combinations that gives the most
+   speedup. The idea is that good performing combinations have high
+   probability to bring good speedup for similar programs. This
+   allowed to reuse knowledge across programs.
    
-   Stefan Wild et al. focused porting of optimization between similar
-   platforms\cite{RoyBalHovWil2015}. They study the correlation between platform and
-   the performance of combinations parameters. They used machine
-   learning to build performance model of platform and this model
-   to approximate performance of another platform. The more the
-   combinations performance are correlated between two platforms the
-   more the accurate the predictions. They managed to find correlations
-   between intel CPU, IBM Power but this approach fails with too
-   dissimilar platforms (ARM in their case).
+   Stefan Wild et al. focused on porting optimization between similar
+   platforms\cite{RoyBalHovWil2015}. By using machine learning
+   techniques they were able to build performance model of
+   combinations on a platform to estimate performances on other
+   platforms. This allows them to find interesting part of the search
+   space to explore. This approach is very efficient with similar
+   platforms, they even managed to find correlation of good performing
+   combination between intel CPU and IBM Power but it fails with to
+   dissimilar platforms like with ARM in their case. 
 
    As efficiency of a search strategy is dependent on the structure of
    the search, machine learning can be used to learn what search
