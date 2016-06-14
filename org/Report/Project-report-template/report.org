@@ -3691,7 +3691,7 @@ every time close to optimal solutions.
   in a constrained experimental budget. Implementing such approach
   raised however several technical difficulties which we haven't
   explained yet. The first one comes from characteristics of our
-  search space which not a simple compact and convex $k$-cell but
+  search space which is not a simple compact and convex $k$-cell but
   is instead discrete and constrained. The other difficulty comes
   with the use of quantile regression in place of classical linear
   regression. 
@@ -4056,7 +4056,7 @@ every time close to optimal solutions.
      efficiently and significantly outperformed the other. The few
      situations where it returned a poor combination of parameters
      come from the fact that for evaluation purpose we automated the
-     process by using fix decisions without considering the working
+     process by using fixed decisions without considering the working
      sample. We explained how in such situation, when the analyst is
      part of the the optimization loop, he is able to consider all the 
      available information of the search space to assess the quality 
@@ -4069,7 +4069,7 @@ every time close to optimal solutions.
      is not the same thing as estimating the minimum. We demonstrated
      that for this, quantile regression is more suited and improves the
      worst case of the simple linear regression. However we need
-     additional work compute correct coefficients of determination,
+     additional work to compute correct coefficients of determination,
      standard error and the p-values with it to be able to assess the
      quality of a model as we are able to do it with the classical linear
      regression. 
