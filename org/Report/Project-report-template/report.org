@@ -1910,9 +1910,13 @@ every time close to optimal solutions.
     entire search space.  
 
     Our approach is intended to be semi-automatic but for evaluation
-    purpose we automated the process. For this we decided to apply
-    exactly the same strategy each time without considering the
-    random set:
+    purpose we automated the process. Based on few observations we
+    made in trying the full model and eliminating useless parameters
+    on different random sets of points, we found out that the
+    parameters which have a significant impact at each step of the
+    tuning process are generally the same. For this reason we decided
+    to apply exactly the same strategy each time without considering
+    the random set: 
     1. Sampling 50 points at random
     2. Setting vector length and lws y and pruning the
        search space using the model:
