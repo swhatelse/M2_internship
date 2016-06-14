@@ -2385,22 +2385,32 @@ Text
 
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/lm_v_len.pdf}
-   \caption{\label{fig:lm_v_len.pdf}Non-uniform noise but the minimum follows the evolution of the mean}
+   \subcaption{\label{fig:lm_v_len.pdf}}
    \end{minipage}
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/lm_x_comp.pdf}
-   \caption{\label{fig:lm_x_comp}Non-uniform noise and the minimum does not follow the evolution of the mean}
+   \subcaption{\label{fig:lm_x_comp}}
    \end{minipage}
 
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/why_we_choose_quantile_reg_v_len.pdf}
+   \subcaption{\label{fig:rq_v_len}}
    \end{minipage}
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/why_we_choose_quantile_reg_x_comp.pdf}
+   \subcaption{\label{fig:rq_x_comp}}
    \end{minipage}
-   \caption{\label{fig:qr-example}\textbf{Linear regression vs quantile regression}: The 
-    classical linear regression fails to predict the evolution of the minimum when the error 
-    law is not uniform while quantile is more suited to this.}
+   \caption{\label{fig:qr-example}\textbf{Linear regression vs quantile regression}: 
+    These figures shows the impact of different factors on the time to compute a pixel.
+    On Figure\ref{\label{fig:lm_v_len.pdf}} The variance ins not the same every 
+    where the the minimum follow the same tendency as the mean.
+    On Figure\ref{fig:lm_x_comp}The variance is not uniform as in the previous case and the minimum
+    does not follow the same tendency as the mean. Hence the classical linear regression
+    fails to predict the evolution of the minimum when the error 
+    law is not uniform while quantile is more suited to this (see Figure\ref{fig:rq_v_len} 
+    and Figure\ref{fig:rq_x_comp}).}
    \end{figure}
    #+END_LaTeX
    
