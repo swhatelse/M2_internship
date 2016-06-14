@@ -1165,31 +1165,9 @@ Text
 
 
 **** 
-   Many optimization techniques are applied to the auto-tuning
-   problems. Some of them use the derivatives such gradient
-   descent which is a kind of local search techniques. It exploits the
-   locality of the search space and has particularity to converge
-   quickly to a the optimal solution but it requires that the search
-   space has a specific geometry and convexity of the objective
-   function (see Figure\ref{fig:convex_function}). But these hypothesis are not
-   necessarily true. The objective function may not be convex
-   (see Figure\ref{fig:non_convex_function}), hence with many local optimum and a
-   local search would be stuck in a local optimum. The problem is that
-   local optimum can be far from the global optimum. That is why, to
-   escape from this, global search and randomization are more suited
-   such the simulated annealing, or genetic algorithm (kind of
-   multiple local search). The derivative may also be not available,
-   for this reason, derivative based searches are
-   inefficient (see Figure\ref{fig:non_smooth_function}). The auto-tuning problem
-   combines all these characteristics (see
-   Figure\ref{fig:auto_tuning_function}) with noise.     
-
-
-   #+CAPTION: Objective function characterics
-   #+LABEL: fig:obj-func-ex
 
    #+BEGIN_LaTeX
-   \begin{figure}[htb]
+   \begin{figure}[!htb]
    \centering
 
    \begin{minipage}{.45\linewidth}
@@ -1209,7 +1187,6 @@ Text
    \includegraphics[width=\linewidth]{./img/auto_tuning_function.pdf}
    \subcaption{\label{fig:auto_tuning_function}Noisy function}
    \end{minipage}
-
    \caption{\label{fig:function_charac}\textbf{Function characteristics}: 
     The Figure\ref{fig:convex_function} shows the example of a convex 
     function on this kind of functions, techniques such as gradient 
@@ -1225,6 +1202,25 @@ Text
     in auto-tuning looks like. It combines non-convexity, non-smoothness, and noise}
    \end{figure}
    #+END_LaTeX
+
+   Many optimization techniques are applied to the auto-tuning
+   problems. Some of them use the derivatives such gradient
+   descent which is a kind of local search techniques. It exploits the
+   locality of the search space and has particularity to converge
+   quickly to a the optimal solution but it requires that the search
+   space has a specific geometry and convexity of the objective
+   function (see Figure\ref{fig:convex_function}). But these hypothesis are not
+   necessarily true. The objective function may not be convex
+   (see Figure\ref{fig:non_convex_function}), hence with many local optimum and a
+   local search would be stuck in a local optimum. The problem is that
+   local optimum can be far from the global optimum. That is why, to
+   escape from this, global search and randomization are more suited
+   such the simulated annealing, or genetic algorithm (kind of
+   multiple local search). The derivative may also be not available,
+   for this reason, derivative based searches are
+   inefficient (see Figure\ref{fig:non_smooth_function}). The auto-tuning problem
+   combines all these characteristics (see
+   Figure\ref{fig:auto_tuning_function}) with noise.     
 
    Another concern is that, the objective function is an empirical
    function, hence it can be necessary to build a surrogate. This is
