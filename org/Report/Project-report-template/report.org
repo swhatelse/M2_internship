@@ -2403,14 +2403,16 @@ Text
    \subcaption{\label{fig:rq_x_comp}}
    \end{minipage}
    \caption{\label{fig:qr-example}\textbf{Linear regression vs quantile regression}: 
-    These figures shows the impact of different factors on the time to compute a pixel.
-    On Figure\ref{\label{fig:lm_v_len.pdf}} The variance ins not the same every 
-    where the the minimum follow the same tendency as the mean.
-    On Figure\ref{fig:lm_x_comp}The variance is not uniform as in the previous case and the minimum
-    does not follow the same tendency as the mean. Hence the classical linear regression
-    fails to predict the evolution of the minimum when the error 
-    law is not uniform while quantile is more suited to this (see Figure\ref{fig:rq_v_len} 
-    and Figure\ref{fig:rq_x_comp}).}
+    These figures shows the impact of different factors on the time to compute a pixel and 
+    the least square regression line in red and a quantile regression line the 5th percentile in blue .
+    On Figure\ref{fig:lm_v_len.pdf} the variance is not the same everywhere but the minimum 
+    still follows the same tendency as the mean. On Figure\ref{fig:lm_x_comp}The variance is not 
+    uniform as in the previous case and the minimum does not follow the same tendency as the mean. 
+    Hence the classical linear regression fails to predict the evolution of the minimum when the error 
+    law is not uniform. It predict that the best value for x component number is 4 which is not correct. 
+    While quantile is more suited to this as it can predict correctly the best value 
+    (see Figure\ref{fig:rq_v_len} and Figure\ref{fig:rq_x_comp}).
+   }
    \end{figure}
    #+END_LaTeX
    
@@ -2491,7 +2493,7 @@ Text
     [1] 3.771183
 
     Call:
-    lm(formula = model, data = working_set)
+    lm.default(formula = model, data = working_set)
 
     Residuals:
            Min         1Q     Median         3Q        Max 
@@ -2515,7 +2517,7 @@ Text
     F-statistic: 3.559 on 7 and 42 DF,  p-value: 0.004306
 
     Call:
-    lm(formula = model, data = working_set)
+    lm.default(formula = model, data = working_set)
 
     Residuals:
            Min         1Q     Median         3Q        Max 
@@ -2553,7 +2555,7 @@ Text
      335          119     LM 3.758578
      544          119     LM 3.771183
      778          119     LM 3.771183
-     #+end_example
+#+end_example
 
     #+begin_src R :results output graphics :file ./img/bad_prediction.pdf :exports both :width 4 :height 4 :session
       library(ggplot2)
@@ -2562,7 +2564,6 @@ Text
       geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
       geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
       labs(y="Real", x="Predicted") +
-      ggtitle("Prediction vs reality") +
       coord_cartesian(xlim=c(0,7.5e-9), ylim=c(0,7.5e-9))
     #+end_src
 
@@ -2591,7 +2592,7 @@ Text
     #+begin_example
 
     Call:
-    lm(formula = model, data = working_set)
+    lm.default(formula = model, data = working_set)
 
     Residuals:
            Min         1Q     Median         3Q        Max 
@@ -2617,7 +2618,6 @@ Text
       geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
       geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
       labs(y="Real", x="Predicted") +
-      ggtitle("Prediction vs reality") +
       coord_cartesian(xlim=c(0,6e-9), ylim=c(0,6e-9))
     #+end_src
 
@@ -2648,7 +2648,7 @@ Text
     #+begin_example
 
     Call:
-    lm(formula = model, data = working_set)
+    lm.default(formula = model, data = working_set)
 
     Residuals:
            Min         1Q     Median         3Q        Max 
@@ -2667,7 +2667,7 @@ Text
     F-statistic: 5.894 on 2 and 47 DF,  p-value: 0.005202
 
     Call:
-    lm(formula = model, data = working_set)
+    lm.default(formula = model, data = working_set)
 
     Residuals:
            Min         1Q     Median         3Q        Max 
@@ -2696,7 +2696,6 @@ Text
           geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
           geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
           labs(y="Real", x="Predicted") +
-          ggtitle("Prediction vs reality") +
           coord_cartesian(xlim=c(0,2e-8), ylim=c(0,2e-8))
     #+end_src
 
@@ -2864,20 +2863,23 @@ Text
    \centering
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/bad_prediction.pdf}
-   \caption{\label{fig:bad_prediction}Incorrect model}
+   \subcaption{\label{fig:bad_prediction}Incorrect model}
    \end{minipage}
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/good_prediction.pdf}
-   \caption{\label{fig:good_prediction}Correct model}
+   \subcaption{\label{fig:good_prediction}Correct model}
    \end{minipage}
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/lucky_prediction.pdf}
-   \caption{\label{fig:lucky_prediction}Lucky case}
+   \subcaption{\label{fig:lucky_prediction}Lucky case}
    \end{minipage}
-   \caption{\textbf{Comparison between predicted and observed values}: A correct model has a correlation
-   between predicted and observed values. Even if the model is not perfect the most important is the 
-   correlation between low values. Which means the it correctly estimate good performing combinations 
-   (see Figure\ref{fig:good_prediction} and Figure\ref{fig:lucky_prediction}).}
+   \caption{\textbf{Comparison between predicted and observed values}: 
+   Theses figures show correlation between observed and predicted values. A correct model has a correlation
+   between predicted and observed values. However, even if the model is not perfect the most important is the 
+   correlation between low values. It means that it correctly estimates good performing combinations which 
+   is the case in Figure\ref{fig:good_prediction} and Figure\ref{fig:lucky_prediction} but not in 
+   Figure\ref{fig:bad_prediction}.}
    \end{figure}
    #+END_LaTeX
 
@@ -3650,23 +3652,33 @@ Text
    \centering
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D.pdf}
-   \caption{\label{fig:search_space_3d}Model of the objective function}
+   \subcaption{\label{fig:search_space_3d}}
    \end{minipage}
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D_constrained_ugly.pdf}
-   \caption{\label{fig:search_space_3d_constrained2}Constrained search space}
+   \subcaption{\label{fig:search_space_3d_constrained2}}
    \end{minipage}
+
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D_constrained.pdf}
-   \caption{\label{fig:search_space_3d_constrained1}Constrained Search space but rounded}
+   \subcaption{\label{fig:search_space_3d_constrained1}}
    \end{minipage}
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
-   \caption{\label{fig:search_space_3d_barrier}Barrier approach}
+   \subcaption{\label{fig:search_space_3d_barrier}}
    \end{minipage}
-   \caption{\textbf{Search space constraints}: These figure represents the example of some of the 
+   \caption{\textbf{Search space constraints}: These figures represents the example of some of the 
     constraints on the paramters elements number and y component number and the envisioned approach
-   to cope with it.}
+   to cope with it.
+   Figure\ref{fig:search_space_3d} shows the predicted objective function.
+   Figure\ref{fig:search_space_3d} shows the same function but only with the feasible points. 
+   Figure\ref{fig:search_space_3d} shows that we can ignore some constraints and just round 
+   the values. 
+   Figure\ref{fig:search_space_3d} illustrate the barrier approach we could use to deal with 
+   some other constraints to guide the search into feasible regions.
+   }
    \end{figure}
    #+END_LaTeX
 *** DONE Sampling techniques
