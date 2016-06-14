@@ -1963,8 +1963,8 @@ Text
     | /      |    <> |      <> |     <> |      <> |      <> |    <> |           |
     | RS     | 1.000 |   1.027 |  1.079 |   1.178 |   1.388 | 1.102 |       120 |
     | LHS    | 1.000 |   1.087 |  1.188 |   1.244 |   1.524 | 1.175 |    98.918 |
-    | GR     | 1.000 |   1.348 |  1.799 |   6.314 | 124.800 | 6.460 |    22.171 |
-    | GRM    | 1.000 |   1.072 |  1.187 |   1.333 |   3.164 | 1.227 |       120 |
+    | GS     | 1.000 |   1.348 |  1.799 |   6.314 | 124.800 | 6.460 |    22.171 |
+    | GSR    | 1.000 |   1.072 |  1.187 |   1.333 |   3.164 | 1.227 |       120 |
     | GA     | 1.000 |   1.018 |  1.086 |   1.187 |   1.646 | 1.118 |       120 |
     | LM     | 1.012 |   1.012 |  1.012 |   1.012 |   3.771 | 1.022 |       119 |
     | RQ     | 1.012 |   1.012 |  1.012 |   1.012 |   2.064 | 1.019 |       119 |
@@ -2186,13 +2186,13 @@ Text
   pick at least 312 points at random. And if we hope to get the same
   level of performance as with LM, we would need 6654 points at least.
   Yet, this search space remains complicated,
-  because as we saw previously our local search GR failed which means
+  because as we saw previously our local search GS failed which means
   there are a lot of local optimum in which it is stuck and some are
   far from the optimal one. The Table\ref{tab:top-20} shows the best
   20 combinations, they are very similar, they all have vector length
   of size 1 and a number of elements and a y component number of 5
   or 6. Which means that they are very located but there is still some
-  local optimum is this area because we try to run the GR and the
+  local optimum is this area because we try to run the GS and the
   result of LM it did not make any progress.
 
   #+CAPTION: This table presents the slowdown characteristics of the search space
@@ -3778,13 +3778,14 @@ Text
    \centering
    \begin{minipage}{\linewidth}
    \includegraphics[width=\linewidth]{./img/lhs_cover_constraints.pdf}
-   \caption{\label{fig:lhs_cover_constraints}LHS space covering}
+   \subcaption{\label{fig:lhs_cover_constraints}LHS}
    \end{minipage}
    \begin{minipage}{\linewidth}
    \includegraphics[width=\linewidth]{./img/rs_cover_constraints.pdf}
-   \caption{\label{fig:rs_cover_constraints}Random sampling space covering}
+   \subcaption{\label{fig:rs_cover_constraints}Random sampling}
    \end{minipage}
-   \caption{\textbf{Space coverage}: With our constrained search space, LHS 
+   \caption{\textbf{Space coverage}: These figures shows the space coverage of 
+    thee LHS and random sampling with our search space. With our constrained search space, LHS 
     loses it property of maximum distance between points and not have a better 
     coverage capacity than random sampling.}
    \end{figure}
