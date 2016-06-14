@@ -1029,10 +1029,10 @@ problem.
   testing all the combinations (i.e, 2^500 ~ 10^50 combinations) to find
   the best one is simply impossible. Thus
   it is formulated as a mathematical optimization problem where the
-  optimization function gives metrics of combination of parameters.
+  optimization function gives metrics of combination of parameters:
   
   #+BEGIN_LaTeX
-  \( \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \)
+  \[ \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \]
   #+END_LaTeX  
 
   This function is empirical because the performances of a
