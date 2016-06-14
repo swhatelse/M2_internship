@@ -1310,7 +1310,7 @@ Text
      ggplot(data=lhs) +
          theme_bw() +
          geom_point(aes(x=X1,y=X2)) +
-         ggtitle("lhs")
+         ggtitle("LHS")
    #+end_src
 
    #+RESULTS:
@@ -1485,11 +1485,6 @@ Text
       #+BEGIN_LaTeX
       \[ \displaystyle elements\, number + \frac{1}{elements\, number} \]
       #+END_LaTeX  
-      
-      Or like this:
-      #+BEGIN_LaTeX
-      \[ \displaystyle elements\, number + elements\, number^2 \]
-      #+END_LaTeX  
    
    5. Y component number is used to specify how the work for a thread is
       organized by specifying the tiling. It gives how the components of
@@ -1569,6 +1564,7 @@ Text
      
      
      ggplot(d2) +
+          theme_bw() + 
           geom_line(aes(x=run_index, y=time_per_pixel, color=factor(load_overlap),linetype=factor(temporary_size))) + 
           geom_point(aes(x=run_index, y=time_per_pixel, shape=factor(load_overlap))) + 
           theme(legend.position="top") + 
