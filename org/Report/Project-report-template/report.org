@@ -1395,7 +1395,7 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
 * Methodology
 ** Reproducible research
   Such experimental process mandate rigorous methodology.
-  In order for this work to be usefull for someone else a laboratory
+  In order for this work to be usefull for someone else, a laboratory
   book is available publicly on
   github\footnote{https://github.com/swhatelse/M2\_internship}. It 
   contains details about installation and configuration steps. It
@@ -1408,7 +1408,7 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
   wrote is explained using literate programming, which is
   straightforward using the org-mode of emacs. The github repository
   also contains the complet set of scripts and data used for
-  experiments giving the possibility to anyone to re-run the same
+  experiments, giving the possibility to anyone to re-run the same
   experiments using the same data. 
 
 ** Case study
@@ -1522,7 +1522,7 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
    sense. We also have constraint the size of the kernel because it is
    limited to the available resources on the device. Exceeding the
    resources cause the kernel to crash. That is why use constraints to
-   reject all the that would produce a kernel to big or that is not
+   reject all the combinations that would produce a kernel too big or that is not
    correct. Finally it remains 23120 points in the search space. For
    comparison purpose we performed an exhaustive search which took
    about 154 hours. 
@@ -1590,12 +1590,12 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
    Current hardware has became more and more complex and provides
    features such that power saving, frequency scaling, etc... Thus it
    is possible to have measurements that are different from an
-   experiment to another even if the set of inputs is the same exactly the
+   experiment to another even if the set of inputs is exactly the
    same. For instance, frequency scaling mechanism could chose to scale
-   down the frequency of the CPU because of the temperature inside the
+   down the frequency of the CPU because the temperature inside the
    computer case has increased which would have an impact on the
-   compute time. To have trusted measurements we are concerned about
-   kind of problems because the metric in our case which is the time to
+   compute time. To have trusted measurements we are concerned  about those
+   kind of problems because the metric in our case, which is the time to
    compute a pixel, is sensitive to this. Thus we have to protected
    against variability between the same measurements and especially
    the warm-up effect. This phenomena can occurs on devices providing
@@ -1624,12 +1624,12 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
    code generation and compilation phases. The more run are performed the
    better the performances. It also could have been the case when
    going from one image size to another, the GPU could have switched
-   to idle mode while the loading of the image but is not the case the
-   GPU does not have the time to switch to idle mode. So prevent to
-   protected against warm-up effect we just need to make at least four
-   runs on the first size of image and we keep the run the gives
+   to idle mode while the loading of the image, but is not the case. The
+   GPU does not have the time to switch to idle mode. So to  to
+   protected against the warm-up effect we just need to make at least four
+   runs on the first size of image and we keep the run that gives
    minimal time to compute one pixel. However we also did the same
-   four all the size of images.
+   for all the size of images.
 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
