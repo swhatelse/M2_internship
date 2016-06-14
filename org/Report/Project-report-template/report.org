@@ -27,6 +27,10 @@
 #+LATEX_HEADER:\usepackage{color}
 #+latex_header:\usepackage{xspace}
 
+#+LaTeX: \let\oldref=\ref
+#+LaTeX: \def\ref#1{~\oldref{#1}\xspace} 
+
+
 #+BEGIN_LaTeX
 \lstset{ %
   basicstyle=\footnotesize,        % the size of the fonts that are used for the code
@@ -107,9 +111,9 @@ option \optionB  \end{center}\vfill}
 \author{Steven QUINITO MASNADA}
 \date{ June 22th } % Delete this line to display the current date
 \jury{
-Research project performed at $<$lab-name$>$ \\\medskip
+Research project performed at $LIG$ \\\medskip
 Under the supervision of:\\
-Arnaud LEGRAND, Frederic DESPREZ, Brice VIDREAU, CNRS\\\medskip
+Arnaud LEGRAND, Brice VIDEAU, Frederic DESPREZ\\ $CORSE$ and $POLARIS$ teams\\\medskip
 Defended before a jury composed of:\\
 Prof Noel DEPALMA\\
 Prof Martin HEUSSE\\
@@ -946,7 +950,7 @@ Text
   harder and highly time consuming as the optimization are low level
   and HPCs can be very different and complex. Optimization that gives
   good performances on one platform may not work so well on another
-  \ref{fig:correlation}. As developers cannot spend months to port the
+  (see Figure\ref{fig:correlation}). As developers cannot spend months to port the
   application on another machine it is necessary to use tools that
   facilitate the porting and the optimization of scientific
   applications.  
@@ -964,7 +968,7 @@ Text
     techniques. But this require to still write the code with care to
     ease the job of the compiler. For instance automatic parallelism
     is difficult to apply when there are global or shared variable,
-    dependencies between iterations\ref{lst:bad_for_auto_par},
+    dependencies between iterations (see Code\ref{lst:bad_for_auto_par}),
     indirect address are used, etc... Further more, compilers
     generally do not have global vision of the code and lack
     informations of compile time and thus perform only local
@@ -1162,17 +1166,17 @@ Text
    locality of the search space and has particularity to converge
    quickly to a the optimal solution but it requires that the search
    space has a specific geometry and convexity of the objective
-   function\ref{fig:convex_function}. But these hypothesis are not
+   function (see Figure\ref{fig:convex_function}). But these hypothesis are not
    necessarily true. The objective function may not be convex
-   \ref{fig:non_convex_function}, hence with many local optimum and a
+   (see Figure\ref{fig:non_convex_function}), hence with many local optimum and a
    local search would be stuck in a local optimum. The problem is that
    local optimum can be far from the global optimum. That is why, to
    escape from this, global search and randomization are more suited
    such the simulated annealing, or genetic algorithm (kind of
    multiple local search). The derivative may also be not available,
    for this reason, derivative based searches are
-   inefficient\ref{fig:non_smooth_function}. The auto-tuning problem
-   combines all these characteristics\ref{fig:auto_tuning_function}.     
+   inefficient (see Figure\ref{fig:non_smooth_function}). The auto-tuning problem
+   combines all these characteristics (see Figure\ref{fig:auto_tuning_function}).     
 
 
    #+CAPTION: Objective function characterics
@@ -1589,7 +1593,7 @@ Text
    there this effect is present. We also tried to quantify it along
    with the variability we could have between the different runs of
    the same version of the code in order to protect against it. The
-   figure\ref{fig:warmup}, illustrates what we expected, there is a power
+   Figure\ref{fig:warmup}, illustrates what we expected, there is a power
    saving mechanism on Nvidia K40 which turns the GPU into idle mode
    when the computational intensity is bellow a threshold. This effect
    occurs on the first size of image tested, which is just after the
@@ -1646,7 +1650,7 @@ Text
    maximize the amount of information and minimize the number of
    points.
 
-   The figure\ref{fig:process} shows the workflow of our approach: 
+   The Figure\ref{fig:process} shows the workflow of our approach: 
    1. The user interrogate the search space for example to find what
       are the parameters that have the most impact and their
       interactions, check his hypothesis about the model, etc...
@@ -1928,8 +1932,6 @@ Text
     we could not improve the best solution return by LM. However both
     LM and RQ very rarely gives worse solution than GA or RS.
      
-   #+LaTeX: \let\oldref=\ref
-   #+LaTeX: \def\ref#1{~\oldref{#1}\xspace} 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
@@ -2156,7 +2158,7 @@ Text
   By studying the characteristics of the search space we can
   understand the structure of the problem in order to be able to
   understand the results of the different search techniques. 
-  The figure\ref{fig:combination_distribution} and the table\ref{tab:search-space-characteristics}
+  The Figure\ref{fig:combination_distribution} and the Table\ref{tab:search-space-characteristics}
   show the distribution of the combinations over the 
   search space in term of slowdown. This search space contains a lot
   of good combinations, half of them have a slowdown that
@@ -2172,7 +2174,7 @@ Text
   Yet, this search space remains complicated,
   because as we saw previously our local search GR failed which means
   there are a lot of local optimum in which it is stuck and some are
-  far from the optimal one. The table\ref{tab:top-20} shows the best
+  far from the optimal one. The Table\ref{tab:top-20} shows the best
   20 combinations, they are very similar, they all have vector length
   of size 1 and a number of elements and a y component number of 5
   or 6. Which means that they are very located but there is still some
@@ -2228,7 +2230,7 @@ Text
    \end{figure}
    #+END_LaTeX   
 
-   We can also notice in the figure\ref{fig:heteroscedasticity} that the variability is not
+   We can also notice in the Figure\ref{fig:heteroscedasticity} that the variability is not
    the same everywhere, hence our random variables are
    heteroscedastics. This  because the noise does not 
    follow the same law for the different value of the same
@@ -2350,7 +2352,7 @@ Text
    This techniques assumes that the noise is uniform and more
    specifically follows the Gaussian law, in this case we say that the
    variable are homoscedastics. However the
-   figures\ref{fig:lm_v_len.pdf} and\ref{fig:lm_x_comp} show 
+   Figures\ref{fig:lm_v_len.pdf} and\ref{fig:lm_x_comp} show 
    that in the case of our Laplacian kernel, which is a very simple case,
    we have heteroscedasticity, which means that the noise is
    non-uniform because it is due to complex interaction between
@@ -2361,7 +2363,7 @@ Text
    accuracy of the model. In addition, we want to predict the minimum
    value of the objective function not the mean. With non-uniform
    noise the evaluation of the minimum value does not follow the
-   evolution of the mean\ref{fig:lm_x_comp}.
+   evolution of the mean (see Figure\ref{fig:lm_x_comp}).
 
    #+BEGIN_LaTeX
    \begin{figure}[htb]
@@ -2389,12 +2391,12 @@ Text
    #+END_LaTeX
    
    If the error law is the same everywhere as in the left in
-   figure\ref{fig:lm_v_len.pdf} we can still have the minimum values
+   Figure\ref{fig:lm_v_len.pdf} we can still have the minimum values
    that follow the same evolution as the mean and we can still predict
    the minimum. The resulting model and approximation can still be
    correct and we can easily know what is the best size of vector. But
    we would still need to make assumptions that about the error and we
-   do not know anything it. In the figure\ref{fig:lm_x_comp}, the
+   do not know anything it. In the Figure\ref{fig:lm_x_comp}, the
    evolution of the mean and the evolution of the minimum is not
    correlated and the best value is not predicted correctly.     
 
@@ -2683,8 +2685,8 @@ Text
     fails to converge to the same value and how look like a correct and
     an incorrect optimization process.
 
-    The worst solution\ref{tab:worst-solution} failed in the first
-    stage of the optimization process. Indeed, vector length and lws y
+    The worst solution failed in the first stage of the optimization
+    process (see Table\ref{tab:worst-solution}). Indeed, vector length and lws y 
     are the first factors we fixed in our strategy. It predicted a
     good value for lws y, but instead of predicting that the best size
     of vector is 1, the model predicted a size of 16 which is the worst
@@ -2736,7 +2738,7 @@ Text
 
     All these information allows us to compare different models and
     evaluate the quality of the prediction. The
-    table\ref{tab:incorrect-fit} shows the results of fitting the
+    Table\ref{tab:incorrect-fit} shows the results of fitting the
     model bellow in the worst case:
     #+BEGIN_LaTeX
     \[vector length + lws y\]
@@ -2750,7 +2752,7 @@ Text
     and 3.637e-11. Thus we do not know if the coefficient is positive
     or negative, hence we do not know if the best value for vector
     length should be the smallest or the biggest possible. The
-    figure\ref{fig:bad_prediction} shows the 
+    Figure\ref{fig:bad_prediction} shows the 
     prediction against the real values, good predicted values are not
     that good and some can be very bad. This kind of situations can be
     detected easily by the user and thus he can take correct decision. The
@@ -2770,7 +2772,7 @@ Text
    expected. When using the model vector length + lws y the
    fit is acceptable with a coefficient of determination of
    0.5431. The prediction is only made with relevant factors for
-   example in the table\ref{tab:correct-fit} the p-values of vector
+   example in the Table\ref{tab:correct-fit} the p-values of vector
    length and lws y are below 0.001. The standard errors compared to
    the estimates of the coefficients are good enough, e.g. for lws y the
    coefficient is 1.987e-11 the standard error 2.882e-12, then the real
@@ -2791,18 +2793,18 @@ Text
 
    It exists also lucky cases, where the applied model was not very good but
    which still gives the same solution as with the favorable cases. One
-   of these cases\ref{tab:lucky-fit} when fitting the model vector
-   length + lws y has a poor R-squared of 0.1665. Only lws y is
-   significant. The standard error of vector length is high,
+   of these cases when fitting the model vector length + lws y has a
+   poor R-squared of 0.1665 (see Table\ref{tab:lucky-fit}). Only lws y
+   is significant. The standard error of vector length is high,
    however even with uncertainty we can tell that the estimate of the
    coefficient will be positive. This lack of accuracy in the
    coefficient is problematic with factors which have complex impact
    and interactions but with factors which have a simple linear
    interaction such as vector length it is enough to know if the
    coefficient is negative or positive. Also when comparing the
-   predicted values and the observed ones\ref{fig:lucky_prediction} it
-   looks like favorable cases, there is a strong correlation for the
-   low values. 
+   predicted values and the observed ones it looks like favorable
+   cases, there is a strong correlation for the low values (see
+   Figure\ref{fig:lucky_prediction}).  
 
   #+CAPTION: This table presents the fit an incorrect model but which gives the values
   #+NAME:   tab:lucky-fit
@@ -2826,12 +2828,12 @@ Text
    The reason why we never get better solution with a slowdown lower
    than 1.012177 comes also from the first stage of the process. In
    the previous table of the 20 best performing
-   combinations\ref{tab:top-20} there is no better solution with a lws
-   y of 1. At this step it is not possible to estimate it very
-   precisely because of the noise and the most suited model is a
-   simple linear one. The estimation of lws y is made too
-   early. Trying to fix it later with less may probably gives a better
-   result but we did not find a case where it is possible.
+   combinations, there is no better solution with a lws
+   y of 1 (see Table\ref{tab:top-20}). At this step it is not possible
+   to estimate it very precisely because of the noise and the most
+   suited model is a simple linear one. The estimation of lws y is
+   made too early. Trying to fix it later with less may probably gives
+   a better result but we did not find a case where it is possible.
     
    #+BEGIN_LaTeX
    \begin{figure}[htb]
@@ -2851,7 +2853,7 @@ Text
    \caption{\textbf{Comparison between predicted and observed values}: A correct model has a correlation
    between predicted and observed values. Even if the model is not perfect the most important is the 
    correlation between low values. Which means the it correctly estimate good performing combinations 
-   (see Figure\ref{fig:good_prediction} and figure\ref{fig:lucky_prediction}).}
+   (see Figure\ref{fig:good_prediction} and Figure\ref{fig:lucky_prediction}).}
    \end{figure}
    #+END_LaTeX
 
@@ -3579,7 +3581,7 @@ Text
     the optimal values. The predicted function is
     continuous (see Figure\ref{fig:search_space_3d}) whereas our
     search space is
-    discrete\ref{fig:search_space_3d_constrained2}. Hence classical 
+    discrete (see Figure\ref{fig:search_space_3d_constrained2}). Hence classical 
     continuous optimizations techniques such as the ones readily
     available in R (Nelder-Mead, quasi-Newton and conjugate-gradient
     algorithms) do not work correctly with such search space.
@@ -3605,9 +3607,10 @@ Text
     kernel too big simply does not compile. 
 
     We could deal with our constrained search space by skipping some
-    constraints and using rounding\ref{fig:search_space_3d_constrained1},
-    we could use a barrier approach\ref{fig:search_space_3d_barrier} in
-    order to guide the optimization method in feasible regions and we
+    constraints and using rounding (see
+    Figure\ref{fig:search_space_3d_constrained1}), we could use a
+    barrier approach in order to guide the optimization method in
+    feasible regions (see Figure\ref{fig:search_space_3d_barrier}) and we 
     could also use discrete and constrained optimization
     techniques. However we decided not to use such methods yet. First,
     correctly implementing such involved techniques requires some
@@ -3728,8 +3731,8 @@ Text
     approximately the desired number of points, we had to generate
     more points with the LHS but we can never end up with certainty
     with the exact number of points. Finally in our case, the random
-    sampling\ref{fig:rs_cover_constraints} provided the same 
-    covering space capability\ref{fig:lhs_cover_constraints}  
+    sampling (see Figure\ref{fig:rs_cover_constraints}) provided the same 
+    covering space capability (see Figure\ref{fig:lhs_cover_constraints})  
     and we could obtain exactly the wanted number of points. That is
     why we chose the random sampling over LHS when performing linear
     regressions (LM or RQ).  
