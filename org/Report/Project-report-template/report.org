@@ -142,19 +142,19 @@ Dr Henri-Pierre CHARLES\\
 \abstractintoc
 \begin{abstract} 
 High Performance Computing platforms are made to answer the need 
-of huge computing power, however taking advantage of their power 
+of huge computing power, however, taking advantage of their power 
 is difficult as they are complex machines and each platform has a 
-unique set of characteristics. Thus the developer must program 
+unique set of characteristics. Thus, the developer must program 
 them with care and write specialized code. Tools exist to help 
-the developer in this tricky task, to generate optimized versions 
+the developer in this tricky task to generate optimized versions 
 of an application. Finding high performing versions is the main concern 
 because the search space can be huge (e.g GCC has about 500 compilation flags)
-and the exhaustive search is prohibitive. Hence auto-tuning considers this as 
+and the exhaustive search is prohibitive. Hence, auto-tuning considers this as 
 a mathematical optimization problem. To the best of our knowledge most 
 auto-tuning frameworks mostly resort to generic optimization techniques 
-combined to fully automatic explorations. However this approach excludes the 
-user from the optimization process. Hence it is difficult to know if further 
-improvement can be made and evaluating the quality of the solution complicated.
+combined to fully automatic explorations. However, this approach excludes the 
+user from the optimization process. Hence, it is difficult to know if further 
+improvement can be made and the quality evaluation of the solution is complicated.
 To answer this problem we propose a semi-automatic approach that gives power back 
 to the user. This approach is based on linear regression techniques to predict 
 the objective function. More precisely we used the least square regression and 
@@ -163,7 +163,7 @@ which aim to reduce the experimental cost.
 We evaluated our approach using the case of a Laplacian kernel and compared it with
 other optimization techniques used in the auto-tuning literature such as random search, 
 genetic algorithms, etc.... Our method gives very good results by finding almost 
-every time close to optimal solutions. 
+every time near-optimal solutions. 
 \end{abstract}
 \abstractintoc
 \renewcommand\abstractname{R\'esum\'e}
@@ -750,16 +750,16 @@ every time close to optimal solutions.
   programs. Furthermore, they also have to take care about things such as
   the dependencies of the instructions to fully occupy the pipeline. If
   there is any vector support the developer should adapt his code to work on
-  vectors instead of single variables. In addition the architecture provides
+  vectors instead of single variables. In addition, the architecture provides
   different cache hierarchy and it is crucial to exploit data locality
   to use them efficiently. 
-  Finally to address the computer power need, GPUs have become very
+  Finally, to address the computer power need, GPUs have become very
   popular. Unfortunately, this add a little more complexity as they
   require a way of programming which is different from the CPUs. As a
   result, performance optimization is difficult to achieve. To build
   efficient HPC platforms, architects have to come up with unique
   combinations of a variety of hardware, which complicates the
-  application optimization. Hence one end up with optimization working
+  application optimization. Hence, one ends up with optimization working
   well on one supercomputer and bad on another as the code is
   specific to one platform and porting applications is extremely time
   consuming and can also be very tricky.  
