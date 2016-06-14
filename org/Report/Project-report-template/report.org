@@ -138,7 +138,15 @@ Dr Henri-Pierre CHARLES\\
 \renewcommand{\abstracttextfont}{\normalfont}
 \abstractintoc
 \begin{abstract} 
-Text 
+High Performance Computing platforms are made to answer the need 
+of huge computing power, however taking advantage of their power 
+is difficult as they are complex machines and each platform has a 
+unique set of characteristics. Thus the developer must program 
+them with care and write specialized code. Tools exists to help 
+the developer in this tricky task, to generate optimized versions 
+of an application. Finding high performing version is the main concern 
+and the auto-tuning consider this as a mathematical optimization 
+problem.
 \end{abstract}
 \abstractintoc
 \renewcommand\abstractname{R\'esum\'e}
@@ -705,24 +713,24 @@ Text
 ** Why is performance optimization difficult?
   From genome sequencing to molecular dynamics, including climate or
   earthquake modeling, or aerodynamics, there is an ever increasing
-  need for computer power. For this purpose, High Performance Computing (HPC) is
+  need for computing power. For this purpose, High Performance Computing (HPC) is
   the most effective solution. It has brought the science to another
   level and now it is a tool that has became essential for scientists like
   for example to simulate nuclear explosion or to analyze peta-octets of
   data. The expectations of scientists in term of performances are
-  higher and higher as they need to run more and more heavy and complex
+  higher and higher as they need to run heavier and more complex
   computations. To take advantage of the power of a supercomputer it is
   essential to correctly optimize the applications. This is a very
-  complicated task because today's HPCs are extremely complex
-  machines. It is not possible to wait for the next generation of
-  hardware to bring automatically a speedup as 
+  complicated task because today's high performance computers are
+  extremely complex machines. It is not possible to wait for the next
+  generation of hardware to bring automatically a speedup as 
   it was the case up to the years 2000 because frequency cannot
   increase anymore and in contrary even tends to decrease. For this
   reason, we went from multi-cores to many-cores architectures and 
   for 2020 exascale platforms, supercomputers with millions of cores,
   are expected in order to reach the exaflops. Thus, developers have
   to take into account this massive parallelism when writing
-  programs. Furthermore, they also have to take care about things such
+  programs. Furthermore, they also have to take care about things such as
   the dependencies of the instructions to fully occupy the pipeline. If
   there is any vector support the developer should adapt his code to work on
   vectors instead of single variables. In addition the architecture provides
@@ -735,19 +743,19 @@ Text
   efficient HPC platforms, architects have to come up with unique
   combinations of a variety of hardware, which complicates the
   application optimization. Hence one end up with optimization working
-  well on one supercomputer and bad on another one as the code is
+  well on one supercomputer and bad on another as the code is
   specific to one platform and porting applications is extremely time
   consuming and can also be very tricky.  
 ** Code generation and opportunities  
   In the last decade many attempt have been made to automate the
   generation of optimized code. Performing optimization is one of the
-  primary functions of compiler. They are capable of detecting
+  primary functions of a compiler. They are capable of detecting
   instructions that can be vectorized or reorganized to favor
   super-scalar execution. They 
   are also capable of many loop optimizations such loop unrolling to
   improve pipeline efficiency,
   nest transformation to improve data locality and expose parallelism,
-  etc... It exists many other optimization opportunities but it is to
+  etc... Many other optimization opportunities exist but it is to
   difficult to exploit them automatically because the compiler does
   not have the necessary information at compile time. Moreover, it is
   sometimes necessary to rewrite the code in a slightly different way
@@ -767,9 +775,9 @@ Text
   meta-programming approach goes further by giving more flexibility to
   the programmer as it provides a higher level of abstraction. It
   consists in using high level languages to descriptions the
-  computation and the optimizations. This allow the programmer to
+  computation and the optimizations. This allows the programmer to
   propose optimizations that the compiler would not be allowed to
-  do. But it requires to rewrite the application.   
+  do. But it requires to rewrite part of the application.   
 ** Optimizing: the auto-tuning approach
   Whatever the chosen approach, the application developer is left with
   numerous optimization options: there are the compiler flags, code
@@ -796,8 +804,8 @@ Text
    to the user by investigating the design of a semi-automatic
    optimization framework, where the application developer has control
    and understands how the optimizations works and guides it. For
-   this, we relied on BOAST\cite{}, a metaprogramming framework in
-   ruby that can generate portable code in C, Fortran and OpenCL. It
+   this, we relied on BOAST\cite{videau:hal-00953119}, a metaprogramming framework in
+   ruby that can generate portable code in C, Fortran, CUDA and OpenCL. It
    provides a domain specific language to describe the kernel and the
    optimizations and embeds a complete tool chain to compile, run,
    benchmark and check the validity of a kernel. We investigate
@@ -1519,6 +1527,31 @@ Text
    driver 340.32 and two CPUs Intel E5-2630. The OS is Debian and we
    used the GCC compiler version 4.8.3. All the details about each
    experiments environment are available in the git repository.
+
+   #+BEGIN_LaTeX
+   mp021 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 0)]);
+  tempc021 = convert_short4( temp021 );
+  temp002 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 1)]);
+  tempc002 = convert_short4( temp002 );
+  temp012 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 1)]);
+  tempc012 = convert_short4( temp012 );
+  temp022 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 1)]);
+  tempc022 = convert_short4( temp022 );
+  temp003 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 2)]);
+  tempc003 = convert_short4( temp003 );
+  temp013 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 2)]);
+  tempc013 = convert_short4( temp013 );
+  temp023 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 2)]);
+  tempc023 = convert_short4( temp023 );
+  resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
+  res00 = convert_uchar4( clamp(resc00, (short)0, (short)255) );
+  resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * ((short)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
+  res01 = convert_uchar4( clamp(resc01, (short)0, (short)255) );
+  vstore4( res00, 0, &pdst[x + 0 + (w) * (y + 0)] );
+  vstore4( res01, 0, &pdst[x + 0 + (w) * (y + 1)] );
+}
+
+   #+END_LaTeX
 ** Controlling measurement
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
