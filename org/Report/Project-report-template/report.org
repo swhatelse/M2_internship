@@ -937,7 +937,12 @@ every time close to optimal solutions.
    \begin{figure}[tbh]
    \centering
    \includegraphics[width=.8\linewidth]{./img/performance_platform_correlation.jpg}
-   \caption{\label{fig:correlation}Performances correlation accross platforms}
+   \caption{\label{fig:correlation}\textbf{Performances correlation accross platforms}: 
+     This figure shows that some combinations of parameters that gives good performances 
+     may not be as good on another and sometimes can bring really poor performances. However 
+     it is possible to have combinations that perform well accross 
+     platforms\cite{RoyBalHovWil2015}. 
+    }
    \end{figure}
    #+END_LaTeX
 
@@ -1430,15 +1435,15 @@ every time close to optimal solutions.
      | Parameters         | Values                            |
      |--------------------+-----------------------------------|
      | /                  | <                                 |
-     | vector length      | 1,2,4,8,16                        |
-     | load overlap       | true,false                        |
-     | temporary size     | 2,4                               |
-     | elements number    | from 1 to 24                      |
-     | y component number | from 1 to 6                       |
-     | threads number     | 32,64,128,256,512,1024            |
-     | local work size y  | 1,2,4,8,16,32,64,128,256,512,1024 |
+     | vector_length      | 1,2,4,8,16                        |
+     | load_overlap       | true,false                        |
+     | temporary_size     | 2,4                               |
+     | elements_number    | from 1 to 24                      |
+     | y_component_number | from 1 to 6                       |
+     | threads_number     | 32,64,128,256,512,1024            |
+     | local_work_size_y  | 1,2,4,8,16,32,64,128,256,512,1024 |
 
-   1. Vector length allows to specify the size of the
+   1. /Vector length/ allows to specify the size of the
       vectors used to performs the computation. The Laplacian can be
       easily vectorized and on hardware that provides vector support 
       it allows to save some decoding phase as the same instruction is
@@ -1453,22 +1458,22 @@ every time close to optimal solutions.
       model for this factor and considering it has a linear impact
       is a reasonable starting point.
 
-   2. Load overlap is related to the vectorization. As vectors
+   2. /Load_overlap/ is related to the vectorization. As vectors
       are manipulated, when loading, some data overlap. Thus it is
       possible to synthetize the load from other data and consequently
       reduce the number of loads. As it is a factors with only 2
       levels (true or false) the model for its impact is necessarily
       linear. 
 
-   3. Temporary size allows to specify the size of the variables used
+   3. /Temporary_size/ allows to specify the size of the variables used
       to store intermediary results. Using smaller type can reduce the
       pressure on the registers but casting variables can also be
       harmful. Hence the default size is int (4) and we can also use
       short (2). Like load overlap it is a 2 levels factor hence we
       use a linear model for it. 
 
-   4. Elements number splits the image into pieces of the size of
-      elements number. This specifies the of component (RGB) a threads will
+   4. /Elements_number/ splits the image into pieces of the size of
+      /elements_number/. This specifies the of component (RGB) a threads will
       process. That is the amount of work per thread, as a
       consequence it defines the number of threads used to perform the 
       computation. Using more threads allows to compute more component
@@ -1481,7 +1486,7 @@ every time close to optimal solutions.
       \[ \displaystyle elements\, number + \frac{1}{elements\, number} \]
       #+END_LaTeX  
    
-   5. Y component number is used to specify how the work for a thread is
+   5. /Y_component_number/ is used to specify how the work for a thread is
       organized by specifying the tiling. It gives how the components of
       the image are distributed in the y-axis. This tilling optimization may take
       advantage of the organization of memory banks on Nvidia GPUs and
@@ -1500,7 +1505,7 @@ every time close to optimal solutions.
 
    6. In OpenCL and Cuda, threads are grouped and scheduled 
       by blocks on a compute unit. Which means that threads are not
-      scheduled individually but by blocks. Threads number specifies
+      scheduled individually but by blocks. /Threads_number/ specifies
       the size of a group. Threads in a 
       group can share data, bigger groups can lead to  better data
       usage. However smaller groups generally gives more scheduling
@@ -1517,15 +1522,15 @@ every time close to optimal solutions.
       \[ \displaystyle threads\, number + \frac{1}{threads\, number} \]
      #+END_LaTeX  
 
-   7. Local work size y (lws y) determines how the threads are
+   7. /Local_work_size_y/ (/lws_y/) determines how the threads are
       organized in a block and represent the number of threads in the
       y-axis. For this parameter it is difficult to envision what kind
       of impact it can have so we started with a simple linear model.
 
    All the combinations of these parameters would gives a search space
    of 190080 points. However some points are unfeasible. For instance,
-   having more component numbers in the y-axis (y component number)
-   than number of component (elements number) itself makes no
+   having more component numbers in the y-axis (/y_component_number/)
+   than number of component (/elements_number/) itself makes no
    sense. We also have constraint the size of the kernel because it is
    limited to the available resources on the device. Exceeding the
    resources cause the kernel to crash. That is why use constraints to
@@ -1538,6 +1543,159 @@ every time close to optimal solutions.
    driver 340.32 and two CPUs Intel E5-2630. The OS is Debian and we
    used the GCC compiler version 4.8.3. All the details about each
    experiments environment are available in the git repository.
+
+   #+BEGIN_LaTeX
+   \begin{figure}[p]
+     \tiny
+   #+END_LaTeX
+   #+BEGIN_SRC ruby
+     def laplacian(options)
+
+       default_options = {:x_component_number => 1, :vector_length => 1, :y_component_number => 1, 
+                          :temporary_size => 2, :vector_recompute => false, :load_overlap => false}
+       opts = default_options.update(options)
+       x_component_number = opts[:x_component_number];    vector_length      = opts[:vector_length]
+       y_component_number = opts[:y_component_number];    temporary_size     = opts[:temporary_size]
+       vector_recompute   = opts[:vector_recompute];      load_overlap       = opts[:load_overlap]
+       
+       k = CKernel::new
+       height = Int("height", :dir => :in); width = Int("width", :dir => :in); w = Int("w")
+       pdst = Int("pdst", :dir => :out,  :signed => false, :size => 1, :dim => [ Dim(w), Dim(height) ] )
+       psrc = Int("psrc", :dir => :in, :signed => false, :size => 1, :dim => [ Dim(w), Dim(height) ] )
+       
+       p = Procedure("math", [psrc, pdst, width, height]) {
+         decl y = Int("y"); decl x = Int("x"); decl w
+         
+         pr x === get_global_id(0) * x_component_number 
+         pr y === get_global_id(1) * y_component_number
+         pr w === width * 3
+
+         vector_number = (x_component_number.to_f/vector_length).ceil
+         total_x_size = vector_recompute ? vector_number * vector_length : x_component_number
+
+         x_offset = total_x_size + 3
+         y_offset = y_component_number + 1
+
+         pr x === Ternary(x < 3, 3, Ternary( x > w      - x_offset, w      - x_offset, x ) )
+         pr y === Ternary(y < 1, 1, Ternary( y > height - y_offset, height - y_offset, y ) )
+
+         temp_type = "#{Int("dummy", :size => temporary_size).type.decl}"
+         temp_vec_type = "#{Int("dummy", :size => temporary_size, :vector_length => vector_length).type.decl}"
+         out_type  = "#{Int("dummy", :size => 1, :signed => false).type.decl}"
+         out_vec_type = "#{Int("dummy", :size => 1, :signed => false, :vector_length => vector_length).type.decl}"
+
+         if not load_overlap then
+           total_load_window = total_x_size + 6
+           tempload = []
+           ranges = split_in_ranges(total_load_window, vector_length)
+           ranges.each { |r|
+             tempload.push( Int("tempload#{r.begin}_#{r.end}", :size => 1, 
+                            :vector_length => (r.end - r.begin + 1), :signed => false) )
+           }
+           decl *(tempload)
+         else
+           tempnn = (0..2).collect { |v_i|
+             (0...vector_number).collect { |x_i|
+               (0...(y_component_number+2)).collect { |y_i|
+                 Int("temp#{x_i}#{v_i}#{y_i}", :size => 1, :vector_length => vector_length, :signed => false)
+               }
+             }
+           }
+           decl *(tempnn.flatten)
+         end
+         resnn = (0...(vector_number)).collect { |v_i|
+           (0...(y_component_number)).collect { |y_i|
+             Int("res#{v_i}#{y_i}", :size => 1, :vector_length => vector_length, :signed => false)
+           }
+         }
+         decl *(resnn.flatten)
+
+         tempcnn = (0..2).collect { |v_i|
+           (0...vector_number).collect { |x_i|
+             (0...(y_component_number+2)).collect { |y_i|
+               Int("tempc#{x_i}#{v_i}#{y_i}", :size => temporary_size, :vector_length => vector_length)
+             }
+           }
+         }
+         decl *(tempcnn.flatten)
+         rescnn = (0...vector_number).collect { |v_i|
+           (0...y_component_number).collect { |y_i|
+             Int("resc#{v_i}#{y_i}", :size => temporary_size, :vector_length => vector_length)
+           }
+         }
+         decl *(rescnn.flatten)
+          #+END_SRC
+   #+LaTeX: \end{figure}\clearpage
+
+   #+BEGIN_LaTeX
+   \begin{figure}[p]
+     \tiny
+   #+END_LaTeX
+   #+BEGIN_SRC ruby
+        (0...(y_component_number+2)).each { |y_i|
+           if not load_overlap then
+             load_start = -3
+             tempload.each{ |v|
+               pr v === psrc[x + load_start, y + (y_i - 1)]
+               load_start += v.type.vector_length
+             }
+
+             (0..2).each { |x_i|
+               (0...vector_number).each { |v_i|
+                 start_indx = v_i * vector_length + x_i * 3
+                 end_indx = start_indx + vector_length - 1
+                 merge_expr = merge_vectors(tempload, ranges, start_indx, end_indx)
+                 pr tempcnn[x_i][v_i][y_i] === Int( "(#{out_vec_type})(#{merge_expr.join(",")})", 
+                                                     :size => 1, :vector_length => vector_length)
+               }
+             }
+           else
+             (0..2).each { |x_i|
+               (0...vector_number).each { |v_i|
+                 pr tempnn[x_i][v_i][y_i] === psrc[x + v_i * vector_length + 3 * (x_i - 1), y + (y_i - 1)]
+                 pr tempcnn[x_i][v_i][y_i] === tempnn[x_i][v_i][y_i]
+               }
+             }
+           end
+         }
+         (0...vector_number).each { |v_i|
+           (0...y_component_number).each { |y_i|
+             pr rescnn[v_i][y_i] === - tempcnn[0][v_i][y_i]     - tempcnn[1][v_i][y_i] - tempcnn[2][v_i][y_i]\
+             - tempcnn[0][v_i][y_i + 1] + tempcnn[1][v_i][y_i + 1] * "(#{temp_type})9" - tempcnn[2][v_i][y_i + 1]\
+             - tempcnn[0][v_i][y_i + 2] - tempcnn[1][v_i][y_i + 2]                     - tempcnn[2][v_i][y_i + 2]
+             pr resnn[v_i][y_i] === clamp(rescnn[v_i][y_i],"(#{temp_type})0",
+                                          "(#{temp_type})255", :returns => rescnn[v_i][y_i])
+           }
+         }
+
+         (0...(y_component_number)).each { |y_i|
+           remaining_elem = total_x_size
+           (0...vector_number).each { |v_i|
+             if remaining_elem >= vector_length then
+               pr pdst[x + v_i * vector_length, y + y_i] === resnn[v_i][y_i]
+               remaining_elem -= vector_length
+             else
+               temp_vec_length = vector_length
+               begin
+                 temp_vec_length = temp_vec_length/2
+                 elem_indexes = 0
+                 if remaining_elem >= temp_vec_length then
+                   pr pdst[x + (v_i * vector_length + elem_indexes), y + y_i] === 
+                      resnn[v_i][y_i].components(elem_indexes...(elem_indexes+temp_vec_length))
+                   elem_indexes += temp_vec_length
+                   remaining_elem -= temp_vec_length
+                 end
+               end while remaining_elem > 0
+             end
+           }
+         }
+       }
+       pr p
+       k.procedure = p
+       return k
+     end
+   #+END_SRC
+   #+LaTeX: \label{lst:boast_code}\caption{BOAST code generating the Laplacian kernel} \end{figure}\clearpage
 
    #+BEGIN_LaTeX
    \begin{figure}[p]
@@ -1602,155 +1760,8 @@ every time close to optimal solutions.
          vstore4( res01, 0, &pdst[x + 0 + (w) * (y + 1)] );
      }
    #+END_SRC
-   #+LaTeX: \label{lst:kernel_code}\caption{Example of kernel code version generated by BOAST} \end{figure}\clearpage
+   #+LaTeX: \label{lst:kernel_code}\caption{Example of a Laplacian kernel version generated by BOAST} \end{figure}\clearpage
 
-   #+BEGIN_LaTeX
-   \begin{figure}[p]
-     \tiny
-   #+END_LaTeX
-   #+BEGIN_SRC ruby
-     def laplacian(options)
-
-       default_options = {:x_component_number => 1, :vector_length => 1, :y_component_number => 1, :temporary_size => 2, :vector_recompute => false, :load_overlap => false}
-       opts = default_options.update(options)
-       x_component_number = opts[:x_component_number]
-       vector_length      = opts[:vector_length]
-       y_component_number = opts[:y_component_number]
-       temporary_size     = opts[:temporary_size]
-       vector_recompute   = opts[:vector_recompute]
-       load_overlap       = opts[:load_overlap]
-       
-       k = CKernel::new
-       height = Int("height", :dir => :in)
-       width = Int("width", :dir => :in)
-       w = Int("w")
-       pdst = Int("pdst", :dir => :out,  :signed => false, :size => 1, :dim => [ Dim(w), Dim(height) ] )
-       psrc = Int("psrc", :dir => :in, :signed => false, :size => 1, :dim => [ Dim(w), Dim(height) ] )
-       
-       p = Procedure("math", [psrc, pdst, width, height]) {
-         decl y = Int("y")
-         decl x = Int("x")
-         decl w
-         
-         pr x === get_global_id(0) * x_component_number 
-         pr y === get_global_id(1) * y_component_number
-         pr w === width * 3
-
-         vector_number = (x_component_number.to_f/vector_length).ceil
-         total_x_size = vector_recompute ? vector_number * vector_length : x_component_number
-
-         x_offset = total_x_size + 3
-         y_offset = y_component_number + 1
-
-         pr x === Ternary(x < 3, 3, Ternary( x > w      - x_offset, w      - x_offset, x ) )
-         pr y === Ternary(y < 1, 1, Ternary( y > height - y_offset, height - y_offset, y ) )
-
-         temp_type = "#{Int("dummy", :size => temporary_size).type.decl}"
-         temp_vec_type = "#{Int("dummy", :size => temporary_size, :vector_length => vector_length).type.decl}"
-         out_type  = "#{Int("dummy", :size => 1, :signed => false).type.decl}"
-         out_vec_type = "#{Int("dummy", :size => 1, :signed => false, :vector_length => vector_length).type.decl}"
-
-         if not load_overlap then
-           total_load_window = total_x_size + 6
-           tempload = []
-           ranges = split_in_ranges(total_load_window, vector_length)
-           ranges.each { |r|
-             tempload.push( Int("tempload#{r.begin}_#{r.end}", :size => 1, :vector_length => (r.end - r.begin + 1), :signed => false) )
-           }
-           decl *(tempload)
-         else
-           tempnn = (0..2).collect { |v_i|
-             (0...vector_number).collect { |x_i|
-               (0...(y_component_number+2)).collect { |y_i|
-                 Int("temp#{x_i}#{v_i}#{y_i}", :size => 1, :vector_length => vector_length, :signed => false)
-               }
-             }
-           }
-           decl *(tempnn.flatten)
-         end
-         resnn = (0...(vector_number)).collect { |v_i|
-           (0...(y_component_number)).collect { |y_i|
-             Int("res#{v_i}#{y_i}", :size => 1, :vector_length => vector_length, :signed => false)
-           }
-         }
-         decl *(resnn.flatten)
-
-         tempcnn = (0..2).collect { |v_i|
-           (0...vector_number).collect { |x_i|
-             (0...(y_component_number+2)).collect { |y_i|
-               Int("tempc#{x_i}#{v_i}#{y_i}", :size => temporary_size, :vector_length => vector_length)
-             }
-           }
-         }
-         decl *(tempcnn.flatten)
-         rescnn = (0...vector_number).collect { |v_i|
-           (0...y_component_number).collect { |y_i|
-             Int("resc#{v_i}#{y_i}", :size => temporary_size, :vector_length => vector_length)
-           }
-         }
-         decl *(rescnn.flatten)
-
-         (0...(y_component_number+2)).each { |y_i|
-           if not load_overlap then
-             load_start = -3
-             tempload.each{ |v|
-               pr v === psrc[x + load_start, y + (y_i - 1)]
-               load_start += v.type.vector_length
-             }
-
-             (0..2).each { |x_i|
-               (0...vector_number).each { |v_i|
-                 start_indx = v_i * vector_length + x_i * 3
-                 end_indx = start_indx + vector_length - 1
-                 merge_expr = merge_vectors(tempload, ranges, start_indx, end_indx)
-                 pr tempcnn[x_i][v_i][y_i] === Int( "(#{out_vec_type})(#{merge_expr.join(",")})", :size => 1, :vector_length => vector_length)
-               }
-             }
-           else
-             (0..2).each { |x_i|
-               (0...vector_number).each { |v_i|
-                 pr tempnn[x_i][v_i][y_i] === psrc[x + v_i * vector_length + 3 * (x_i - 1), y + (y_i - 1)]
-                 pr tempcnn[x_i][v_i][y_i] === tempnn[x_i][v_i][y_i]
-               }
-             }
-           end
-         }
-         (0...vector_number).each { |v_i|
-           (0...y_component_number).each { |y_i|
-             pr rescnn[v_i][y_i] === - tempcnn[0][v_i][y_i]     - tempcnn[1][v_i][y_i]                         - tempcnn[2][v_i][y_i]\
-             - tempcnn[0][v_i][y_i + 1] + tempcnn[1][v_i][y_i + 1] * "(#{temp_type})9" - tempcnn[2][v_i][y_i + 1]\
-             - tempcnn[0][v_i][y_i + 2] - tempcnn[1][v_i][y_i + 2]                     - tempcnn[2][v_i][y_i + 2]
-             pr resnn[v_i][y_i] === clamp(rescnn[v_i][y_i],"(#{temp_type})0","(#{temp_type})255", :returns => rescnn[v_i][y_i])
-           }
-         }
-
-         (0...(y_component_number)).each { |y_i|
-           remaining_elem = total_x_size
-           (0...vector_number).each { |v_i|
-             if remaining_elem >= vector_length then
-               pr pdst[x + v_i * vector_length, y + y_i] === resnn[v_i][y_i]
-               remaining_elem -= vector_length
-             else
-               temp_vec_length = vector_length
-               begin
-                 temp_vec_length = temp_vec_length/2
-                 elem_indexes = 0
-                 if remaining_elem >= temp_vec_length then
-                   pr pdst[x + (v_i * vector_length + elem_indexes), y + y_i] === resnn[v_i][y_i].components(elem_indexes...(elem_indexes+temp_vec_length))
-                   elem_indexes += temp_vec_length
-                   remaining_elem -= temp_vec_length
-                 end
-               end while remaining_elem > 0
-             end
-           }
-         }
-       }
-       pr p
-       k.procedure = p
-       return k
-     end
-   #+END_SRC
-   #+LaTeX: \label{lst:boast_code}\caption{Example of BOAST code} \end{figure}\clearpage
 ** Controlling measurement
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
@@ -2065,25 +2076,25 @@ every time close to optimal solutions.
     to apply exactly the same strategy each time without considering
     the random set: 
     1. Sampling 50 points at random
-    2. Setting vector length and lws y and pruning the
+    2. Setting /vector_length/ and /lws_y/ and pruning the
        search space using the model:
        #+BEGIN_LaTeX
        \[time\, per\, pixel = vector\, length  + lws\, y\]
        #+END_LaTeX
     3. Sampling 40 additional points at random in the pruned search space  
-    4. Setting the factor y component number and pruning the
+    4. Setting the factor /y_component_number/ and pruning the
        search space using the model:
        #+BEGIN_LaTeX
        \[time\, per\, pixel = y\, component\, number\]
        #+END_LaTeX
     5. Sampling 20 additional points at random in the pruned search space    
-    6. Setting the factor elements number and pruning the
+    6. Setting the factor /elements_number/ and pruning the
        search space using the model:
        #+BEGIN_LaTeX
        \[time\, per\, pixel = elements\, number\]
        #+END_LaTeX
     7. Sampling 5 additional points at random in the pruned search space    
-    8. Setting the factor threads number and pruning the
+    8. Setting the factor /threads_number/ and pruning the
        search space using the model:
        #+BEGIN_LaTeX
        \[time\, per\, pixel = threads\, number + \frac{1}{threads\, number}\]
@@ -2400,7 +2411,7 @@ every time close to optimal solutions.
   because as we saw previously our local search GS failed which means
   there are a lot of local optimum in which it is stuck and some are
   far from the optimal one. The Table\ref{tab:top-20} shows the best
-  20 combinations, they are very similar, they all have vector length
+  20 combinations, they are very similar, they all have a /vector_length/
   of size 1 and a number of elements and a y component number of 5
   or 6. Which means that they are very located but there are still some
   local optimum in this area because if we try to run the GS on the
@@ -2920,7 +2931,7 @@ every time close to optimal solutions.
     incorrect optimization process looks like. 
 
     The worst solution failed in the first stage of the optimization
-    process (see Table\ref{tab:worst-solution}). Indeed, vector length and lws y 
+    process (see Table\ref{tab:worst-solution}). Indeed, /vector_length/ and /lws_y/ 
     are the first factors we fixed in our strategy. It predicted a
     good value for lws y, but instead of predicting that the best size
     of vector is 1, the model predicted a size of 16 which is the worst
@@ -2957,8 +2968,8 @@ every time close to optimal solutions.
     *estimate of the coefficients* has to be taken into
     consideration. The coefficients gives the slope which indicates
     what kind of impact the factor has. For example, in our case
-    vector length has a linear impact, a positive coefficient means
-    the lower vector length is the lower the time to compute a pixel. 
+    /vector_length/ has a linear impact, a positive coefficient means
+    the lower /vector_length/ is the lower the time to compute a pixel. 
     Comparing the coefficients with the standard errors gives
     information about the uncertainty in the estimate of the
     coefficient, the bigger the standard error compared to the
@@ -2978,7 +2989,7 @@ every time close to optimal solutions.
     \[vector length + lws y\]
     #+END_LaTeX 
     
-    First, with this set of points, the factor /vector length/ was not
+    First, with this set of points, the factor /vector_length/ was not
     significant enough and was fixed prematurely. Second, the standard
     error is equal to 5.953e-11 and the estimate is equal to
     -2.316e-11, the standard error is too big compared to the
@@ -3003,7 +3014,7 @@ every time close to optimal solutions.
     | lws y         |  5.572e-12 | 1.625e-12 |  0.00127 |
 
    The good case happens when our strategy is applied like we
-   expected. When using the model vector length + lws y the
+   expected. When using the model /vector_length/ + /lws_y/ the
    fit is acceptable with a coefficient of determination of
    0.5431. The prediction is only made with relevant factors for
    example in the Table\ref{tab:correct-fit} the p-values of vector
@@ -3027,14 +3038,14 @@ every time close to optimal solutions.
 
    It exists also lucky cases, where the applied model was not very good but
    which still gives the same solution as with the favorable cases. One
-   of these cases when fitting the model vector length + lws y has a
-   poor R-squared of 0.1665 (see Table\ref{tab:lucky-fit}). Only lws y
-   is significant. The standard error of vector length is high,
+   of these cases when fitting the model /vector_length/ + /lws_y/ has a
+   poor R-squared of 0.1665 (see Table\ref{tab:lucky-fit}). Only /lws_y/
+   is significant. The standard error of /vector_length/ is high,
    however even with uncertainty we can tell that the estimate of the
    coefficient will be positive. This lack of accuracy in the
    coefficient is problematic with factors which have complex impact
    and interactions but with factors which have a simple linear
-   interaction such as vector length it is enough to know if the
+   interaction such as /vector_length/ it is enough to know if the
    coefficient is negative or positive. Also when comparing the
    predicted values and the observed ones it looks like favorable
    cases, there is a strong correlation for the low values (see
@@ -3049,12 +3060,13 @@ every time close to optimal solutions.
     | lws y         | 1.507e-11 | 4.596e-12 |  0.00197 |
 
    The reason why in favorable cases and lucky cases we get the same
-   results if because in the first stage, we fix vector length and lws
+   results if because in the first stage, we fix /vector_length/ and lws
    y to the same values. This strongly directs the process to the same
    solution, because each time it restricts the search space to the
    same set of point. Pruning the search space reduces the noise due
-   to the complex interactions between factors. When fixing vector
-   length at the value 1 and lws y at the value 1 it remains only 576
+   to the complex interactions between factors. When fixing
+   /vector_length/ at the value 1 and lws y at the value 1 it remains
+   only 576 
    points in the search space. The process converges to the same
    information about the search space, that is why we get the same
    results in favorable cases and lucky cases. 
@@ -3107,7 +3119,7 @@ every time close to optimal solutions.
    these optimization parameters.
 *** Starting hypothesis
    These hypothesis facilitate the task of finding the model.
-   In the case of our Laplacian kernel the elements_number parameter
+   In the case of our Laplacian kernel the /elements_number/ parameter
    is the number of component a thread compute and thus determines the
    number of threads used to perform the computation of the
    Laplacian. Using more threads allows to compute more component
@@ -3120,7 +3132,7 @@ every time close to optimal solutions.
    \[ \displaystyle elements number + \frac{1}{elements number} \]
    #+END_LaTeX  
   
-   The parameter y_component_number determines the number of components
+   The parameter /y_component_number/ determines the number of components
    on the y-axis a thread compute. This tilling optimization may take
    advantage of the organization of memory banks on Nvidia GPUs and
    thus improve the data usage. The impact is suspect to have an
@@ -3135,13 +3147,13 @@ every time close to optimal solutions.
    \[ \displaystyle y component number + \frac{1}{y component number} \]
    #+END_LaTeX  
 
-   The parameter vector_length allow to specify the size of vector
+   The parameter /vector_length/ allow to specify the size of vector
    variables. However on Nvidia GPUs does not provides vector support
    and variable are manipulate like scalar variable. Hence we can
-   suppose that the effect of vector length should be negative and we
+   suppose that the effect of /vector_length/ should be negative and we
    can for example try a simple linear model.
 
-   The threads_number parameter determines the size of a work
+   The /threads_number/ parameter determines the size of a work
    group. Threads in a group can share data, bigger groups means
    better data usage. However smaller groups gives more scheduling
    opportunity but there might be an overhead due to a higher number
@@ -3157,13 +3169,13 @@ every time close to optimal solutions.
    \[ \displaystyle threads number + \frac{1}{threads number} \]
    #+END_LaTeX  
 
-   The lws_y parameter organizes the threads on a work group in 2
+   The /lws_y/ parameter organizes the threads on a work group in 2
    dimensions and tells how many threads there is on the y-axis. For
    this parameter it can be difficult what kind of impact it could
    have. It can have a linear or quadratic in impact. Between the two
    it is better to start the simpler one, the simple linear model.
 
-   The parameters load_overlap and temporary_size are factors with
+   The parameters load_overlap and /temporary_size/ are factors with
    only two levels thus only a simple linear model is needed.   
 
    If the application developer does not have a vague idea of the
@@ -3696,7 +3708,7 @@ every time close to optimal solutions.
   with the use of quantile regression in place of classical linear
   regression. 
 ** Constrained and discrete search space
-*** DONE Model optimization
+*** Model optimization
 ****                                                               :noexport:
     #+begin_src sh :results output :exports both
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
@@ -3825,13 +3837,13 @@ every time close to optimal solutions.
     Our search space also has multiple constraints that restricts greatly
     the set of feasible points. There are constraints that ensure the
     consistency of the combinations of factors. For example
-    elements_number being the number of component for a thread and
-    y_component_number the number of component on the y-axis for a
+    /elements_number/ being the number of component for a thread and
+    /y_component_number/ the number of component on the y-axis for a
     thread, we cannot have more component on the y-axis than the
     number of component itself, for this reason combinations such as
-    elements_number = 1 and y_component_number = 2 are unfeasible. 
-    Another constraint on elements_number and y_component_number is
-    that elements_number is a multiple of y_component_number in order
+    /elements_number/ = 1 and y_component_number = 2 are unfeasible. 
+    Another constraint on elements_number and /y_component_number/ is
+    that elements_number is a multiple of /y_component_number/ in order
     to work only on square or rectangular tiles.
     So we have this:
     #+BEGIN_LaTeX
@@ -3881,7 +3893,7 @@ every time close to optimal solutions.
    \subcaption{\label{fig:search_space_3d_barrier}}
    \end{minipage}
    \caption{\textbf{Search space constraints}: These figures represents the example of some of the 
-    constraints on the paramters elements number and y component number and the envisioned approach
+    constraints on the paramters \emph{elements number} and \emph{y component number} and the envisioned approach
    to cope with it.
    Figure\ref{fig:search_space_3d} shows the predicted objective function.
    Figure\ref{fig:search_space_3d} shows the same function but only with the feasible points. 
@@ -3892,7 +3904,7 @@ every time close to optimal solutions.
    }
    \end{figure}
    #+END_LaTeX
-*** DONE Sampling techniques
+*** Sampling techniques
 ****                                                               :noexport:
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
