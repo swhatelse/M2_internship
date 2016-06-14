@@ -1987,7 +1987,7 @@ Text
    #+end_src
 
    #+RESULTS:
-                                                                
+
 **** Repartition of combination
    #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.pdf :exports results :width 4 :height 6 :session
      library(ggplot2)
@@ -1999,11 +1999,11 @@ Text
 
      ggplot(data=df) +
          geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme_bw() +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
          geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
          geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
          geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
-         ggtitle("Density of the combinations slowdown compared to the best") +
          labs(y="Density", x="Slowdown")
 
    #+end_src
@@ -2014,11 +2014,11 @@ Text
    #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown_zoom.pdf :exports both :width 4 :height 6 :session
      ggplot(data=df) +
          geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme_bw() +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
          geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
          geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
          geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
-         ggtitle("Density of the combinations slowdown compared to the best") +
          coord_cartesian(xlim=c(.9,17)) +
          labs(y="Density", x="Slowdown")
    #+end_src
@@ -2154,12 +2154,15 @@ Text
 
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown.pdf}
+   \subcaption{Global search space}
    \end{minipage}
+   \fill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown_zoom.pdf}
+   \subcaption{Zoomed search space}
    \end{minipage}
    \caption{\label{fig:combination_distribution}These figures presents the slowdown of the combination 
-    of the entire search space. The left figure is a global view and the right figure focuses
+    of the entire search space. The Figure (a) is a global view and the Figure (b) focuses
     on combination between a slowdown of 0 and 20. The red dotted line represents the mean, 
     the green one the median, the blue one on the left the 1st. quartile and the blue one
     on the right the 3rd. quartile.}
@@ -2233,6 +2236,7 @@ Text
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/heteroscedasticity_v_len.pdf}
    \end{minipage}
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/heteroscedasticity_x_comp.pdf}
    \end{minipage}
@@ -2256,7 +2260,7 @@ Text
 
    #+RESULTS:
 
-    #+begin_src R :results output graphics :file ./img/lm_v_len.pdf :exports both :width 6 :height 4 :session
+    #+begin_src R :results output graphics :file ./img/lm_v_len.pdf :exports both :width 6 :height 6 :session
      library(ggplot2)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -2265,9 +2269,10 @@ Text
          aes(x=vector_length, y=time_per_pixel) +
          theme_bw() + 
          geom_point(alpha=0.1) + 
-         geom_smooth(method="lm", formula= y ~ x, aes(colour="Least square regression")) +
+         geom_smooth(method="lm", formula= y ~ x, aes(colour="Least squareregression")) +
+         theme(legend.position="top") +
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-         ggtitle("Impact of the vector length") +
+         # ggtitle("Impact of the vector length") +
          labs(y="time per pixel in seconds", x="vector length") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
@@ -2277,7 +2282,7 @@ Text
     #+RESULTS:
     [[file:./img/lm_v_len.pdf]]
 
-   #+begin_src R :results output graphics :file img/lm_x_comp.pdf :exports results :width 6 :height 4 :session 
+   #+begin_src R :results output graphics :file img/lm_x_comp.pdf :exports results :width 6 :height 6 :session 
      library(ggplot2)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -2286,9 +2291,10 @@ Text
          aes(x=x_component_number, y=time_per_pixel) + 
          theme_bw() + 
          geom_point(alpha=0.1) + 
+         theme(legend.position="top") +
          geom_smooth(method="lm", formula = y ~ x + I(1/x), aes(colour="Least square regression")) +
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
-         ggtitle("Impact of number of component on the x-axis") +
+         # ggtitle("Impact of number of component on the x-axis") +
          labs(y="time per pixel in seconds", x="x component number") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
@@ -2297,13 +2303,8 @@ Text
 
    #+RESULTS:
    [[file:img/lm_x_comp.pdf]]
-   #+begin_src sh :results output :exports none
-     ruby ../../../scripts/format_data.rb ../../../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_linear.yaml
-   #+end_src
 
-   #+RESULTS:
-
-   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg_x_comp.pdf :exports results :width 6 :height 4 :session
+   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg_x_comp.pdf :exports results :width 6 :height 6 :session
      library(ggplot2)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -2311,12 +2312,13 @@ Text
 
      ggplot(df) + 
          theme_bw() + 
+         theme(legend.position="top") +
          aes(x=x_component_number, y=time_per_pixel) +
          geom_point(alpha=0.1) + 
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
          geom_smooth(method="lm", formula = y ~ x + I(1/x), aes(colour="Least square regression")) +           
          stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), aes(colour="Quantile regression")) +
-         ggtitle("Impact of number of component on the x-axis") +
+         # ggtitle("Impact of number of component on the x-axis") +
          labs(y="Time per pixel in seconds", x="x component number") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
@@ -2325,7 +2327,7 @@ Text
    #+RESULTS:
    [[file:img/why_we_choose_quantile_reg_x_comp.pdf]]
 
-   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg_v_len.pdf :exports results :width 6 :height 4 :session
+   #+begin_src R :results output graphics :file img/why_we_choose_quantile_reg_v_len.pdf :exports results :width 6 :height 6 :session
      library(ggplot2)
 
      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -2335,10 +2337,11 @@ Text
          aes(x=vector_length, y=time_per_pixel) +
          theme_bw() + 
          geom_point(alpha=0.1) + 
+         theme(legend.position="top") +
          geom_hline(yintercept=min(df$time_per_pixel), color="red", linetype=2) +
          geom_smooth(method="lm", formula = y ~ x, aes(colour="Least square regression")) +           
          stat_quantile(quantiles=0.05, formula = y ~ x + I(1/x), aes(colour="Quantile regression")) +
-         ggtitle("Impact of number of component on the x-axis") +
+         # ggtitle("Impact of number of component on the x-axis") +
          labs(y="Time per pixel in seconds", x="Vector length") +
          theme(axis.text=element_text(size=12),
                axis.title=element_text(size=14,face="bold"))
