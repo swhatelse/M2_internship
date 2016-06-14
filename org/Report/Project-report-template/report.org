@@ -1426,7 +1426,9 @@ every time close to optimal solutions.
 ** Case study
    # Maybe cite Brice paper for this part
    In order to try our approach, we took a very simple example
-   which is a kernel that computes the Laplacian of an image. We want
+   which is a kernel that computes the Laplacian of an image (see
+   Figure\ref{fig:boast_code} for BOAST code and Figure\ref{fig:kernel_code} for an example of
+   generated code). We want
    to minimize the time to compute a pixel. There are multiple
    optimization that can be done to enhance the performance of this
    kernel. The parameters and their values we used to tune this
@@ -1543,224 +1545,6 @@ every time close to optimal solutions.
    driver 340.32 and two CPUs Intel E5-2630. The OS is Debian and we
    used the GCC compiler version 4.8.3. All the details about each
    experiments environment are available in the git repository.
-
-   #+BEGIN_LaTeX
-   \begin{figure}[p]
-     \tiny
-   #+END_LaTeX
-   #+BEGIN_SRC ruby
-     def laplacian(options)
-
-       default_options = {:x_component_number => 1, :vector_length => 1, :y_component_number => 1, 
-                          :temporary_size => 2, :vector_recompute => false, :load_overlap => false}
-       opts = default_options.update(options)
-       x_component_number = opts[:x_component_number];    vector_length      = opts[:vector_length]
-       y_component_number = opts[:y_component_number];    temporary_size     = opts[:temporary_size]
-       vector_recompute   = opts[:vector_recompute];      load_overlap       = opts[:load_overlap]
-       
-       k = CKernel::new
-       height = Int("height", :dir => :in); width = Int("width", :dir => :in); w = Int("w")
-       pdst = Int("pdst", :dir => :out,  :signed => false, :size => 1, :dim => [ Dim(w), Dim(height) ] )
-       psrc = Int("psrc", :dir => :in, :signed => false, :size => 1, :dim => [ Dim(w), Dim(height) ] )
-       
-       p = Procedure("math", [psrc, pdst, width, height]) {
-         decl y = Int("y"); decl x = Int("x"); decl w
-         
-         pr x === get_global_id(0) * x_component_number 
-         pr y === get_global_id(1) * y_component_number
-         pr w === width * 3
-
-         vector_number = (x_component_number.to_f/vector_length).ceil
-         total_x_size = vector_recompute ? vector_number * vector_length : x_component_number
-
-         x_offset = total_x_size + 3
-         y_offset = y_component_number + 1
-
-         pr x === Ternary(x < 3, 3, Ternary( x > w      - x_offset, w      - x_offset, x ) )
-         pr y === Ternary(y < 1, 1, Ternary( y > height - y_offset, height - y_offset, y ) )
-
-         temp_type = "#{Int("dummy", :size => temporary_size).type.decl}"
-         temp_vec_type = "#{Int("dummy", :size => temporary_size, :vector_length => vector_length).type.decl}"
-         out_type  = "#{Int("dummy", :size => 1, :signed => false).type.decl}"
-         out_vec_type = "#{Int("dummy", :size => 1, :signed => false, :vector_length => vector_length).type.decl}"
-
-         if not load_overlap then
-           total_load_window = total_x_size + 6
-           tempload = []
-           ranges = split_in_ranges(total_load_window, vector_length)
-           ranges.each { |r|
-             tempload.push( Int("tempload#{r.begin}_#{r.end}", :size => 1, 
-                            :vector_length => (r.end - r.begin + 1), :signed => false) )
-           }
-           decl *(tempload)
-         else
-           tempnn = (0..2).collect { |v_i|
-             (0...vector_number).collect { |x_i|
-               (0...(y_component_number+2)).collect { |y_i|
-                 Int("temp#{x_i}#{v_i}#{y_i}", :size => 1, :vector_length => vector_length, :signed => false)
-               }
-             }
-           }
-           decl *(tempnn.flatten)
-         end
-         resnn = (0...(vector_number)).collect { |v_i|
-           (0...(y_component_number)).collect { |y_i|
-             Int("res#{v_i}#{y_i}", :size => 1, :vector_length => vector_length, :signed => false)
-           }
-         }
-         decl *(resnn.flatten)
-
-         tempcnn = (0..2).collect { |v_i|
-           (0...vector_number).collect { |x_i|
-             (0...(y_component_number+2)).collect { |y_i|
-               Int("tempc#{x_i}#{v_i}#{y_i}", :size => temporary_size, :vector_length => vector_length)
-             }
-           }
-         }
-         decl *(tempcnn.flatten)
-         rescnn = (0...vector_number).collect { |v_i|
-           (0...y_component_number).collect { |y_i|
-             Int("resc#{v_i}#{y_i}", :size => temporary_size, :vector_length => vector_length)
-           }
-         }
-         decl *(rescnn.flatten)
-          #+END_SRC
-   #+LaTeX: \end{figure}\clearpage
-
-   #+BEGIN_LaTeX
-   \begin{figure}[p]
-     \tiny
-   #+END_LaTeX
-   #+BEGIN_SRC ruby
-        (0...(y_component_number+2)).each { |y_i|
-           if not load_overlap then
-             load_start = -3
-             tempload.each{ |v|
-               pr v === psrc[x + load_start, y + (y_i - 1)]
-               load_start += v.type.vector_length
-             }
-
-             (0..2).each { |x_i|
-               (0...vector_number).each { |v_i|
-                 start_indx = v_i * vector_length + x_i * 3
-                 end_indx = start_indx + vector_length - 1
-                 merge_expr = merge_vectors(tempload, ranges, start_indx, end_indx)
-                 pr tempcnn[x_i][v_i][y_i] === Int( "(#{out_vec_type})(#{merge_expr.join(",")})", 
-                                                     :size => 1, :vector_length => vector_length)
-               }
-             }
-           else
-             (0..2).each { |x_i|
-               (0...vector_number).each { |v_i|
-                 pr tempnn[x_i][v_i][y_i] === psrc[x + v_i * vector_length + 3 * (x_i - 1), y + (y_i - 1)]
-                 pr tempcnn[x_i][v_i][y_i] === tempnn[x_i][v_i][y_i]
-               }
-             }
-           end
-         }
-         (0...vector_number).each { |v_i|
-           (0...y_component_number).each { |y_i|
-             pr rescnn[v_i][y_i] === - tempcnn[0][v_i][y_i]     - tempcnn[1][v_i][y_i] - tempcnn[2][v_i][y_i]\
-             - tempcnn[0][v_i][y_i + 1] + tempcnn[1][v_i][y_i + 1] * "(#{temp_type})9" - tempcnn[2][v_i][y_i + 1]\
-             - tempcnn[0][v_i][y_i + 2] - tempcnn[1][v_i][y_i + 2]                     - tempcnn[2][v_i][y_i + 2]
-             pr resnn[v_i][y_i] === clamp(rescnn[v_i][y_i],"(#{temp_type})0",
-                                          "(#{temp_type})255", :returns => rescnn[v_i][y_i])
-           }
-         }
-
-         (0...(y_component_number)).each { |y_i|
-           remaining_elem = total_x_size
-           (0...vector_number).each { |v_i|
-             if remaining_elem >= vector_length then
-               pr pdst[x + v_i * vector_length, y + y_i] === resnn[v_i][y_i]
-               remaining_elem -= vector_length
-             else
-               temp_vec_length = vector_length
-               begin
-                 temp_vec_length = temp_vec_length/2
-                 elem_indexes = 0
-                 if remaining_elem >= temp_vec_length then
-                   pr pdst[x + (v_i * vector_length + elem_indexes), y + y_i] === 
-                      resnn[v_i][y_i].components(elem_indexes...(elem_indexes+temp_vec_length))
-                   elem_indexes += temp_vec_length
-                   remaining_elem -= temp_vec_length
-                 end
-               end while remaining_elem > 0
-             end
-           }
-         }
-       }
-       pr p
-       k.procedure = p
-       return k
-     end
-   #+END_SRC
-   #+LaTeX: \label{lst:boast_code}\caption{BOAST code generating the Laplacian kernel} \end{figure}\clearpage
-
-   #+BEGIN_LaTeX
-   \begin{figure}[p]
-     \scriptsize
-   #+END_LaTeX
-   #+BEGIN_SRC C :results output :exports code
-     __kernel void math(const __global uchar * psrc, __global uchar * pdst, 
-                        const int width, const int height){
-         int y;
-         int x;
-         int w;
-         x = (get_global_id(0)) * (4);
-         y = (get_global_id(1)) * (2);
-         w = (width) * (3);
-         x = (x < 3 ? 3 : (x > w - (7) ? w - (7) : x));
-         y = (y < 1 ? 1 : (y > height - (3) ? height - (3) : y));
-         uchar4 temp000;       uchar4 temp001;
-         uchar4 temp002;       uchar4 temp003;
-         uchar4 temp010;       uchar4 temp011;
-         uchar4 temp012;       uchar4 temp013;
-         uchar4 temp020;       uchar4 temp021;
-         uchar4 temp022;       uchar4 temp023;
-         uchar4 res00;         uchar4 res01;
-         short4 tempc000;      short4 tempc001;
-         short4 tempc002;      short4 tempc003;
-         short4 tempc010;      short4 tempc011;
-         short4 tempc012;      short4 tempc013;
-         short4 tempc020;      short4 tempc021;
-         short4 tempc022;      short4 tempc023;
-         short4 resc00;        short4 resc01;
-         temp000 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + -1)]);
-         tempc000 = convert_short4( temp000 );
-         temp010 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + -1)]);
-         tempc010 = convert_short4( temp010 );
-         temp020 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + -1)]);
-         tempc020 = convert_short4( temp020 );
-         temp001 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 0)]);
-         tempc001 = convert_short4( temp001 );
-         temp011 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 0)]);
-         tempc011 = convert_short4( temp011 );
-         temp021 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 0)]);
-         tempc021 = convert_short4( temp021 );
-         temp002 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 1)]);
-         tempc002 = convert_short4( temp002 );
-         temp012 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 1)]);
-         tempc012 = convert_short4( temp012 );
-         temp022 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 1)]);
-         tempc022 = convert_short4( temp022 );
-         temp003 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 2)]);
-         tempc003 = convert_short4( temp003 );
-         temp013 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 2)]);
-         tempc013 = convert_short4( temp013 );
-         temp023 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 2)]);
-         tempc023 = convert_short4( temp023 );
-         resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * 
-                    ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
-         res00 = convert_uchar4( clamp(resc00, (short)0, (short)255) );
-         resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * 
-                    ((short)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
-         res01 = convert_uchar4( clamp(resc01, (short)0, (short)255) );
-         vstore4( res00, 0, &pdst[x + 0 + (w) * (y + 0)] );
-         vstore4( res01, 0, &pdst[x + 0 + (w) * (y + 1)] );
-     }
-   #+END_SRC
-   #+LaTeX: \label{lst:kernel_code}\caption{Example of a Laplacian kernel version generated by BOAST} \end{figure}\clearpage
 
 ** Controlling measurement
    #+begin_src sh :results output :exports none
@@ -4089,11 +3873,12 @@ every time close to optimal solutions.
      experiments such as LHS or screening design are not suited in the
      case of heavily constrained search space because it cancels their
      interesting properties and simple methods are generally enough. 
-  5. We want to stress that for such an experimental study, it
-     was of primary importance to have solid methodology. We have thus taken a
-     particular care on logging and detailing all our observations and
-     choices so that others can build upon it. Our experimental journal
-     is thus freely available at \url{https://github.com/swhatelse/M2_internship}. 
+
+  We want to stress that for such an experimental study, it
+  was of primary importance to have solid methodology. We have thus taken a
+  particular care on logging and detailing all our observations and
+  choices so that others can build upon it. Our experimental journal
+  is thus freely available at \url{https://github.com/swhatelse/M2_internship}. 
 
   In the future we envision several axis of work. First, as we managed
   to get good results on a Laplacian kernel we would like to apply our
@@ -4140,6 +3925,228 @@ every time close to optimal solutions.
 #+LaTeX: \def\raggedright{}
 \bibliographystyle{plain}
 \bibliography{../../biblio.bib}
+
+#+BEGIN_LaTeX
+\appendix
+#+END_LaTeX
+* Code example
+   #+BEGIN_LaTeX
+   \begin{figure}[p]
+     \tiny
+   #+END_LaTeX
+   #+BEGIN_SRC ruby
+     def laplacian(options)
+
+       default_options = {:x_component_number => 1, :vector_length => 1, :y_component_number => 1, 
+                          :temporary_size => 2, :vector_recompute => false, :load_overlap => false}
+       opts = default_options.update(options)
+       x_component_number = opts[:x_component_number];    vector_length      = opts[:vector_length]
+       y_component_number = opts[:y_component_number];    temporary_size     = opts[:temporary_size]
+       vector_recompute   = opts[:vector_recompute];      load_overlap       = opts[:load_overlap]
+       
+       k = CKernel::new
+       height = Int("height", :dir => :in); width = Int("width", :dir => :in); w = Int("w")
+       pdst = Int("pdst", :dir => :out,  :signed => false, :size => 1, :dim => [ Dim(w), Dim(height) ] )
+       psrc = Int("psrc", :dir => :in, :signed => false, :size => 1, :dim => [ Dim(w), Dim(height) ] )
+       
+       p = Procedure("math", [psrc, pdst, width, height]) {
+         decl y = Int("y"); decl x = Int("x"); decl w
+         
+         pr x === get_global_id(0) * x_component_number 
+         pr y === get_global_id(1) * y_component_number
+         pr w === width * 3
+
+         vector_number = (x_component_number.to_f/vector_length).ceil
+         total_x_size = vector_recompute ? vector_number * vector_length : x_component_number
+
+         x_offset = total_x_size + 3
+         y_offset = y_component_number + 1
+
+         pr x === Ternary(x < 3, 3, Ternary( x > w      - x_offset, w      - x_offset, x ) )
+         pr y === Ternary(y < 1, 1, Ternary( y > height - y_offset, height - y_offset, y ) )
+
+         temp_type = "#{Int("dummy", :size => temporary_size).type.decl}"
+         temp_vec_type = "#{Int("dummy", :size => temporary_size, :vector_length => vector_length).type.decl}"
+         out_type  = "#{Int("dummy", :size => 1, :signed => false).type.decl}"
+         out_vec_type = "#{Int("dummy", :size => 1, :signed => false, :vector_length => vector_length).type.decl}"
+
+         if not load_overlap then
+           total_load_window = total_x_size + 6
+           tempload = []
+           ranges = split_in_ranges(total_load_window, vector_length)
+           ranges.each { |r|
+             tempload.push( Int("tempload#{r.begin}_#{r.end}", :size => 1, 
+                            :vector_length => (r.end - r.begin + 1), :signed => false) )
+           }
+           decl *(tempload)
+         else
+           tempnn = (0..2).collect { |v_i|
+             (0...vector_number).collect { |x_i|
+               (0...(y_component_number+2)).collect { |y_i|
+                 Int("temp#{x_i}#{v_i}#{y_i}", :size => 1, :vector_length => vector_length, :signed => false)
+               }
+             }
+           }
+           decl *(tempnn.flatten)
+         end
+         resnn = (0...(vector_number)).collect { |v_i|
+           (0...(y_component_number)).collect { |y_i|
+             Int("res#{v_i}#{y_i}", :size => 1, :vector_length => vector_length, :signed => false)
+           }
+         }
+         decl *(resnn.flatten)
+
+         tempcnn = (0..2).collect { |v_i|
+           (0...vector_number).collect { |x_i|
+             (0...(y_component_number+2)).collect { |y_i|
+               Int("tempc#{x_i}#{v_i}#{y_i}", :size => temporary_size, :vector_length => vector_length)
+             }
+           }
+         }
+         decl *(tempcnn.flatten)
+         rescnn = (0...vector_number).collect { |v_i|
+           (0...y_component_number).collect { |y_i|
+             Int("resc#{v_i}#{y_i}", :size => temporary_size, :vector_length => vector_length)
+           }
+         }
+         decl *(rescnn.flatten)
+          #+END_SRC
+   #+LaTeX: \end{figure}\clearpage
+
+   #+BEGIN_LaTeX
+   \begin{figure}[p]
+     \tiny
+   #+END_LaTeX
+   #+BEGIN_SRC ruby
+        (0...(y_component_number+2)).each { |y_i|
+           if not load_overlap then
+             load_start = -3
+             tempload.each{ |v|
+               pr v === psrc[x + load_start, y + (y_i - 1)]
+               load_start += v.type.vector_length
+             }
+
+             (0..2).each { |x_i|
+               (0...vector_number).each { |v_i|
+                 start_indx = v_i * vector_length + x_i * 3
+                 end_indx = start_indx + vector_length - 1
+                 merge_expr = merge_vectors(tempload, ranges, start_indx, end_indx)
+                 pr tempcnn[x_i][v_i][y_i] === Int( "(#{out_vec_type})(#{merge_expr.join(",")})", 
+                                                     :size => 1, :vector_length => vector_length)
+               }
+             }
+           else
+             (0..2).each { |x_i|
+               (0...vector_number).each { |v_i|
+                 pr tempnn[x_i][v_i][y_i] === psrc[x + v_i * vector_length + 3 * (x_i - 1), y + (y_i - 1)]
+                 pr tempcnn[x_i][v_i][y_i] === tempnn[x_i][v_i][y_i]
+               }
+             }
+           end
+         }
+         (0...vector_number).each { |v_i|
+           (0...y_component_number).each { |y_i|
+             pr rescnn[v_i][y_i] === - tempcnn[0][v_i][y_i]     - tempcnn[1][v_i][y_i] - tempcnn[2][v_i][y_i]\
+             - tempcnn[0][v_i][y_i + 1] + tempcnn[1][v_i][y_i + 1] * "(#{temp_type})9" - tempcnn[2][v_i][y_i + 1]\
+             - tempcnn[0][v_i][y_i + 2] - tempcnn[1][v_i][y_i + 2]                     - tempcnn[2][v_i][y_i + 2]
+             pr resnn[v_i][y_i] === clamp(rescnn[v_i][y_i],"(#{temp_type})0",
+                                          "(#{temp_type})255", :returns => rescnn[v_i][y_i])
+           }
+         }
+
+         (0...(y_component_number)).each { |y_i|
+           remaining_elem = total_x_size
+           (0...vector_number).each { |v_i|
+             if remaining_elem >= vector_length then
+               pr pdst[x + v_i * vector_length, y + y_i] === resnn[v_i][y_i]
+               remaining_elem -= vector_length
+             else
+               temp_vec_length = vector_length
+               begin
+                 temp_vec_length = temp_vec_length/2
+                 elem_indexes = 0
+                 if remaining_elem >= temp_vec_length then
+                   pr pdst[x + (v_i * vector_length + elem_indexes), y + y_i] === 
+                      resnn[v_i][y_i].components(elem_indexes...(elem_indexes+temp_vec_length))
+                   elem_indexes += temp_vec_length
+                   remaining_elem -= temp_vec_length
+                 end
+               end while remaining_elem > 0
+             end
+           }
+         }
+       }
+       pr p
+       k.procedure = p
+       return k
+     end
+   #+END_SRC
+   #+LaTeX: \caption{\label{fig:boast_code}BOAST code generating the Laplacian kernel} \end{figure}\clearpage
+
+   #+BEGIN_LaTeX
+   \begin{figure}[p]
+     \scriptsize
+   #+END_LaTeX
+   #+BEGIN_SRC C :results output :exports code
+     __kernel void math(const __global uchar * psrc, __global uchar * pdst, 
+                        const int width, const int height){
+         int y;
+         int x;
+         int w;
+         x = (get_global_id(0)) * (4);
+         y = (get_global_id(1)) * (2);
+         w = (width) * (3);
+         x = (x < 3 ? 3 : (x > w - (7) ? w - (7) : x));
+         y = (y < 1 ? 1 : (y > height - (3) ? height - (3) : y));
+         uchar4 temp000;       uchar4 temp001;
+         uchar4 temp002;       uchar4 temp003;
+         uchar4 temp010;       uchar4 temp011;
+         uchar4 temp012;       uchar4 temp013;
+         uchar4 temp020;       uchar4 temp021;
+         uchar4 temp022;       uchar4 temp023;
+         uchar4 res00;         uchar4 res01;
+         short4 tempc000;      short4 tempc001;
+         short4 tempc002;      short4 tempc003;
+         short4 tempc010;      short4 tempc011;
+         short4 tempc012;      short4 tempc013;
+         short4 tempc020;      short4 tempc021;
+         short4 tempc022;      short4 tempc023;
+         short4 resc00;        short4 resc01;
+         temp000 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + -1)]);
+         tempc000 = convert_short4( temp000 );
+         temp010 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + -1)]);
+         tempc010 = convert_short4( temp010 );
+         temp020 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + -1)]);
+         tempc020 = convert_short4( temp020 );
+         temp001 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 0)]);
+         tempc001 = convert_short4( temp001 );
+         temp011 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 0)]);
+         tempc011 = convert_short4( temp011 );
+         temp021 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 0)]);
+         tempc021 = convert_short4( temp021 );
+         temp002 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 1)]);
+         tempc002 = convert_short4( temp002 );
+         temp012 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 1)]);
+         tempc012 = convert_short4( temp012 );
+         temp022 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 1)]);
+         tempc022 = convert_short4( temp022 );
+         temp003 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 2)]);
+         tempc003 = convert_short4( temp003 );
+         temp013 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 2)]);
+         tempc013 = convert_short4( temp013 );
+         temp023 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 2)]);
+         tempc023 = convert_short4( temp023 );
+         resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * 
+                    ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
+         res00 = convert_uchar4( clamp(resc00, (short)0, (short)255) );
+         resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * 
+                    ((short)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
+         res01 = convert_uchar4( clamp(resc01, (short)0, (short)255) );
+         vstore4( res00, 0, &pdst[x + 0 + (w) * (y + 0)] );
+         vstore4( res01, 0, &pdst[x + 0 + (w) * (y + 1)] );
+     }
+   #+END_SRC
+   #+LaTeX: \caption{\label{fig:kernel_code}Example of a Laplacian kernel version generated by BOAST} \end{figure}\clearpage
 
 
 * Emacs Setup 							   :noexport:
