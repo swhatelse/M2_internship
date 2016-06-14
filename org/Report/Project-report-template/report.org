@@ -144,9 +144,19 @@ is difficult as they are complex machines and each platform has a
 unique set of characteristics. Thus the developer must program 
 them with care and write specialized code. Tools exists to help 
 the developer in this tricky task, to generate optimized versions 
-of an application. Finding high performing version is the main concern 
-and the auto-tuning consider this as a mathematical optimization 
-problem.
+of an application. Finding high performing versions is the main concern 
+because the search space can be huge (e.g GCC has about 500 compilation flags)
+and the exhaustive search is prohibitive. Hence auto-tuning consider this as 
+a mathematical optimization problem. To the best of our knowledge most 
+auto-tuning frameworks mostly resort to generic optimization techniques 
+combined to fully automatic explorations. However this approach excludes the 
+user from the optimization process and it is difficult to know if further 
+improvement can be done and evaluate the quality of the solution.
+We propose a semi-automatic approach that gives power back to the user. 
+This approach is based on regression techniques to predict the objective 
+function combined to techniques inspired from design of experiments which aim 
+at reducing the number of experiments. 
+We evaluated our approach on the case of a Laplacian kernel and compared it to 
 \end{abstract}
 \abstractintoc
 \renewcommand\abstractname{R\'esum\'e}
@@ -163,8 +173,8 @@ problem.
 #+END_LaTeX
 
 # #+BEGIN_abstract
-#   Blablabla
-#   \newpage
+#   
+#   
 # #+END_abstract
 
 * Plan                                                             :noexport:
@@ -1048,14 +1058,14 @@ problem.
    In auto-tuning one can two distinguish major categories of approaches. Some
    have focused on the use of machine learning techniques to build
    models that make predictions. While others have worked with more direct 
-   optimization techniques that are aim at finding the near-optimal
+   optimization techniques that aim to find the near-optimal
    solution by exploring as little points of the search space as possible. 
 *** Machine learning
    This technique is generally used to identify category of programs
    that have the same characteristics by building models over large
    training sets, and to determine what is the best action to apply
-   for this category of programs. Thus, there is a will of
-   generalization, the knowledge is reused from previous experiences. 
+   for this category of programs. Thus, there is an attempt to
+   generalize the knowledge is reused from previous experiences. 
 
    This approach has been proven successful by the project Milepost
    GCC from Grigori Fursin\cite{fursin:hal-00685276}, which is now
@@ -1182,19 +1192,19 @@ problem.
    #+END_LaTeX
 
    Many optimization techniques are applied to the auto-tuning
-   problems. Some of them use the derivatives such gradient
+   problems. Some of them use the derivatives such as gradient
    descent which is a kind of local search techniques. It exploits the
-   locality of the search space and has particularity to converge
-   quickly to a the optimal solution but it requires that the search
+   locality of the search space and has the particularity to converge
+   quickly to the optimal solution but it requires that the search
    space has a specific geometry and convexity of the objective
    function (see Figure\ref{fig:convex_function}). But these hypothesis are not
    necessarily true. The objective function may not be convex
    (see Figure\ref{fig:non_convex_function}), hence with many local optimum and a
-   local search would be stuck in a local optimum. The problem is that
+   local search, the algorithm would be stuck in a local optimum. The problem is that
    local optimum can be far from the global optimum. That is why, to
    escape from this, global search and randomization are more suited
-   such the simulated annealing, or genetic algorithm (kind of
-   multiple local search). The derivative may also be not available,
+   such as simulated annealing algorithms, or genetic algorithms (kind of
+   multiple local search). The derivative may also be unavailable,
    for this reason, derivative based searches are
    inefficient (see Figure\ref{fig:non_smooth_function}). The auto-tuning problem
    combines all these characteristics (see
@@ -1228,39 +1238,39 @@ problem.
    unlike pattern search and use derivative information when available
    to speedup the search.
 
-   While some people developed framework to characterize the search
+   While Some people developed frameworks to characterize the search
    space such as ASK\cite{deoliveiracastro:hal-00952307} in order to
-   have a better understanding of it. This tool emphasis on the
-   sampling because it is crucial for build an accurate model. It
+   have a better understanding of it. This tool emphasizes on the
+   sampling because it is crucial to build an accurate model. It
    provides a complex sampling pipeline with different surrogate
    methods (Bayesian regression, interpolation, etc...)
 
    In some cases, the problem structure is well know and one has an
-   idea of where is the optimal solution but the structure of the
+   idea of where the optimal solution is but the structure of the
    space in this neighborhood is too complex. The approach
    taken in Atlas \cite{Whaley:1998:ATL:509058.509096} is to focus
    only in one part of the search space to perform an exhaustive
-   search. But this require know the problem well and where to search.
+   search. But this requires to know the problem well and where to search.
 
-   In general auto-tuners exclude the user from the optimization
+   In general, auto-tuners exclude the user from the optimization
    process. It means that it is difficult for him to know if the
    result can be further improved, and has no clue about the quality
-   of the solution. Our goal is to give more feedback and control
-   through an semi-automatic and interactive approach to
+   of the solution. Our goal is to give more feedback and control,
+   through a semi-automatic and interactive approach, to
    the user to guide him in the tuning the his application. Our
-   approach is global and allow the user to evaluate the relevance of
-   his hypothesis. We the feedback provided he is able to prune the
+   approach is global and allows the user to evaluate the relevance of
+   his hypothesis. With the provided feedback he is able to prune the
    search space to allow very low cost optimization.
 
    In the past a similar approach have been tempted by
    Brewer\cite{Brewer:1995:HOV:209937.209946} where linear regression
    of expectation have been used for the modelization to predict the
-   objective function. It worked fine platform CM-5, simulated version
-   of Intel Paragon and network of station based on FORE ATM, but
+   objective function. It worked fine for the CM-5 platform, simulated
+   version of Intel Paragon and network of station based on FORE ATM, but
    these platforms are pretty old. To our knowledge this approach has
    not been used recently in the tuning of applications, we wanted to
-   understand why and see if it is suited to the complexity of the
-   current platforms.
+   understand why and see if it is suited to the complexity of current
+   platforms. 
 
 ** Design of experiments
 ***                                                                :noexport:
@@ -1311,9 +1321,9 @@ problem.
 
 *** 
    When there are lots of factors, covering the entire space of
-   possible values is prohibitive. The goal experimental design is to
+   possible values is prohibitive. The experimental design goal is to
    build experiments in order to study the behavior of a system for a
-   low experiments cost. For this reason many techniques has been
+   low experimental cost. For this reason many techniques has been
    developed to sample the space wisely.
  
    The One-Factors-At-a-Time (OFAT) method consists in
@@ -1368,18 +1378,18 @@ problem.
    for factors.
 
    Optimal design is another category of factorial design. It samples
-   the space such way that the variance is minimum, hence the
+   the space in a way such that the variance is minimum, hence the
    estimation of the factors as the minimum bias. The points are taken
-   according statistical model that means that the model
+   accordingly to statistical a model, that means that the model
    must be already known. The advantage of optimal designs over
-   non-optimal is that the need less experiment, as the sampling is
+   non-optimal is that they need less experiment, as the sampling is
    localized. The D-Optimal design is one of them, it chooses the
    points such that the generalized variances of the least squares
    estimate of a model is minimized.
     
    The tuning of applications is in fact running multiple experiences in an
    automated or semi-automatic process. We think that techniques from
-   experimental design can help us to sample the space efficiently to
+   experimental design can help us sample the space efficiently to
    achieve the optimization with low experimental cost.
 
 * Methodology
