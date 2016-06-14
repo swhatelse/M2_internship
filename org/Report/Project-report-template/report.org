@@ -764,16 +764,16 @@ every time near-optimal solutions.
   specific to one platform and porting applications is extremely time
   consuming and can also be very tricky.  
 ** Code generation and opportunities  
-  In the last decade many attempt have been made to automate the
+  In the last decade many attempts have been made to automate the
   generation of optimized code. Performing optimization is one of the
   primary functions of a compiler. They are capable of detecting
   instructions that can be vectorized or reorganized to favor
   super-scalar execution. They 
-  are also capable of many loop optimizations such loop unrolling to
+  are also capable of many loop optimizations such as loop unrolling to
   improve pipeline efficiency,
   nest transformation to improve data locality and expose parallelism,
-  etc... Many other optimization opportunities exist but it is to
-  difficult to exploit them automatically because the compiler does
+  etc... Many other optimization opportunities exist but it is
+  difficult to exploit them automatically because the compiler does 
   not have the necessary information at compile time. Moreover, it is
   sometimes necessary to rewrite the code in a slightly different way
   to enable the compiler to be effective. That is why frameworks such
@@ -784,55 +784,54 @@ every time near-optimal solutions.
   allows to bring user's knowledge in the process of generation of an
   optimized code. The main advantage of such approach is that the
   original code is left unchanged, which is generally highly
-  appreciated by the application developer. The drawbacks are that the
+  appreciated by the application developer. The drawbacks are that
   it is restricted to one language because the input and output
-  languages are the same therefore it is difficult to exploit different
-  accelerators. Also it does not allow operations that would change the
+  languages are the same, therefore it is difficult to exploit different
+  accelerators. Also, it does not allow operations that would change the
   data structure layout such as transposing a matrix beforehand. The
   meta-programming approach goes further by giving more flexibility to
   the programmer as it provides a higher level of abstraction. It
-  consists in using high level languages to descriptions the
+  consists in using high level languages to describe the
   computation and the optimizations. This allows the programmer to
   propose optimizations that the compiler would not be allowed to
   do. But it requires to rewrite part of the application.   
 ** Optimizing: the auto-tuning approach
   Whatever the chosen approach, the application developer is left with
   numerous optimization options: there are the compiler flags, code
-  generation parameters (e.g., the size of the a tile, block or
+  generation parameters (e.g., the size of the tile, block or
   vector). Each combination of parameters leads to unique binary code
   whose performance has to be evaluated. The auto-tuning approach considers
   all this as a huge optimization problem and tries to find the best
   combination of parameters. The search space can be huge, and an
-  exhaustive search is thus prohibited. Hence many techniques have been
-  used in the literature such as genetic algorithm, simulated
-  annealing, tabu search or machine learning. But these  methods have
+  exhaustive search is thus prohibited. Hence, many techniques have been
+  used in the literature such as genetic algorithms, simulated
+  annealing algorithms, tabu search or machine learning. But these methods have
   several limitations. First, the number of combination 
   tested is often large, thus the time to perform the optimization can
-  still be very long. In addition with such fully automated
+  still be very long. In addition, with such fully automated
   approaches, it is difficult to know whether further optimizations
   could be expected or not and how to get them. Because it is
   complicated to estimate the quality of an optimization. Comparing to
   the peak performance is generally meaningless and it is hard to know
-  how the combination really performed because the best optimization
-  is unknown. As a result the user is excluded from the tuning process
+  how the combination really performed, because the best optimization
+  is unknown. As a result, the user is excluded from the tuning process
   by the lack of valuable feedback.
 ** Our Goal
    The idea we explored in this internship was to give some power back
    to the user by investigating the design of a semi-automatic
-   optimization framework, where the application developer has control
-   and understands how the optimizations works and guides it. For
+   optimization framework, where the application developer has control,
+   understands how the optimization works and guides it. For
    this, we relied on BOAST\cite{videau:hal-00953119}, a metaprogramming framework in
    ruby that can generate portable code in C, Fortran, CUDA and OpenCL. It
    provides a domain specific language to describe the kernel and the
    optimizations and embeds a complete tool chain to compile, run,
    benchmark and check the validity of a kernel. We investigate
    various statistical techniques inspired from the design of
-   experiments that emphasizes on reducing experiment cost.
+   experiments that emphasizes on reducing experimental cost.
 ** My contribution
    My contribution during this internship was to prototype and
    evaluate an approach that takes into account a performance model
-   hypothesized in order to guide the tuning process combining
-   techniques of design of experiments.  
+   hypothesized by the user in order to guide the tuning process.
 
    Our approach consists in the following steps:
    1. Propose a model
@@ -846,7 +845,7 @@ every time near-optimal solutions.
    
    We tested this approach on a simple kernel that computes the
    Laplacian of an image and we compared it with some methods
-   used in the auto-tuning literature such as random search, genetic
+   used in the auto-tuning literature such as a random search, a genetic
    algorithm, a local search method (greedy search), etc...
    
    We demonstrated that the use of classical linear regression can be
@@ -857,26 +856,25 @@ every time near-optimal solutions.
    checking and instanciating the model. To do so, sampling the 
    search space correctly is crucial. That is why, we investigated
    techniques inspired from the design of experiments. Because of the 
-   characteristics of our search space we find out the simple
-   techniques are the most suited.
+   characteristics of our search space we find out that simple
+   techniques are the more suited.
 
 ** Structure  of the report
-   The second part of this report exposes context of this work and the
-   auto-tuning problem. The third part makes a summary of the
+   The second part of this report exposes the context of this work and
+   the auto-tuning problem. The third part makes a summary of the
    different techniques used in auto-tuning and design of experiments. 
-   problem. The fourth part exposes how this work was made, gives
-   details about the case study and how measurements were done. 
-   The fifth part explains our semi-automatic approach. 
-   The sixth part presents the comparison between our approach and
-   other search techniques and the seventh provides the analysis. The
-   eighth part exposes the encounter difficulties and how we dealt
-   with it.
+   The fourth part exposes how this work was made, gives details about
+   the case study and how measurements were done. The fifth part
+   explains our semi-automatic approach. The sixth part presents the
+   comparison between our approach and other search techniques and the
+   seventh provides the analysis. The eighth part exposes the
+   encounter difficulties and how we dealt with it.
 * Context
 ** HPC architectures
   HPC platforms are complex machines and it is not straightforward to use them
   correctly. Indeed a not carefully tuned code is likely to
   have poor performances. Optimizing the code correctly by taking into
-  account the characteristics of both the application and the machine
+  account the characteristics of both, the application and the machine
   can bring major speedup and increasing 
   the performance by a factor 10 is not rare. The current trend in HPC
   platforms is to
@@ -900,12 +898,12 @@ every time near-optimal solutions.
   *Pipelining* is another kind of parallelism in which the treatment of
   instructions is split into a sequence of steps (fetch, decode,
   execute, etc...) and goes through a pipeline. Multiple instructions
-  can be in the pipeline at the same time but only at different state
+  can be in the pipeline at the same time but only at different step
   of the processing, like in an assembly line. A correct scheduling of
   the instructions in the pipeline leads to a better occupancy of
   it. *Instruction Level Parallelism* is a mechanism that can
   change the order of the instructions to have a better overlapping of
-  instructions in the pipeline. But for example conditions are a
+  instructions in the pipeline. But for example, conditions are a
   disaster because it can hinder this. In addition some
   CPUs have vector support. Such processors can manipulate not only
   scalar variables but also directly *vector* variables. The vector is loaded
@@ -914,15 +912,15 @@ every time near-optimal solutions.
   times.
 
   Today, CPUs have become so fast that one of the main bottleneck is
-  the memory. Thus accessing data in memory is much more expensive than
+  the memory. Thus, accessing data in memory is much more expensive than
   performing computations. To deal with this problem the solution
   found is to use different *memory hierarchy*. The statement is that
   a data that is currently used is more likely to be re-used in a near
-  future. Hence the idea is to keep that are the most frequently used
-  data as close as possible to the CPUs, that is why CPUs embeds cache
-  memories. In a processor there can be up to 4 level of cache
+  future. Hence, the idea is to keep the most frequently used data as
+  close as possible to the CPUs, that is why CPUs embeds cache 
+  memories. In a processor there can be up to 4 level of caches
   (the registers, L1, L2, L3) and the closest to the
-  CPU have the lowest latency possible but are also the smallest.
+  CPU have the lowest latency but also the smallest the size.
   Thus the pattern to access data has to be chosen carefully so that
   the most used data stay close to the computation units.
 
@@ -970,9 +968,9 @@ every time near-optimal solutions.
     ease the job of the compiler. For instance automatic parallelism
     is difficult to apply when there are global or shared variable,
     dependencies between iterations (see Code\ref{lst:bad_for_auto_par}),
-    indirect address are used, etc... Further more, compilers
-    generally do not have global vision of the code and lack
-    informations of compile time and thus perform only local
+    indirect addressing, etc... Further more, compilers
+    generally do not have a global vision of the code, and lack
+    information at compile time and thus perform only local
     optimization. In addition, they also can be limited by semantic
     rules. As a result, they are not able to evaluate which
     transformation to choose among all correct transformations and 
@@ -987,15 +985,15 @@ every time near-optimal solutions.
 *** Source-to-source transformation
     Source-to-source transformation frameworks ease the task of both
     the developer and the compiler by taking a source code, working on
-    Abstract Syntax Trees and applying transformation such automatic
+    Abstract Syntax Trees and applying transformations such automatic
     parallelization\cite{Bondhugula:2008:PAP:1379022.1375595} to
     generate a modified version of the original code. Unlike with
     compilers, the developer can specify how he wants the
     transformation to be done, for instance how many time the loop is
     unrolled. Then the framework ensures that the transformation is
     valid and generates a code that the compiler can easily work
-    with. This relieve the compiler from the complicated tasks such
-    the loop transform or the automatic parallelization and this gives
+    with. This relieves the compiler from complicated tasks such as
+    loop transform or automatic parallelization and this gives
     the possibility to the user to guide the transformation by giving more
     information. The disadvantage of such tools it that they generally
     target one language and one compiler and can be still limited by
@@ -1019,16 +1017,16 @@ every time near-optimal solutions.
     \end{lstlisting}
     #+END_LaTeX
 *** Meta-programming: BOAST
-    Meta-programming is a slightly different approach from
+    The meta-programming is a slightly different approach from
     source-to-source transformation in which the developer use high
-    level language to make a description of his kernel and the
-    possible optimizations (e.g. the size of a vector, the tiling,
+    level languages to make a description of his kernel and the
+    possible optimization (e.g. the size of vectors, the tiling,
     etc...). The advantage is that it is not linked to one output
     language or compiler. It also gives more control to the user as
     there is no checker that verify the correctness of the
     transformation, thus he can exactly specify how the transformation
     is performed. Hence, the developer has to know what he is doing
-    and it can be error prone. In this work we used the
+    and this can be error prone. In this work, we used the
     meta-programming framework BOAST\cite{videau:hal-00953119}. BOAST gives the ability
     to user to meta-program his kernels in ruby with a Domain
     Specific Language (DSL), then BOAST can generate it in many target
@@ -1049,7 +1047,7 @@ every time near-optimal solutions.
   search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
   testing all the combinations (i.e, 2^500 ~ 10^50 combinations) to find
-  the best one is simply impossible. Thus
+  the best one is simply impossible. Thus,
   it is formulated as a mathematical optimization problem where the
   optimization function gives metrics of combination of parameters:
   
@@ -1059,11 +1057,11 @@ every time near-optimal solutions.
 
   This function is empirical because the performances of a
   combination cannot be computed, measurements have to be done to
-  evaluate the objective function at point x. It needs to generate the
-  code variant, compile it and run it. Sometimes the problem can have
-  constraints because some points are unfeasible, this means they
-  cause the compilation to fail or the program to crash. In addition
-  parameters can be discrete or continuous. 
+  evaluate the objective function at a point /x/. It is necessary to
+  generate the code variant, compile it and run it. Sometimes the
+  problem can have constraints because some points are unfeasible,
+  this means they cause the compilation to fail or the program to
+  crash. In addition parameters can be discrete or continuous. 
  
 * State of the art
 ** Auto-tuning
