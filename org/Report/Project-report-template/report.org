@@ -856,13 +856,14 @@ problem.
    with it.
 * Context
 ** HPC architectures
-  HPCs are complex machines and it is not straightforward to use them
+  HPC platforms are complex machines and it is not straightforward to use them
   correctly. Indeed a not carefully tuned code is likely to
   have poor performances. Optimizing the code correctly by taking into
   account the characteristics of both the application and the machine
   can bring major speedup and increasing 
-  the performance by a factor 10 is not rare. The current trend in HPCs is to
-  have CPUs with an ever increasing amount of cores to
+  the performance by a factor 10 is not rare. The current trend in HPC
+  platforms is to
+  have CPUs and/or accelerators with an ever increasing amount of cores to
   reduce the frequency in order to reduce the power consumption and
   the heat. Thus to obtain performances it is mandatory to exploit
   correctly the parallelism of the platform. The computation has to be
@@ -908,19 +909,12 @@ problem.
   Thus the pattern to access data has to be chosen carefully so that
   the most used data stay close to the computation units.
 
-  Another recent characteristic of HPCs is the increasing use of
+  Another recent characteristic of HPC platforms is the increasing use of
   *GPUs* because for computation that can be well parallelized which
   is the case generally the case with scientific computation, they
   are faster than CPUs. However GPUs do not work exactlty the same as
   CPUs and need to be programmed in a quite different manner, the
   cache and number of cores are different.
-  # the architectures of the GPUs is
-  # different from the one of the CPUs, the amount of cache memory is
-  # limited and there are more compute units (for example the Nvidia
-  # Tesla K40 has 2,880 cores). 
-  # Thus optimizations that bring good
-  # performances on CPUs may bring poor performances on GPUs such the
-  # size of the vectors or the number of threads.
 
    #+BEGIN_LaTeX
    \begin{figure}[tbh]
@@ -933,7 +927,7 @@ problem.
   As we saw, optimizing code for HPC applications can be very
   chalenging but porting applications accross platforms is even
   harder and highly time consuming as the optimization are low level
-  and HPCs can be very different and complex. Optimization that gives
+  and HPC platforms can be very different and complex. Optimization that gives
   good performances on one platform may not work so well on another
   (see Figure\ref{fig:correlation}). As developers cannot spend months to port the
   application on another machine it is necessary to use tools that
@@ -980,7 +974,7 @@ problem.
     valid and generates a code that the compiler can easily work
     with. This relieve the compiler from the complicated tasks such
     the loop transform or the automatic parallelization and this gives
-    the possibity the user guide the transformation by giving more
+    the possibility to the user to guide the transformation by giving more
     information. The disadvantage of such tools it that they generally
     target one language and one compiler and can be still limited by
     semantic rules.   
@@ -1014,9 +1008,9 @@ problem.
     is performed. Hence, the developer has to know what he is doing
     and it can be error prone. In this work we used the
     meta-programming framework BOAST\cite{videau:hal-00953119}. BOAST gives the ability
-    to user to meta-program his kernels in ruby with a Description
+    to user to meta-program his kernels in ruby with a Domain
     Specific Language (DSL), then BOAST can generate it in many target
-    languages (C, Fortran, Cuda, OpenCL), compilate it and benchmark
+    languages (C, Fortran, Cuda, OpenCL), compile it and benchmark
     the resulting executable.  
 ** Problem analysis
   In a word, optimizing HPC applications is tricky and porting is even
@@ -1047,7 +1041,7 @@ problem.
   code variant, compile it and run it. Sometimes the problem can have
   constraints because some points are unfeasible, this means they
   cause the compilation to fail or the program to crash. In addition
-  parameters can be discrete and continuous. 
+  parameters can be discrete or continuous. 
  
 * State of the art
 ** Auto-tuning
