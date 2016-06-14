@@ -27,6 +27,9 @@
 #+LATEX_HEADER:\usepackage{color}
 #+latex_header:\usepackage{xspace}
 #+latex_header:\usepackage{subcaption}
+#+LATEX_HEADER: \usepackage{verbments}
+#+LaTeX_HEADER: \usepackage{minted}
+
 
 #+LaTeX: \let\oldref=\ref
 #+LaTeX: \def\ref#1{~\oldref{#1}\xspace} 
@@ -38,7 +41,7 @@
   breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
   breaklines=true,                 % sets automatic line breaking
   captionpos=b,                    % sets the caption-position to bottom
-  commentstyle=\color{mygreen},    % comment style
+  %commentstyle=\color{mygreen},    % comment style
   deletekeywords={...},            % if you want to delete keywords from the given language
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
@@ -49,7 +52,7 @@
   otherkeywords={*,...},           % if you want to add more keywords to the set
   numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
   numbersep=5pt,                   % how far the line-numbers are from the code
-  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  %numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
   rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
   showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
   showstringspaces=false,          % underline spaces within strings only
@@ -142,21 +145,25 @@ High Performance Computing platforms are made to answer the need
 of huge computing power, however taking advantage of their power 
 is difficult as they are complex machines and each platform has a 
 unique set of characteristics. Thus the developer must program 
-them with care and write specialized code. Tools exists to help 
+them with care and write specialized code. Tools exist to help 
 the developer in this tricky task, to generate optimized versions 
 of an application. Finding high performing versions is the main concern 
 because the search space can be huge (e.g GCC has about 500 compilation flags)
-and the exhaustive search is prohibitive. Hence auto-tuning consider this as 
+and the exhaustive search is prohibitive. Hence auto-tuning considers this as 
 a mathematical optimization problem. To the best of our knowledge most 
 auto-tuning frameworks mostly resort to generic optimization techniques 
 combined to fully automatic explorations. However this approach excludes the 
-user from the optimization process and it is difficult to know if further 
-improvement can be done and evaluate the quality of the solution.
-We propose a semi-automatic approach that gives power back to the user. 
-This approach is based on regression techniques to predict the objective 
-function combined to techniques inspired from design of experiments which aim 
-at reducing the number of experiments. 
-We evaluated our approach on the case of a Laplacian kernel and compared it to 
+user from the optimization process. Hence it is difficult to know if further 
+improvement can be made and evaluating the quality of the solution complicated.
+To answer this problem we propose a semi-automatic approach that gives power back 
+to the user. This approach is based on linear regression techniques to predict 
+the objective function. More precisely we used the least square regression and 
+the quantile. It is also combined to techniques inspired from design of experiments 
+which aim to reduce the experimental cost. 
+We evaluated our approach using the case of a Laplacian kernel and compared it with
+other optimization techniques used in the auto-tuning literature such as random search, 
+genetic algorithms, etc.... Our method gives very good results by finding almost 
+every time close to optimal solutions. 
 \end{abstract}
 \abstractintoc
 \renewcommand\abstractname{R\'esum\'e}
@@ -1533,29 +1540,70 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
    experiments environment are available in the git repository.
 
    #+BEGIN_LaTeX
-   mp021 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 0)]);
-  tempc021 = convert_short4( temp021 );
-  temp002 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 1)]);
-  tempc002 = convert_short4( temp002 );
-  temp012 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 1)]);
-  tempc012 = convert_short4( temp012 );
-  temp022 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 1)]);
-  tempc022 = convert_short4( temp022 );
-  temp003 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 2)]);
-  tempc003 = convert_short4( temp003 );
-  temp013 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 2)]);
-  tempc013 = convert_short4( temp013 );
-  temp023 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 2)]);
-  tempc023 = convert_short4( temp023 );
-  resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
-  res00 = convert_uchar4( clamp(resc00, (short)0, (short)255) );
-  resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * ((short)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
-  res01 = convert_uchar4( clamp(resc01, (short)0, (short)255) );
-  vstore4( res00, 0, &pdst[x + 0 + (w) * (y + 0)] );
-  vstore4( res01, 0, &pdst[x + 0 + (w) * (y + 1)] );
-}
-
+   \begin{figure}[p]
+     \scriptsize
    #+END_LaTeX
+   #+BEGIN_SRC C :results output :exports code
+     __kernel void math(const __global uchar * psrc, __global uchar * pdst, 
+                        const int width, const int height){
+         int y;
+         int x;
+         int w;
+         x = (get_global_id(0)) * (4);
+         y = (get_global_id(1)) * (2);
+         w = (width) * (3);
+         x = (x < 3 ? 3 : (x > w - (7) ? w - (7) : x));
+         y = (y < 1 ? 1 : (y > height - (3) ? height - (3) : y));
+         uchar4 temp000;       uchar4 temp001;
+         uchar4 temp002;       uchar4 temp003;
+         uchar4 temp010;       uchar4 temp011;
+         uchar4 temp012;       uchar4 temp013;
+         uchar4 temp020;       uchar4 temp021;
+         uchar4 temp022;       uchar4 temp023;
+         uchar4 res00;         uchar4 res01;
+         short4 tempc000;      short4 tempc001;
+         short4 tempc002;      short4 tempc003;
+         short4 tempc010;      short4 tempc011;
+         short4 tempc012;      short4 tempc013;
+         short4 tempc020;      short4 tempc021;
+         short4 tempc022;      short4 tempc023;
+         short4 resc00;        short4 resc01;
+         temp000 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + -1)]);
+         tempc000 = convert_short4( temp000 );
+         temp010 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + -1)]);
+         tempc010 = convert_short4( temp010 );
+         temp020 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + -1)]);
+         tempc020 = convert_short4( temp020 );
+         temp001 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 0)]);
+         tempc001 = convert_short4( temp001 );
+         temp011 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 0)]);
+         tempc011 = convert_short4( temp011 );
+         temp021 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 0)]);
+         tempc021 = convert_short4( temp021 );
+         temp002 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 1)]);
+         tempc002 = convert_short4( temp002 );
+         temp012 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 1)]);
+         tempc012 = convert_short4( temp012 );
+         temp022 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 1)]);
+         tempc022 = convert_short4( temp022 );
+         temp003 = vload4(0, &psrc[x + 0 + -3 + (w) * (y + 2)]);
+         tempc003 = convert_short4( temp003 );
+         temp013 = vload4(0, &psrc[x + 0 + 0 + (w) * (y + 2)]);
+         tempc013 = convert_short4( temp013 );
+         temp023 = vload4(0, &psrc[x + 0 + 3 + (w) * (y + 2)]);
+         tempc023 = convert_short4( temp023 );
+         resc00 =  -(tempc000) - (tempc010) - (tempc020) - (tempc001) + (tempc011) * 
+                    ((short)9) - (tempc021) - (tempc002) - (tempc012) - (tempc022);
+         res00 = convert_uchar4( clamp(resc00, (short)0, (short)255) );
+         resc01 =  -(tempc001) - (tempc011) - (tempc021) - (tempc002) + (tempc012) * 
+                    ((short)9) - (tempc022) - (tempc003) - (tempc013) - (tempc023);
+         res01 = convert_uchar4( clamp(resc01, (short)0, (short)255) );
+         vstore4( res00, 0, &pdst[x + 0 + (w) * (y + 0)] );
+         vstore4( res01, 0, &pdst[x + 0 + (w) * (y + 1)] );
+     }
+   #+END_SRC
+   #+LaTeX: \label{lst:kernel_code}\caption{Example of kernel code version generated by BOAST} \end{figure}\clearpage
+
 ** Controlling measurement
    #+begin_src sh :results output :exports none
      ruby ../../../scripts/format_data_detailed_v2.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
@@ -1699,7 +1747,7 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
    6. This process iterates until all parameters are fixed.
 
    In short the tuning is done through an iterative and instrumented
-   process where the user refines is model according to the extracted
+   process where the user refines his model according to the extracted
    information.
      
  
@@ -1802,7 +1850,7 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
     search space) that must not be exceeded:
     - *RS*: is the uniform random search that take points randomly in the
       search space with equal probabilities. 
-    - *LHS*: it is not methods use to search, it is a sampling
+    - *LHS*: it is a not a method used to search, it is a sampling
       techniques which take point randomly but which also maximize the
       distance between the point to cover the full search
       space. However we want to see how a search based on it would
@@ -1866,7 +1914,7 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
     exactly the same strategy each time without considering the
     random set:
     1. Sampling 50 points at random
-    2. Setting the factors vector length and lws y and pruning the
+    2. Setting vector length and lws y and pruning the
        search space using the model:
        #+BEGIN_LaTeX
        \[time\, per\, pixel = vector\, length  + lws\, y\]
@@ -2168,7 +2216,7 @@ We evaluated our approach on the case of a Laplacian kernel and compared it to
    \includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown.pdf}
    \subcaption{Global search space}
    \end{minipage}
-   \fill
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown_zoom.pdf}
    \subcaption{Zoomed search space}
