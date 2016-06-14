@@ -4009,7 +4009,7 @@ every time close to optimal solutions.
    understand the reason for these numerical instabilities nor how to
    circumvent them. Thus we had to implement another methods to
    perform quantile regression. There several ways to do it, but
-   building on the presentation of Charpentier\cite{FIXME}, we used a
+   building on the presentation of Charpentier\cite{LectureQR}, we used a
    method that performs weighted least square regression iteratively
    to add more weight to the desired quantile until the regression
    converges to it. We managed to get the correct coefficient,

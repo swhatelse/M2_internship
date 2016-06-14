@@ -814,7 +814,7 @@
       year = {2003},
       }
     #+END_SRC
-** 
+** BOAST
 *** Bibtex
     #+BEGIN_SRC bibtex :tangle ./biblio.bib
       @inproceedings{videau:hal-00953119,
@@ -828,6 +828,18 @@
         HAL_ID = {hal-00953119},
         HAL_VERSION = {v1},
       }   
+    #+END_SRC
+** Presentation Arthur CHARPENTIER
+*** Bibtex
+    #+BEGIN_SRC bibtex :tangle ./biblio.bib
+          @unpublished{LectureQR,
+        Author = {Arthur, Charpentier},
+        Institution = {UQAM},
+        Howpublished = {Lecture},
+        Year = {2012},
+        Title = {Quantiles and related stuff},
+        Note  = {http://freakonometrics.free.fr/mcgill-r.pdf}
+      }
     #+END_SRC
 * Mathematical notions
 ** Non-smooth
