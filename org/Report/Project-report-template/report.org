@@ -1071,11 +1071,11 @@ every time near-optimal solutions.
    optimization techniques that aim to find the near-optimal
    solution by exploring as little points of the search space as possible. 
 *** Machine learning
-   This technique is generally used to identify category of programs
+    This technique is generally used to identify categories of programs
    that have the same characteristics by building models over large
    training sets, and to determine what is the best action to apply
-   for this category of programs. Thus, there is an attempt to
-   generalize the knowledge is reused from previous experiences. 
+   for each categories of programs. Thus, it is an attempt to
+   generalize and to reuse the knowledge from previous experiences. 
 
    This approach has been proven successful by the project Milepost
    GCC from Grigori Fursin\cite{fursin:hal-00685276}, which is now
@@ -1088,7 +1088,7 @@ every time near-optimal solutions.
    Stefan Wild et al. focused on porting optimization between similar
    platforms\cite{RoyBalHovWil2015}. By using machine learning
    techniques they were able to build performance model of
-   combinations on a platform to estimate their performances on other
+   program variants on a platform to estimate their performances on other
    platforms. This allows them to predict interesting part of the search
    space to explore. This approach is very efficient with similar
    platforms, they even managed to find correlation of good performing
@@ -1104,7 +1104,7 @@ every time near-optimal solutions.
 
    The main drawback with machine learning techniques is that they
    need to be trained on a large amount of instances to be effective
-   enough. To mitigate this problem, some, such the framework
+   enough. To mitigate this problem, some, such as the framework
    Nitro\cite{Muralidharan:2014:NFA:2650283.2650550} uses active
    learning to distribute the training overhead.
 
@@ -1172,6 +1172,7 @@ every time near-optimal solutions.
    \includegraphics[width=\linewidth]{./img/convex_function.pdf}
    \subcaption{Convex function}\label{fig:convex_function}
    \end{minipage}
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/non_convex_function.pdf}
    \subcaption{\label{fig:non_convex_function}Non-convex function}
@@ -1181,6 +1182,7 @@ every time near-optimal solutions.
    \includegraphics[width=\linewidth]{./img/non_smooth_function.pdf}
    \subcaption{\label{fig:non_smooth_function}Non-smooth function}
    \end{minipage}
+   \hfill
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/auto_tuning_function.pdf}
    \subcaption{\label{fig:auto_tuning_function}Noisy function}
