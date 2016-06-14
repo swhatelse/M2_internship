@@ -26,6 +26,7 @@
 #+LATEX_HEADER:\usepackage{listings}
 #+LATEX_HEADER:\usepackage{color}
 #+latex_header:\usepackage{xspace}
+#+latex_header:\usepackage{subcaption}
 
 #+LaTeX: \let\oldref=\ref
 #+LaTeX: \def\ref#1{~\oldref{#1}\xspace} 
@@ -1144,14 +1145,18 @@ Text
      #+RESULTS:
      [[file:./img/non_smooth_function.pdf]]
 
-     #+begin_src R :results output graphics :file ./img/auto_tuning_function.pdf :exports results :width 8 :height 6 :session
-       library(polynom)
-       
-       g <- function(x){
-         ifelse(x > 1 & x < 2, NA, as.function(poly.calc(-3:5))(x) + rnorm(1,sd=.9)*1000 )
-       }
+    #+begin_src R :results output graphics :file ./img/auto_tuning_function.pdf :exports results :width 8 :height 6 :session
+              library(polynom)
+              
+              g <- function(x){
+                ifelse(x > 1 & x < 2, NA, ifelse(x < 0 & x > -0.4, 4000 ,as.function(poly.calc(-3:5))(x)))
+              }
+           
+              x <- seq(-3.05,3.05, 0.02)
+              y <- g(x) + rnorm(length(x), sd=1.5) * 500
 
-       plot(g, xlim=range(-3.05,3.05))
+               #plot(g, xlim=range(-3.05,3.05))
+              plot(x,y)
      #+end_src
 
      #+RESULTS:
@@ -1176,7 +1181,8 @@ Text
    multiple local search). The derivative may also be not available,
    for this reason, derivative based searches are
    inefficient (see Figure\ref{fig:non_smooth_function}). The auto-tuning problem
-   combines all these characteristics (see Figure\ref{fig:auto_tuning_function}).     
+   combines all these characteristics (see
+   Figure\ref{fig:auto_tuning_function}) with noise.     
 
 
    #+CAPTION: Objective function characterics
@@ -1185,25 +1191,38 @@ Text
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
+
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/convex_function.pdf}
-   \caption{\label{fig:convex_function}Convex function}
+   \subcaption{Convex function}\label{fig:convex_function}
    \end{minipage}
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/non_convex_function.pdf}
-   \caption{\label{fig:non_convex_function}Non-convex function}
+   \subcaption{\label{fig:non_convex_function}Non-convex function}
    \end{minipage}
-   \end{figure}
-   \begin{figure}[htb]
-   \centering
+
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/non_smooth_function.pdf}
-   \caption{\label{fig:non_smooth_function}Non-smooth function}
+   \subcaption{\label{fig:non_smooth_function}Non-smooth function}
    \end{minipage}
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{./img/auto_tuning_function.pdf}
-   \caption{\label{fig:auto_tuning_function}Objective function in auto-tuning}
+   \subcaption{\label{fig:auto_tuning_function}Noisy function}
    \end{minipage}
+
+   \caption{\label{fig:function_charac}\textbf{Function characteristics}: 
+    The Figure\ref{fig:convex_function} shows the example of a convex 
+    function on this kind of functions, techniques such as gradient 
+    search converges very quickly to the global optimal.
+    The Figure\ref{fig:non_convex_function} shows an example of 
+    non-convexe function. This kind of function has local optimum in which
+    local search techniques can be stuck and randomize technique are necessary 
+    to escape from them.
+    The Figure\ref{fig:non_smooth_function} shows the example of a function
+    where at the derivative cannot be computed everywhere hence derivative-based 
+    free methods are require.
+    The Figure\ref{fig:auto_tuning_function} shows what the objective function 
+    in auto-tuning looks like. It combines non-convexity, non-smoothness, and noise}
    \end{figure}
    #+END_LaTeX
 
