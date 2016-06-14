@@ -806,7 +806,8 @@ Text
 ** My contribution
    My contribution during this internship was to prototype and
    evaluate an approach that takes into account a performance model
-   hypothesized by in order to guide the tuning process.  
+   hypothesized in order to guide the tuning process combining
+   techniques of design of experiments.  
 
    Our approach consists in the following steps:
    1. Propose a model
@@ -818,58 +819,33 @@ Text
       restrict the search space accordingly.
    5. Back to 1 until we are able to fix all the factors values.
    
-   In a first time, we wanted to see if simple linear regression was
-   suited to the code performance modeling problem. 
-   # To model 
-   # computer phenomena, linear models are generally enough to get
-   # accurate prediction because the models are not too 
-   # complex. 
-   We tested this approach on a simple kernel that computes 
-   the Laplacian of an image. 
-   # We found that the linear regression is
-   # able to be accurate enough while having simple models that traduce
-   # how the different optimization parameters can acts. However we also
-   # figured out regression of expectation is not suited with current
-   # architectures as it was the case two decades ago\cite{}. Regression
-   # of expectation suppose that our data are homoscedastics and follows
-   # the same error law. There are no guaranty about it, thus there are
-   # cases where the minimum does not follow the same evolution as the
-   # mean. As we are interested at the minimum value the regression of
-   # expectation cannot  be used to model the evolution of the minimum
-   # when the data are heteroscedastics and do not follow the same error
-   # law. Hence to circumvent this burden, quantile regression seemed
-   # more suited, and we tried to use it in our initial approach. 
-   # Quantile regression created some additional difficulties compared
-   # to the standard linear regression. We use the iterated weighted
-   # least squared to compute it. Even if the coefficient computed are
-   # accurate, the main concern with this methods is that it is
-   # difficult to make inferences because we have biased 
-   # R-squared and standard error. This was mainly problematic for the
-   # validation and refinement of the model.
+   We tested this approach on a simple kernel that computes the
+   Laplacian of an image and we compared it with some methods
+   used in the auto-tuning literature such as random search, genetic
+   algorithm, a local search method (greedy search), etc...
+   
+   We demonstrated that the use of classical linear regression can be
+   limited in auto-tuning problem and this can be circumvented using
+   quantile regression.
 
-   In a second time, we try find a way to reduce the number of points
-   needed for checking and instanciating the model. To do so, sampling the
+   We tried to find a way to reduce the number of points needed for
+   checking and instanciating the model. To do so, sampling the 
    search space correctly is crucial. That is why, we investigated
-   techniques inspired from the design of experiments.  
-
-   # One important point to find correct model is that the model and the
-   # sampling should start with the least underlying hypothesis as
-   # possible because over-specification could induce some biais. The
-   # idea is to start with generic model and strategy such a LHS design
-   # and when we have some certainty about the model, try more specific
-   # sample by adding point with a D-Optimal design.
+   techniques inspired from the design of experiments. Because of the 
+   characteristics of our search space we find out the simple
+   techniques are the most suited.
 
 ** Structure  of the report
-   The second part of this report exposes context of this work. The
-   third part describes the problem of the optimization auto-tuning
-   problem. The fourt part presents the state of the in auto-tuning
-   and design of experiments. The fifth part exposes the how this
-   work was made. The sixth part explains the approach we used. 
-   The seventh part explains how measurements was made. The eigth part
-   shows the results we manage to have compared to other
-   techniques. The nineth part provide a detailed analysis of the
-   results. And finally the tenth part show what can be done to
-   improve our process and results.
+   The second part of this report exposes context of this work and the
+   auto-tuning problem. The third part makes a summary of the
+   different techniques used in auto-tuning and design of experiments. 
+   problem. The fourth part exposes how this work was made, gives
+   details about the case study and how measurements were done. 
+   The fifth part explains our semi-automatic approach. 
+   The sixth part presents the comparison between our approach and
+   other search techniques and the seventh provides the analysis. The
+   eighth part exposes the encounter difficulties and how we dealt
+   with it.
 * Context
 ** HPC architectures
   HPCs are complex machines and it is not straightforward to use them
@@ -1808,7 +1784,7 @@ Text
       chosen at random (i.e., like the RS strategy) and perform greedy
       local improvements until the maximum number of experiments is
       reached. The best solution found so far is then returned. 
-    - GA: BOAST embeds an implementation of a genetic algorithm. We
+    - *GA*: BOAST embeds an implementation of a genetic algorithm. We
       used a population size of 20 and mutation rate of 0.1. Among the
       different configuration tested it was the one that gives the
       best results but it may be possible to obtain better results by
@@ -1824,7 +1800,7 @@ Text
 
     There are many ways of performing linear regression. We evaluated
     two of them: 
-    - LM: this corresponds to the iterative approach described in the
+    - *LM*: this corresponds to the iterative approach described in the
       previous section and relying on a classical least square
       regression which allows to estimate the expectation of
       performance. A first sample of the whole space (with slightly
@@ -1836,7 +1812,7 @@ Text
       be done, a small sampling of the restricted set is carried out
       and the best solution is returned. 
 
-    - RQ: this approach is similar to the previous one but relies on
+    - *RQ*: this approach is similar to the previous one but relies on
       quantile regression instead and tries to model how the 5%
       smaller values depend on the various input parameters. 
 
@@ -1879,6 +1855,19 @@ Text
     9. Taking the last 4 remaining points in the pruned search space
        as we are below (119 points) the maximum number of points and
        take the best remaining combination.  
+
+ #+CAPTION: This table shows the minimum, first quartile, median, mean, third quartile and maximum slowdown including the mean number of points used by each method.
+    #+NAME:   tab:comparison-table
+    | Method |  Min. | 1st Qu. | Median | 3rd Qu. |    Max. |  Mean | Mean Cost |
+    |--------+-------+---------+--------+---------+---------+-------+-----------|
+    | /      |    <> |      <> |     <> |      <> |      <> |    <> |           |
+    | RS     | 1.000 |   1.027 |  1.079 |   1.178 |   1.388 | 1.102 |       120 |
+    | LHS    | 1.000 |   1.087 |  1.188 |   1.244 |   1.524 | 1.175 |    98.918 |
+    | GS     | 1.000 |   1.348 |  1.799 |   6.314 | 124.800 | 6.460 |    22.171 |
+    | GSR    | 1.000 |   1.072 |  1.187 |   1.333 |   3.164 | 1.227 |       120 |
+    | GA     | 1.000 |   1.018 |  1.086 |   1.187 |   1.646 | 1.118 |       120 |
+    | LM     | 1.012 |   1.012 |  1.012 |   1.012 |   3.771 | 1.022 |       119 |
+    | RQ     | 1.012 |   1.012 |  1.012 |   1.012 |   2.064 | 1.019 |       119 |
 
     Figure\ref{fig:search_comparison} shows the results of the
     different methods. 
@@ -1955,20 +1944,6 @@ Text
       green dotted line depicts the sample median}
    \end{figure}
    #+END_LaTeX
-
-    #+CAPTION: This table shows the minimum, first quartile, median, mean, third quartile and maximum slowdown including the mean number of points used by each method.
-    #+NAME:   tab:comparison-table
-    | Method |  Min. | 1st Qu. | Median | 3rd Qu. |    Max. |  Mean | Mean Cost |
-    |--------+-------+---------+--------+---------+---------+-------+-----------|
-    | /      |    <> |      <> |     <> |      <> |      <> |    <> |           |
-    | RS     | 1.000 |   1.027 |  1.079 |   1.178 |   1.388 | 1.102 |       120 |
-    | LHS    | 1.000 |   1.087 |  1.188 |   1.244 |   1.524 | 1.175 |    98.918 |
-    | GS     | 1.000 |   1.348 |  1.799 |   6.314 | 124.800 | 6.460 |    22.171 |
-    | GSR    | 1.000 |   1.072 |  1.187 |   1.333 |   3.164 | 1.227 |       120 |
-    | GA     | 1.000 |   1.018 |  1.086 |   1.187 |   1.646 | 1.118 |       120 |
-    | LM     | 1.012 |   1.012 |  1.012 |   1.012 |   3.771 | 1.022 |       119 |
-    | RQ     | 1.012 |   1.012 |  1.012 |   1.012 |   2.064 | 1.019 |       119 |
-
 
 * Analysis
   This part gives a study of the search space and an explanation of
@@ -3830,58 +3805,66 @@ Text
   solution and cannot really know if further improvements can be
   made. 
 
-  The main contribution of this report is to design an innovative
-  approach in which the user is put in a position of control by a
-  semi-automatic approach which involves the user in the optimization
-  process, uses its knowledge and also guides him. Our approach uses
-  the framework BOAST for the code generation and 
-  evaluation and relies on regression techniques to predict the objective
-  function, combined to techniques inspired from design of experiment
-  to build accurate models with a minimum number of experiences. We
-  compared our approach to other optimization techniques such as
-  random search, genetic algorithm, greedy search, etc... and our
-  method performed very efficiently and significantly outperformed the
-  other. The few situations where it returned a poor combination of
-  parameters come from the fact that for evaluation purpose we
-  automated the process by using fix decisions without considering the
-  working sample. We explained how in such situation, when the analyst
-  is part of the the optimization loop, he is able to consider all the
-  available information of the search space to assess the quality 
-  of the model (coefficient of determination, p-values, standard
-  error compared to the estimate of the coefficients) and take
-  correct decisions. We also demonstrated the limitations of the
-  simple linear regression for this kind of problems because there is
-  have no certainty about the error law and the estimation of the mean
-  is not the same thing as estimating the minimum. We demonstrated
-  that for this, quantile regression is more suited and improves the
-  worst case of the simple linear regression. However we need
-  additional work compute correct coefficients of determination,
-  standard error and the p-values with it to be able to assess the
-  quality of a model as we are able to do it with the classical linear
-  regression. We also learned that some good idea from design of
-  experiments such as LHS or screening design are not suited in the
-  case of heavily constrained search space because it cancels their
-  interesting properties and simple methods are generally enough. 
+  The contribution of this report is the following:
+  1. The main contribution is to design an innovative
+     approach in which the user is put in a position of control by a
+     semi-automatic approach which involves the user in the optimization
+     process, uses its knowledge and also guides him. Our approach uses
+     the framework BOAST for the code generation and 
+     evaluation and relies on regression techniques to predict the objective
+     function, combined to techniques inspired from design of experiments
+     to build accurate models with a minimum number of experiences. 
+  2. We compared our approach to other optimization techniques used
+     the auto-tuning literature such as random search, genetic
+     algorithm, greedy search, etc... and our method performed very
+     efficiently and significantly outperformed the other. The few
+     situations where it returned a poor combination of parameters
+     come from the fact that for evaluation purpose we automated the
+     process by using fix decisions without considering the working
+     sample. We explained how in such situation, when the analyst is
+     part of the the optimization loop, he is able to consider all the 
+     available information of the search space to assess the quality 
+     of the model (coefficient of determination, p-values, standard
+     error compared to the estimate of the coefficients) and take
+     correct decisions. 
+  3. We also demonstrated the limitations of the
+     simple linear regression for this kind of problems because there is
+     have no certainty about the error law and the estimation of the mean
+     is not the same thing as estimating the minimum. We demonstrated
+     that for this, quantile regression is more suited and improves the
+     worst case of the simple linear regression. However we need
+     additional work compute correct coefficients of determination,
+     standard error and the p-values with it to be able to assess the
+     quality of a model as we are able to do it with the classical linear
+     regression. 
+  4. We also learned that some good idea from design of
+     experiments such as LHS or screening design are not suited in the
+     case of heavily constrained search space because it cancels their
+     interesting properties and simple methods are generally enough. 
+  5. We want to stress that for such an experimental study, it
+     was of primary importance to have solid methodology. We have thus taken a
+     particular care on logging and detailing all our observations and
+     choices so that others can build upon it. Our experimental journal
+     is thus freely available at \url{https://github.com/swhatelse/M2_internship}. 
 
-  Finally, we want to stress that for such an experimental study, it
-  was of primary importance to have solid methodology. We have thus taken a
-  particular care on logging and detailing all our observations and
-  choices so that others can build upon it. Our experimental journal
-  is thus freely available at \url{https://github.com/swhatelse/M2_internship}. 
-
-  We managed to get good results on a Laplacian kernel but it remains
-  a lot of work to do. In the future we would like to apply our approach
-  to more complicated cases such as a matrix multiply and on
+  In the future we envision several axis of work. First, as we managed
+  to get good results on a Laplacian kernel we would like to apply our
+  approach to more complicated cases such as a matrix multiply and on
   different architectures to see if it can performs as well.
 
-  Also, among the previous raised technical difficulties, one of the
-  major axis of improvement concerns the quantile regression. It is
-  important to be able to compute confidence interval, standard error,
-  coefficients of determination to be able to assess the quality of a
-  model. We know that the quantile regression is better than the
-  classical least square regression but if we cannot assess if the
-  model is accurate our not we are stuck. Thus is it crucial to
-  improve this point. 
+  More importantly, among the previous raised technical difficulties,
+  one of the major axis of improvement concerns the quantile
+  regression. It is important to be able to compute confidence
+  interval, standard error, coefficients of determination to be able
+  to assess the quality of a model. We know that the quantile
+  regression is better than the classical least square regression but
+  if we cannot assess if the model is accurate our not we are
+  stuck. Thus is it crucial to improve this point. 
+
+  In addition, digging more into sampling strategy to know how to
+  combine efficiently different sampling techniques could be
+  interesting to reduce even more the number of points need to build
+  correct model.
 
   # Sampling techniques are the other main axis of improvement. They
   # are crucial for the accuracy of the model. Efficient techniques are
