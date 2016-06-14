@@ -1189,14 +1189,14 @@ every time near-optimal solutions.
    \end{minipage}
    \caption{\label{fig:function_charac}\textbf{Function characteristics}: 
     The Figure\ref{fig:convex_function} shows the example of a convex 
-    function on this kind of functions, techniques such as gradient 
+    function. On this kind of functions, techniques such as gradient 
     search converges very quickly to the global optimal.
     The Figure\ref{fig:non_convex_function} shows an example of 
-    non-convexe function. This kind of function has local optimum in which
-    local search techniques can be stuck and randomize technique are necessary 
-    to escape from them.
+    non-convexe function. This kind of function has many local optimum in which
+    local search techniques can be stuck. Thus, global search and randomized techniques 
+    are necessary to escape from them.
     The Figure\ref{fig:non_smooth_function} shows the example of a function
-    where at the derivative cannot be computed everywhere hence derivative-based 
+    where at the derivative cannot be computed everywhere. Hence, derivative-based 
     free methods are require.
     The Figure\ref{fig:auto_tuning_function} shows what the objective function 
     in auto-tuning looks like. It combines non-convexity, non-smoothness, and noise}
@@ -1212,29 +1212,27 @@ every time near-optimal solutions.
    function (see Figure\ref{fig:convex_function}). But these hypothesis are not
    necessarily true. The objective function may not be convex
    (see Figure\ref{fig:non_convex_function}), hence with many local optimum and a
-   local search, the algorithm would be stuck in a local optimum. The problem is that
+   local search algorithm would be stuck in a local optimum. The problem is that
    local optimum can be far from the global optimum. That is why, to
    escape from this, global search and randomization are more suited
    such as simulated annealing algorithms, or genetic algorithms (kind of
    multiple local search). The derivative may also be unavailable,
    for this reason, derivative based searches are
-   inefficient (see Figure\ref{fig:non_smooth_function}). The auto-tuning problem
-   combines all these characteristics (see
-   Figure\ref{fig:auto_tuning_function}) with noise.     
+   inefficient (see Figure\ref{fig:non_smooth_function}), the
+   alternative is to use derivative-free based searches such as Nelder
+   Mead Simplex. In auto-tuning the objective function is empirical and combines
+   non-convexity, non-smoothness and noise(see
+   Figure\ref{fig:auto_tuning_function}). Hence, it can be necessary 
+   to build a surrogate. This is usefull to remove the noise and as a
+   result it facilitates the search. 
 
-   Another concern is that, the objective function is an empirical
-   function, hence it can be necessary to build a surrogate. This is
-   usefull to remove the noise and as a result it facilitates the
-   search. Also as the derivative estimation may not be always possible and
-   derivative-based searches cannot work, the alternative is to use
-   derivative-free based searches such as Nelder Mead Simplex.
    The previous search methods are used in
-   Orio\cite{Hartono:2009:AEP:1586640.1587666}, a source to source 
+   Orio\cite{Hartono:2009:AEP:1586640.1587666}, a source to source  
    auto-tuner. It uses random search and simulated annealing as global
    search methods and Nelder Mead Simplex as local search. 
 
    The efficiency of the previous approach is highly dependent on how
-   much the hypothesis about he search space are wrong and sometimes
+   much the hypothesis about the search space are wrong and sometimes
    it is difficult know how it looks. For this reason some have worked
    on generic heuristics that combine all or part of the previous aspects
    such as pattern search\cite{Hooke:1961:DSS:321062.321069} which is
@@ -1250,7 +1248,7 @@ every time near-optimal solutions.
    unlike pattern search and use derivative information when available
    to speedup the search.
 
-   While Some people developed frameworks to characterize the search
+   Some people developed frameworks to characterize the search
    space such as ASK\cite{deoliveiracastro:hal-00952307} in order to
    have a better understanding of it. This tool emphasizes on the
    sampling because it is crucial to build an accurate model. It
