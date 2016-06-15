@@ -113,7 +113,7 @@ option \optionB  \end{center}\vfill}
 \option{$PDES$}
 \title{ Semi-Automatic Performance Optimization of HPC Kernels }%\\\vspace{-1ex}\rule{10ex}{0.5pt} \\sub-title} 
 \author{Steven QUINITO MASNADA}
-\date{ June 22th } % Delete this line to display the current date
+%\date{ June 22th 2016 } % Delete this line to display the current date
 \jury{
 Research project performed at $LIG$ \\\medskip
 Under the supervision of:\\
@@ -149,7 +149,7 @@ them with care and write specialized code. Tools exist to help
 the developer in this tricky task to generate optimized versions 
 of an application. Finding high performing versions is the main concern 
 because the search space can be huge (e.g GCC has about 500 compilation flags)
-and the exhaustive search is prohibitive. Hence, auto-tuning considers this as 
+and an exhaustive search is prohibitive. Hence, auto-tuning considers this as 
 a mathematical optimization problem. To the best of our knowledge most 
 auto-tuning frameworks mostly resort to generic optimization techniques 
 combined to fully automatic explorations. However, this approach excludes the 
@@ -157,13 +157,14 @@ user from the optimization process. Hence, it is difficult to know if further
 improvement can be made and the quality evaluation of the solution is complicated.
 To answer this problem we propose a semi-automatic approach that gives power back 
 to the user. This approach is based on linear regression techniques to predict 
-the objective function. More precisely we used the least square regression and 
-the quantile. It is also combined to techniques inspired from design of experiments 
+the computation kernel performances. More precisely we used both least square regression and 
+quantile regression. It is also combined to techniques inspired from design of experiments 
 which aim to reduce the experimental cost. 
 We evaluated our approach using the case of a Laplacian kernel and compared it with
-other optimization techniques used in the auto-tuning literature such as random search, 
-genetic algorithms, etc.... Our method gives very good results by finding almost 
-every time near-optimal solutions. 
+other classical optimization techniques used in the auto-tuning literature. 
+Our method gives very good results by finding almost every time near-optimal solutions.
+We provide an in depth analysis of the reason why our approach is much more effective
+than previously proposed one. 
 \end{abstract}
 \abstractintoc
 \renewcommand\abstractname{R\'esum\'e}
@@ -834,7 +835,7 @@ every time near-optimal solutions.
    hypothesized by the user in order to guide the tuning process.
 
    Our approach consists in the following steps:
-   1. Propose a model
+   1. Propose performance models of the computation kernel
    2. Explore the search space at very specific places that allow to
       evaluate the quality of the model. 
    3. Find the more accurate and simplest model by refinement and
@@ -843,14 +844,14 @@ every time near-optimal solutions.
       restrict the search space accordingly.
    5. Back to 1 until we are able to fix all the factors values.
    
-   We tested this approach on a simple kernel that computes the
+   We tested this approach on a relatively simple kernel that computes the
    Laplacian of an image and we compared it with some methods
    used in the auto-tuning literature such as a random search, a genetic
    algorithm, a local search method (greedy search), etc...
    
-   We demonstrated that the use of classical linear regression can be
-   limited in auto-tuning problem and this can be circumvented using
-   quantile regression.
+   # We demonstrated that the use of classical linear regression can be
+   # limited in auto-tuning problem and this can be circumvented using
+   # quantile regression.
 
    We tried to find a way to reduce the number of points needed for
    checking and instanciating the model. To do so, sampling the 
@@ -868,7 +869,7 @@ every time near-optimal solutions.
    explains our semi-automatic approach. The sixth part presents the
    comparison between our approach and other search techniques and the
    seventh provides the analysis. The eighth part exposes the
-   encounter difficulties and how we dealt with it.
+   encountered difficulties and how we dealt with it.
 * Context
 ** HPC architectures
   HPC platforms are complex machines and it is not straightforward to use them
@@ -1000,7 +1001,7 @@ every time near-optimal solutions.
     semantic rules.   
 
     #+BEGIN_LaTeX
-    \begin{lstlisting}[caption={Example of source-to-source code transformation\cite{Bondhugula:2008:PAP:1379022.1375595} which performs a loop fusion optimization. This reduces the loop overhead it remains 2 loops instead of 4. It also improve the data locality with the variable A which is re-used within a shorter period of time.}, label={lst:source-to-source1}]
+    \begin{lstlisting}[caption={Example of source-to-source code transformation\cite{Bondhugula:2008:PAP:1379022.1375595} which performs a loop fusion optimization. This reduces the loop overhead as it remains 2 loops instead of 4. It also improves the data locality with the variable A being re-used within a shorter period of time.}, label={lst:source-to-source1}]
     // Original code
     for ( i=0; i<N; i++)
       for ( j=0; j<N; j++)
@@ -1046,7 +1047,7 @@ every time near-optimal solutions.
   The tuning of applications is a non-trivial problem, because the
   search space of the different combinations of parameters can be
   huge. For instance there are about 500 compilation flags for GCC and
-  testing all the combinations (i.e, 2^500 ~ 10^50 combinations) to find
+  testing all the combinations (i.e, $2^{500} \approx 10^{50}$ combinations) to find
   the best one is simply impossible. Thus,
   it is formulated as a mathematical optimization problem where the
   optimization function gives metrics of combination of parameters:
@@ -1188,17 +1189,17 @@ every time near-optimal solutions.
    \subcaption{\label{fig:auto_tuning_function}Noisy function}
    \end{minipage}
    \caption{\label{fig:function_charac}\textbf{Function characteristics}: 
-    The Figure\ref{fig:convex_function} shows the example of a convex 
+    Figure\ref{fig:convex_function} shows the example of a convex 
     function. On this kind of functions, techniques such as gradient 
     search converges very quickly to the global optimal.
-    The Figure\ref{fig:non_convex_function} shows an example of 
+    Figure\ref{fig:non_convex_function} shows an example of 
     non-convexe function. This kind of function has many local optimum in which
     local search techniques can be stuck. Thus, global search and randomized techniques 
     are necessary to escape from them.
-    The Figure\ref{fig:non_smooth_function} shows the example of a function
+    Figure\ref{fig:non_smooth_function} shows the example of a function
     where at the derivative cannot be computed everywhere. Hence, derivative-based 
     free methods are require.
-    The Figure\ref{fig:auto_tuning_function} shows what the objective function 
+    Figure\ref{fig:auto_tuning_function} shows what the objective function 
     in auto-tuning looks like. It combines non-convexity, non-smoothness, and noise}
    \end{figure}
    #+END_LaTeX
@@ -1424,13 +1425,15 @@ every time near-optimal solutions.
 ** Case study
    # Maybe cite Brice paper for this part
    In order to try our approach, we took a very simple example
-   which is a kernel that computes the Laplacian of an image (see
-   Figure\ref{fig:boast_code} for BOAST code and Figure\ref{fig:kernel_code} for an example of
-   generated code). We want
-   to minimize the time to compute a pixel. There are multiple
-   optimization that can be done to enhance the performance of this
-   kernel. The parameters and their values we used to tune this
-   applications are the following: 
+   which is a kernel that computes the Laplacian of an image. 
+   Figure\ref{fig:boast_code} shows the BOAST code to generate a
+   Laplacian kernel. Figure\ref{fig:kernel_code} shows one such
+   generated kernel. This BOAST code was already implemented by the
+   BOAST developers but as we will see finding the right parameters
+   was quite a challenge. We want to minimize the time to compute a
+   pixel. There are multiple optimization that can be done to enhance
+   the performance of this kernel. The parameters and their values we
+   used to tune this applications are the following: 
 
      | Parameters         | Values                            |
      |--------------------+-----------------------------------|
@@ -1490,7 +1493,7 @@ every time near-optimal solutions.
       organized by specifying the tiling. It gives how the components of
       the image are distributed in the y-axis. This tilling optimization may take
       advantage of the organization of memory banks on Nvidia GPUs and
-      thus improve the data usage. The impact is suspect to have an
+      thus improve the data usage. The impact is suspected to have an
       almost quadratic shape and we can try either a model like this:
 
       #+BEGIN_LaTeX
@@ -1526,6 +1529,9 @@ every time near-optimal solutions.
       organized in a block and represent the number of threads in the
       y-axis. For this parameter it is difficult to envision what kind
       of impact it can have so we started with a simple linear model.
+
+   The model we will consider are sums with at most level 2
+   interactions of the previous one.
 
    All the combinations of these parameters would gives a search space
    of 190080 points. However some points are unfeasible. For instance,
@@ -1604,9 +1610,9 @@ every time near-optimal solutions.
    after an image is loaded. We tried to see if on the GPU Nvidia K40
    there this effect is present. We also tried to quantify it along
    with the variability we could have between the different runs of
-   the same version of the code in order to protect against it. The
-   Figure\ref{fig:warmup}, illustrates what we expected, there is a power
-   saving mechanism on Nvidia K40 which turns the GPU into idle mode
+   the same version of the code in order to protect against
+   it. Figure\ref{fig:warmup}, illustrates what we expected, there is
+   a power saving mechanism on Nvidia K40 which turns the GPU into idle mode
    when the computational intensity is bellow a threshold. This effect
    occurs on the first size of image tested, which is just after the
    code generation and compilation phases. The more run are performed the
@@ -1826,7 +1832,7 @@ every time near-optimal solutions.
     There are many ways of performing linear regression. We evaluated
     two of them: 
     - *LM*: this corresponds to the iterative approach described in the
-      previous section and relying on a classical least square
+      previous section and relying on a classical linear model using least square
       regression which allows to estimate the expectation of
       performance. A first sample of the whole space (with slightly
       less thant half of the experimental budget) is done and several
@@ -1881,9 +1887,9 @@ every time near-optimal solutions.
        #+BEGIN_LaTeX
        \[time\, per\, pixel = threads\, number + \frac{1}{threads\, number}\]
        #+END_LaTeX
-    9. Taking the last 4 remaining points in the pruned search space
-       as we are below (119 points) the maximum number of points and
-       take the best remaining combination.  
+    9. At this step, after pruning, only 4 points remain in the search space.
+       As we are below (119 points) the maximum number of points (120 points),
+       we take the best remaining combination of these 4 points.  
 
  #+CAPTION: This table shows the minimum, first quartile, median, mean, third quartile and maximum slowdown including the mean number of points used by each method.
     #+NAME:   tab:comparison-table
@@ -1950,7 +1956,7 @@ every time near-optimal solutions.
     region. The subsequent sampling allows to fix the remaining
     parameters and to find good solution in all cases. However in only 3 cases
     LM does worst than the worst case of GA (resp. 1.646) with
-    slowdown of 3.77 (see Table\ref{tab:comparison-table}. RQ managed
+    slowdown of 3.77 (see Table\ref{tab:comparison-table}). RQ managed
     to have a worst case better than LM with a slowdown of 2.064 but
     still higher than GA.  
  
