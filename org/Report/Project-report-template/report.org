@@ -1557,7 +1557,7 @@ than previously proposed one.
 
    #+RESULTS:
 
-   #+begin_src R :results output graphics :file img/warm_up.pdf :exports none :width 8 :height 8 :session
+   #+begin_src R :results output graphics :file img/warm_up.pdf :exports none :width 9 :height 9 :session
      library(plyr)
      library(ggplot2)
 
