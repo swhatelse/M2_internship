@@ -33135,3 +33135,166 @@ h[g.name.to_sym] = 1024
     F-statistic: 27.46 on 3 and 46 DF,  p-value: 2.49e-10
 #+end_example
 
+** 2016-06-15
+*** Structure of the search space
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      attach(df)
+    #+end_src
+
+    #+RESULTS:
+    
+    #+begin_src R :results output :session :exports both
+    fit <- lm(time_per_pixel ~ vector_length + elements_number + y_component_number + threads_number + lws_y)
+#    summary(fit)
+       (tstats <- coef(fit) / sqrt(diag(vcov(fit))))
+       2 * pt(abs(tstats), df = df.residual(fit), lower.tail = FALSE)
+
+    #+end_src
+
+    #+RESULTS:
+    :        (Intercept)      vector_length    elements_number y_component_number 
+    :           24.81310           58.12743          -35.52491           13.72347 
+    :     threads_number              lws_y 
+    :          -38.45353           87.82703
+    :        (Intercept)      vector_length    elements_number y_component_number 
+    :      3.685953e-134       0.000000e+00      3.454394e-269       1.080305e-42 
+    :     threads_number              lws_y 
+    :      1.238111e-313       0.000000e+00
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+      library(ggplot2)
+      sorted <- df[order(vector_length, lws_y, threads_number, y_component_number, elements_number, temporary_size, load_overlap),]         
+      # plot(sorted$time_per_pixel)
+      ggplot(sorted) +
+          aes(x=seq(1,nrow(sorted)), y=time_per_pixel) +
+          geom_point()
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3796G5P/figure3796fqU.png]]
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+    
+      sorted <- df[vector_length == 1,]
+      sorted <- sorted[order(sorted$lws_y, sorted$threads_number, sorted$elements_number, sorted$y_component_number, sorted$temporary_size, sorted$load_overlap),]         
+      # plot(sorted$time_per_pixel)
+      ggplot(sorted) +
+          aes(x=seq(1,nrow(sorted)), y=sorted$time_per_pixel) +
+          geom_point()
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3796G5P/figure3796RfH.png]]
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          
+      sorted <- sorted[sorted$lws_y == 16,]
+      sorted <- sorted[order(sorted$threads_number, sorted$y_component_number, sorted$elements_number, sorted$temporary_size, sorted$load_overlap),]         
+      # plot(sorted$time_per_pixel)
+      ggplot(sorted) +
+          aes(x=seq(1,nrow(sorted)), y=sorted$time_per_pixel) +
+          geom_point()
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3796G5P/figure3796smy.png]]
+
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ elements_number + threads_number + y_component_number, sorted)
+      summary(fit)
+    #+end_src
+
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ elements_number + threads_number + 
+        y_component_number, data = sorted)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.484e-10 -3.406e-10 -1.169e-10  2.889e-10  1.626e-09 
+
+    Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         1.220e-09  4.584e-11  26.617  < 2e-16 ***
+    elements_number    -9.959e-13  4.249e-12  -0.234    0.815    
+    threads_number     -9.559e-13  5.339e-14 -17.904  < 2e-16 ***
+    y_component_number -8.054e-11  1.517e-11  -5.309 1.58e-07 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 4.44e-10 on 572 degrees of freedom
+    Multiple R-squared:  0.3988,	Adjusted R-squared:  0.3956 
+    F-statistic: 126.5 on 3 and 572 DF,  p-value: < 2.2e-16
+#+end_example
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+    
+      sorted1 <- sorted[ sorted$y_component_number== 1,]
+      sorted1 <- sorted1[order( sorted1$threads_number,  sorted1$elements_number ,sorted1$temporary_size, sorted1$load_overlap),]         
+      #sorted1 <- sorted[ sorted$threads_number == 128,]
+      #sorted1 <- sorted1[order( sorted1$y_component_number, sorted1$elements_number ,sorted1$temporary_size, sorted1$load_overlap),]         
+      ggplot(sorted1) +
+          aes(x=seq(1,nrow(sorted1)), y=sorted1$time_per_pixel, shape=factor(threads_number)) +
+          #aes(x=seq(1,nrow(sorted1)), y=sorted1$time_per_pixel, shape=factor(y_component_number)) +
+          geom_point()
+    #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3796G5P/figure3796SSm.png]]
+
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ elements_number + threads_number , sorted)
+      summary(fit)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+
+    Call:
+    lm(formula = time_per_pixel ~ elements_number + threads_number, 
+        data = sorted)
+
+    Residuals:
+           Min         1Q     Median         3Q        Max 
+    -5.547e-10 -3.396e-10 -1.395e-10  2.898e-10  1.736e-09 
+
+    Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)      1.076e-09  3.786e-11  28.431  < 2e-16 ***
+    elements_number -1.679e-11  3.105e-12  -5.407  9.4e-08 ***
+    threads_number  -9.559e-13  5.464e-14 -17.494  < 2e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 4.544e-10 on 573 degrees of freedom
+    Multiple R-squared:  0.3691,	Adjusted R-squared:  0.3669 
+    F-statistic: 167.6 on 2 and 573 DF,  p-value: < 2.2e-16
+#+end_example
+
+
+     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+    
+#      sorted2 <- sorted1[ sorted1$y_component_number== 1,]
+ #     sorted2 <- sorted2[order( sorted2$threads_number, sorted2$elements_number,  sorted2$temporary_size, sorted2$load_overlap),]         
+       sorted2 <- sorted[ sorted$threads_number == 128,]
+       sorted2 <- sorted2[order( sorted2$y_component_number, sorted2$elements_number, sorted2$temporary_size, sorted2$load_overlap),]         
+      # plot(sorted$time_per_pixel)
+      ggplot(sorted2) +
+          ##aes(x=seq(1,nrow(sorted2)), y=sorted2$time_per_pixel, shape=factor(threads_number)) +
+           aes(x=seq(1,nrow(sorted2)), y=sorted2$time_per_pixel, shape=factor(y_component_number)) +
+          geom_point()
+    #+end_src
+
+     #+RESULTS:
+     [[file:/tmp/babel-3796G5P/figure3796GCz.png]]
+
