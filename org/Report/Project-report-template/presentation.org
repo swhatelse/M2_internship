@@ -1,0 +1,115 @@
+# -*- coding: utf-8 -*-
+# -*- mode: org -*-
+#+startup: beamer
+#+STARTUP: overview
+#+STARTUP: indent
+#+TAGS: noexport(n)
+#+LANGUAGE: en
+
+#+Title: Semi-Automatic Performance Optimization of HPC Kernels
+#+AUTHOR:      Steven QUINITO MASNADA
+
+#+EPRESENT_FRAME_LEVEL: 2
+
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [11pt,xcolor=dvipsnames,presentation]
+#+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+
+#+LATEX_HEADER: \usedescriptionitemofwidthas{bl}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage[utf8]{inputenc}
+#+LATEX_HEADER: \usepackage[american]{babel}
+#+LATEX_HEADER: \usepackage{ifthen,figlatex,amsmath,amstext,gensymb,amssymb}
+#+LATEX_HEADER: \usepackage{boxedminipage,xspace,multicol}
+#+LATEX_HEADER: %%%%%%%%% Begin of Beamer Layout %%%%%%%%%%%%%
+#+LATEX_HEADER: \ProcessOptionsBeamer
+#+latex_header: \mode<beamer>{\usetheme{Madrid}}
+#+LATEX_HEADER: \usecolortheme{whale}
+#+LATEX_HEADER: \usecolortheme[named=BrickRed]{structure}
+# #+LATEX_HEADER: \useinnertheme{rounded}
+#+LATEX_HEADER: \useoutertheme{infolines}
+#+LATEX_HEADER: \setbeamertemplate{footline}[frame number]
+#+LATEX_HEADER: \setbeamertemplate{headline}[default]
+#+LATEX_HEADER: \setbeamertemplate{navigation symbols}{}
+#+LATEX_HEADER: \defbeamertemplate*{headline}{info theme}{}
+#+LATEX_HEADER: \defbeamertemplate*{footline}{info theme}{\leavevmode%
+#+LATEX_HEADER:   \hbox{%
+#+LATEX_HEADER:     \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+#+LATEX_HEADER:       \usebeamerfont{author in head/foot}\insertshortauthor
+#+LATEX_HEADER:     \end{beamercolorbox}%
+#+LATEX_HEADER:   \begin{beamercolorbox}[wd=.41\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+#+LATEX_HEADER:     \usebeamerfont{title in head/foot}\insertsectionhead
+#+LATEX_HEADER:   \end{beamercolorbox}%
+#+LATEX_HEADER:   \begin{beamercolorbox}[wd=.09\paperwidth,ht=2.25ex,dp=1ex,right]{section in head/foot}%
+#+LATEX_HEADER:     \usebeamerfont{section in head/foot}\insertframenumber{}~/~\inserttotalframenumber\hspace*{2ex} 
+#+LATEX_HEADER:   \end{beamercolorbox}
+#+LATEX_HEADER:   }\vskip0pt}
+#+LATEX_HEADER: \setbeamertemplate{footline}[info theme]
+#+LATEX_HEADER: %%%%%%%%% End of Beamer Layout %%%%%%%%%%%%%
+#+LATEX_HEADER: \usepackage{verbments}
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LATEX_HEADER: \usepackage{color}
+#+LATEX_HEADER: \usepackage{url} \urlstyle{sf}
+
+#+LATEX_HEADER: \let\alert=\structure % to make sure the org * * works of tools
+#+BEAMER_FRAME_LEVEL: 2
+
+#+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
+
+#+LATEX_HEADER: %\usepackage{biblatex}
+# #+LATEX_HEADER: \bibliography{../../biblio.bib}
+# #+LATEX_HEADER: \usepackage{cite}
+
+# Macros
+#+BEGIN_LaTeX
+\def\img_dir{./img}
+#+END_LaTeX
+
+* General presentation
+** The performance optimization challenge
+** Code generation and opportunities
+** Application tuning: Auto-tuning
+* Problem analysis
+* Methodology
+** Reproducible research
+** Case study: A Laplacian kernel
+** Controlling measurements
+* Contribution
+** Our approach
+** Experiment
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \includegraphics[width=\linewidth]{\ìmg_dir /results_hist.pdf}
+   \end{figure}
+   #+END_LaTeX
+** Analysis
+*** Characteristics of the search space
+*** Least square regression vs quantile regression
+*** LM: Success and "failures"
+*** Improving the worst case
+* Technical difficulties
+** Constrained  and discrete search space
+** Quantile regression
+* Conclusion
+** Summary
+** Future work
+* Emacs Setup 							   :noexport:
+  This document has local variables in its postembule, which should
+  allow Org-mode to work seamlessly without any setup. If you're
+  uncomfortable using such variables, you can safely ignore them at
+  startup. Exporting may require that you copy them in your .emacs.
+
+# Local Variables:
+# eval:    (require 'org-install)
+# eval:    (org-babel-do-load-languages 'org-babel-load-languages '( (sh . t) (R . t) (perl . t) (ditaa . t) ))
+# eval:    (setq org-confirm-babel-evaluate nil)
+# eval:    (unless (boundp 'org-latex-classes) (setq org-latex-classes nil))
+# eval:    (setq org-alphabetical-lists t)
+# eval:    (setq org-src-fontify-natively t)
+# eval:   (setq org-export-babel-evaluate nil)
+# eval:   (setq ispell-local-dictionary "english")
+# eval:   (eval (flyspell-mode t))
+# eval:    (setq org-latex-listings 'minted)
+# eval:    (setq org-latex-minted-options '(("bgcolor" "white") ("style" "tango") ("numbers" "left") ("numbersep" "5pt")))
+# End:
