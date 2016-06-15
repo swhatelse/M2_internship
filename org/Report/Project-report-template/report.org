@@ -1797,11 +1797,11 @@ than previously proposed one.
     search methods that have already been used in auto-tuning
     literature using an exploration budget of 120 points (0.5% of the
     search space) that must not be exceeded:
-    - *RS*: is the uniform random search that take points randomly in the
+    - *RS*: is the uniform random search that takes points randomly in the
       search space with equal probabilities. 
     - *LHS*: it is a not a method used to search, it is a sampling
-      techniques which take point randomly but which also maximize the
-      distance between the point to cover the full search
+      technique which takes points randomly but which also maximizes the
+      distance between them to cover the full search
       space. However we want to see how a search based on it would
       perform. 
     - *GS* (Greedy Search): we implemented a greedy search which
@@ -1820,7 +1820,7 @@ than previously proposed one.
       reached. The best solution found so far is then returned. 
     - *GA*: BOAST embeds an implementation of a genetic algorithm. We
       used a population size of 20 and mutation rate of 0.1. Among the
-      different configuration tested it was the one that gives the
+      different configuration tested, it was the one that gives the
       best results but it may be possible to obtain better results by
       tuning further the genetic algorithm parameters.  
     
@@ -1830,10 +1830,8 @@ than previously proposed one.
     particular the uniformity of variance\footnote{homoscedasticity})
     did not hold and that using instead a technique called quantile
     regression may be more sound. We therefore report both approaches
-    and will explain later in more details their difference.
+    and will explain later in more details their difference:
 
-    There are many ways of performing linear regression. We evaluated
-    two of them: 
     - *LM*: this corresponds to the iterative approach described in the
       previous section and relying on a classical linear model using least square
       regression which allows to estimate the expectation of
@@ -1860,7 +1858,7 @@ than previously proposed one.
 
     Our approach is intended to be semi-automatic but for evaluation
     purpose we automated the process. Based on few observations we
-    made in trying the full model and eliminating useless parameters
+    made by trying the full model and eliminating useless parameters
     on different random sets of points, we found out that the
     parameters which have a significant impact at each step of the
     tuning process are generally the same. For this reason we decided
@@ -1921,7 +1919,7 @@ than previously proposed one.
     explanation for this phenomenon. 
 
     Now, let us focus on strategies that build on local
-    search. The GS strategy is extremely inefficient since half of
+    search. The GS strategy is extremely inefficient since almost  half of
     the time we get a slowdown of higher than 2. It can be every
     far from the optimal solution (up to 125 slower as reported in
     Table\ref{fig:search_comparison}), which is why only a few
@@ -1968,14 +1966,14 @@ than previously proposed one.
     of the entire search space but it never reaches it. With the
     quantile regression we managed to improve the worst solution but
     we could not improve the best solution return by LM. However both
-    LM and RQ very rarely gives worse solution than GA or RS.
+    LM and RQ very rarely gives worse solutions than GA or RS.
      
    #+BEGIN_LaTeX
    \begin{figure}[htb]
    \centering
    \includegraphics[width=\linewidth]{./img/results_hist.pdf}
    \caption{\label{fig:search_comparison}Comparison of the efficiency of the different search
-      methods. The histogram of the normalized speed (1000 values for
+      methods. The histogram of the slowdown (1000 values for
       each method) allows to better compare the different
       heuristics. The red dashed line depicts the estimation of the
       mean with the corresponding 95\% confidence interval in gray. The
@@ -2185,7 +2183,7 @@ than previously proposed one.
   By studying the characteristics of the search space we can
   understand the structure of the problem in order to be able to
   understand the results of the different search techniques. 
-  The Figure\ref{fig:combination_distribution} and the Table\ref{tab:search-space-characteristics}
+  Figure\ref{fig:combination_distribution} and Table\ref{tab:search-space-characteristics}
   show the distribution of the combinations over the 
   search space in term of slowdown. This search space contains a lot
   of good combinations, half of them have a slowdown that
@@ -3928,6 +3926,10 @@ than previously proposed one.
 
 
 * Acknowledgments
+I would like to thanks my supervisors  for allowing me to make my
+internship in their teams and for this subject I really
+enjoyed. I thank them for their availability and their help and thanks
+to them I learned a lot.
 #+LaTeX: \nocite{*}
 #+LaTeX: \def\raggedright{}
 \bibliographystyle{plain}
