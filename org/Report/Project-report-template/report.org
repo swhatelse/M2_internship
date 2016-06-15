@@ -1733,7 +1733,7 @@ than previously proposed one.
             facet_grid(method~.) +
             theme_bw() +
             coord_cartesian(xlim=c(.9,3), ylim=c(0,1000)) +
-            geom_histogram(aes(slowdown),binwidth=.05,color="white", fill="gray48") +
+            geom_histogram(aes(slowdown),binwidth=.05, fill="gray48") +
             geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=1000, fill="red"), alpha=0.3) +
             geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=3 ) +
             geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +

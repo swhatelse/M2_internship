@@ -32048,7 +32048,7 @@ h[g.name.to_sym] = 1024
       ggplot(df_all_methods) + 
           facet_grid(method~.) +
           theme_bw() +
-          geom_histogram(aes(slowdown),binwidth=.05,color="white", fill="gray48") +
+          stat_bin(aes(slowdown),binwidth=.05,color="white", fill="gray48") +
           geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=1000, fill="red"), alpha=0.3) +
           geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
           geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
@@ -32060,7 +32060,7 @@ h[g.name.to_sym] = 1024
       #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-7579fhn/figure7579lRP.png]]
+    [[file:/tmp/babel-3407ZOO/figure3407T8q.png]]
 
 *** Local search with our starting point
     It does not make any progress:
