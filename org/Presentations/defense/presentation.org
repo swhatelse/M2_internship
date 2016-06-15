@@ -60,11 +60,6 @@
 # #+LATEX_HEADER: \bibliography{../../biblio.bib}
 # #+LATEX_HEADER: \usepackage{cite}
 
-# Macros
-#+BEGIN_LaTeX
-\def\img_dir{./img}
-#+END_LaTeX
-
 * General presentation
 ** The performance optimization challenge
 ** Code generation and opportunities
@@ -76,15 +71,90 @@
 ** Controlling measurements
 * Contribution
 ** Our approach
+*** Code                                                         :noexport:
+#+begin_src sh :results output :exports none
+  ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file ./img/combinations_index.pdf :exports none :width 6 :height 4 :session
+  df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+  library(ggplot2)
+  ggplot(df) +
+      aes(x=seq(1,nrow(df)), y=time_per_pixel) +
+      geom_point(alpha=0.5) +
+      labs(x="Combination indexes", y="Time per pixel in s")
+#+end_src
+
+#+RESULTS:
+[[file:./img/combinations_index.pdf]]
+
+#+begin_src R :results output graphics :file ./img/combinations_sorted.pdf :exports none :width 6 :height 4 :session
+  library(ggplot2)
+  df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+  df1 <- df[order(df$vector_length, df$lws_y, df$threads_number, df$y_component_number, df$elements_number, df$temporary_size, df$load_overlap),]         
+  ggplot(df1) +
+      aes(x=seq(1,nrow(df1)), y=time_per_pixel) +
+      geom_point(alpha=0.5) +
+      labs(x="Combination indexes", y="Time per pixel in s")
+#+end_src
+
+#+RESULTS:
+[[file:./img/combinations_sorted.pdf]]
+*** Principle
+*** Finding the structure of the problem
+#+BEGIN_LaTeX
+\begin{figure}[]
+\centering
+\includegraphics[width=\linewidth]{./img/combinations_index.pdf}
+\end{figure}
+#+END_LaTeX
+*** Finding the structure of the problem
+#+BEGIN_LaTeX
+\begin{figure}[]
+\centering
+\includegraphics[width=\linewidth]{./img/combinations_sorted.pdf}
+\end{figure}
+#+END_LaTeX
 ** Experiment
-   #+BEGIN_LaTeX
-   \begin{figure}[htb]
-   \centering
-   \includegraphics[width=\linewidth]{\ìmg_dir /results_hist.pdf}
-   \end{figure}
-   #+END_LaTeX
+#+BEGIN_LaTeX
+\begin{figure}[]
+\centering
+\includegraphics[width=.45\linewidth]{../../Report/Project-report-template/img/results_hist.pdf}
+\end{figure}
+#+END_LaTeX
+\tiny
+| Method |  Min. | 1st Qu. | Median | 3rd Qu. |    Max. |  Mean | Mean Cost |
+|--------+-------+---------+--------+---------+---------+-------+-----------|
+| /      |    <> |      <> |     <> |      <> |      <> |    <> |           |
+| RS     | 1.000 |   1.027 |  1.079 |   1.178 |   1.388 | 1.102 |       120 |
+| LHS    | 1.000 |   1.087 |  1.188 |   1.244 |   1.524 | 1.175 |    98.918 |
+| GS     | 1.000 |   1.348 |  1.799 |   6.314 | 124.800 | 6.460 |    22.171 |
+| GSR    | 1.000 |   1.072 |  1.187 |   1.333 |   3.164 | 1.227 |       120 |
+| GA     | 1.000 |   1.018 |  1.086 |   1.187 |   1.646 | 1.118 |       120 |
+| LM     | 1.012 |   1.012 |  1.012 |   1.012 |   3.771 | 1.022 |       119 |
+| RQ     | 1.012 |   1.012 |  1.012 |   1.012 |   2.064 | 1.019 |       119 |
 ** Analysis
 *** Characteristics of the search space
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/heteroscedasticity_v_len.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/heteroscedasticity_x_comp.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX   
+
+| Min  | 1st Q. | Median | Mean   | 3rd Q. |     Max |
+|------+--------+--------+--------+--------+---------|
+| /    | <>     | <>     | <>     | <>     |         |
+| 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
+
 *** Least square regression vs quantile regression
 *** LM: Success and "failures"
 *** Improving the worst case
