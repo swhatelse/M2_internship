@@ -105,8 +105,6 @@
     - Verification
     - Compilation
     - Benchmark
-*** Application tuning: Auto-tuning
-* Problem analysis
 *** Problem analysis
 - Huge search space
 - Mathematical optimization problem:
@@ -116,37 +114,12 @@
 - Empirical function \to evaluation costly
 - Discrete or Continuous
 - Constraints
-* Methodology
-*** Reproducible research
-- Github repository \to publicly available on github
-- Laboratory book:
-  - Literate programming org-mode + R
-  - Code, experiments, and detailed analysis
-  - 33K lines including 17K lines which are code analysis
-- Every experiments are logged and also available
-*** Case study: A Laplacian kernel
-- Kernel parameters:
-     | Parameters         | Values                            |
-     |--------------------+-----------------------------------|
-     | /                  | <                                 |
-     | vector_length      | 1,2,4,8,16                        |
-     | load_overlap       | true,false                        |
-     | temporary_size     | 2,4                               |
-     | elements_number    | from 1 to 24                      |
-     | y_component_number | from 1 to 6                       |
-     | threads_number     | 32,64,128,256,512,1024            |
-     | local_work_size_y  | 1,2,4,8,16,32,64,128,256,512,1024 |
-
-- 190080 variants \to 23120 due to constraints
-- Using OpenCL on a GPU Nvidia K40c 
-
-*** Controlling measurements: Warm-up effect
-#+BEGIN_LaTeX
-\begin{figure}[htb]
-\centering
-\includegraphics[height=.8\textheight]{../../Report/Project-report-template/img/warm_up.pdf}
-\end{figure}
-#+END_LaTeX
+*** Generally used methods
+- RS
+- LHS
+- GS
+- GSR
+- GA
 * Contribution
 ** Design and prototype of a new approach
 *** Code                                                         :noexport:
@@ -202,6 +175,29 @@
 \includegraphics[width=\linewidth]{./img/combinations_sorted.pdf}
 \end{figure}
 #+END_LaTeX
+** Methodology
+*** Reproducible research
+- Github repository \to publicly available on github
+- Laboratory book:
+  - Literate programming org-mode + R
+  - Code, experiments, and detailed analysis
+  - 33K lines including 17K lines which are code analysis
+- Every experiments are logged and also available
+*** Case study: A Laplacian kernel
+- Kernel parameters:
+     | Parameters         | Values                            |
+     |--------------------+-----------------------------------|
+     | /                  | <                                 |
+     | vector_length      | 1,2,4,8,16                        |
+     | load_overlap       | true,false                        |
+     | temporary_size     | 2,4                               |
+     | elements_number    | from 1 to 24                      |
+     | y_component_number | from 1 to 6                       |
+     | threads_number     | 32,64,128,256,512,1024            |
+     | local_work_size_y  | 1,2,4,8,16,32,64,128,256,512,1024 |
+
+- 190080 variants \to 23120 due to constraints
+- Using OpenCL on a GPU Nvidia K40c 
 ** Experiment
 *** Code                                                         :noexport:
 **** Results
@@ -300,7 +296,8 @@
 | /    | <>     | <>     | <>     | <>     |         |
 | 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
 
-*** Characteristics of the search space: Heteroscedasticity
+*** Characteristics of the search space: Structured
+# That is why our approach worked
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -431,6 +428,13 @@
 *** This is the end
 Thanks for your attention.
 *** LM: Improving worst case
+*** Controlling measurements: Warm-up effect
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\includegraphics[height=.8\textheight]{../../Report/Project-report-template/img/warm_up.pdf}
+\end{figure}
+#+END_LaTeX
 * Emacs Setup 							   :noexport:
   This document has local variables in its postembule, which should
   allow Org-mode to work seamlessly without any setup. If you're
