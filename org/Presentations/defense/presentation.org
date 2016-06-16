@@ -60,17 +60,28 @@
 # #+LATEX_HEADER: \bibliography{../../biblio.bib}
 # #+LATEX_HEADER: \usepackage{cite}
 
+#+LATEX_HEADER:   \institute{POLARIS and CORSE teams/LIG\\Under the supervision of A. LEGRAND, B. VIDEAU and F.DESPREZ}
+
 * General presentation
 ** The performance optimization challenge
 ** Code generation and opportunities
+*** Compiler
+*** Source-to-source
+*** Meta-programming
 ** Application tuning: Auto-tuning
 * Problem analysis
 * Methodology
-** Reproducible research
-** Case study: A Laplacian kernel
-** Controlling measurements
+*** Reproducible research
+*** Case study: A Laplacian kernel
+*** Controlling measurements: Warm-up effect
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \includegraphics[height=.8\textheight]{../../Report/Project-report-template/img/warm_up.pdf}
+   \end{figure}
+   #+END_LaTeX
 * Contribution
-** Our approach
+** Design and prototype of a new approach
 *** Code                                                         :noexport:
 #+begin_src sh :results output :exports none
   ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
@@ -95,7 +106,8 @@
   df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
   df1 <- df[order(df$vector_length, df$lws_y, df$threads_number, df$y_component_number, df$elements_number, df$temporary_size, df$load_overlap),]         
   ggplot(df1) +
-      aes(x=seq(1,nrow(df1)), y=time_per_pixel) +
+      # aes(x=seq(1,nrow(df1)), y=time_per_pixel) +
+      aes(x=seq(1,nrow(df1)), y=time_per_pixel, shape=factor(vector_length), color=lws_y) +
       geom_point(alpha=0.5) +
       labs(x="Combination indexes", y="Time per pixel in s")
 #+end_src
@@ -118,13 +130,64 @@
 \end{figure}
 #+END_LaTeX
 ** Experiment
+*** Code                                                         :noexport:
+**** Results
+#+begin_src sh :results output :exports none
+  ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+#+end_src
+
+#+RESULTS:
+
+#+begin_src R :results output graphics :file ./img/results_hist.pdf :exports none :width 6 :height 5 :session
+  df_all_methods <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", strip.white=T, header=T)  
+  library(ggplot2)
+  library(plyr)
+
+  df_all_methods$method <- factor(df_all_methods$method, levels = c("RS","LHS","GS","GSR","GA","LM","RQ"))
+
+  df_mean = ddply(df_all_methods,.(method), summarize, 
+                  mean = mean(slowdown))
+
+  df_median = ddply(df_all_methods,.(method), summarize, 
+                    median = median(slowdown))
+
+  df_err = ddply(df_all_methods,.(method), summarize,
+                 mean = mean(slowdown), err = 2*sd(slowdown)/sqrt(length(slowdown)))
+
+  df_max = ddply(df_all_methods,.(method), summarize, max = max(slowdown))
+
+  ggplot(df_all_methods ) + 
+      facet_grid(method~.) +
+      theme_bw() +
+      coord_cartesian(xlim=c(.9,4), ylim=c(0,1000)) +
+      geom_histogram(aes(slowdown),binwidth=.05, fill="gray48") +
+      geom_curve(data=df_max, aes(x=max+.1, y=500, xend=max, yend=5), arrow = arrow(length = unit(0.05, "npc")), curvature=0.3) +
+      geom_text( aes(x=max+.2,y=550,label="max"),data=df_max ) +
+      geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=1000, fill="red"), alpha=0.3) +
+      geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=3 ) +
+      geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
+      labs(y="Frequency", x="Slowdown compared to the optimal solution") +
+      scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean\nerror")) +
+      ggtitle("") + 
+      theme(legend.position="right")
+#+end_src
+
+#+RESULTS:
+[[file:./img/results_hist.pdf]]
+
+ 
+*** Protocol
+*** Results
 #+BEGIN_LaTeX
-\begin{figure}[]
+\begin{figure}[t]
 \centering
-\includegraphics[width=.45\linewidth]{../../Report/Project-report-template/img/results_hist.pdf}
+\includegraphics[width=.55\linewidth]{./img/results_hist.pdf}
 \end{figure}
 #+END_LaTeX
-\tiny
+
+#+BEGIN_LaTeX
+\tiny\tiny\tiny
+#+END_LaTeX
 | Method |  Min. | 1st Qu. | Median | 3rd Qu. |    Max. |  Mean | Mean Cost |
 |--------+-------+---------+--------+---------+---------+-------+-----------|
 | /      |    <> |      <> |     <> |      <> |      <> |    <> |           |
@@ -135,8 +198,28 @@
 | GA     | 1.000 |   1.018 |  1.086 |   1.187 |   1.646 | 1.118 |       120 |
 | LM     | 1.012 |   1.012 |  1.012 |   1.012 |   3.771 | 1.022 |       119 |
 | RQ     | 1.012 |   1.012 |  1.012 |   1.012 |   2.064 | 1.019 |       119 |
+
 ** Analysis
-*** Characteristics of the search space
+*** Characteristics of the search space:
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.35\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/search_combination_rep_slowdown.pdf}
+\end{minipage}
+\hfil
+\begin{minipage}{.35\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/search_combination_rep_slowdown_zoom.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX   
+
+| Min  | 1st Q. | Median | Mean   | 3rd Q. |     Max |
+|------+--------+--------+--------+--------+---------|
+| /    | <>     | <>     | <>     | <>     |         |
+| 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
+
+*** Characteristics of the search space: Heteroscedasticity
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -150,20 +233,88 @@
 \end{figure}
 #+END_LaTeX   
 
-| Min  | 1st Q. | Median | Mean   | 3rd Q. |     Max |
-|------+--------+--------+--------+--------+---------|
-| /    | <>     | <>     | <>     | <>     |         |
-| 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
-
 *** Least square regression vs quantile regression
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lm_v_len.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lm_x_comp.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX
+*** Least square regression vs quantile regression
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/why_we_choose_quantile_reg_v_len.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/why_we_choose_quantile_reg_x_comp.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX
 *** LM: Success and "failures"
+*** LM: Success and "failures" when R^{2}
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.30\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/bad_prediction.pdf}
+\end{minipage}
+\hfil
+\begin{minipage}{.30\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/good_prediction.pdf}
+\end{minipage}
+\hfil
+\begin{minipage}{.30\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lucky_prediction.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX
 *** Improving the worst case
 * Technical difficulties
 ** Constrained  and discrete search space
+*** Model optimization
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/search_space_3D.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/search_space_3D_constrained_ugly.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX
+*** Model optimization
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/search_space_3D_constrained.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/search_space_3D_barrier.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX
+*** Sampling techniques: Screening design
+*** Sampling techniques: LHS
 ** Quantile regression
+*** Quantile regression
 * Conclusion
-** Summary
-** Future work
+*** Summary
+*** Future work
+*** This is the end
+Thanks for your attention.
 * Emacs Setup 							   :noexport:
   This document has local variables in its postembule, which should
   allow Org-mode to work seamlessly without any setup. If you're
