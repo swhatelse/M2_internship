@@ -63,15 +63,21 @@
 #+LATEX_HEADER:   \institute{POLARIS and CORSE teams/LIG\\Under the supervision of A. LEGRAND, B. VIDEAU and F.DESPREZ}
 
 * General presentation
-** The performance optimization challenge
-** Code generation and opportunities
-*** Compiler
-*** Source-to-source
-*** Meta-programming
-** Application tuning: Auto-tuning
+*** The performance optimization challenge
+*** Code generation and opportunities
+**** Compiler
+**** Source-to-source
+**** Meta-programming
+*** Application tuning: Auto-tuning
 * Problem analysis
 * Methodology
 *** Reproducible research
+- Github repository \to publicly available on github
+- Laboratory book:
+  - Literate programming org-mode + R
+  - Code, experiments, and detailed analysis
+  - 33K lines including 17K lines which are code analysis
+- Every experiments are logged
 *** Case study: A Laplacian kernel
 *** Controlling measurements: Warm-up effect
    #+BEGIN_LaTeX
@@ -200,7 +206,7 @@
 | RQ     | 1.012 |   1.012 |  1.012 |   1.012 |   2.064 | 1.019 |       119 |
 
 ** Analysis
-*** Characteristics of the search space:
+*** Characteristics of the search space: Combination distributions
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -259,8 +265,8 @@
 \end{minipage}
 \end{figure}
 #+END_LaTeX
-*** LM: Success and "failures"
-*** LM: Success and "failures" when R^{2}
+*** LM: Success and "failures" - $R^{2}$, standard errors and p-values
+*** LM: Success and "failures" - Predictions vs observations
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -277,7 +283,6 @@
 \end{minipage}
 \end{figure}
 #+END_LaTeX
-*** Improving the worst case
 * Technical difficulties
 ** Constrained  and discrete search space
 *** Model optimization
