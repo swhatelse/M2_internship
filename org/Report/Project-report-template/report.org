@@ -2383,7 +2383,7 @@ than previously proposed one.
    non-uniform because it is due to complex interaction between
    parameters. Heteroscedasticity is problematic because
    the least square is not the Best Linear Unbiased Estimator in this
-   case and it biases the variance and thus the coefficient of
+   case and it biases the standard errors and thus the coefficient of
    determination which makes it more difficult to evaluate the
    accuracy of the model. In addition, we want to predict the minimum
    value of the objective function not the mean. With non-uniform
