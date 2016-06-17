@@ -85,21 +85,30 @@
 - Re-arrange order of instruction \to better usage of the pipeline
 - Loop transformation / automatic parallelization \to threading and
   vectorization
-- But limited in several aspects: 
+**** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <+>
+:END:
+#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-8.8cm}\begin{block}{}
+ - But limited in several aspects: 
   - Applications still have to be program with care to facilitate
-    compiler job
+    the job of the compiler
   - Semantic rules
   - Lack of information (either because not available at run-time or
     because of the language), no global vision.
   - Choice of transformations
+#+LaTeX: \end{block}\end{overlayarea}
 *** Code generation and opportunities
 **** Source-to-source transformation frameworks
 - Performs transformation instead of the compiler 
-- Presents a code the compiler can easily work with \to less burden for
+- Presents a code that the compiler can easily work with \to less burden for
   the developer
-- Allows to specify the type of transformation wanted and ensures its
-  validity 
+- Allows to specify the type of transformation wanted 
+- Ensures its validity 
 - Generally limited to one target language \to no C to OpenCL / CUDA
+***** 
+But ...
 *** Code generation and opportunities
 **** Meta-programming frameworks
 - Higher level approach \to describe computation and optimization using
@@ -115,7 +124,9 @@
     - Compilation
     - Benchmark
 *** Problem analysis
-- Huge search space 
+- With all this tools it is easy to generate different variant of the
+  same code but with different \to How to find the best versions?
+- Huge search space \to +exhaustive search+
 - Auto-tuning considers this as a mathematical optimization problem:
   #+BEGIN_LaTeX
   \[ \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \]
@@ -331,6 +342,9 @@
 \end{minipage}
 \end{figure}
 #+END_LaTeX   
+**** 
+But does not respect classic least square regression assumptions:
+- Same variance
 
 *** Least square regression vs quantile regression
 #+BEGIN_LaTeX
@@ -491,4 +505,5 @@ Thanks for your attention.
 # eval:   (eval (flyspell-mode t))
 # eval:    (setq org-latex-listings 'minted)
 # eval:    (setq org-latex-minted-options '(("bgcolor" "white") ("style" "tango") ("numbers" "left") ("numbersep" "5pt")))
+# eval:   (add-to-list 'org-beamer-environments-extra '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}"))
 # End:

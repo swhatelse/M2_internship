@@ -13288,6 +13288,18 @@ Entered on [2015-11-19 jeu. 20:56]
 
       #+RESULTS:
       [[file:/tmp/babel-4627fyl/figure4627CsG.png]]
+      
+      #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+       library(ggplot2)
+       ggplot(df) +
+           aes(x=elements_number,y=time_per_pixel) +
+           geom_point()
+
+      #+end_src
+
+      #+RESULTS:
+      [[file:/tmp/babel-5694w-6/figure5694oGa.png]]
 
 **** TODO A random exploration                                     :Analysis:
      #+begin_src sh :results output :exports both
@@ -33298,3 +33310,6 @@ h[g.name.to_sym] = 1024
      #+RESULTS:
      [[file:/tmp/babel-3796G5P/figure3796GCz.png]]
 
+** 2016-06-17
+   Gdr-im@gdr-im.fr
+   hpc-announce-owner@mcs.anl.gov
