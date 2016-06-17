@@ -298,6 +298,9 @@ But ...
 | /    | <>     | <>     | <>     | <>     |         |
 | 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
 
+**** 
+312 random points = 90% of chance to get a slowdown lower than 10%.
+
 *** Characteristics of the search space: Top-20 of the best combinations
 #+BEGIN_LaTeX
 \tiny
@@ -394,6 +397,9 @@ But does not respect classic least square regression assumptions:
     | /             |        <> |        <> |        < |
     | vector_length | 1.438e-10 | 8.941e-11 |  0.11453 |
     | lws y         | 1.507e-11 | 4.596e-12 |  0.00197 |
+  #+BEGIN_LaTeX
+  \normalsize
+  #+END_LaTeX
 - Worst case:
   #+BEGIN_LaTeX
   \tiny
@@ -407,7 +413,6 @@ But does not respect classic least square regression assumptions:
   #+BEGIN_LaTeX
   \normalsize
   #+END_LaTeX
-
 *** LM: Success and "failures" - Predictions vs observations
 #+BEGIN_LaTeX
 \begin{figure}[htb]
