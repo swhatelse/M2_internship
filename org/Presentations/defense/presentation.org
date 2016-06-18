@@ -200,6 +200,23 @@
 \end{figure}
 #+END_LaTeX
 
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <10>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC9.pdf}
+\end{figure}
+#+END_LaTeX
+
+#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-7.0cm}\begin{block}{}
+  - Optimization complicated
+  - Specialized code \to target machine \to hinder portability
+#+LaTeX: \end{block}\end{overlayarea}
+
 *** Code generation and opportunities
 - Generic optimization
 **** Compilers
@@ -271,11 +288,7 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 ****** BOAST
   - Ruby
   - C, Fortran, CUDA, OpenCL
-  - Complete tool chain:
-    - Code generation
-    - Verification
-    - Compilation
-    - Benchmark
+  - Complete tool chain: code generation, verification, compilation, benchmark
 *** Problem analysis: Performance tuning
 - This tools allow to make generic optimization but and tuning is
   necessary to match the target platform (e.g. which size of vectors,
@@ -312,28 +325,64 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 - Discrete or Continuous
 - Constraints
 *** Generally used methods
+   # #+BEGIN_LaTeX
+   # \begin{figure}[htb]
+   # \centering
+   # \begin{minipage}{.45\linewidth}
+   # \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/DoE_examples_RS.pdf}
+   # \end{minipage}
+   # \begin{minipage}{.45\linewidth}
+   # \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/DoE_examples_LHS.pdf}
+   # \end{minipage}
+   # \end{figure}
+   # #+END_LaTeX    
+
+- Random Search 
    #+BEGIN_LaTeX
+   \only<1>{
    \begin{figure}[htb]
    \centering
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/DoE_examples_RS.pdf}
    \end{minipage}
+   \end{figure}
+   }
+   #+END_LaTeX
+- Latin Hyper Square
+   #+BEGIN_LaTeX
+   \only<2>{
+   \begin{figure}[htb]
+   \centering
    \begin{minipage}{.45\linewidth}
    \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/DoE_examples_LHS.pdf}
    \end{minipage}
    \end{figure}
-   #+END_LaTeX    
+   }
+   #+END_LaTeX
+- Local search \to Greedy Search
+   #+BEGIN_LaTeX
+   \only<3>{
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{img/Gradient_descent.png}
+   \end{minipage}
+   \end{figure}
+   }
+   #+END_LaTeX
+- Multiple local search \to Greedy Search + Restart
+- Genetic Algorithms
 
-- RS 
-- LHS
-- GS
-- GSR
-- GA
 **** 
+:PROPERTIES:
+:BEAMER_env: block
+:BEAMER_act: <5>
+:END:
 - Automatic approach \to black box \to user exclude
 - No sense because the application is not a black box for the user \to
   he knows how it works and thus have important role to play
-  
+
+
 * Design and prototype of a new approach
 *** Code                                                         :noexport:
 #+begin_src sh :results output :exports none
