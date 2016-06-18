@@ -382,7 +382,6 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 - No sense because the application is not a black box for the user \to
   he knows how it works and thus have important role to play
 
-
 * Design and prototype of a new approach
 *** Code                                                         :noexport:
 #+begin_src sh :results output :exports none
@@ -698,7 +697,19 @@ But does not respect classic least square regression assumptions:
 #+END_LaTeX
 * Conclusion
 *** Summary
+- We design a new approach that put the user in the center of the
+  optimization process
+- Comparison against techniques commonly used in the auto-tuning
+  literate
+- In depth study of the results:
+  - Reasons why it works
+  - Why quantile regression makes more sense than least square
+    regression
 *** Future work
+- Try more complex cases
+- Compute correctly standard error, p-values and coefficient of
+  determinations for quantile regression
+- Dig sampling strategy to reduce even more the number of points.
 *** This is the end
 Thanks for your attention.
 
