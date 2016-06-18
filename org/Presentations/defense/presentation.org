@@ -83,15 +83,20 @@
 *** Code generation and opportunities
 - Generic optimization
 **** Compilers
+***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <2>
+:END:
 - Re-arrange order of instruction \to better usage of the pipeline
 - Loop transformation / automatic parallelization \to threading and
   vectorization
-**** 
+***** 
 :PROPERTIES:
 :BEAMER_env: onlyenv
-:BEAMER_act: <+>
+:BEAMER_act: <3>
 :END:
-#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-8.8cm}\begin{block}{}
+# #+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-4.0cm}\begin{block}{}
  - But limited in several aspects: 
    - Semantic rules
    - Lack of information (either because not available at run-time or
@@ -99,9 +104,14 @@
    - Choice of transformations
    - Applications still have to be *programmed with care* to facilitate
      the job of the compiler
-#+LaTeX: \end{block}\end{overlayarea}
-*** Code generation and opportunities
+# #+LaTeX: \end{block}\end{overlayarea}
+
 **** Source-to-source transformation frameworks
+***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <4>
+:END:
 - Performs transformation instead of the compiler 
 - Presents a code that the compiler can easily work with \to less burden for
   the developer
@@ -109,19 +119,37 @@
   loop-unroll degree
 - Ensures its validity 
 ***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <5>
+:END:
 Generally limited to one target language \to no C to OpenCL / CUDA
 
-*** Code generation and opportunities
 **** Meta-programming frameworks
+***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <6>
+:END:
 - Higher level approach \to describe computation and optimization using
   high level languages
 - Multiple language targets
 - Developer has even more control on the transformation \to try
   optimization that no compiler would be able to do.
-- But:
-    - Can be error prone
-    - Need to re-write part of the application
-- BOAST:
+***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <7>
+:END:
+- Can be error prone
+- Need to re-write part of the application
+***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <8>
+:END:
+****** BOAST
+  - Ruby
   - C, Fortran, CUDA, OpenCL
   - Complete tool chain:
     - Code generation
@@ -340,7 +368,8 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 | 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
 
 **** 
-312 random points = 90% of chance to get a slowdown lower than 10%.
+- Lots a of good combinations parameters
+- 312 random points = 90% of chance to get a slowdown lower than 10%.
 
 *** Characteristics of the search space: Top-20 of the best combinations
 #+BEGIN_LaTeX
