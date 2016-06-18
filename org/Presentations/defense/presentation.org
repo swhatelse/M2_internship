@@ -81,6 +81,7 @@
 - Have to be program with care to exploit the available power.
 - Targeting the underlying hardware = specialized code \to hinder portability
 *** Code generation and opportunities
+- Generic optimization
 **** Compilers
 - Re-arrange order of instruction \to better usage of the pipeline
 - Loop transformation / automatic parallelization \to threading and
@@ -92,30 +93,34 @@
 :END:
 #+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-8.8cm}\begin{block}{}
  - But limited in several aspects: 
-  - Applications still have to be program with care to facilitate
-    the job of the compiler
-  - Semantic rules
-  - Lack of information (either because not available at run-time or
-    because of the language), no global vision.
-  - Choice of transformations
+   - Semantic rules
+   - Lack of information (either because not available at run-time or
+     because of the language), *no global vision*.
+   - Choice of transformations
+   - Applications still have to be *programmed with care* to facilitate
+     the job of the compiler
 #+LaTeX: \end{block}\end{overlayarea}
 *** Code generation and opportunities
 **** Source-to-source transformation frameworks
 - Performs transformation instead of the compiler 
 - Presents a code that the compiler can easily work with \to less burden for
   the developer
-- Allows to specify the type of transformation wanted 
+- Allows to specify the type of transformation wanted \to e.g.,
+  loop-unroll degree
 - Ensures its validity 
-- Generally limited to one target language \to no C to OpenCL / CUDA
 ***** 
-But ...
+Generally limited to one target language \to no C to OpenCL / CUDA
+
 *** Code generation and opportunities
 **** Meta-programming frameworks
 - Higher level approach \to describe computation and optimization using
   high level languages
 - Multiple language targets
-- Developer has even more control on the transformation but can be
-  error prone.
+- Developer has even more control on the transformation \to try
+  optimization that no compiler would be able to do.
+- But:
+    - Can be error prone
+    - Need to re-write part of the application
 - BOAST:
   - C, Fortran, CUDA, OpenCL
   - Complete tool chain:
@@ -123,23 +128,60 @@ But ...
     - Verification
     - Compilation
     - Benchmark
-*** Problem analysis
-- With all this tools it is easy to generate different variant of the
-  same code but with different \to How to find the best versions?
-- Huge search space \to +exhaustive search+
-- Auto-tuning considers this as a mathematical optimization problem:
+*** Problem analysis: Performance tuning
+- This tools allow to make generic optimization but and tuning is
+  necessary to match the target platform (e.g. which size of vectors,
+  how many threads) \to many versions of the same code 
+- How to find the best versions?
+- *Huge search space* \to +exhaustive search+
+- Auto-tuning considers this as a *mathematical optimization* problem:
   #+BEGIN_LaTeX
   \[ \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \]
   #+END_LaTeX
+*** Objective function
+   #+BEGIN_LaTeX
+   \begin{figure}[!htb]
+   \centering
+
+   \begin{minipage}{.30\linewidth}
+   \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/convex_function.pdf}
+   \end{minipage}
+   \hfil
+   \begin{minipage}{.30\linewidth}
+   \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/non_convex_function.pdf}
+   \end{minipage}
+
+   \begin{minipage}{.30\linewidth}
+   \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/non_smooth_function.pdf}
+   \end{minipage}
+   \hfil
+   \begin{minipage}{.30\linewidth}
+   \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/auto_tuning_function.pdf}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX
 - Empirical function \to evaluation costly
 - Discrete or Continuous
 - Constraints
 *** Generally used methods
-- RS
+   #+BEGIN_LaTeX
+   \begin{figure}[htb]
+   \centering
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/DoE_examples_RS.pdf}
+   \end{minipage}
+   \begin{minipage}{.45\linewidth}
+   \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/DoE_examples_LHS.pdf}
+   \end{minipage}
+   \end{figure}
+   #+END_LaTeX    
+
+- RS 
 - LHS
 - GS
 - GSR
 - GA
+
 - Automatic approach \to black box \to user exclude
 - No sense because the application is not a black box for the user \to
   he knows how it works and thus have important role to play
