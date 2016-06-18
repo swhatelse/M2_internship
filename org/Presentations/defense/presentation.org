@@ -181,7 +181,7 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 - GS
 - GSR
 - GA
-
+**** 
 - Automatic approach \to black box \to user exclude
 - No sense because the application is not a black box for the user \to
   he knows how it works and thus have important role to play
@@ -236,9 +236,9 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 *** Reproducible research
 - Github repository \to publicly available on github
 - Laboratory book:
-  - Literate programming org-mode + R
+  - Literate programming, emacs org-mode and  R
   - Code, experiments, and detailed analysis
-  - 33K lines including 17K lines which are code analysis
+  - *33K lines* including 17K lines which are code analysis
 - Every experiments are logged and also available
 *** Case study: A Laplacian kernel
 - Using BOAST
@@ -256,7 +256,7 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 
 - 190080 variants \to 23120 due to constraints
 - Using OpenCL on a GPU Nvidia K40c 
-* Experiment
+* Experiment and analysis
 *** Code                                                         :noexport:
 **** Results
 #+begin_src sh :results output :exports none
@@ -312,11 +312,10 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 #+BEGIN_LaTeX
 \begin{figure}[t]
 \centering
-\includegraphics[width=.65\linewidth]{./img/results_hist.pdf}
+\includegraphics[width=.8\linewidth]{./img/results_hist.pdf}
 \end{figure}
 #+END_LaTeX
 
-* Analysis
 *** Characteristics of the search space: Distribution of combinations
 #+BEGIN_LaTeX
 \begin{figure}[htb]
@@ -372,7 +371,12 @@ Generally limited to one target language \to no C to OpenCL / CUDA
   | 6        | 6           | 1      | 2         | true    | 1024    | 8     | 1.014882 |
   | 6        | 6           | 1      | 2         | true    | 128     | 1     | 1.015087 |
   | 6        | 6           | 1      | 2         | true    | 512     | 8     | 1.015301 |
-
+#+BEGIN_LaTeX
+\normalsize
+#+END_LaTeX
+**** 
+- Localized but still several local optimum!
+- Failed to get better /lws_y/ because of the model \to /vector_length/ + /lws_y/
 *** Characteristics of the search space: Structured
 # That is why our approach worked
 #+BEGIN_LaTeX
@@ -387,10 +391,6 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 \end{minipage}
 \end{figure}
 #+END_LaTeX   
-**** 
-But does not respect classic least square regression assumptions:
-- Same variance
-
 *** Least square regression vs quantile regression
 #+BEGIN_LaTeX
 \begin{figure}[htb]
@@ -404,6 +404,10 @@ But does not respect classic least square regression assumptions:
 \end{minipage}
 \end{figure}
 #+END_LaTeX
+**** 
+But does not respect classic least square regression assumptions:
+- Same variance
+
 *** Least square regression vs quantile regression
 #+BEGIN_LaTeX
 \begin{figure}[htb]
