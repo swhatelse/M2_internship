@@ -75,6 +75,7 @@
 
 * General presentation
 *** Why is performances optimization complicated?
+****                                                            :noexport:
 - Scientific applications \to computation power hungry 
 - HPC platforms \to complicated and unique machines
   - Many cores \to parallelizing efficiently is difficult
@@ -91,6 +92,114 @@
   - etc, ...
 - Have to be program with care to exploit the available power.
 - Targeting the underlying hardware = specialized code \to hinder portability
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <1>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC1.pdf}
+\end{figure}
+#+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <2>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC2.pdf}
+\end{figure}
+#+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <3>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC3.pdf}
+\end{figure}
+#+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <4>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC4.pdf}
+\end{figure}
+#+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <5>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC5.pdf}
+\end{figure}
+#+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <6>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC6.pdf}
+\end{figure}
+#+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <7>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC7.pdf}
+\end{figure}
+#+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <8>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC8.pdf}
+\end{figure}
+#+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <9>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC9.pdf}
+\end{figure}
+#+END_LaTeX
+
 *** Code generation and opportunities
 - Generic optimization
 **** Compilers
