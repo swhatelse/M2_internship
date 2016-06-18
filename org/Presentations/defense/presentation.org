@@ -213,12 +213,12 @@
 #+END_LaTeX
 
 #+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-7.0cm}\begin{block}{}
-  - Optimization complicated
+  - Optimization complicated \to need to be programmed with care
   - Specialized code \to target machine \to hinder portability
 #+LaTeX: \end{block}\end{overlayarea}
 
 *** Code generation and opportunities
-- Generic optimization
+Tools exist to automatically generate optimized code:
 **** Compilers
 ***** 
 :PROPERTIES:
@@ -290,9 +290,9 @@ Generally limited to one target language \to no C to OpenCL / CUDA
   - C, Fortran, CUDA, OpenCL
   - Complete tool chain: code generation, verification, compilation, benchmark
 *** Problem analysis: Performance tuning
-- This tools allow to make generic optimization but and tuning is
-  necessary to match the target platform (e.g. which size of vectors,
-  how many threads) \to many versions of the same code 
+- This tools allow to make *generic optimization* but and *tuning* is
+  *necessary* to match the target platform (e.g. which size of vectors,
+  how many threads) \to *many versions* of the same code 
 - How to find the best versions?
 - *Huge search space* \to +exhaustive search+
 - Auto-tuning considers this as a *mathematical optimization* problem:
@@ -750,6 +750,7 @@ Thanks for your attention.
 *** Quantile regression
 * LM: Improving worst case
 * Controlling measurements: Warm-up effect
+*** Controlling measurements: Warm-up effect
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -757,14 +758,14 @@ Thanks for your attention.
 \end{figure}
 #+END_LaTeX
 * A structured problem
-** Finding the structure of the problem
+*** Finding the structure of the problem
 #+BEGIN_LaTeX
 \begin{figure}[]
 \centering
 \includegraphics[width=\linewidth]{./img/combinations_index.pdf}
 \end{figure}
 #+END_LaTeX
-** Ordered by factor significance
+*** Ordered by factor significance
 #+BEGIN_LaTeX
 \begin{figure}[]
 \centering
