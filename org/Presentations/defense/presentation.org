@@ -77,8 +77,7 @@
 *** Why is performances optimization complicated?
 - Scientific applications \to computation power hungry 
 - HPC platforms \to complicated and unique machines
-- The application has to be written be taking into account
-  multiple characteristics:
+- They have multiple characteristics:
   - Many cores \to parallelizing efficiently is difficult
   - Different cache hierarchy \to achieving good data locality \to using
     good memory access patterns
@@ -89,7 +88,9 @@
     - Different cache size and organization
     - Mapping computation suited to graphic pipeline.
   - etc, ...
-- Taking into account all this characteristics can be a tricky task
+The user has to: paralellize, vectorize, access data carefully, take
+care about the order of the instruction, etc... \to turns out to be a really
+nightmare.
 - Targeting the underlying hardware = specialized code \to porting even
   more difficult
 ****                                                            :noexport:
@@ -231,7 +232,7 @@ Tools exist to automatically generate optimized code:
   - To paralellize or vectorize 
 - Limited by
   - Semantic rules
-  - No global vision of the code
+  - Lack of information at compile time, no global vision of the code
   - Choice of the transformation \to does not look for the best one but
     the one which respect the semantic
   - Still need to be programmed with care
@@ -243,7 +244,7 @@ Tools exist to automatically generate optimized code:
 :BEAMER_act: <3>
 :END:
 - Performs transformation instead of the compiler 
-- Allows to specify the type of transformation wanted \to e.g.,
+- Allows to specify which of transformation wanted \to e.g.,
   loop-unroll degree
 - Presents a code that the compiler can easily work with \to less burden for
   the developer
@@ -271,7 +272,7 @@ Tools exist to automatically generate optimized code:
 - This tools allow to make *generic optimization* but *tuning* is
   *necessary* to match the characteristics of the target platform
   (e.g. which size of vectors, how many threads)
--  *Many variants* of the same code \to How to find the best one?
+- *Many variants* of the same code \to How to find the best one?
 - *Huge search space* \to +exhaustive search+
 - Auto-tuning considers this as a *mathematical optimization* problem:
   #+BEGIN_LaTeX
@@ -508,6 +509,7 @@ Tools exist to automatically generate optimized code:
 *** Protocol
 - Methods: RS, LHS, GS, GSR, GA, LM and RQ
 - Maximal budget: 120
+- GA \to population size = 20
 - 1000 runs
 - Automatization of LM and RQ \to using same strategy each time
 *** Results
