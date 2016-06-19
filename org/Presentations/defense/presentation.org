@@ -75,6 +75,7 @@
 
 * General presentation
 *** Why is performances optimization complicated?
+**** Structure                                                  :noexport:
 - Scientific applications \to computation power hungry 
 - HPC platforms \to complicated and unique machines
 - They have multiple characteristics:
@@ -93,8 +94,8 @@ care about the order of the instruction, etc... \to turns out to be a really
 nightmare.
 - Targeting the underlying hardware = specialized code \to porting even
   more difficult
-****                                                            :noexport:
-*****  
+
+****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <1>
@@ -106,7 +107,7 @@ nightmare.
 \end{figure}
 #+END_LaTeX
 
-*****  
+****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <2>
@@ -114,11 +115,11 @@ nightmare.
 #+BEGIN_LaTeX
 \begin{figure}[t]
 \centering
-\includegraphics[width=.9\linewidth]{./img/HPC2.pdf}
+\includegraphics[width=.9\linewidth]{./img/HPC_v2.pdf}
 \end{figure}
 #+END_LaTeX
 
-*****  
+****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <3>
@@ -126,11 +127,11 @@ nightmare.
 #+BEGIN_LaTeX
 \begin{figure}[t]
 \centering
-\includegraphics[width=.9\linewidth]{./img/HPC3.pdf}
+\includegraphics[width=.9\linewidth]{./img/HPC_v2_1.pdf}
 \end{figure}
 #+END_LaTeX
 
-*****  
+****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <4>
@@ -138,11 +139,11 @@ nightmare.
 #+BEGIN_LaTeX
 \begin{figure}[t]
 \centering
-\includegraphics[width=.9\linewidth]{./img/HPC4.pdf}
+\includegraphics[width=.9\linewidth]{./img/HPC_v2_2.pdf}
 \end{figure}
 #+END_LaTeX
 
-*****  
+****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <5>
@@ -150,11 +151,11 @@ nightmare.
 #+BEGIN_LaTeX
 \begin{figure}[t]
 \centering
-\includegraphics[width=.9\linewidth]{./img/HPC5.pdf}
+\includegraphics[width=.9\linewidth]{./img/HPC_v2_3.pdf}
 \end{figure}
 #+END_LaTeX
 
-*****  
+****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <6>
@@ -162,9 +163,10 @@ nightmare.
 #+BEGIN_LaTeX
 \begin{figure}[t]
 \centering
-\includegraphics[width=.9\linewidth]{./img/HPC6.pdf}
+\includegraphics[width=.9\linewidth]{./img/HPC_v2_4.pdf}
 \end{figure}
 #+END_LaTeX
+****                                                            :noexport:
 
 *****  
 :PROPERTIES:
@@ -193,18 +195,6 @@ nightmare.
 *****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
-:BEAMER_act: <9>
-:END:
-#+BEGIN_LaTeX
-\begin{figure}[t]
-\centering
-\includegraphics[width=.9\linewidth]{./img/HPC9.pdf}
-\end{figure}
-#+END_LaTeX
-
-*****  
-:PROPERTIES:
-:BEAMER_env: onlyenv
 :BEAMER_act: <10>
 :END:
 #+BEGIN_LaTeX
@@ -219,6 +209,18 @@ nightmare.
   - Specialized code \to target machine \to hinder portability
 #+LaTeX: \end{block}\end{overlayarea}
 
+*****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <9>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC9.pdf}
+\end{figure}
+#+END_LaTeX
+  
 *** Code generation
 Tools exist to automatically generate optimized code:
 **** Compilers
