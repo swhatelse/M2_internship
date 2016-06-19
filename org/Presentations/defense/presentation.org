@@ -75,11 +75,10 @@
 
 * General presentation
 *** Why is performances optimization complicated?
-****                                                            :noexport:
 - Scientific applications \to computation power hungry 
 - HPC platforms \to complicated and unique machines
-- The application developer has to specify how to take into account
-  the following characteristics:
+- The application has to be written be taking into account
+  multiple characteristics:
   - Many cores \to parallelizing efficiently is difficult
   - Different cache hierarchy \to achieving good data locality \to using
     good memory access patterns
@@ -90,9 +89,11 @@
     - Different cache size and organization
     - Mapping computation suited to graphic pipeline.
   - etc, ...
-- Have to be program with care to exploit the available power.
-- Targeting the underlying hardware = specialized code \to hinder portability
-****  
+- Taking into account all this characteristics can be a tricky task
+- Targeting the underlying hardware = specialized code \to porting even
+  more difficult
+****                                                            :noexport:
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <1>
@@ -104,7 +105,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <2>
@@ -116,7 +117,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <3>
@@ -128,7 +129,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <4>
@@ -140,7 +141,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <5>
@@ -152,7 +153,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <6>
@@ -164,7 +165,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <7>
@@ -176,7 +177,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <8>
@@ -188,7 +189,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <9>
@@ -200,7 +201,7 @@
 \end{figure}
 #+END_LaTeX
 
-****  
+*****  
 :PROPERTIES:
 :BEAMER_env: onlyenv
 :BEAMER_act: <10>
@@ -225,29 +226,21 @@ Tools exist to automatically generate optimized code:
 :BEAMER_env: onlyenv
 :BEAMER_act: <2>
 :END:
-- Re-arrange order of instruction \to better usage of the pipeline
-- Loop transformation / automatic parallelization \to threading and
-  vectorization
-***** 
-:PROPERTIES:
-:BEAMER_env: onlyenv
-:BEAMER_act: <3>
-:END:
-# #+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-4.0cm}\begin{block}{}
- - But limited in several aspects: 
-   - Semantic rules
-   - Lack of information (either because not available at run-time or
-     because of the language), *no global vision*.
-   - Choice of transformations
-   - Applications still have to be *programmed with care* to facilitate
-     the job of the compiler
-# #+LaTeX: \end{block}\end{overlayarea}
+- Transformation :
+  - To make better use of the pipeline
+  - To paralellize or vectorize 
+- Limited by
+  - Semantic rules
+  - No global vision of the code
+  - Choice of the transformation \to does not look for the best one but
+    the one which respect the semantic
+  - Still need to be programmed with care
 
 **** Source-to-source transformation frameworks
 ***** 
 :PROPERTIES:
 :BEAMER_env: onlyenv
-:BEAMER_act: <4>
+:BEAMER_act: <3>
 :END:
 - Performs transformation instead of the compiler 
 - Allows to specify the type of transformation wanted \to e.g.,
@@ -255,40 +248,25 @@ Tools exist to automatically generate optimized code:
 - Presents a code that the compiler can easily work with \to less burden for
   the developer
 - Ensures its validity 
-***** 
-:PROPERTIES:
-:BEAMER_env: onlyenv
-:BEAMER_act: <5>
-:END:
-Generally limited to one target language \to no C to OpenCL / CUDA
+- But generally limited:
+   - To one target language \to no C to OpenCL / CUDA
+   - Still limited by some semantic rules
 
 **** Meta-programming frameworks
 ***** 
 :PROPERTIES:
 :BEAMER_env: onlyenv
-:BEAMER_act: <6>
+:BEAMER_act: <4>
 :END:
 - Higher level approach \to describe computation and optimization using
   high level languages
 - Multiple language targets
 - Developer has even more control on the transformation \to try
   optimization that no compiler would be able to do.
-***** 
-:PROPERTIES:
-:BEAMER_env: onlyenv
-:BEAMER_act: <7>
-:END:
-- Can be error prone
-- Need to re-write part of the application
-***** 
-:PROPERTIES:
-:BEAMER_env: onlyenv
-:BEAMER_act: <8>
-:END:
-****** BOAST
-  - Ruby
-  - C, Fortran, CUDA, OpenCL
-  - Complete tool chain: code generation, verification, compilation, benchmark
+- But:
+  - Can be error prone
+  - Need to re-write part of the application
+
 *** Problem analysis: Performance tuning
 - This tools allow to make *generic optimization* but *tuning* is
   *necessary* to match the characteristics of the target platform
@@ -378,9 +356,11 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 :BEAMER_env: block
 :BEAMER_act: <5>
 :END:
-- Automatic approach \to black box \to user exclude
-- No sense because the application is not a black box for the user \to
-  he knows how it works and thus have important role to play
+- These methods are commonly used in auto-tuning
+- But it is automatic approach \to black box \to *user exclude*
+- No sense because the application is *not a black box* for the user \to
+  he knows how it works and thus still have a important role in the
+  tuning process.
 
 * Design and prototype of a new approach
 *** Code                                                         :noexport:
@@ -422,8 +402,9 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 - Based on:
   - Design of experiments \to question the search at a minimal
     experimental cost
-  - Regression techniques \to interpreting information to make appear
-    the structure of the search space
+  - Linear regression (least square and quantile regression)  \to to
+    interpret information to make appear the structure of the search
+    space and to predict the best combinations of parameters
 *** Semi-automatic performance tuning
 1. *Sampling* the search space according to the user's needs
 2. Apply linear regression:
@@ -432,8 +413,8 @@ Generally limited to one target language \to no C to OpenCL / CUDA
    - To refine the model by *checking hypothesis*
    - Keep the model *as simple as possible*
    - If not satisfied \to additional points needed \to back to 1
-3. Instantiate the model to predict best values for fixed significant
-   parameters
+3. Instantiate the model to predict best values of significant
+   parameters only
 4. Prune the search space \to by fixing these parameters
 5. Re-inject unused parameters
 6. Back to 1 until all parameters are estimated
@@ -447,27 +428,35 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 # #+END_LaTeX
 * Methodology
 *** Reproducible research
-- Github repository \to publicly available on github
+- Publicly available on Github!
 - Laboratory book:
-  - Literate programming, emacs org-mode and  R
   - Code, experiments, and detailed analysis
-  - *33K lines* including 17K lines which are code analysis
+  - Literate programming, emacs org-mode, Ruby and R
+  - *33K lines* including 17K lines which are code and analysis
 - Every experiments are logged and also available
+*** BOAST
+  - A ruby meta-programming framework
+  - C, Fortran, CUDA, OpenCL
+  - Complete tool chain: 
+    - Code generation
+    - Verification 
+    - Compilation 
+    - Benchmark
 *** Case study: A Laplacian kernel
-- Using BOAST
+- Time to compute a pixel
 - Kernel parameters:
      | Parameters         | Values                            |
      |--------------------+-----------------------------------|
      | /                  | <                                 |
-     | vector_length      | 1,2,4,8,16                        |
-     | load_overlap       | true,false                        |
-     | temporary_size     | 2,4                               |
-     | elements_number    | from 1 to 24                      |
-     | y_component_number | from 1 to 6                       |
-     | threads_number     | 32,64,128,256,512,1024            |
-     | local_work_size_y  | 1,2,4,8,16,32,64,128,256,512,1024 |
+     | /vector_length/      | 1,2,4,8,16                        |
+     | /load_overlap/       | true,false                        |
+     | /temporary_size/     | 2,4                               |
+     | /elements_number/    | from 1 to 24                      |
+     | /y_component_number/ | from 1 to 6                       |
+     | /threads_number/     | 32,64,128,256,512,1024            |
+     | /local_work_size_y/  | 1,2,4,8,16,32,64,128,256,512,1024 |
 
-- 190080 variants \to 23120 due to constraints
+- 190080 variants \to 23120 due to constraints \approx 6.7 days
 - Using OpenCL on a GPU Nvidia K40c 
 * Experiment and analysis
 *** Code                                                         :noexport:
@@ -661,6 +650,14 @@ But does not respect classic least square regression assumptions:
   #+BEGIN_LaTeX
   \tiny
   #+END_LaTeX
+
+  | elements | y component | vector | temporary | load    | threads | lws y | slowdown |
+  | number   | number      | length | size      | overlap | number  |       |          |
+  | <c>      | <c>         | <c>    | <c>       | <c>     | <c>     | <c>   | <c>      |
+  |----------+-------------+--------+-----------+---------+---------+-------+----------|
+  | /        | <>          | <>     | <>        | <>      | <>      | <>    | <        |
+  | 6        | 6           | 1      | 2         | true    | 256     | 1     | 1.012177 |
+
     |               |      Coef | Std. err. | p-values |
     |---------------+-----------+-----------+----------|
     | /             |        <> |        <> |        < |
@@ -685,11 +682,18 @@ But does not respect classic least square regression assumptions:
   #+BEGIN_LaTeX
   \tiny
   #+END_LaTeX
-    |               |       Coef | Std. err. | p-values |
-    |---------------+------------+-----------+----------|
-    | /             |         <> |        <> |        < |
-    | vector_length | -2.316e-11 | 5.953e-11 |  0.69904 |
-    | lws y         |  5.572e-12 | 1.625e-12 |  0.00127 |
+  | elements | y component | vector | temporary | load    | threads | lws y | slowdown |
+  | number   | number      | length | size      | overlap | number  |       |          |
+  | <c>      | <c>         | <c>    | <c>       | <c>     | <c>     | <c>   | <c>      |
+  |----------+-------------+--------+-----------+---------+---------+-------+----------|
+  | /        | <>          | <>     | <>        | <>      | <>      | <>    | <        |
+  | 24       | 6           | 16     | 2         | false   | 64      | 1     | 3.771183 |
+
+  |               |       Coef | Std. err. | p-values |
+  |---------------+------------+-----------+----------|
+  | /             |         <> |        <> |        < |
+  | vector_length | -2.316e-11 | 5.953e-11 |  0.69904 |
+  | lws y         |  5.572e-12 | 1.625e-12 |  0.00127 |
 
   #+BEGIN_LaTeX
   \normalsize
@@ -713,10 +717,10 @@ But does not respect classic least square regression assumptions:
 #+END_LaTeX
 * Conclusion
 *** Summary
-- We design a new approach that put the user in the center of the
+- We design a new approach that put the user in the core of the
   optimization process
 - Comparison against techniques commonly used in the auto-tuning
-  literate
+  literature
 - In depth study of the results:
   - Reasons why it works
   - Why quantile regression makes more sense than least square
