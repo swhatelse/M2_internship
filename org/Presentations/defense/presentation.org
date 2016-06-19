@@ -78,14 +78,14 @@
 ****                                                            :noexport:
 - Scientific applications \to computation power hungry 
 - HPC platforms \to complicated and unique machines
+- The application developer has to specify how to take into account
+  the following characteristics:
   - Many cores \to parallelizing efficiently is difficult
-  - Different cache hierarchy \to data locality \to memory access patterns
-  - Pipelining / Instruction Level Parallelism \to order of the
-    instructions
-    - Can be seen as an assembly line
-    - Instruction divide into step \to multiple instruction at the
-      different stage of the assembly line.
-  - Vector support \to using vectors \to adapting the code
+  - Different cache hierarchy \to achieving good data locality \to using
+    good memory access patterns
+  - Pipeline / Instruction Level Parallelism \to maximize occupancy \to
+    order of the instructions
+  - Vector support \to saving decoding phase
   - GPUs \to a different way of programming than CPUs
     - Different cache size and organization
     - Mapping computation suited to graphic pipeline.
@@ -217,7 +217,7 @@
   - Specialized code \to target machine \to hinder portability
 #+LaTeX: \end{block}\end{overlayarea}
 
-*** Code generation and opportunities
+*** Code generation
 Tools exist to automatically generate optimized code:
 **** Compilers
 ***** 
@@ -425,12 +425,26 @@ Generally limited to one target language \to no C to OpenCL / CUDA
   - Regression techniques \to interpreting information to make appear
     the structure of the search space
 *** Semi-automatic performance tuning
-#+BEGIN_LaTeX
-\begin{figure}[tbh]
-\centering
-\includegraphics[width=.8\linewidth]{../../Report/Project-report-template/img/process.pdf}
-\end{figure}
-#+END_LaTeX
+1. *Sampling* the search space according to the user's needs
+2. Apply linear regression:
+   - To find relevant parameters and *remove useless ones* with using
+      a simple model
+   - To refine the model by *checking hypothesis*
+   - Keep the model *as simple as possible*
+   - If not satisfied \to additional points needed \to back to 1
+3. Instantiate the model to predict best values for fixed significant
+   parameters
+4. Prune the search space \to by fixing these parameters
+5. Re-inject unused parameters
+6. Back to 1 until all parameters are estimated
+
+
+# #+BEGIN_LaTeX
+# \begin{figure}[tbh]
+# \centering
+# \includegraphics[width=.8\linewidth]{../../Report/Project-report-template/img/process.pdf}
+# \end{figure}
+# #+END_LaTeX
 * Methodology
 *** Reproducible research
 - Github repository \to publicly available on github
