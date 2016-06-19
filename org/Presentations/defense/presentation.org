@@ -420,8 +420,10 @@ Generally limited to one target language \to no C to OpenCL / CUDA
   - give him valuable feedback
   - guide him and allow him to guide the tuning process
 - Based on:
-  - Design of experiments \to question the search
-  - Regression techniques \to interpreting information
+  - Design of experiments \to question the search at a minimal
+    experimental cost
+  - Regression techniques \to interpreting information to make appear
+    the structure of the search space
 *** Semi-automatic performance tuning
 #+BEGIN_LaTeX
 \begin{figure}[tbh]
@@ -501,9 +503,9 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 
  
 *** Protocol
-- Measures: 1000
-- Maximal budget: 120
 - Methods: RS, LHS, GS, GSR, GA, LM and RQ
+- Maximal budget: 120
+- 1000 runs
 - Automatization of LM and RQ \to using same strategy each time
 *** Results
 #+BEGIN_LaTeX
@@ -546,7 +548,7 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 :END:
 #+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-6.0cm}\begin{block}{}
 - Lots a of good combinations parameters
-- 312 random points = 90% of chance to get a slowdown lower than 10%.
+- 312 random points = 90% of chance to get a slowdown lower than 1.1
 #+LaTeX: \end{block}\end{overlayarea}
 *** Characteristics of the search space: Top-20 of the best combinations
 #+BEGIN_LaTeX
@@ -565,7 +567,7 @@ Generally limited to one target language \to no C to OpenCL / CUDA
   | 6        | 6           | 1      | 2         | false   | 128     | 4     | 1.010568 |
   | 6        | 6           | 1      | 2         | true    | 1024    | 4     | 1.011509 |
   | 5        | 5           | 1      | 2         | false   | 512     | 4     | 1.011710 |
-  | 6        | 6           | 1      | 2         | true    | 256     | 1     | 1.012177 |
+  | *6*        | *6*           | *1*      | *2*         | *true*    | *256*     | *1*     | *1.012177* |
   | 6        | 6           | 1      | 2         | false   | 128     | 2     | 1.012663 |
   | 6        | 6           | 1      | 2         | true    | 128     | 2     | 1.013555 |
   | 6        | 6           | 1      | 2         | true    | 256     | 2     | 1.013578 |
@@ -585,7 +587,7 @@ Generally limited to one target language \to no C to OpenCL / CUDA
 :BEAMER_env: onlyenv
 :BEAMER_act: <2>
 :END:
-#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-6.0cm}\begin{block}{}
+#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-3.0cm}\begin{block}{}
 - Localized but still several local optimum!
 - Failed to get better /lws_y/ because of the model \to /vector_length/ +
   /lws_y/
@@ -709,7 +711,7 @@ But does not respect classic least square regression assumptions:
 - Try more complex cases
 - Compute correctly standard error, p-values and coefficient of
   determinations for quantile regression
-- Dig sampling strategy to reduce even more the number of points.
+- Dig into sampling strategies to reduce even more the number of points.
 *** This is the end
 Thanks for your attention.
 
