@@ -380,7 +380,7 @@ Tools exist to help the developer:
 **** 
 :PROPERTIES:
 :BEAMER_env: block
-:BEAMER_act: <5>
+:BEAMER_act: <4>
 :END:
 - These methods are commonly used in auto-tuning
 - But automatic approach \to black box \to *user excluded*
@@ -580,6 +580,64 @@ Tools exist to help the developer:
 - Lots a of good combinations parameters
 - 312 random points = 90% of chance to get a slowdown lower than 1.1
 #+LaTeX: \end{block}\end{overlayarea}
+*** Characteristics of the search space: Structured              :noexport:
+# That is why our approach worked
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/heteroscedasticity_v_len.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/heteroscedasticity_x_comp.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX   
+*** Least square regression: Estimation of  general tendency     :noexport:
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lm_v_len.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lm_x_comp.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX
+**** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <2>
+:END:
+#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-5.0cm}\begin{block}{}
+But does not respect classic least square regression main assumption:
+- Same variance
+#+LaTeX: \end{block}\end{overlayarea}
+*** Least square regression vs quantile regression
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/why_we_choose_quantile_reg_v_len.pdf}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/why_we_choose_quantile_reg_x_comp.pdf}
+\end{minipage}
+\end{figure}
+#+END_LaTeX
+**** 
+# :PROPERTIES:
+# :BEAMER_env: onlyenv
+# :BEAMER_act: <2>
+# :END:
+# #+LaTeX: %\begin{overlayarea}{\linewidth}{0cm}\vspace{-5.0cm}\begin{block}{}
+But does not respect classic least square regression main assumption:
+- Same variance
+# #+LaTeX: §\end{block}\end{overlayarea}
 *** Characteristics of the search space: Top-20 of the best combinations
 #+BEGIN_LaTeX
 \tiny
@@ -613,65 +671,16 @@ Tools exist to help the developer:
 \normalsize
 #+END_LaTeX
 **** 
-:PROPERTIES:
-:BEAMER_env: onlyenv
-:BEAMER_act: <2>
-:END:
-#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-3.0cm}\begin{block}{}
+# :PROPERTIES:
+# :BEAMER_env: onlyenv
+# :BEAMER_act: <2>
+# :END:
+# #+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-3.0cm}\begin{block}{}
 - Localized but still several local optimum!
 - Failed to get better /lws_y/ because of the model \to /vector_length/ +
   /lws_y/
-#+LaTeX: \end{block}\end{overlayarea}
-*** Characteristics of the search space: Structured
-# That is why our approach worked
-#+BEGIN_LaTeX
-\begin{figure}[htb]
-\centering
-\begin{minipage}{.45\linewidth}
-\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/heteroscedasticity_v_len.pdf}
-\end{minipage}
-\hfill
-\begin{minipage}{.45\linewidth}
-\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/heteroscedasticity_x_comp.pdf}
-\end{minipage}
-\end{figure}
-#+END_LaTeX   
-*** Least square regression: Estimation of  general tendency
-#+BEGIN_LaTeX
-\begin{figure}[htb]
-\centering
-\begin{minipage}{.45\linewidth}
-\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lm_v_len.pdf}
-\end{minipage}
-\hfill
-\begin{minipage}{.45\linewidth}
-\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lm_x_comp.pdf}
-\end{minipage}
-\end{figure}
-#+END_LaTeX
-**** 
-:PROPERTIES:
-:BEAMER_env: onlyenv
-:BEAMER_act: <2>
-:END:
-#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-5.0cm}\begin{block}{}
-But does not respect classic least square regression main assumption:
-- Same variance
-#+LaTeX: \end{block}\end{overlayarea}
+# #+LaTeX: \end{block}\end{overlayarea}
 
-*** Least square regression vs quantile regression
-#+BEGIN_LaTeX
-\begin{figure}[htb]
-\centering
-\begin{minipage}{.45\linewidth}
-\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/why_we_choose_quantile_reg_v_len.pdf}
-\end{minipage}
-\hfill
-\begin{minipage}{.45\linewidth}
-\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/why_we_choose_quantile_reg_x_comp.pdf}
-\end{minipage}
-\end{figure}
-#+END_LaTeX
 *** LM: Success and "failures" - $R^{2}$, std. err. and p-values
 **** Best solution
 #+BEGIN_LaTeX
@@ -812,6 +821,57 @@ Thanks for your attention.
 *** Sampling techniques: LHS
 ** Quantile regression
 *** Quantile regression
+* Code generation and optimization opportunities
+*** Code generation and optimization opportunities
+Tools exist to help the developer:
+  - Write relevant optimization \to generic code
+  - Using parameters generate specialized variant 
+**** Compilers
+***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <2>
+:END:
+- Transformation :
+  - To make better use of the pipeline
+  - To paralellize or vectorize 
+- Limited by
+  - Semantic rules
+  - Lack of information at compile time, no global vision of the code
+  - Choice of the transformation \to does not look for the best one but
+    the one which respect the semantic
+  - Still need to be programmed with care
+
+**** Source-to-source transformation frameworks
+***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <3>
+:END:
+- Performs transformation instead of the compiler 
+- Allows to specify which of transformation wanted \to e.g.,
+  loop-unroll degree
+- Ensures its validity 
+- Yields a code that the compiler can easily work with \to less burden for
+  the developer
+- But generally limited:
+  - To one target language \to no C to OpenCL / CUDA
+  - Still limited by some semantic rules
+
+**** Meta-programming frameworks
+***** 
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <4>
+:END:
+- Describe computation and optimization using high level languages
+- Multiple language targets (e.g., python, ruby)
+- Developer has even more control on the transformation \to try
+  optimization that no compiler would be able to do.
+- But:
+  - Can be error prone
+  - Need to re-write part of the application
+
 * LM: Improving worst case
 * Controlling measurements: Warm-up effect
 *** Controlling measurements: Warm-up effect
