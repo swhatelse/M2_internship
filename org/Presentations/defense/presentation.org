@@ -62,6 +62,7 @@
 # #+LATEX_HEADER: \usepackage{cite}
 
 #+LATEX_HEADER:   \institute{POLARIS and CORSE teams/LIG\\Under the supervision of A. LEGRAND, B. VIDEAU and F.DESPREZ}
+#+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
 
 #+BEGIN_LaTeX
 \newcommand{\backupbegin}{
@@ -78,7 +79,25 @@
 #+END_LaTeX
 
 * General presentation
-*** Why is performances optimization complicated?
+*** Facing in increasing complexity of HPC platforms
+- Scientific applications require more and more computational power \to
+  Lead to make bigger and bigger High Performance Computing
+  plate-forms \to more complex. 
+- Taking advantage of the power of such machines is crucial but very
+  complicated 
+- And porting even more \to developers cannot afford to spend month in
+  porting his application on a new plate-forms
+*** Optimization of scientific applications
+- Computation intensive \to focus on kernel optimization
+- Doing it by hand \to neither scalable nor portable
+- Compiler not enough
+- Need code generation tools that allows the developer to write
+  portable code by only describing the optimization and generate
+  specialized code variants to match the underlying architecture
+- Auto-tuning approach \to find which variant is the best for a given
+  platform. 
+
+*** Why is performances optimization complicated?                :noexport:
 **** Structure                                                  :noexport:
 - Scientific applications \to computation power hungry 
 - HPC platforms \to complicated and unique machines
@@ -243,7 +262,7 @@ nightmare.
 \end{figure}
 #+END_LaTeX
   
-*** Code generation
+*** Code generation                                              :noexport:
 Tools exist to help the developer:
   - Write relevant optimization \to generic code
   - Using parameters generate specialized variant 
@@ -294,10 +313,6 @@ Tools exist to help the developer:
   - Need to re-write part of the application
 
 *** Problem analysis: Performance tuning
-- These tools allow the developer to make *generic code* \to *tuning* is
-  *necessary* to match the characteristics of the target platform
-  (e.g., which size of vectors, how many threads)
-- Easy to generate *many variants* of the same code \to How to find the best one?
 - *Huge search space* (e.g GCC \approx 500 compilations flags \to $2^{500}$ combinations) \to +exhaustive search+
 - Auto-tuning considers this as a *mathematical optimization* problem:
   #+BEGIN_LaTeX
