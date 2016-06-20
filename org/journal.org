@@ -33313,3 +33313,70 @@ h[g.name.to_sym] = 1024
 ** 2016-06-17
    Gdr-im@gdr-im.fr
    hpc-announce-owner@mcs.anl.gov
+** 2016-06-20
+*** Christian feedback
+**** p3
+    - Thanks on the introduction
+    - First slide overview not necessary
+    - Machine cost a lost and even 1% of improvment is great
+    - GPU \to programming paradigm
+      - CUDA low level C programming
+    - Performance is based on hw and sw stack.
+**** p4
+     - presents \to yields code that the compiler can optimizer easier
+     - high level language e.g. ruby python.
+       At the end of this slide remind the goal.
+**** p5
+     - D \to search space
+     - These tools allow _the dev_....
+     - e.g.,
+     - exhaustive not efficient
+**** p6
+     - f function
+     - be brief
+     - link not clear between the last image and the other
+**** p7 
+     - To cope with combinatory explosion
+     - explain what we see on the plot
+     - parameters
+     - does not make sense
+     - relation with previous slide \to x vector
+     - link between images
+**** p8
+     - Transition \to summary of previous section
+**** p9
+     - evolve user into optimization
+     - question \to investigate \to obtain faithfull sample
+     - LR used to interpret the information and to discover the
+       structure of the of the sp.
+**** p12
+     - we believe in reproducible and open re-search.
+     - All experiments are logged
+**** p14
+     - Too much time to explain the parameters \to no need
+       - Just take the 2 first as example
+       - Insist in combinatorial explosion
+       - Explain why design of xp is usefull
+       - Explain the stuff about constraint
+**** p15
+     - Transition refere to section 2
+**** p17
+     - explain what we see
+     - Explain the objectif \to get the optimal most of the time
+**** p18
+     - bigger font
+     - explain what it is
+**** p19
+     - Don't see correctly the red
+     - Size of the font
+**** p22
+     - Specify that it is the all search space
+**** p23 
+     - information on the slide
+     - what R2 means \to coef of determination
+     - explain more lucky case, why is it lucky
+**** p26 
+     - we designed a new approach that put focus of the optimization
+       process on the user
+**** p27
+     - would like to work on phd on this topic \to depends on this topic
