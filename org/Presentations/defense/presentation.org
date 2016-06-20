@@ -73,6 +73,10 @@
 }
 #+END_LaTeX
 
+#+BEGIN_LaTeX
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+#+END_LaTeX
+
 * General presentation
 *** Why is performances optimization complicated?
 **** Structure                                                  :noexport:
@@ -293,8 +297,8 @@ Tools exist to help the developer:
 - This tools allow to make *generic code* \to *tuning* is
   *necessary* to match the characteristics of the target platform
   (e.g. which size of vectors, how many threads)
-- Easy to generate *Many variants* of the same code \to How to find the best one?
-- *Huge search space* \to +exhaustive search+
+- Easy to generate *many variants* of the same code \to How to find the best one?
+- *Huge search space* (e.g GCC \approx 500 compilations flags \to $2^{500}$ combinations) \to +exhaustive search+
 - Auto-tuning considers this as a *mathematical optimization* problem:
   #+BEGIN_LaTeX
   \[ \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \]
@@ -379,7 +383,7 @@ Tools exist to help the developer:
 :BEAMER_act: <5>
 :END:
 - These methods are commonly used in auto-tuning
-- But it is automatic approach \to black box \to *user exclude*
+- But automatic approach \to black box \to *user excluded*
 - No sense because the application is *not a black box* for the user \to
   he knows how it works and thus still have a important role in the
   tuning process.
@@ -417,7 +421,7 @@ Tools exist to help the developer:
 
 #+RESULTS:
 [[file:./img/combinations_sorted.pdf]]
-*** Principle
+*** Our goal
 - Re-inject user in the optimization loop
   - give him valuable feedback
   - guide him and allow him to guide the tuning process
@@ -682,7 +686,7 @@ But does not respect classic least square regression main assumption:
   | 6        | 6           | 1      | 2         | true    | 256     | 1     | 1.012177 |
 
   #+BEGIN_LaTeX
-  \normalsize
+  \scriptsize
   #+END_LaTeX
 - Favorable case: $R^{2}$ = 0.5431
   #+BEGIN_LaTeX
@@ -695,7 +699,7 @@ But does not respect classic least square regression main assumption:
     | vector length | 8.794e-11 | 3.025e-11 | 0.00555 $**$   |
     | lws y         | 1.987e-11 | 2.882e-12 | 1.18e-08 $***$ |
   #+BEGIN_LaTeX
-  \normalsize
+  \scriptsize
   #+END_LaTeX
 - Lucky case: $R^{2}$ = 0.1665
   #+BEGIN_LaTeX
@@ -736,14 +740,17 @@ But does not respect classic least square regression main assumption:
 \centering
 \begin{minipage}{.30\linewidth}
 \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/good_prediction.pdf}
+\caption{Favorable}
 \end{minipage}
 \hfil
 \begin{minipage}{.30\linewidth}
 \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lucky_prediction.pdf}
+\caption{Lucky}
 \end{minipage}
 \hfil
 \begin{minipage}{.30\linewidth}
 \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/bad_prediction.pdf}
+\caption{Worst}
 \end{minipage}
 \end{figure}
 #+END_LaTeX
