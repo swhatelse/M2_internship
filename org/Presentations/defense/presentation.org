@@ -268,12 +268,12 @@ Tools exist to help the developer:
 - Performs transformation instead of the compiler 
 - Allows to specify which of transformation wanted \to e.g.,
   loop-unroll degree
+- Ensures its validity 
 - Presents a code that the compiler can easily work with \to less burden for
   the developer
-- Ensures its validity 
 - But generally limited:
-   - To one target language \to no C to OpenCL / CUDA
-   - Still limited by some semantic rules
+  - To one target language \to no C to OpenCL / CUDA
+  - Still limited by some semantic rules
 
 **** Meta-programming frameworks
 ***** 
@@ -281,8 +281,7 @@ Tools exist to help the developer:
 :BEAMER_env: onlyenv
 :BEAMER_act: <4>
 :END:
-- Higher level approach \to describe computation and optimization using
-  high level languages
+- Describe computation and optimization using high level languages
 - Multiple language targets
 - Developer has even more control on the transformation \to try
   optimization that no compiler would be able to do.
@@ -291,16 +290,16 @@ Tools exist to help the developer:
   - Need to re-write part of the application
 
 *** Problem analysis: Performance tuning
-- This tools allow to make *generic optimization* but *tuning* is
+- This tools allow to make *generic code* \to *tuning* is
   *necessary* to match the characteristics of the target platform
   (e.g. which size of vectors, how many threads)
-- *Many variants* of the same code \to How to find the best one?
+- Easy to generate *Many variants* of the same code \to How to find the best one?
 - *Huge search space* \to +exhaustive search+
 - Auto-tuning considers this as a *mathematical optimization* problem:
   #+BEGIN_LaTeX
   \[ \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \]
   #+END_LaTeX
-*** Objective function
+*** Problem analysis: Objective function
    #+BEGIN_LaTeX
    \begin{figure}[!htb]
    \centering
@@ -531,7 +530,7 @@ Tools exist to help the developer:
 *** Protocol
 - Methods: RS, LHS, GS, GSR, GA, LM and RQ
 - Maximal budget: 120
-- GA \to population size = 20
+- GA \to population size = 20, mutation rate = 0.1
 - 1000 runs
 - Automatization of LM and RQ \to using same strategy each time
 *** Results
@@ -756,7 +755,7 @@ But does not respect classic least square regression main assumption:
 - Dig into sampling strategies to reduce even more the number of points.
 *** This is the end
 Thanks for your attention.
-
+* 
 #+BEGIN_LaTeX
 \appendix
 #+END_LaTeX
