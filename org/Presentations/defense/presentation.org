@@ -613,7 +613,7 @@ Tools exist to automatically generate optimized code:
 \end{minipage}
 \end{figure}
 #+END_LaTeX   
-*** Least square regression vs quantile regression
+*** Least square regression: Estimation of  general tendency
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -632,7 +632,7 @@ Tools exist to automatically generate optimized code:
 :BEAMER_act: <2>
 :END:
 #+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-5.0cm}\begin{block}{}
-But does not respect classic least square regression assumptions:
+But does not respect classic least square regression main assumption:
 - Same variance
 #+LaTeX: \end{block}\end{overlayarea}
 
