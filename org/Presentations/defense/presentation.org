@@ -166,6 +166,24 @@ nightmare.
 \includegraphics[width=.9\linewidth]{./img/HPC_v2_4.pdf}
 \end{figure}
 #+END_LaTeX
+
+****  
+:PROPERTIES:
+:BEAMER_env: onlyenv
+:BEAMER_act: <7>
+:END:
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.9\linewidth]{./img/HPC_v2_4.pdf}
+\end{figure}
+#+END_LaTeX
+
+#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-7.0cm}\begin{block}{}
+  - Complicated and time consuming task
+  - Specialized code \to porting is even more difficult
+#+LaTeX: \end{block}\end{overlayarea}
+
 ****                                                            :noexport:
 
 *****  
@@ -222,7 +240,9 @@ nightmare.
 #+END_LaTeX
   
 *** Code generation
-Tools exist to automatically generate optimized code:
+Tools exist to help the developer:
+  - Write relevant optimization \to generic code
+  - Using parameters generate specialized variant 
 **** Compilers
 ***** 
 :PROPERTIES:
