@@ -565,6 +565,52 @@ Tools exist to help the developer:
 #+RESULTS:
 [[file:./img/results_hist.pdf]]
 
+**** Distribution combination
+#+begin_src sh :results output :exports none
+     ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
+   #+end_src
+
+   #+RESULTS:
+
+**** Repartition of combination
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.pdf :exports results :width 4 :height 6 :session
+     library(ggplot2)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+     slowdown <-  df$time_per_pixel / min(df$time_per_pixel)
+     df$slowdown <- slowdown
+
+     ggplot(data=df) +
+         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme_bw() +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
+         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+         labs(y="Frequency", x="Slowdown")
+
+   #+end_src
+
+   #+RESULTS:
+   [[file:./img/search_combination_rep_slowdown.pdf]]
+
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown_zoom.pdf :exports both :width 4 :height 6 :session
+     ggplot(data=df) +
+         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme_bw() +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(aes(xintercept = median(slowdown), color="median"), linetype=2) +
+         geom_vline(aes(xintercept = quantile(slowdown, prob=c(0.25)), colour="1st quartile"), linetype=2) +
+         geom_vline(aes(xintercept = quantile(slowdown, prob=c(0.75)), colour="3rd quartile"), linetype=2) +
+         geom_vline(aes(xintercept = mean(slowdown), colour="mean"), linetype=2) +
+         coord_cartesian(xlim=c(.9,17)) +
+         labs(y="Frequency", x="Slowdown")
+   #+end_src
+
+   #+RESULTS:
+   [[file:./img/search_combination_rep_slowdown_zoom.pdf]]
+
  
 *** Protocol
 - Methods: RS, LHS, GS, GSR, GA and semi-automatic performance
@@ -586,6 +632,7 @@ Tools exist to help the developer:
 #+END_LaTeX
 
 *** Distribution of Combinations of the Whole
+
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -734,12 +781,12 @@ Quantile regression:
   \begin{itemize}
   \item  element\_number : 6
   \item y\_component\_number : 6
-  \item vector\_length : 1
+  \item \underline{vector\_length : 1}
   \item temporary\_size : 2
     
   \item load\_overlap : true
   \item thread\_number : 256
-  \item lws\_y : 1
+  \item \underline{lws\_y : 1}
   \item slowdown : 1.012177
   \end{enumerate}
   \end{multicols}
@@ -788,12 +835,12 @@ Quantile regression:
   \begin{itemize}
   \item  element\_number : 24
   \item y\_component\_number : 6
-  \item vector\_length : 16
+  \item \underline{vector\_length : 16}
   \item temporary\_size : 2
     
   \item load\_overlap : false
   \item thread\_number : 64
-  \item lws\_y : 1
+  \item \underline{lws\_y : 1}
   \item slowdown : 3.771183
   \end{enumerate}
   \end{multicols}
@@ -995,7 +1042,7 @@ Tools exist to help the developer:
 \includegraphics[width=\linewidth]{./img/combinations_sorted.pdf}
 \end{figure}
 #+END_LaTeX
-* Improving worst case
+* Improving worst case                                             :noexport:
     #+begin_src sh :results output :exports none
       ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
     #+end_src
@@ -1051,6 +1098,34 @@ Tools exist to help the developer:
      3rd Qu.:1.609e-09  
      Max.   :1.079e-08
 #+end_example
+
+#+begin_src R :results output :session :exports both
+  objective_predict <- function(fit,x){
+       names <- colnames(x)
+       s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
+       eval(parse(text=s))
+       as.numeric(predict(fit, values, interval="none"))
+   }
+
+   objective_predict_one <- function(fit,x,colname){
+       s <- paste("values <-data.frame(", paste(paste(colname,"=x",sep=""),collapse=","), ")")
+       eval(parse(text=s))
+       as.numeric(predict(fit, values, interval="none"))
+   }
+
+   find_best <- function(model,subset,full_set,colnames){
+       fit <- lm(data=subset,formula=formula(model))
+       if( length(colnames) > 1) {
+           return(full_set[objective_predict(fit,full_set[,colnames]) == min(objective_predict(fit,full_set[,colnames])), colnames][1,])
+       }
+       else{
+           return(full_set[objective_predict_one(fit, full_set[,colnames], colnames) == min(objective_predict_one(fit, full_set[,colnames], colnames)), colnames][1])
+       }
+   }
+
+     #+end_src
+
+#+RESULTS:
 
 **    Step1
 #+begin_src R :results output :session :exports both
@@ -1108,6 +1183,7 @@ Multiple R-squared:  0.2055,	Adjusted R-squared:  0.189
 F-statistic: 12.42 on 1 and 48 DF,  p-value: 0.0009458
 #+end_example
 
+Bad fitting indeed
 #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
   library(ggplot2)
   ggplot() +
@@ -1115,11 +1191,144 @@ F-statistic: 12.42 on 1 and 48 DF,  p-value: 0.0009458
       geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
       geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
       labs(y="Real", x="Predicted") +
-      coord_cartesian(xlim=c(0,2e-8), ylim=c(0,2e-8))
+      coord_cartesian(xlim=c(0,1e-8), ylim=c(0,1e-8))
 #+end_src
 
 #+RESULTS:
-[[file:/tmp/babel-3609ONO/figure3609DDF.png]]
+[[file:/tmp/babel-3609ONO/figure3609hpV.png]]
+
+Asking more points
+#+begin_src R :results output :session :exports both
+set.seed(1)
+working_set_bis <- rbind(working_set, df[sample(1:nrow(df), size = 20, replace = FALSE),])
+
+fit <- lm(time_per_pixel ~ elements_number + threads_number + y_component_number + lws_y + vector_length + load_overlap + temporary_size, working_set_bis)
+summary(fit)
+fit <- lm(time_per_pixel ~ (lws_y + threads_number + elements_number)^2, working_set_bis)
+summary(fit)
+fit <- lm(time_per_pixel ~ lws_y + threads_number + elements_number, working_set_bis)
+summary(fit)
+# fit <- lm(time_per_pixel ~ lws_y , working_set_bis)
+# summary(fit)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = time_per_pixel ~ elements_number + threads_number + 
+    y_component_number + lws_y + vector_length + load_overlap + 
+    temporary_size, data = working_set_bis)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-3.544e-09 -1.279e-09 -5.907e-10  3.776e-10  8.050e-09 
+
+Coefficients:
+                     Estimate Std. Error t value Pr(>|t|)    
+(Intercept)         4.228e-09  1.110e-09   3.808 0.000324 ***
+elements_number    -1.186e-10  7.130e-11  -1.663 0.101357    
+threads_number     -2.198e-12  9.310e-13  -2.361 0.021363 *  
+y_component_number -1.686e-10  2.655e-10  -0.635 0.527717    
+lws_y               8.235e-12  1.713e-12   4.807 1.01e-05 ***
+vector_length       1.332e-11  4.974e-11   0.268 0.789796    
+load_overlaptrue    3.033e-10  5.617e-10   0.540 0.591119    
+temporary_size     -3.589e-10  2.804e-10  -1.280 0.205318    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.247e-09 on 62 degrees of freedom
+Multiple R-squared:  0.3406,	Adjusted R-squared:  0.2661 
+F-statistic: 4.575 on 7 and 62 DF,  p-value: 0.0003605
+
+Call:
+lm(formula = time_per_pixel ~ (lws_y + threads_number + elements_number)^2, 
+    data = working_set_bis)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-3.950e-09 -7.345e-10 -2.796e-10  4.369e-10  6.194e-09 
+
+Coefficients:
+                                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                     1.847e-09  4.957e-10   3.725 0.000419 ***
+lws_y                           6.286e-11  7.681e-12   8.184 1.70e-11 ***
+threads_number                 -2.636e-12  1.411e-12  -1.868 0.066440 .  
+elements_number                -9.703e-11  4.709e-11  -2.061 0.043456 *  
+lws_y:threads_number           -3.963e-14  5.755e-15  -6.886 3.16e-09 ***
+lws_y:elements_number          -1.709e-12  3.628e-13  -4.711 1.40e-05 ***
+threads_number:elements_number  1.243e-13  1.553e-13   0.801 0.426387    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1.666e-09 on 63 degrees of freedom
+Multiple R-squared:  0.6315,	Adjusted R-squared:  0.5964 
+F-statistic: 17.99 on 6 and 63 DF,  p-value: 4.965e-12
+
+Call:
+lm(formula = time_per_pixel ~ lws_y + threads_number + elements_number, 
+    data = working_set_bis)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-3.716e-09 -1.229e-09 -4.964e-10  5.473e-10  8.019e-09 
+
+Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)      3.177e-09  5.348e-10   5.940 1.17e-07 ***
+lws_y            8.315e-12  1.676e-12   4.961 5.19e-06 ***
+threads_number  -2.296e-12  9.011e-13  -2.549  0.01315 *  
+elements_number -1.479e-10  4.824e-11  -3.065  0.00315 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.212e-09 on 66 degrees of freedom
+Multiple R-squared:  0.3193,	Adjusted R-squared:  0.2883 
+F-statistic: 10.32 on 3 and 66 DF,  p-value: 1.174e-05
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+plot(working_set_bis)
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3609ONO/figure3609IWQ.png]]
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
+library(ggplot2)
+  ggplot() +
+      theme_bw() +
+      geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
+      geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
+      labs(y="Real", x="Predicted") +
+      coord_cartesian(xlim=c(0,2e-8), ylim=c(0,2e-8))
+#+end_src
+#+RESULTS:
+[[file:/tmp/babel-3609ONO/figure3609ixQ.png]]
+
+#+begin_src R :results output :session :exports both
+best1 <- find_best(fit, working_set, df, c("threads_number", "elements_number", "lws_y")) 
+best1
+#+end_src
+
+#+RESULTS:
+:      threads_number elements_number lws_y
+: 7880           1024              24     1
+
+Pruning
+#+begin_src R :results output :session :exports both
+full1 <- df[df$elements_number==best1$elements_number & df$threads_number==best1$threads_number & df$lws_y==best1$lws_y ,] 
+subset1 <- working_set_bis[working_set_bis$elements_number==best1$elements_number & working_set_bis$threads_number==best1$threads_number & working_set_bis$lws_y==best1$lws_y ,] 
+min(full1$time_per_pixel) / min(df$time_per_pixel)
+nrow(subset1)
+nrow(full1)
+#+end_src
+
+#+RESULTS:
+: [1] 1.639966
+: [1] 0
+: [1] 13
+
 
 * Emacs Setup 							   :noexport:
   This document has local variables in its postembule, which should

@@ -2019,7 +2019,7 @@ than previously proposed one.
          geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
          geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
          geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
-         labs(y="Density", x="Slowdown")
+         labs(y="Frequency", x="Slowdown")
 
    #+end_src
 
@@ -2031,11 +2031,12 @@ than previously proposed one.
          geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
          theme_bw() +
          theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
-         geom_vline(xintercept = quantile(slowdown, prob=c(0.25,0.75)), color="blue", linetype=2) +
-         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+         geom_vline(aes(xintercept = median(slowdown), color="median"), linetype=2) +
+         geom_vline(aes(xintercept = quantile(slowdown, prob=c(0.25)), colour="1st quartile"), linetype=2) +
+         geom_vline(aes(xintercept = quantile(slowdown, prob=c(0.75)), colour="3rd quartile"), linetype=2) +
+         geom_vline(aes(xintercept = mean(slowdown), colour="mean"), linetype=2) +
          coord_cartesian(xlim=c(.9,17)) +
-         labs(y="Density", x="Slowdown")
+         labs(y="Frequency", x="Slowdown")
    #+end_src
 
    #+RESULTS:
