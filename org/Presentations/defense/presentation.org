@@ -78,7 +78,7 @@
 \setbeamertemplate{caption}{\raggedright\insertcaption\par}
 #+END_LaTeX
 
-* General presentation
+
 *** Facing in increasing complexity of HPC platforms
 #+BEGIN_LaTeX
 \begin{figure}[t]
@@ -412,11 +412,9 @@ Tools exist to help the developer:
 :BEAMER_act: <4>
 :END:
 - Efficient of a method depends the characteristics of the search space
-- These methods are commonly used in auto-tuning
-- But automatic approach \to black box \to *user excluded*
-- Does not make sense because the application is *not a black box* for the user \to
-  he knows how it works and thus still have a important role in the
-  tuning process.
+- Fully automatic approach \to black box and *user excluded*
+- Does not make sense, the application is *not a black box* for the user \to
+  he knows the kernel and thus have a important role in the tuning process.
 
 * Design and prototype of a new approach
 *** Code                                                         :noexport:
@@ -568,7 +566,7 @@ Tools exist to help the developer:
 - 1000 runs
 - Automatization of LM and RQ \to using same strategy each time:
   - random sampling
-  - same model and pruning decision
+  - same models and parameters are fixed in the same order
 - Which method does have the highest rate of high performing solutions?
 *** Results
 #+BEGIN_LaTeX
@@ -857,8 +855,20 @@ Thanks for your attention.
 \end{minipage}
 \end{figure}
 #+END_LaTeX
-*** Sampling techniques: Screening design
 *** Sampling techniques: LHS
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/lhs_cover_constraints.pdf}
+\end{figure}
+#+END_LaTeX
+*** Sampling techniques: Random
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/rs_cover_constraints.pdf}
+\end{figure}
+#+END_LaTeX
 ** Quantile regression
 *** Quantile regression
 * Code generation and optimization opportunities
