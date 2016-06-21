@@ -80,21 +80,35 @@
 
 * General presentation
 *** Facing in increasing complexity of HPC platforms
-- Scientific applications require more and more computational power \to
-  Lead to make bigger and bigger High Performance Computing
-  plate-forms \to more complex. 
-- Taking advantage of the power of such machines is crucial but very
-  complicated 
-- And porting even more \to developers cannot afford to spend month in
-  porting his application on a new plate-forms
+#+BEGIN_LaTeX
+\begin{figure}[t]
+\centering
+\includegraphics[width=.6\linewidth]{./img/HPC_v4.pdf}
+\end{figure}
+#+END_LaTeX
+
+#+BEGIN_LaTeX
+\small
+#+END_LaTeX
+ - Scientific applications \to increasing need of computational power
+- Supercomputers become bigger and bigger but more complex
+- *Exploiting* correctly their *power* is crucial but very *complicated*...
+- And *porting even more* \to developers cannot afford to spend month in
+  porting his application on a new platform
+
+#+BEGIN_LaTeX
+\normalsize
+#+END_LaTeX
 *** Optimization of scientific applications
-- Computation intensive \to focus on kernel optimization
+- Computation intensive \to *focus on kernels* optimization
 - Doing it by hand \to neither scalable nor portable
 - Compiler not enough
-- Need code generation tools that allows the developer to write
-  portable code by only describing the optimization and generate
-  specialized code variants to match the underlying architecture
-- Auto-tuning approach \to find which variant is the best for a given
+- Need code generation tools: 
+  - Allow the developer to write portable code by only *describing
+    optimization* 
+  - *Generate specialized code variants* to match the underlying
+    architecture 
+- Auto-tuning approach \to find high performing variants for a given
   platform. 
 
 *** Why is performances optimization complicated?                :noexport:
@@ -318,7 +332,7 @@ Tools exist to help the developer:
   #+BEGIN_LaTeX
   \[ \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \]
   #+END_LaTeX
-*** Problem analysis: Objective function
+# *** Problem analysis: Objective function
    #+BEGIN_LaTeX
    \begin{figure}[!htb]
    \centering
@@ -340,9 +354,9 @@ Tools exist to help the developer:
    \end{minipage}
    \end{figure}
    #+END_LaTeX
-- Empirical function \to evaluation costly
-- Discrete or Continuous
-- Constraints
+# - Empirical function \to evaluation costly
+# - Discrete or Continuous
+# - Constraints
 *** Generally used methods
    # #+BEGIN_LaTeX
    # \begin{figure}[htb]
@@ -397,6 +411,7 @@ Tools exist to help the developer:
 :BEAMER_env: block
 :BEAMER_act: <4>
 :END:
+- Efficient of a method depends the characteristics of the search space
 - These methods are commonly used in auto-tuning
 - But automatic approach \to black box \to *user excluded*
 - Does not make sense because the application is *not a black box* for the user \to
@@ -443,14 +458,14 @@ Tools exist to help the developer:
 - Based on:
   - Design of experiments \to investigate the search at a minimal
     experimental cost
-  - Linear regression (least square and quantile regression)  \to to
-    interpret information to make appear the structure of the search
-    space and to predict the best combinations of parameters
+  - Linear regression (least square and quantile regression)
+    - interpret information to reveal the structure of the search
+      space
+    - predict the best combinations of parameters
 *** Semi-automatic performance tuning
 1. *Sampling* the search space according to the user's needs
 2. Apply linear regression:
-   - To find relevant parameters and *remove useless ones* with using
-      a simple model
+   - To find relevant parameters and *remove useless ones* 
    - To refine the model by *checking hypothesis*
    - Keep the model *as simple as possible*
    - If not satisfied \to additional points needed \to back to 1
@@ -551,7 +566,10 @@ Tools exist to help the developer:
 - Maximal budget: 120
 - GA \to population size = 20, mutation rate = 0.1
 - 1000 runs
-- Automatization of LM and RQ \to using same strategy each time
+- Automatization of LM and RQ \to using same strategy each time:
+  - random sampling
+  - same model and pruning decision
+- Which method does have the highest rate of high performing solutions?
 *** Results
 #+BEGIN_LaTeX
 \begin{figure}[t]
@@ -649,9 +667,16 @@ But does not respect classic least square regression main assumption:
 # :BEAMER_env: onlyenv
 # :BEAMER_act: <2>
 # :END:
-# #+LaTeX: %\begin{overlayarea}{\linewidth}{0cm}\vspace{-5.0cm}\begin{block}{}
-But does not respect classic least square regression main assumption:
-- Same variance
+# #+LaTeX:
+# %\begin{overlayarea}{\linewidth}{0cm}\vspace{-5.0cm}\begin{block}{}
+#+BEGIN_LaTeX
+\footnotesize
+#+END_LaTeX
+Least square regression main assumption \to +same variance+
+
+Quantile regression:
+- Handle non-uniform variance
+- Estimate different quantile \to minimum \to 5th percentile
 # #+LaTeX: §\end{block}\end{overlayarea}
 *** Characteristics of the search space: Top-20 of the best combinations
 #+BEGIN_LaTeX
@@ -683,7 +708,7 @@ But does not respect classic least square regression main assumption:
   | 6        | 6           | 1      | 2         | true    | 128     | 1     | 1.015087 |
   | 6        | 6           | 1      | 2         | true    | 512     | 8     | 1.015301 |
 #+BEGIN_LaTeX
-\normalsize
+\small
 #+END_LaTeX
 **** 
 # :PROPERTIES:
