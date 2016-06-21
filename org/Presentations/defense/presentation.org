@@ -51,18 +51,19 @@
 #+LATEX_HEADER: \usepackage{color}
 #+LATEX_HEADER: \usepackage{url} \urlstyle{sf}
 #+LATEX_HEADER: \usepackage{appendixnumberbeamer}
+#+LATEX_HEADER: \usepackage{multicol}
 
 #+LATEX_HEADER: \let\alert=\structure % to make sure the org * * works of tools
 #+BEAMER_FRAME_LEVEL: 2
 
-#+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
+#+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Talk Outline}\tableofcontents[currentsection]\end{frame}}
 
 #+LATEX_HEADER: %\usepackage{biblatex}
 # #+LATEX_HEADER: \bibliography{../../biblio.bib}
 # #+LATEX_HEADER: \usepackage{cite}
 
-#+LATEX_HEADER:   \institute{POLARIS and CORSE teams/LIG\\Under the supervision of A. LEGRAND, B. VIDEAU and F.DESPREZ}
-#+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Topic}\tableofcontents[currentsection]\end{frame}}
+#+LATEX_HEADER:   \institute{POLARIS and CORSE teams/LIG\\Under the supervision of A. LEGRAND, B. VIDEAU and F. DESPREZ}
+#+LATEX_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{Talk Outline}\tableofcontents[currentsection]\end{frame}}
 
 #+BEGIN_LaTeX
 \newcommand{\backupbegin}{
@@ -79,7 +80,7 @@
 #+END_LaTeX
 
 
-*** Facing in increasing complexity of HPC platforms
+*** Facing the Increasing Complexity of HPC Platforms
 #+BEGIN_LaTeX
 \begin{figure}[t]
 \centering
@@ -90,22 +91,20 @@
 #+BEGIN_LaTeX
 \small
 #+END_LaTeX
- - Scientific applications \to increasing need of computational power
-- Supercomputers become bigger and bigger but more complex
-- *Exploiting* correctly their *power* is crucial but very *complicated*...
-- And *porting even more* \to developers cannot afford to spend month in
-  porting his application on a new platform
+ - Scientific applications \to increasing need for computing power
+- Supercomputers become bigger and bigger and more complex
+- *Exploiting* correctly their *power* is crucial but very *complicated*
+- Avoid spending months porting applications on new platforms
+  (recompiling is not enough)
 
 #+BEGIN_LaTeX
 \normalsize
 #+END_LaTeX
-*** Optimization of scientific applications
-- Computation intensive \to *focus on kernels* optimization
+*** Optimization of Scientific Applications
+- Compute intensive \to *focus on kernels* optimization
 - Doing it by hand \to neither scalable nor portable
-- Compiler not enough
-- Need code generation tools: 
-  - Allow the developer to write portable code by only *describing
-    optimization* 
+**** Code generation tools: 
+  - Write portable kernels code by *describing many possible optimization* 
   - *Generate specialized code variants* to match the underlying
     architecture 
 - Auto-tuning approach \to find high performing variants for a given
@@ -326,38 +325,46 @@ Tools exist to help the developer:
   - Can be error prone
   - Need to re-write part of the application
 
-*** Problem analysis: Performance tuning
-- *Huge search space* (e.g GCC \approx 500 compilations flags \to $2^{500}$ combinations) \to +exhaustive search+
+*** Problem Analysis
+#+BEGIN_LaTeX
+\small
+#+END_LaTeX
+- *Huge search space* (e.g., GCC \approx 500 compilations flags \to $2^{500}$ combinations) \to +exhaustive search+
 - Auto-tuning considers this as a *mathematical optimization* problem:
   #+BEGIN_LaTeX
   \[ \displaystyle\min_{x} {f(\vec{x}): \vec{x} \in \mathcal{D} \subset \!R^{n} } \]
   #+END_LaTeX
 # *** Problem analysis: Objective function
    #+BEGIN_LaTeX
-   \begin{figure}[!htb]
+   \vspace{-0.7cm}\begin{figure}[!htb]
    \centering
 
    \begin{minipage}{.30\linewidth}
    \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/convex_function.pdf}
+   \vspace{-0.5cm}\caption{Convex}
    \end{minipage}
    \hfil
    \begin{minipage}{.30\linewidth}
    \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/non_convex_function.pdf}
+   \vspace{-0.5cm}\caption{Multiple local optimum}
    \end{minipage}
 
+   \vspace{-0.5cm}
    \begin{minipage}{.30\linewidth}
    \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/non_smooth_function.pdf}
+   \vspace{-0.5cm}\caption{Non-smooth}
    \end{minipage}
    \hfil
    \begin{minipage}{.30\linewidth}
    \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/auto_tuning_function.pdf}
+   \vspace{-0.5cm}\caption{Auto-tuning}
    \end{minipage}
    \end{figure}
    #+END_LaTeX
 # - Empirical function \to evaluation costly
 # - Discrete or Continuous
 # - Constraints
-*** Generally used methods
+*** Generally Used Methods
    # #+BEGIN_LaTeX
    # \begin{figure}[htb]
    # \centering
@@ -411,12 +418,12 @@ Tools exist to help the developer:
 :BEAMER_env: block
 :BEAMER_act: <4>
 :END:
-- Efficient of a method depends the characteristics of the search space
+- Efficiency of a method depends the characteristics of the search space
 - Fully automatic approach \to black box and *user excluded*
-- Does not make sense, the application is *not a black box* for the user \to
-  he knows the kernel and thus have a important role in the tuning process.
+- But the application is *not a black box* for the user \to
+  exploit his knowledge of the kernel.
 
-* Design and prototype of a new approach
+* Design and Prototype of a New Approach
 *** Code                                                         :noexport:
 #+begin_src sh :results output :exports none
   ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
@@ -450,22 +457,22 @@ Tools exist to help the developer:
 #+RESULTS:
 [[file:./img/combinations_sorted.pdf]]
 *** Our goal
-- Involve the user in the optimization process
+**** Involve the user in the optimization process
   - give him valuable feedback
   - guide him and allow him to guide the tuning process
-- Based on:
+**** Based on:
   - Design of experiments \to investigate the search at a minimal
     experimental cost
-  - Linear regression (least square and quantile regression)
+  - Linear regression:
     - interpret information to reveal the structure of the search
       space
     - predict the best combinations of parameters
 *** Semi-automatic performance tuning
-1. *Sampling* the search space according to the user's needs
-2. Apply linear regression:
-   - To find relevant parameters and *remove useless ones* 
-   - To refine the model by *checking hypothesis*
-   - Keep the model *as simple as possible*
+# Ajouter fleche pour indiquer aspect iteratif \to need for six
+1. *Sample* the search space according to the user's needs
+2. Apply linear regression (keeping the model *as simple as possible*):
+   - Find relevant parameters and *remove useless ones* 
+   - Refine the model by *checking hypothesis*
    - If not satisfied \to additional points needed \to back to 1
 3. Instantiate the model to predict best values of significant
    parameters only
@@ -483,18 +490,18 @@ Tools exist to help the developer:
 * Methodology
 *** Reproducible research
 - Publicly available on Github!
-- Laboratory book:
+- Lab book:
   - Code, experiments, and detailed analysis
   - Literate programming, emacs org-mode, Ruby and R
   - *33K lines* including 17K lines which are code and analysis
 - All experiments are logged and also available
 *** BOAST
-  - A ruby meta-programming framework
+  - Ruby-based meta-programming framework
   - C, Fortran, CUDA, OpenCL
   - Complete tool chain: 
     - Code generation
-    - Verification 
     - Compilation 
+    - Verification 
     - Benchmark
 *** Case study: A Laplacian kernel
 - Time to compute a pixel
@@ -512,7 +519,7 @@ Tools exist to help the developer:
 
 - 190080 variants \to 23120 due to constraints \approx 6.7 days
 - GPU Nvidia K40c and OpenCL 
-* Experiment and analysis
+* Experiment and Analysis
 *** Code                                                         :noexport:
 **** Results
 #+begin_src sh :results output :exports none
@@ -560,7 +567,9 @@ Tools exist to help the developer:
 
  
 *** Protocol
-- Methods: RS, LHS, GS, GSR, GA, LM and RQ
+- Methods: RS, LHS, GS, GSR, GA and semi-automatic performance
+  optimization using least square regression to estimate
+  the mean (LM) or quantile regression to estimate the 5th percentile (RQ)
 - Maximal budget: 120
 - GA \to population size = 20, mutation rate = 0.1
 - 1000 runs
@@ -576,7 +585,7 @@ Tools exist to help the developer:
 \end{figure}
 #+END_LaTeX
 
-*** Characteristics of the search space: Distribution of combinations
+*** Distribution of Combinations of the Whole
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -594,23 +603,18 @@ Tools exist to help the developer:
 \tiny
 #+END_LaTeX
 
-| Min  | 1st Q. | Median | Mean   | 3rd Q. |     Max |
-|------+--------+--------+--------+--------+---------|
-| /    | <>     | <>     | <>     | <>     |         |
-| 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
+# | Min  | 1st Q. | Median | Mean   | 3rd Q. |     Max |
+# |------+--------+--------+--------+--------+---------|
+# | /    | <>     | <>     | <>     | <>     |         |
+# | 1.00 | 2.599  | 6.116  | 17.276 | 17.177 | 382.168 |
 
 #+BEGIN_LaTeX
 \normalsize
 #+END_LaTeX
 **** 
-:PROPERTIES:
-:BEAMER_env: onlyenv
-:BEAMER_act: <2>
-:END:
-#+LaTeX: \begin{overlayarea}{\linewidth}{0cm}\vspace{-6.0cm}\begin{block}{}
 - Lots a of good combinations parameters
 - 312 random points = 90% of chance to get a slowdown lower than 1.1
-#+LaTeX: \end{block}\end{overlayarea}
+
 *** Characteristics of the search space: Structured              :noexport:
 # That is why our approach worked
 #+BEGIN_LaTeX
@@ -647,7 +651,8 @@ Tools exist to help the developer:
 But does not respect classic least square regression main assumption:
 - Same variance
 #+LaTeX: \end{block}\end{overlayarea}
-*** Least square regression vs quantile regression
+*** Least Square Regression vs Quantile Regression
+# Explain quantile regression
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -719,29 +724,44 @@ Quantile regression:
   /lws_y/
 # #+LaTeX: \end{block}\end{overlayarea}
 
-*** LM: Success and "failures" - $R^{2}$, std. err. and p-values
+*** LM: Success and "Failures"
 **** Best solution
 #+BEGIN_LaTeX
+\begin{columns}
+\begin{column}{.75\linewidth}
   \tiny
-  #+END_LaTeX
-  | elements | y component | vector | temporary | load    | threads | lws y | slowdown |
-  | number   | number      | length | size      | overlap | number  |       |          |
-  | <c>      | <c>         | <c>    | <c>       | <c>     | <c>     | <c>   | <c>      |
-  |----------+-------------+--------+-----------+---------+---------+-------+----------|
-  | /        | <>          | <>     | <>        | <>      | <>      | <>    | <        |
-  | 6        | 6           | 1      | 2         | true    | 256     | 1     | 1.012177 |
-  #+BEGIN_LaTeX
+  \vspace{-1.0cm}\begin{multicols}{2}
+  \begin{itemize}
+  \item  element\_number : 6
+  \item y\_component\_number : 6
+  \item vector\_length : 1
+  \item temporary\_size : 2
+    
+  \item load\_overlap : true
+  \item thread\_number : 256
+  \item lws\_y : 1
+  \item slowdown : 1.012177
+  \end{enumerate}
+  \end{multicols}
   \scriptsize
-  #+END_LaTeX
+#+END_LaTeX
   Coefficient of determination = 0.5431
-  #+BEGIN_LaTeX
-  \tiny
-  #+END_LaTeX
-    |               |      Coef | Std. err. | p-values       |
-    |---------------+-----------+-----------+----------------|
-    | /             |        <> |        <> | <              |
-    | vector length | 8.794e-11 | 3.025e-11 | 0.00555 $**$   |
-    | lws y         | 1.987e-11 | 2.882e-12 | 1.18e-08 $***$ |
+  $time\_per\_pixel = 8.794e-11vector\_length + 1.987e-11lws\_y$
+
+#+BEGIN_LaTeX
+\end{column}
+\begin{column}{.25\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/good_prediction.pdf}  
+
+\end{column}
+  \end{columns}
+#+END_LaTeX
+
+    # |               |      Coef | Std. err. | p-values       |
+    # |---------------+-----------+-----------+----------------|
+    # | /             |        <> |        <> | <              |
+    # | vector length | 8.794e-11 | 3.025e-11 | 0.00555 $**$   |
+    # | lws y         | 1.987e-11 | 2.882e-12 | 1.18e-08 $***$ |
   #+BEGIN_LaTeX
   \scriptsize
   #+END_LaTeX
@@ -759,34 +779,63 @@ Quantile regression:
   \normalsize
   #+END_LaTeX
 **** Worst Solution
+#+BEGIN_LaTeX
+\begin{columns}
+\begin{column}{.75\linewidth}
+
+\vspace{-1.0cm}\begin{multicols}{2}
+  \tiny
+  \begin{itemize}
+  \item  element\_number : 24
+  \item y\_component\_number : 6
+  \item vector\_length : 16
+  \item temporary\_size : 2
+    
+  \item load\_overlap : false
+  \item thread\_number : 64
+  \item lws\_y : 1
+  \item slowdown : 3.771183
+  \end{enumerate}
+  \end{multicols}
+#+END_LaTeX
+
   #+BEGIN_LaTeX
   \tiny
   #+END_LaTeX
-  | elements | y component | vector | temporary | load    | threads | lws y | slowdown |
-  | number   | number      | length | size      | overlap | number  |       |          |
-  | <c>      | <c>         | <c>    | <c>       | <c>     | <c>     | <c>   | <c>      |
-  |----------+-------------+--------+-----------+---------+---------+-------+----------|
-  | /        | <>          | <>     | <>        | <>      | <>      | <>    | <        |
-  | 24       | 6           | 16     | 2         | false   | 64      | 1     | 3.771183 |
-
+  # | e_n | y_c_n | *vector* | t_s | l_o   | t_n | *lws y* | slowdown |
+  # |     |       | *length* |     |       |     |       |          |
+  # | <c> | <c>   | <c>    | <c> | <c>   | <c> | <c>   | <c>      |
+  # |-----+-------+--------+-----+-------+-----+-------+----------|
+  # | /   | <>    | <>     | <>  | <>    | <>  | <>    | <        |
+  # | 24  | 6     | 16     | 2   | false | 64  | 1     | 3.771183 |
+  
 #+BEGIN_LaTeX
   \scriptsize
   #+END_LaTeX
 Coefficient of determination = 0.1744
+$time\_per\_pixel = -2.316e-11vector\_length + 5.572e-12lws\_y$
+
+#+BEGIN_LaTeX
+\end{column}
+\begin{column}{.25\linewidth}
+\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/bad_prediction.pdf}  
+\end{column}
+  \end{columns}
+#+END_LaTeX
 #+BEGIN_LaTeX
   \tiny
   #+END_LaTeX
 
-  |               |       Coef | Std. err. | p-values     |
-  |---------------+------------+-----------+--------------|
-  | /             |         <> |        <> | <            |
-  | vector_length | -2.316e-11 | 5.953e-11 | 0.69904      |
-  | lws y         |  5.572e-12 | 1.625e-12 | 0.00127 $**$ |
+  # |               |       Coef | Std. err. | p-values     |
+  # |---------------+------------+-----------+--------------|
+  # | /             |         <> |        <> | <            |
+  # | vector_length | -2.316e-11 | 5.953e-11 | 0.69904      |
+  # | lws y         |  5.572e-12 | 1.625e-12 | 0.00127 $**$ |
 
   #+BEGIN_LaTeX
   \normalsize
   #+END_LaTeX
-*** LM: Success and "failures" - Predictions vs observations
+*** LM: Success and "Failures" - Predictions vs Observations       :noexport:
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
@@ -806,21 +855,21 @@ Coefficient of determination = 0.1744
 \end{minipage}
 \end{figure}
 #+END_LaTeX
-* Conclusion
-*** Summary
+* Conclusion and Perspective
+*** Conclusion and Perspective
+**** Conclusion
 - We designed a new approach that put the user in the core of the
   optimization process
 - Comparison against techniques commonly used in the auto-tuning
   literature
 - In depth study of the results:
   - Reasons why it works
-  - Why quantile regression makes more sense than least square
-    regression
-*** Future work
+  - Why quantile regression makes more sense than mean regression
+**** Future Work
 - Try more complex cases
 - Compute correctly standard error, p-values and coefficient of
   determinations for quantile regression
-- Dig into sampling strategies to reduce even more the number of points.
+- Dig into sampling strategies to find the optimum number of points.
 *** This is the end
 Thanks for your attention.
 * 
@@ -946,6 +995,132 @@ Tools exist to help the developer:
 \includegraphics[width=\linewidth]{./img/combinations_sorted.pdf}
 \end{figure}
 #+END_LaTeX
+* Improving worst case
+    #+begin_src sh :results output :exports none
+      ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output :session :exports none
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      logs <- readRDS("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+      df_lm_random <- read.csv("../../../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),][1,]
+      df_lm_random[df_lm_random$time_per_pixel == max(df_lm_random$time_per_pixel),][1,]$time_per_pixel / min(df$time_per_pixel)
+      logs[[544]]$slowdown
+    #+end_src
+
+    #+RESULTS:
+    :     elements_number y_component_number vector_length temporary_size
+    : 544              24                  6            16              2
+    :     vector_recompute load_overlap threads_number lws_y time_per_pixel
+    : 544             true        false             64     1   4.393478e-10
+    :     point_number method
+    : 544          119     LM
+    : [1] 3.771183
+    : [1] 3.771183
+
+    One of the worst case is at the run 544
+    #+begin_src R :results output :session :exports none
+      working_set <- logs[[544]]$starting_set
+      summary(working_set)
+    #+end_src
+
+    #+RESULTS:
+    #+begin_example
+     elements_number y_component_number vector_length   temporary_size
+     Min.   : 1.00   Min.   :1.00       Min.   : 1.00   Min.   :2.00  
+     1st Qu.: 2.25   1st Qu.:2.00       1st Qu.: 2.00   1st Qu.:2.00  
+     Median : 6.00   Median :3.00       Median : 4.00   Median :2.00  
+     Mean   : 7.90   Mean   :3.12       Mean   : 7.14   Mean   :2.84  
+     3rd Qu.:12.00   3rd Qu.:4.75       3rd Qu.:14.00   3rd Qu.:4.00  
+     Max.   :24.00   Max.   :6.00       Max.   :16.00   Max.   :4.00  
+     vector_recompute load_overlap threads_number       lws_y        
+     true:50          false:25     Min.   :  32.0   Min.   :   1.00  
+                      true :25     1st Qu.:  64.0   1st Qu.:   2.00  
+                                   Median : 192.0   Median :   8.00  
+                                   Mean   : 307.2   Mean   :  78.94  
+                                   3rd Qu.: 512.0   3rd Qu.:  64.00  
+                                   Max.   :1024.0   Max.   :1024.00  
+     time_per_pixel     
+     Min.   :1.272e-10  
+     1st Qu.:4.326e-10  
+     Median :7.162e-10  
+     Mean   :1.868e-09  
+     3rd Qu.:1.609e-09  
+     Max.   :1.079e-08
+#+end_example
+
+**    Step1
+#+begin_src R :results output :session :exports both
+fit <- lm(time_per_pixel ~ elements_number + threads_number + y_component_number + lws_y + vector_length + load_overlap + temporary_size, working_set)
+summary(fit)
+fit <- lm(time_per_pixel ~ lws_y , working_set)
+summary(fit)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = time_per_pixel ~ elements_number + threads_number + 
+    y_component_number + lws_y + vector_length + load_overlap + 
+    temporary_size, data = working_set)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-3.205e-09 -1.315e-09 -4.193e-10  3.619e-10  7.396e-09 
+
+Coefficients:
+                     Estimate Std. Error t value Pr(>|t|)    
+(Intercept)         4.503e-09  1.348e-09   3.340  0.00176 ** 
+elements_number    -9.059e-11  8.247e-11  -1.098  0.27829    
+threads_number     -2.445e-12  1.348e-12  -1.813  0.07691 .  
+y_component_number -2.341e-10  3.055e-10  -0.766  0.44787    
+lws_y               8.072e-12  1.854e-12   4.354 8.41e-05 ***
+vector_length       1.941e-12  6.063e-11   0.032  0.97462    
+load_overlaptrue    2.150e-10  6.540e-10   0.329  0.74402    
+temporary_size     -4.210e-10  3.362e-10  -1.252  0.21738    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.255e-09 on 42 degrees of freedom
+Multiple R-squared:  0.3723,	Adjusted R-squared:  0.2677 
+F-statistic: 3.559 on 7 and 42 DF,  p-value: 0.004306
+
+Call:
+lm(formula = time_per_pixel ~ lws_y, data = working_set)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-3.055e-09 -1.120e-09 -7.814e-10 -1.174e-10  9.011e-09 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 1.423e-09  3.586e-10   3.968 0.000242 ***
+lws_y       5.642e-12  1.601e-12   3.524 0.000946 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.373e-09 on 48 degrees of freedom
+Multiple R-squared:  0.2055,	Adjusted R-squared:  0.189 
+F-statistic: 12.42 on 1 and 48 DF,  p-value: 0.0009458
+#+end_example
+
+#+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+  library(ggplot2)
+  ggplot() +
+      theme_bw() +
+      geom_point(aes(x=fitted(fit), y=fitted(fit) + residuals(fit))) +
+      geom_line( aes(x=c(-1,1), y=c(-1,1)), linetype=2) +
+      labs(y="Real", x="Predicted") +
+      coord_cartesian(xlim=c(0,2e-8), ylim=c(0,2e-8))
+#+end_src
+
+#+RESULTS:
+[[file:/tmp/babel-3609ONO/figure3609DDF.png]]
+
 * Emacs Setup 							   :noexport:
   This document has local variables in its postembule, which should
   allow Org-mode to work seamlessly without any setup. If you're
