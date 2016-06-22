@@ -572,6 +572,45 @@ Tools exist to help the developer:
 
    #+RESULTS:
 
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.pdf :exports results :width 4 :height 6 :session
+     library(ggplot2)
+
+     df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+
+     slowdown <-  df$time_per_pixel / min(df$time_per_pixel)
+     df$slowdown <- slowdown
+
+     ggplot(data=df) +
+         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme_bw() +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.25)), color="blue", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.75)), color="cyan3", linetype=2) +
+         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+         labs(y="Frequency", x="Slowdown")
+
+   #+end_src
+
+   #+RESULTS:
+   [[file:./img/search_combination_rep_slowdown.pdf]]
+
+   #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown_zoom.pdf :exports both :width 4 :height 6 :session
+     ggplot(data=df) +
+         geom_histogram(aes(x=slowdown,y=..density.. * 0.05), binwidth=.05) +
+         theme_bw() +
+         theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+         geom_vline(xintercept = median(slowdown), color="darkgreen", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.25)), color="blue", linetype=2) +
+         geom_vline(xintercept = quantile(slowdown, prob=c(0.75)), color="cyan3", linetype=2) +
+         geom_vline(xintercept = mean(slowdown), color="red", linetype=2) +
+         coord_cartesian(xlim=c(.9,17)) +
+         labs(y="Frequency", x="Slowdown")
+   #+end_src
+
+   #+RESULTS:
+   [[file:./img/search_combination_rep_slowdown_zoom.pdf]]
+
 **** Repartition of combination
    #+begin_src R :results output graphics :file ./img/search_combination_rep_slowdown.pdf :exports results :width 4 :height 6 :session
      library(ggplot2)
@@ -637,11 +676,13 @@ Tools exist to help the developer:
 \begin{figure}[htb]
 \centering
 \begin{minipage}{.35\linewidth}
-\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/search_combination_rep_slowdown.pdf}
+\includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown.pdf}
 \end{minipage}
-\hfil
 \begin{minipage}{.35\linewidth}
-\includegraphics[width=\linewidth]{../../Report/Project-report-template/img/search_combination_rep_slowdown_zoom.pdf}
+\includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown_zoom.pdf}
+\end{minipage}
+\begin{minipage}{.15\linewidth}
+\includegraphics[width=\linewidth]{./img/legend.pdf}
 \end{minipage}
 \end{figure}
 #+END_LaTeX   
