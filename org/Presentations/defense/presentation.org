@@ -469,24 +469,24 @@ Tools exist to help the developer:
     - predict the best combinations of parameters
 *** Semi-automatic performance tuning
 # Ajouter fleche pour indiquer aspect iteratif \to need for six
-1. *Sample* the search space according to the user's needs
-2. Apply linear regression (keeping the model *as simple as possible*):
-   - Find relevant parameters and *remove useless ones* 
-   - Refine the model by *checking hypothesis*
-   - If not satisfied \to additional points needed \to back to 1
-3. Instantiate the model to predict best values of significant
-   parameters only
-4. Prune the search space \to by fixing these parameters
-5. Re-inject unused parameters
-6. Back to 1 until all parameters are estimated
+# 1. *Sample* the search space according to the user's needs
+# 2. Apply linear regression (keeping the model *as simple as possible*):
+#    - Find relevant parameters and *remove useless ones* 
+#    - Refine the model by *checking hypothesis*
+#    - If not satisfied \to additional points needed \to back to 1
+# 3. Instantiate the model to predict best values of significant
+#    parameters only
+# 4. Prune the search space \to by fixing these parameters
+# 5. Re-inject unused parameters
+# 6. Back to 1 until all parameters are estimated
 
 
-# #+BEGIN_LaTeX
-# \begin{figure}[tbh]
-# \centering
-# \includegraphics[width=.8\linewidth]{../../Report/Project-report-template/img/process.pdf}
-# \end{figure}
-# #+END_LaTeX
+#+BEGIN_LaTeX
+\begin{figure}[tbh]
+\centering
+\includegraphics[width=.8\linewidth]{./img/process.pdf}
+\end{figure}
+#+END_LaTeX
 * Methodology
 *** Reproducible research
 - Publicly available on Github!
@@ -965,7 +965,7 @@ Thanks for your attention.
 \includegraphics[width=\linewidth]{../../Report/Project-report-template/img/rs_cover_constraints.pdf}
 \end{figure}
 #+END_LaTeX
-** Quantile regression
+** Quantile regression                                            :noexport:
 *** Quantile regression
 * Code generation and optimization opportunities
 *** Code generation and optimization opportunities
@@ -1018,7 +1018,7 @@ Tools exist to help the developer:
   - Can be error prone
   - Need to re-write part of the application
 
-* LM: Improving worst case
+
 * Controlling measurements: Warm-up effect
 *** Controlling measurements: Warm-up effect
 #+BEGIN_LaTeX
