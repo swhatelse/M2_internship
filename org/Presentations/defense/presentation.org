@@ -101,7 +101,7 @@
 \normalsize
 #+END_LaTeX
 *** Optimization of Scientific Applications
-- Compute intensive \to *focus on kernels* optimization
+- Compute intensive \to *focus on kernel* optimization
 - Doing it by hand \to neither scalable nor portable
 **** Code generation tools: 
   - Write portable kernels code by *describing many possible optimization* 
