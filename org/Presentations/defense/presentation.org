@@ -616,7 +616,7 @@ Tools exist to help the developer:
 - Methods: RS, LHS, GS, GSR, GA and semi-automatic performance
   optimization using least square regression to estimate
   the mean (LM) or quantile regression to estimate the 5th percentile (RQ)
-- Maximal budget: 120
+- Maximal budget: 120 (0.5% of the search space)
 - GA \to population size = 20, mutation rate = 0.1
 - 1000 runs
 - Automatization of LM and RQ \to using same strategy each time:
