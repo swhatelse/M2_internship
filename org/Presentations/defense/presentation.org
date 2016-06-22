@@ -1043,6 +1043,63 @@ Tools exist to help the developer:
 \includegraphics[width=\linewidth]{./img/combinations_sorted.pdf}
 \end{figure}
 #+END_LaTeX
+* Quantile regression
+*** Code                                                         :noexport:
+**** How we compute it
+#+begin_src R :results output graphics :file ./img/rq_70th.pdf :exports both :width 4 :height 4 :session
+  f <- function(x) { x * (0.75 - 1 * (x < 0)) }
+  curve(f,-10,10)
+#+end_src
+
+#+RESULTS:
+[[file:./img/rq_70th.pdf]]
+
+#+begin_src R :results output graphics :file ./img/rq_med.pdf :exports both :width 4 :height 4 :session
+  f <- function(x) { x * (0.5 - 1 * (x < 0)) }
+  curve(f,-10,10)
+#+end_src
+
+#+RESULTS:
+[[file:./img/rq_med.pdf]]
+
+#+begin_src R :results output graphics :file ./img/rq_5th.pdf :exports both :width 4 :height 4 :session
+  f <- function(x) { x * (0.05 - 1 * (x < 0)) }
+  curve(f,-10,10)
+#+end_src
+
+#+RESULTS:
+[[file:./img/rq_5th.pdf]]
+
+*** How we compute it
+Let $R_u(x) = x\cdot (u - 1 ( x > 0 )$
+\\
+Quantile regression:
+#+BEGIN_LaTeX
+\[\displaystyle \underset{Q}{\arg\min} { \sum_{i=1} R_{u} (X_{i} - Q) }\]
+#+END_LaTeX
+
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+
+\begin{minipage}{.3\linewidth}
+\includegraphics[width=\linewidth]{./img/rq_70th.pdf}
+\caption{3rd quartile}
+\end{minipage}
+\hfil
+\begin{minipage}{.3\linewidth}
+\includegraphics[width=\linewidth]{./img/rq_med.pdf}
+\caption{Median}
+\end{minipage}
+\hfil
+\begin{minipage}{.3\linewidth}
+\includegraphics[width=\linewidth]{./img/rq_5th.pdf}
+\caption{5th percentile}
+\end{minipage}
+
+\end{figure}
+#+END_LaTeX
+
 * Improving worst case                                             :noexport:
     #+begin_src sh :results output :exports none
       ruby ../../../scripts/format_data.rb ../../../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
