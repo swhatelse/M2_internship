@@ -631,7 +631,7 @@ Tools exist to help the developer:
 \end{figure}
 #+END_LaTeX
 
-*** Distribution of Combinations of the Whole
+*** Distribution of Combinations of the Whole Search Space
 
 #+BEGIN_LaTeX
 \begin{figure}[htb]
@@ -793,7 +793,8 @@ Quantile regression:
   \scriptsize
 #+END_LaTeX
   Coefficient of determination = 0.5431
-  $time\_per\_pixel = 8.794e-11vector\_length + 1.987e-11lws\_y$
+
+ $time\,per\,pixel = 8.794 \times 10^{-11} vector\,length + 1.987 \times 10^{-11} lws\,y$
 
 #+BEGIN_LaTeX
 \end{column}
@@ -860,7 +861,7 @@ Quantile regression:
   \scriptsize
   #+END_LaTeX
 Coefficient of determination = 0.1744
-$time\_per\_pixel = -2.316e-11vector\_length + 5.572e-12lws\_y$
+$time\,per\,pixel = -2.316 \times 10^{-11}vector\,length + 5.572 \times 10^{-12}lws\,y$
 
 #+BEGIN_LaTeX
 \end{column}
