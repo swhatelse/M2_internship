@@ -1,7 +1,7 @@
 #+TITLE:  LabBook
 #+AUTHOR: Steven QUINITO MASNADA
 #+BABEL: :tangle yes
-#+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r) R(t)
+#+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r) R(t) deprecated(d)
 
 * TODO [10/15]
   - [X] Run brute force with load_overlap = [true,false]
@@ -24496,7 +24496,7 @@ h[g.name.to_sym] = 1024
 **** Comparison
 ***** Run
 ****** Genetic Algo
-******* Old
+******* Old                                                      :deprecated:
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
@@ -24533,7 +24533,7 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
  
-******* New
+******* New                                                          :Script:
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
@@ -24570,7 +24570,7 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
 
-****** Random 
+****** Random                                                        :Script:
       Formating the full search space to csv:
       #+begin_src sh :results output :exports none
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
@@ -24592,7 +24592,7 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
 
-****** Greedy search
+****** Greedy search                                                 :Script:
 ******* Implementation
         #+begin_src R :results output :session :exports both                  
           kernel_size <- function(point) {
@@ -24873,6 +24873,8 @@ h[g.name.to_sym] = 1024
        :  Erreur : impossible de trouver la fonction "gradient_descent"
 
 ******** Multiple descents
+        This techniques performs multiple greedy search to use as much
+        point as the other methods.
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
        #+end_src  
@@ -25027,8 +25029,7 @@ h[g.name.to_sym] = 1024
 
        #+RESULTS:
 
-
-****** LHS
+****** LHS                                                           :Script:
       #+begin_src sh :results output :exports none
         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
       #+end_src
@@ -25083,9 +25084,15 @@ h[g.name.to_sym] = 1024
 
       #+RESULTS:
 
-****** LM
+****** LM                                                            :Script:
 ******* Random
-******** Old version
+******** V1                                                      :deprecated:
+         _WARNING Incorrect strategy:_
+         - The point budget is not used wisely, too much points are
+           attributed at the begining.
+         - Models based on the models suited to the whole search space
+           \to use of incorrect models as they don't suit the working
+           set of points 
        #+begin_src sh :results output :exports none
          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
@@ -25237,7 +25244,11 @@ h[g.name.to_sym] = 1024
        #+RESULTS:
        :  There were 18 warnings (use warnings() to see them)
 
-********  New version
+******** V2                                                      :deprecated:
+         _WARNING Incorrect strategy:_
+         - The point budget is still not used wisely
+         - And The model are still based on the models of the full
+           search space
           Take into account the budget repartition:
         #+begin_src R :results output :session :exports none
           objective_predict <- function(fit,x){
@@ -25467,122 +25478,122 @@ h[g.name.to_sym] = 1024
      #+RESULTS:
      [[file:/tmp/babel-5040GO8/figure5040D5k.png]]
 ******** V3
-    #+begin_src R :results output :session :exports both :tangle ../scripts/LM_bench.R
-      objective_predict <- function(fit,x){
-          names <- colnames(x)
-          s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
-          eval(parse(text=s))
-          as.numeric(predict(fit, values, interval="none"))
-      }
+         #+begin_src R :results output :session :exports both :tangle ../scripts/LM_bench.R
+           objective_predict <- function(fit,x){
+               names <- colnames(x)
+               s <- paste("values <-data.frame(", paste(paste(names,names,sep="=x$"),collapse=","), ")")
+               eval(parse(text=s))
+               as.numeric(predict(fit, values, interval="none"))
+           }
 
-      objective_predict_one <- function(fit,x,colname){
-          s <- paste("values <-data.frame(", paste(paste(colname,"=x",sep=""),collapse=","), ")")
-          eval(parse(text=s))
-          as.numeric(predict(fit, values, interval="none"))
-      }
+           objective_predict_one <- function(fit,x,colname){
+               s <- paste("values <-data.frame(", paste(paste(colname,"=x",sep=""),collapse=","), ")")
+               eval(parse(text=s))
+               as.numeric(predict(fit, values, interval="none"))
+           }
 
-      find_best <- function(model,subset,full_set,colnames){
-          fit <- lm(data=subset,formula=formula(model))
-          if( length(colnames) > 1) {
-              return(full_set[objective_predict(fit,full_set[,colnames]) == min(objective_predict(fit,full_set[,colnames])), colnames][1,])
-          }
-          else{
-              return(full_set[objective_predict_one(fit, full_set[,colnames], colnames) == min(objective_predict_one(fit, full_set[,colnames], colnames)), colnames][1])
-          }
-      }
+           find_best <- function(model,subset,full_set,colnames){
+               fit <- lm(data=subset,formula=formula(model))
+               if( length(colnames) > 1) {
+                   return(full_set[objective_predict(fit,full_set[,colnames]) == min(objective_predict(fit,full_set[,colnames])), colnames][1,])
+               }
+               else{
+                   return(full_set[objective_predict_one(fit, full_set[,colnames], colnames) == min(objective_predict_one(fit, full_set[,colnames], colnames)), colnames][1])
+               }
+           }
 
-      df_lm_random <- data.frame()
-      df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
+           df_lm_random <- data.frame()
+           df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
 
-      runs <- 1000
-      logs <- list()
-      for(i in 1:runs){
-          l <- list()
-          
-          # Step 1
-          working_set <- df[sample(1:nrow(df), size = 50, replace = FALSE),]
-          l[["starting_set"]] <- working_set
-          point_count <- 50
+           runs <- 1000
+           logs <- list()
+           for(i in 1:runs){
+               l <- list()
+               
+                                                   # Step 1
+               working_set <- df[sample(1:nrow(df), size = 50, replace = FALSE),]
+               l[["starting_set"]] <- working_set
+               point_count <- 50
+               
+               model <- time_per_pixel ~ vector_length + lws_y 
+               best1 <- find_best(model, working_set, df, c("vector_length", "lws_y")) 
+               
+                                                   # Pruning the working set and the search space
+               subset1 <- working_set[working_set$vector_length == best1$vector_length & 
+                                      working_set$lws_y == best1$lws_y,]
+               
+               pruned1 <- df[df$vector_length == best1$vector_length & 
+                             df$lws_y == best1$lws_y,]
+               
+                                                   # Step 2          
+                                                   # Adding new points
+               added1 <- pruned1[sample(1:nrow(pruned1), size = 40, replace = FALSE),]
+               l[["added1"]] <- added1
+               subset1 <- subset1[, !names(working_set) %in% c("run") ] 
+               subset1 <- rbind(subset1, added1)     
+               point_count <- point_count + 40
+               
+               model <- time_per_pixel ~ y_component_number
+               best2 <- data.frame()
+               best2 <- find_best(model, subset1, pruned1, c("y_component_number")) 
+               
+               subset2 <- subset1[subset1$y_component_number == best2,]
+               pruned2 <- pruned1[pruned1$y_component_number == best2,]
+               
+                                                   # Step 3
+               added2 <- pruned2[sample(1:nrow(pruned2), size = 20, replace = FALSE),]
+               l[["added2"]] <- added2
+               subset2 <- rbind(subset2, added2)   
+               point_count <- point_count + 20  
+               
+               model <- time_per_pixel ~ elements_number 
+               best3 <- data.frame()
+               best3 <- find_best(model, subset2, pruned2, c("elements_number")) 
+               best3    
+               
+               subset3 <- subset2[subset2$elements_number == best3,]
+               pruned3 <- pruned2[pruned2$elements_number == best3,]
+               
+                                                   # Step 4
+               added3 <- pruned3[sample(1:nrow(pruned3), size = 5, replace = FALSE),]
+               l[["added3"]] <- added3
+               subset3 <- rbind(subset3, added3)     
+               point_count <- point_count + 5  
+               
+               model <- time_per_pixel ~ threads_number + I(1/threads_number)
+               best4 <- data.frame()
+               best4 <- find_best(model, subset3, pruned3, c("threads_number")) 
+               best4   
+               
+               subset4 <- subset3[subset3$threads_number == best4,]
+               pruned4 <- pruned3[pruned3$threads_number == best4,]
+               
+               nrow(subset4)
+               nrow(pruned4)
+               min(pruned4$time_per_pixel) / min(df$time_per_pixel) 
+               
+               added4 <- pruned4[sample(1:nrow(pruned4), size = nrow(pruned4), replace = FALSE),]
+               point_count <- point_count + nrow(pruned4)  
+               l[["added4"]] <- added4
+               subset4 <- rbind(subset4, added4)
+               solution <- subset4[subset4$time_per_pixel == min(subset4$time_per_pixel),][1,]
+               
+               solution$point_number <- point_count 
+               l[["solution"]] <- solution
+               l[["slowdown"]] <- solution$time_per_pixel / min(df$time_per_pixel)
+               logs[[i]] <- l    
+               df_lm_random <- rbind(df_lm_random,solution)
+           }
 
-          model <- time_per_pixel ~ vector_length + lws_y 
-          best1 <- find_best(model, working_set, df, c("vector_length", "lws_y")) 
+           df_lm_random <- cbind(df_lm_random, method=rep("LM",nrow(df_lm_random)))
+           summary(df_lm_random)
 
-          # Pruning the working set and the search space
-          subset1 <- working_set[working_set$vector_length == best1$vector_length & 
-                                 working_set$lws_y == best1$lws_y,]
-
-          pruned1 <- df[df$vector_length == best1$vector_length & 
-                        df$lws_y == best1$lws_y,]
-
-          # Step 2          
-          # Adding new points
-          added1 <- pruned1[sample(1:nrow(pruned1), size = 40, replace = FALSE),]
-          l[["added1"]] <- added1
-          subset1 <- subset1[, !names(working_set) %in% c("run") ] 
-          subset1 <- rbind(subset1, added1)     
-          point_count <- point_count + 40
-
-          model <- time_per_pixel ~ y_component_number
-          best2 <- data.frame()
-          best2 <- find_best(model, subset1, pruned1, c("y_component_number")) 
-
-          subset2 <- subset1[subset1$y_component_number == best2,]
-          pruned2 <- pruned1[pruned1$y_component_number == best2,]
-
-          # Step 3
-          added2 <- pruned2[sample(1:nrow(pruned2), size = 20, replace = FALSE),]
-          l[["added2"]] <- added2
-          subset2 <- rbind(subset2, added2)   
-          point_count <- point_count + 20  
-
-          model <- time_per_pixel ~ elements_number 
-          best3 <- data.frame()
-          best3 <- find_best(model, subset2, pruned2, c("elements_number")) 
-          best3    
-
-          subset3 <- subset2[subset2$elements_number == best3,]
-          pruned3 <- pruned2[pruned2$elements_number == best3,]
-
-          # Step 4
-          added3 <- pruned3[sample(1:nrow(pruned3), size = 5, replace = FALSE),]
-          l[["added3"]] <- added3
-          subset3 <- rbind(subset3, added3)     
-          point_count <- point_count + 5  
-
-          model <- time_per_pixel ~ threads_number + I(1/threads_number)
-          best4 <- data.frame()
-          best4 <- find_best(model, subset3, pruned3, c("threads_number")) 
-          best4   
-
-          subset4 <- subset3[subset3$threads_number == best4,]
-          pruned4 <- pruned3[pruned3$threads_number == best4,]
-
-          nrow(subset4)
-          nrow(pruned4)
-          min(pruned4$time_per_pixel) / min(df$time_per_pixel) 
-
-          added4 <- pruned4[sample(1:nrow(pruned4), size = nrow(pruned4), replace = FALSE),]
-          point_count <- point_count + nrow(pruned4)  
-          l[["added4"]] <- added4
-          subset4 <- rbind(subset4, added4)
-          solution <- subset4[subset4$time_per_pixel == min(subset4$time_per_pixel),][1,]
-          
-          solution$point_number <- point_count 
-          l[["solution"]] <- solution
-          l[["slowdown"]] <- solution$time_per_pixel / min(df$time_per_pixel)
-          logs[[i]] <- l    
-          df_lm_random <- rbind(df_lm_random,solution)
-      }
-
-      df_lm_random <- cbind(df_lm_random, method=rep("LM",nrow(df_lm_random)))
-      summary(df_lm_random)
-
-      write.csv(df_lm_random, "../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", row.names=FALSE)
-      saveRDS(logs, "../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
-      summary(df_lm_random)
-    #+end_src
-
-    #+RESULTS:
+           write.csv(df_lm_random, "../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", row.names=FALSE)
+           saveRDS(logs, "../data/2016_04_08/pilipili2/18_08_24/lm_random_logs_new_strat_1000.rds")
+           summary(df_lm_random)
+         #+end_src
+         
+         #+RESULTS:
     #+begin_example
      elements_number y_component_number vector_length temporary_size
      Min.   :6       Min.   :6          Min.   :1     Min.   :2     
@@ -25628,9 +25639,10 @@ h[g.name.to_sym] = 1024
      Max.   :119
 #+end_example
 
-****** Rq
+****** Rq                                                            :Script:
 ******* Random
-******** Old version
+******** V1                                                      :deprecated:
+         _WARNING same thing as with LM_
    #+begin_src R :results output :session :exports both
      f <- function(x) { x * (0.05 - 1 * (x < 0)) }
      g <- function(x) { f(x)/x^2 }
@@ -25792,7 +25804,8 @@ h[g.name.to_sym] = 1024
    #+RESULTS:
    :  There were 50 or more warnings (use warnings() to see the first 50)
 
-******** Rq point budget
+******** V2                                                      :deprecated:
+          _WARNING same thing as with LM_
     #+begin_src R :results output :session :exports both
      f <- function(x) { x * (0.05 - 1 * (x < 0)) }
      g <- function(x) { f(x)/x^2 }
@@ -26182,7 +26195,8 @@ h[g.name.to_sym] = 1024
      3rd Qu.:119           
      Max.   :119
 #+end_example
-****** Merging
+****** Merging                                                       :Script:
+******* V1                                                       :deprecated:
       Merging data frame and computing speedup
       #+begin_src R :results output :session :exports both
         df_gen <- read.csv("../data/2016_04_08/pilipili2/18_08_24/ga_search.csv", strip.white=T, header=T)
@@ -26203,6 +26217,79 @@ h[g.name.to_sym] = 1024
       #+end_src
 
       #+RESULTS:
+
+******* Experiences with 1000 runs:                                  :Script:
+    #+begin_src sh :results output :exports none
+      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+    #+end_src
+
+    #+RESULTS:
+    
+    Merging 1000 runs:
+    #+begin_src R :results output :session :exports both
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      df_gen <- read.csv("../data/2016_04_08/pilipili2/18_08_24/ga_search_1000.csv", strip.white=T, header=T)
+      df_uniform <- read.csv("../data/2016_04_08/pilipili2/18_08_24/uniform_search_1000.csv", strip.white=T, header=T)
+      df_greedy <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search_1000.csv", strip.white=T, header=T)
+      df_greedy_multiple <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search_multiple_1000.csv", strip.white=T, header=T)
+      df_lhs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lhs_search_1000.csv", strip.white=T, header=T)
+      df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
+      df_rq_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/rq_random_new_strat_1000.csv", strip.white=T, header=T)
+
+      df_greedy$method <- "GS" 
+      df_greedy_multiple$method <- "GSR" 
+
+      df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random, df_rq_random, df_greedy_multiple)
+      # df_merged <- rbind(df_uniform, df_lm_random, df_rq_random)
+      df_merged <- cbind(df_merged,slowdown = df_merged$time_per_pixel / min(df$time_per_pixel) )
+
+      write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", row.names=FALSE)
+      #+end_src
+
+    #+RESULTS:
+
+    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 800 :session
+      library(ggplot2)
+      library(plyr)
+
+      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+      df_all_methods <- read.csv("../data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", strip.white=T, header=T)  
+
+      df_mean = ddply(df_all_methods,.(method), summarize, 
+                      mean = mean(slowdown))
+
+      df_median = ddply(df_all_methods,.(method), summarize, 
+                        median = median(slowdown))
+
+      df_max = ddply(df_all_methods,.(method), summarize, max = max(slowdown))
+
+      df_err = ddply(df_all_methods,.(method), summarize,
+                     mean = mean(slowdown), err = 2*sd(slowdown)/sqrt(length(slowdown)))
+
+      attach(df_all_methods)
+      ggplot(df_all_methods) + 
+          # aes(df_all_methods$slowdown) +
+          facet_grid(method~.) +
+          theme_bw() +
+          aes(df_all_methods$slowdown) +
+          stat_bin(binwidth=.05, fill="gray48") +
+          # stat_bin(binwidth=.05, geom="text", aes(label=..count..)) +
+          # geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=1000, fill="red"), alpha=0.3) +
+          # geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
+          # geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
+          # geom_text( aes(x=max), df_max, color="red" ) +
+          # geom_segment( aes(x=max,y=rep(1,nrow(df_max))) ,data=df_max) +
+          geom_curve(data=df_max, aes(x=3, y=500, xend=max, yend=5), arrow = arrow(length = unit(0.03, "npc")), curvature=0.3, linetype=2) +
+          geom_text( aes(x=max+.2,y=550,label="max"),data=df_max ) +
+          labs(y="Density", x="Slowdown compared best combination of the entire search space") +
+          scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
+          ggtitle("") + 
+          theme(legend.position="top") +
+          coord_cartesian(xlim=c(.9,4), ylim=c(0,1000))
+      #+end_src
+
+    #+RESULTS:
+    [[file:/tmp/babel-3796G5P/figure3796P60.png]]
 
 ***** Visualilzation
       #+begin_src sh :results output :exports none
@@ -26403,6 +26490,7 @@ h[g.name.to_sym] = 1024
       [[file:/tmp/babel-3564RBo/figure3564YFq.png]]
       
 **** Study of the convergence of the distribution
+     _Suspended for the moment_
 ***** GA
 ****** Old version  
       #+begin_src sh :results output :exports none 
@@ -27236,7 +27324,9 @@ h[g.name.to_sym] = 1024
 
 ** 2016-06-02
 *** DONE Impact of na.action="na.exclude"
-    - *Conclusion:* This seems to have no negative effect in the estimate of the quantile.
+    - *Conclusion:* This seems to have no negative effect in the
+      estimate of the quantile.
+      This avoid to have some errors.
     #+begin_src sh :results output :exports both
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
     #+end_src
@@ -27455,7 +27545,8 @@ h[g.name.to_sym] = 1024
      :    1.400579e-27   2.974186e-243    0.000000e+00    0.000000e+00    1.186992e-01
 
 ** 2016-06-04
-*** DONE Improving worst solution
+*** DONE Improving worst solution                                :deprecated:
+    _Analysis based on an incorrect strategy_
 **** Generating the logs
     #+begin_src sh :results output :exports none
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
@@ -29265,6 +29356,7 @@ h[g.name.to_sym] = 1024
 ** 2016-06-08
 *** DONE Refining worst rq
    _Stuck because of the p-values standard err, etc..._
+   We need to be able to compute these information correctly.
 **** Logs
       #+begin_src R :results output :session :exports both
      f <- function(x) { x * (0.05 - 1 * (x < 0)) }
@@ -31012,6 +31104,7 @@ h[g.name.to_sym] = 1024
 
     #+RESULTS:
 
+    Logging the fit of model with different sampling techniques
 **** Random
      #+begin_src R :results output :session :exports both
         f <- function(x) { x * (0.05 - 1 * (x < 0)) }
@@ -31387,6 +31480,7 @@ h[g.name.to_sym] = 1024
         saveRDS(fits, "../data/2016_04_08/pilipili2/18_08_24/Dopt_absurd_fits.rds")
          #+end_src
 ** 2016-06-10
+*** Proba 
    #+begin_src R :results output :session :exports both
      p=0.01
      x=1:100
@@ -32012,80 +32106,9 @@ h[g.name.to_sym] = 1024
     : [1] 1.012177
 
 ** 2016-06-11
-*** Experiences with 1000 runs:
-    #+begin_src sh :results output :exports none
-      ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
-    #+end_src
-
-    #+RESULTS:
-
-    #+begin_src R :results output :session :exports both
-      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
-      df_gen <- read.csv("../data/2016_04_08/pilipili2/18_08_24/ga_search_1000.csv", strip.white=T, header=T)
-      df_uniform <- read.csv("../data/2016_04_08/pilipili2/18_08_24/uniform_search_1000.csv", strip.white=T, header=T)
-      df_greedy <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search_1000.csv", strip.white=T, header=T)
-      df_greedy_multiple <- read.csv("../data/2016_04_08/pilipili2/18_08_24/greedy_search_multiple_1000.csv", strip.white=T, header=T)
-      df_lhs <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lhs_search_1000.csv", strip.white=T, header=T)
-      df_lm_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/lm_random_new_strat_1000.csv", strip.white=T, header=T)
-      df_rq_random <- read.csv("../data/2016_04_08/pilipili2/18_08_24/rq_random_new_strat_1000.csv", strip.white=T, header=T)
-
-      df_greedy$method <- "GS" 
-      df_greedy_multiple$method <- "GSR" 
-
-      df_merged <- rbind(df_gen, df_uniform, df_greedy, df_lhs, df_lm_random, df_rq_random, df_greedy_multiple)
-      # df_merged <- rbind(df_uniform, df_lm_random, df_rq_random)
-      df_merged <- cbind(df_merged,slowdown = df_merged$time_per_pixel / min(df$time_per_pixel) )
-
-      write.csv(df_merged, "../data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", row.names=FALSE)
-      #+end_src
-
-    #+RESULTS:
-
-    #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 800 :session
-      library(ggplot2)
-      library(plyr)
-
-      df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
-      df_all_methods <- read.csv("../data/2016_04_08/pilipili2/18_08_24/all_search_1000.csv", strip.white=T, header=T)  
-
-      df_mean = ddply(df_all_methods,.(method), summarize, 
-                      mean = mean(slowdown))
-
-      df_median = ddply(df_all_methods,.(method), summarize, 
-                        median = median(slowdown))
-
-      df_max = ddply(df_all_methods,.(method), summarize, max = max(slowdown))
-
-      df_err = ddply(df_all_methods,.(method), summarize,
-                     mean = mean(slowdown), err = 2*sd(slowdown)/sqrt(length(slowdown)))
-
-      attach(df_all_methods)
-      ggplot(df_all_methods) + 
-          # aes(df_all_methods$slowdown) +
-          facet_grid(method~.) +
-          theme_bw() +
-          aes(df_all_methods$slowdown) +
-          stat_bin(binwidth=.05, fill="gray48") +
-          # stat_bin(binwidth=.05, geom="text", aes(label=..count..)) +
-          # geom_rect(data = df_err, aes(xmin=mean-err, xmax=mean+err, ymin=0, ymax=1000, fill="red"), alpha=0.3) +
-          # geom_vline( aes(xintercept = median), df_median, color="darkgreen", linetype=2 ) +
-          # geom_vline( aes(xintercept = mean), df_mean, color="red", linetype=2 ) +
-          # geom_text( aes(x=max), df_max, color="red" ) +
-          # geom_segment( aes(x=max,y=rep(1,nrow(df_max))) ,data=df_max) +
-          geom_curve(data=df_max, aes(x=3, y=500, xend=max, yend=5), arrow = arrow(length = unit(0.03, "npc")), curvature=0.3, linetype=2) +
-          geom_text( aes(x=max+.2,y=550,label="max"),data=df_max ) +
-          labs(y="Density", x="Slowdown compared best combination of the entire search space") +
-          scale_fill_discrete(name="",breaks=c("red"), labels=c("Mean error")) +
-          ggtitle("") + 
-          theme(legend.position="top") +
-          coord_cartesian(xlim=c(.9,4), ylim=c(0,1000))
-      #+end_src
-
-    #+RESULTS:
-    [[file:/tmp/babel-3796G5P/figure3796P60.png]]
 
 *** Local search with our starting point
-    It does not make any progress:
+    It does not make any progress because it is a local optimum:
     #+begin_src R :results output :session :exports none :tangle ../scripts/gr_bench.R
       kernel_size <- function(point) {
           vector_number <- ceiling((point$elements_number / point$y_component_number) / point$vector_length)
@@ -32211,7 +32234,7 @@ h[g.name.to_sym] = 1024
       df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
       df_greedy <- data.frame()
       df_greedy_start <- data.frame()
-      
+
       p <-  df[df$elements_number == 6 & df$y_component_number == 6 & df$vector_length == 1 & df$threads_number == 256 & df$lws_y == 1 & df$temporary_size == 2 & df$load_overlap == "true", ]
 
       for(k in 1:10){
@@ -32262,7 +32285,7 @@ h[g.name.to_sym] = 1024
     172589             true         true            256     1     1.1792e-10     GR
 #+end_example
 
-*** LM worst case
+*** LM worst case                                                  :Analysis:
     #+begin_src sh :results output :exports none
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
     #+end_src
@@ -32427,7 +32450,7 @@ h[g.name.to_sym] = 1024
     #+RESULTS:
     [[file:/tmp/babel-3912W-5/figure39128PM.png]]
 
-*** LM best case
+*** LM best case                                                   :Analysis:
 **** The very good case
     #+begin_src sh :results output :exports none
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
@@ -33149,7 +33172,9 @@ h[g.name.to_sym] = 1024
 
 ** 2016-06-15
 *** Structure of the search space
-    Just to order parameters by the impact magnitude to sort the data
+    Just to order parameters by the impact magnitude to sort the
+    data. This just for illustrating the structure of the search space
+    in my M2 presentation:
     #+begin_src sh :results output :exports none
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
     #+end_src
