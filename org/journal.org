@@ -33149,6 +33149,7 @@ h[g.name.to_sym] = 1024
 
 ** 2016-06-15
 *** Structure of the search space
+    Just to order parameters by the impact magnitude to sort the data
     #+begin_src sh :results output :exports none
       ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
     #+end_src
@@ -33161,13 +33162,12 @@ h[g.name.to_sym] = 1024
     #+end_src
 
     #+RESULTS:
-    
-    #+begin_src R :results output :session :exports both
-    fit <- lm(time_per_pixel ~ vector_length + elements_number + y_component_number + threads_number + lws_y)
-#    summary(fit)
-       (tstats <- coef(fit) / sqrt(diag(vcov(fit))))
-       2 * pt(abs(tstats), df = df.residual(fit), lower.tail = FALSE)
 
+    T-values and p-values:
+    #+begin_src R :results output :session :exports both
+      fit <- lm(time_per_pixel ~ vector_length + elements_number + y_component_number + threads_number + lws_y)
+      (tstats <- coef(fit) / sqrt(diag(vcov(fit))))
+      2 * pt(abs(tstats), df = df.residual(fit), lower.tail = FALSE)
     #+end_src
 
     #+RESULTS:
@@ -33180,20 +33180,20 @@ h[g.name.to_sym] = 1024
     :     threads_number              lws_y 
     :      1.238111e-313       0.000000e+00
 
+    We can see the same structure in each vector length values:
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
       library(ggplot2)
       sorted <- df[order(vector_length, lws_y, threads_number, y_component_number, elements_number, temporary_size, load_overlap),]         
-      # plot(sorted$time_per_pixel)
       ggplot(sorted) +
           aes(x=seq(1,nrow(sorted)), y=time_per_pixel) +
           geom_point()
     #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-3796G5P/figure3796fqU.png]]
+    [[file:/tmp/babel-3964gX5/figure39646FF.png]]
 
+    Fixing vector length to focus on lower order impact parameters:
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-    
       sorted <- df[vector_length == 1,]
       sorted <- sorted[order(sorted$lws_y, sorted$threads_number, sorted$elements_number, sorted$y_component_number, sorted$temporary_size, sorted$load_overlap),]         
       # plot(sorted$time_per_pixel)
@@ -33203,8 +33203,9 @@ h[g.name.to_sym] = 1024
     #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-3796G5P/figure3796RfH.png]]
+    [[file:/tmp/babel-3964gX5/figure3964HQL.png]]
 
+    Focusing on lower order parameters
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
           
       sorted <- sorted[sorted$lws_y == 16,]
@@ -33216,7 +33217,7 @@ h[g.name.to_sym] = 1024
     #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-3796G5P/figure3796smy.png]]
+    [[file:/tmp/babel-3964gX5/figure3964UaR.png]]
 
     #+begin_src R :results output :session :exports both
       fit <- lm(time_per_pixel ~ elements_number + threads_number + y_component_number, sorted)
@@ -33249,6 +33250,7 @@ h[g.name.to_sym] = 1024
     F-statistic: 126.5 on 3 and 572 DF,  p-value: < 2.2e-16
 #+end_example
 
+    We can see the tendency of the impact of threads number:
     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
     
       sorted1 <- sorted[ sorted$y_component_number== 1,]
@@ -33262,7 +33264,7 @@ h[g.name.to_sym] = 1024
     #+end_src
 
     #+RESULTS:
-    [[file:/tmp/babel-3796G5P/figure3796SSm.png]]
+    [[file:/tmp/babel-3964gX5/figure3964hkX.png]]
 
     #+begin_src R :results output :session :exports both
       fit <- lm(time_per_pixel ~ elements_number + threads_number , sorted)
@@ -33293,11 +33295,9 @@ h[g.name.to_sym] = 1024
     F-statistic: 167.6 on 2 and 573 DF,  p-value: < 2.2e-16
 #+end_example
 
-
-     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
     
-#      sorted2 <- sorted1[ sorted1$y_component_number== 1,]
- #     sorted2 <- sorted2[order( sorted2$threads_number, sorted2$elements_number,  sorted2$temporary_size, sorted2$load_overlap),]         
+    In this one we can more easily see a pattern:
+     #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 800 :height 600 :session
        sorted2 <- sorted[ sorted$threads_number == 128,]
        sorted2 <- sorted2[order( sorted2$y_component_number, sorted2$elements_number, sorted2$temporary_size, sorted2$load_overlap),]         
       # plot(sorted$time_per_pixel)
@@ -33308,7 +33308,7 @@ h[g.name.to_sym] = 1024
     #+end_src
 
      #+RESULTS:
-     [[file:/tmp/babel-3796G5P/figure3796GCz.png]]
+     [[file:/tmp/babel-3964gX5/figure3964uud.png]]
 
 ** 2016-06-17
    Gdr-im@gdr-im.fr
