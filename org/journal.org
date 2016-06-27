@@ -1215,9 +1215,9 @@ Entered on [2015-11-19 jeu. 20:56]
      789            false        false   1.444410e-10
      #+end_example
 
-   - Now can make the same conclusion by using less measurement. For
+   - Now can we make the same conclusion by using less measurement? For
     example here we try to take 80 points at with a totally random
-    strategy and we most of the time we can get which are the more
+    strategy and we see that most of the time we can get which are the more
     important parameters.
      #+begin_src R :results output :session :exports both
        summary(lm(data=df[sample(size = 80, x = 1:length(df$time_per_pixel),replace = F),],time_per_pixel ~ x_component_number + vector_length + y_component_number + vector_recompute + temporary_size + load_overlap )) 
@@ -1253,7 +1253,6 @@ Entered on [2015-11-19 jeu. 20:56]
      F-statistic: 34.85 on 6 and 73 DF,  p-value: < 2.2e-16
      #+end_example
 
-     #+end_src
    - Lets try better order
        #+begin_src R :results output graphics :file img/ordered_1.png :exports both :width 700 :height 500 :session
                   df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -1282,6 +1281,9 @@ Entered on [2015-11-19 jeu. 20:56]
      - [[file:../data/2016_03_07/pilipili2/10_19_36/Data10_19_36_parameters.yaml][Search space]]
      - [[file:../data/2016_03_07/pilipili2/10_19_36/Data10_19_36.yaml][Results of experiment]]
 **** Observations
+     _WARNING_: I thought I was using the GPU but it seems that it is
+     not the case because the vector length for the best combination
+     should not be 16 because there is no vector support on NVIDIA GPUs.
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_03_07/pilipili2/10_19_36/Data10_19_36.yaml
      #+end_src
@@ -3405,6 +3407,7 @@ Entered on [2015-11-19 jeu. 20:56]
       How do we interpret it?
       Does it have to be the closer that zero as possible?
 *** Genetic Algo  
+    Let's see how a GA performs:
     - Generation limit 6, population size 10
        #+begin_src sh :results output :exports both
          DATE=`date +%Y_%m_%d`
@@ -4051,6 +4054,8 @@ Entered on [2015-11-19 jeu. 20:56]
    - [ ] Have look at the too big residue error when vector recompute
      is false. 
 *** OUT_OF_RESSOURCES constraints
+   Trying to bound the size of the kernel in order to avoid the out of
+   ressource error.
    - Config limit
      #+BEGIN_EXAMPLE
       opt_space = OptimizationSpace::new( :x_component_number => [53],
@@ -4285,6 +4290,9 @@ Entered on [2015-11-19 jeu. 20:56]
      #+END_SRC
 **** Observations
 ***** Hierarchic
+      Testing a new formulation of the search space. In our mind this
+      one makes more sense because to allow easier modeling and allow
+      fine and coarse grain modeling.
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_03_11/pilipili2/19_13_54/Data19_13_54_hierachic.yaml
      #+end_src
@@ -4639,7 +4647,7 @@ Entered on [2015-11-19 jeu. 20:56]
 **** About linear regression
      - Used model relationship between *scalars* predictor variables and
        response variables \to wikipedia
-*** Bruteforce pilipili2
+*** Bruteforce pilipili2                                         :deprecated:
 **** Results
      - [[file:../data/2016_04_02/pilipili2/19_13_54/Info19_38_38.org][Conditions of experiment]]
      - [[file:../data/2016_04_02/pilipili2/19_38_38/Data19_38_38_parameters.yaml][Search space]]
@@ -4687,6 +4695,10 @@ Entered on [2015-11-19 jeu. 20:56]
 
      #+RESULTS:
      #+begin_example
+     The following objects are masked from df (pos = 3):
+
+         load_overlap, temporary_size, time_per_pixel, vector_length,
+         vector_recompute, x_component_number, y_component_number
       x_component_number vector_length  y_component_number temporary_size
       Min.   : 1.0       Min.   : 1.0   Min.   :1.00       Min.   :2     
       1st Qu.: 2.0       1st Qu.: 2.0   1st Qu.:1.75       1st Qu.:2     
@@ -4727,7 +4739,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-3694SAZ/figure369431L.png]]
+       [[file:/tmp/babel-4137lLN/figure4137yEv.png]]
      - Another view of the impact of x_component_number showing the
        estimate of the mean. We can see where will pass the regression
        line and it will tell us the best is at x_component_number
@@ -4753,7 +4765,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-3694SAZ/figure3694EAS.png]]
+       [[file:/tmp/babel-4137lLN/figure4137_O1.png]]
      - Repartition of combination
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
@@ -4776,7 +4788,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
      
        #+RESULTS:
-       [[file:/tmp/babel-3694SAZ/figure3694RKY.png]]
+       [[file:/tmp/babel-4137lLN/figure4137xYE.png]]
 
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          library(ggplot2)
@@ -4798,7 +4810,7 @@ Entered on [2015-11-19 jeu. 20:56]
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-3694SAZ/figure3694eUe.png]]
+       [[file:/tmp/babel-4137lLN/figure4137-iK.png]]
      - Looking for the min, regression quantile
        Estimate of the minimum try \to -exp
        
@@ -12846,7 +12858,7 @@ Entered on [2015-11-19 jeu. 20:56]
 ** 2016-04-13
 *** Org-mode
 **** TODO Take a look at task scheduling
-**** TODO Take a look at Luka's paper
+**** DONE Take a look at Luka's paper
 *** format_data_detailed.rb V2                                         :Script:
     New version of this script because we don't care about exactly
     what is the size of the image what we just need is an order:
@@ -13063,6 +13075,10 @@ Entered on [2015-11-19 jeu. 20:56]
      #+END_SRC
 
 **** DONE Search space characteristics                             :Analysis:
+     _WARNING_ : The visualization using the speedup can lead to
+     incorrect interpretation because we loose the notion of distance
+     between the different bins.
+
      Generate clean data if note already done:
      #+begin_src sh :results output :exports both
        ruby ../scripts/clean_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end.yaml
@@ -13301,7 +13317,7 @@ Entered on [2015-11-19 jeu. 20:56]
       #+RESULTS:
       [[file:/tmp/babel-5694w-6/figure5694oGa.png]]
 
-**** TODO A random exploration                                     :Analysis:
+**** DONE A random exploration                                     :Analysis:
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
      #+end_src
@@ -13445,7 +13461,7 @@ Entered on [2015-11-19 jeu. 20:56]
     achieve good performances half of the time. 
 
 ***** TODO try LHS
-**** TODO Local search algorithm
+**** DONE Local search algorithm
      Still as comparison lets implement local search. We cannot
      implement a real gradient descent because our function is not
      differentiable and discrete. But I can use method which looks
@@ -13633,7 +13649,7 @@ Entered on [2015-11-19 jeu. 20:56]
        Max.   :1.751e-08
       #+end_example
 
-***** TODO Analysis                                                :Analysis:
+***** DONE Analysis                                                :Analysis:
       #+begin_src R :results output :session :exports both
         options(width=150)
         res <- data.frame()
@@ -13729,9 +13745,9 @@ Entered on [2015-11-19 jeu. 20:56]
       #+RESULTS:
       [[file:img/20160408/pilipili2/grad_1000_speedup_best_h.png]]
 
-      In general the improvment brought the gradient descent compared
+      In general the improvment brought by the gradient descent compared
       to the starting point is generally twice better. This is again
-      because we have lots of global optimum and the gradient is
+      because we have lots of local optimum and the gradient is
       quickly stuck.
       #+begin_src R :results output graphics :file img/20160408/pilipili2/grad_1000_speed_start_h.png :exports both :width 700 :height 400 :session
         library(ggplot2)
@@ -13761,7 +13777,7 @@ Entered on [2015-11-19 jeu. 20:56]
       is not suited to this kind of problem. 
 
 ****** TODO Check if the number limit of interation is reached or not
-**** TODO Genetic Algorithm
+**** DONE Genetic Algorithm
 ***** DONE Adding Constraint mechanism
       Gene = An option
       Genotype = Organism = A combination of genes
@@ -13813,144 +13829,154 @@ h[g.name.to_sym] = 1024
        #+RESULTS:
        : pouet
 
-***** TODO Experiment
+***** DONE Experiment
+      Trying to find a good tuning for the Genetic algorithm
+      by playing with the population size and the generation limit,
+      in order to make fair comparison. We choose to take population
+      size = 20 and generation limit = 5.
+
        #+begin_src sh :results output :exports both
-         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
+        ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml 
        #+end_src
 
        #+RESULTS:
 
        #+begin_src R :results output :session :exports both
-         df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+        df <- read.csv("/tmp/test.csv", strip.white=T, header=T)
        #+end_src
 
        #+RESULTS:
 
-     - Generation limit 10, population size 10
-       #+begin_src sh :results output :exports both
-         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
-         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
-         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml"
-         for i in `seq 1 1000`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 10 --population_size 10 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
-         done
-       #+end_src
+      - Generation limit 10, population size 10
+        #+begin_src sh :results output :exports both
+          DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+          PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+          OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml"
+          for i in `seq 1 1000`; do
+              ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 10 --population_size 10 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+          done
+        #+end_src
 
-       #+RESULTS:
+        #+RESULTS:
 
-       #+begin_src sh :results output :exports both
-         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml 
-       #+end_src
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g10_p10_m01_e1_tt.yaml 
+        #+end_src
 
-       #+RESULTS:
-
-       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-         res1 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+        #+RESULTS:
+    
+        This tuning of the GA is not better than a random search on our
+        problem with a mean that is about at 0.85:
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          res1 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
          
-         library(ggplot2)
-         speedup <- c()
-         for (i in 1:nrow(res1)){
-             speedup[i] <-  min(df$time_per_pixel) / res1[i,]$time_per_pixel
-         }
-         data <- data.frame(speedup)
-         ggplot(data) +
-             aes(speedup) +
-             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
-             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
-             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
-       #+end_src
+          library(ggplot2)
+          speedup <- c()
+          for (i in 1:nrow(res1)){
+              speedup[i] <-  min(df$time_per_pixel) / res1[i,]$time_per_pixel
+          }
+          data <- data.frame(speedup)
+          ggplot(data) +
+              aes(speedup) +
+              theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+              geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+              geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+              geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+        #+end_src
 
-       #+RESULTS:
-       [[file:/tmp/babel-3156PQ3/figure3156uZH.png]]
+        #+RESULTS:
+        [[file:/tmp/babel-4137lLN/figure4137MuX.png]]
 
-     - Generation limit 5, population size 20
-       #+begin_src sh :results output :exports both
-         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
-         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
-         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g5_p20_m01_e1_tt.yaml"
-         for i in `seq 1 1000`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
-         done
-       #+end_src
+      - Generation limit 5, population size 20
+        #+begin_src sh :results output :exports both
+          DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+          PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+          OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g5_p20_m01_e1_tt.yaml"
+          for i in `seq 1 1000`; do
+              ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 5 --population_size 20 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+          done
+        #+end_src
 
-       #+RESULTS:
+        #+RESULTS:
 
-       #+begin_src sh :results output :exports both
-         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g5_p20_m01_e1_tt.yaml 
-       #+end_src
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g5_p20_m01_e1_tt.yaml 
+        #+end_src
 
-       #+RESULTS:
+        #+RESULTS:
 
-       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-         res2 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+        Here we seem very close to the results of random search:
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          res2 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
          
-         library(ggplot2)
-         speedup <- c()
-         for (i in 1:nrow(res2)){
-             speedup[i] <-  min(df$time_per_pixel) / res2[i,]$time_per_pixel
-         }
-         data <- data.frame(speedup)
-         ggplot(data) +
-             aes(speedup) +
-             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
-             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
-             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
-       #+end_src
+          library(ggplot2)
+          speedup <- c()
+          for (i in 1:nrow(res2)){
+              speedup[i] <-  min(df$time_per_pixel) / res2[i,]$time_per_pixel
+          }
+          data <- data.frame(speedup)
+          ggplot(data) +
+              aes(speedup) +
+              theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+              geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+              geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+              geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+        #+end_src
 
-       #+RESULTS:
-       [[file:/tmp/babel-3564RBo/figure3564Sjv.png]]
+        #+RESULTS:
+        [[file:/tmp/babel-4137lLN/figure4137zF2.png]]
 
-     - Generation limit 20, population size 5
-       #+begin_src sh :results output :exports both
-         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
-         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
-         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g20_p5_m01_e1_tt.yaml"
-         for i in `seq 1 1000`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 20 --population_size 5 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
-         done
-       #+end_src
+      - Generation limit 20, population size 5
+        #+begin_src sh :results output :exports both
+          DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+          PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+          OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g20_p5_m01_e1_tt.yaml"
+          for i in `seq 1 1000`; do
+              ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 20 --population_size 5 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+          done
+        #+end_src
 
-       #+RESULTS:
+        #+RESULTS:
 
-     - Generation limit 2, population size 50
-       #+begin_src sh :results output :exports both
-         DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
-         PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
-         OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g2_p50_m01_e1_tt.yaml"
-         for i in `seq 1 1000`; do
-             ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 2 --population_size 50 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
-         done
-       #+end_src
+      - Generation limit 2, population size 50
+        #+begin_src sh :results output :exports both
+          DATA="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml"
+          PARAM="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_parameters_v2.yaml"
+          OUTPUT="../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g2_p50_m01_e1_tt.yaml"
+          for i in `seq 1 1000`; do
+              ruby ../boast/optimizer_benchmarks/bench_optimizer.rb $PARAM $DATA -r $OUTPUT --generations_limit 2 --population_size 50 --mutation_rate 0.1 --elitism 1 --twin_removal true > /dev/null
+          done
+        #+end_src
 
-       #+RESULTS:
+        #+RESULTS:
 
-       #+begin_src sh :results output :exports both
-         ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g20_p5_m01_e1_tt.yaml
-       #+end_src
+        #+begin_src sh :results output :exports both
+          ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_gen_g20_p5_m01_e1_tt.yaml
+        #+end_src
 
-       #+RESULTS:
+        #+RESULTS:
 
-       #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
-         res3 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
+        This configuration is worse than pop size = 10  and generation
+        limit = 10:
+        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
+          res3 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
          
-         library(ggplot2)
-         speedup <- c()
-         for (i in 1:nrow(res3)){
-             speedup[i] <-  min(df$time_per_pixel) / res3[i,]$time_per_pixel
-         }
-         data <- data.frame(speedup)
-         ggplot(data) +
-             aes(speedup) +
-             theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
-             geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
-             geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
-             geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
-       #+end_src
+          library(ggplot2)
+          speedup <- c()
+          for (i in 1:nrow(res3)){
+              speedup[i] <-  min(df$time_per_pixel) / res3[i,]$time_per_pixel
+          }
+          data <- data.frame(speedup)
+          ggplot(data) +
+              aes(speedup) +
+              theme(axis.text.x = element_text(angle = 70, hjust = 1, face="bold", size=12)) +
+              geom_vline(xintercept = median(data$speedup), color="darkgreen", linetype=2) +
+              geom_vline(xintercept = mean(data$speedup), color="red", linetype=2) +
+              geom_histogram(binwidth=0.02, color="white", fill="gray1", aes(y=..density.. * 0.02))      
+        #+end_src
 
-       #+RESULTS:
-       [[file:/tmp/babel-3156PQ3/figure31567qB.png]]
+        #+RESULTS:
+        [[file:/tmp/babel-4137lLN/figure4137AXw.png]]
 
 
      - Generation limit 50, population size 2
@@ -13971,6 +13997,9 @@ h[g.name.to_sym] = 1024
 
        #+RESULTS:
 
+       A to small population size does not works well on our search
+       space. Because the GA works mostly in a local way but we have
+       lots local optimum.
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          res4 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
          
@@ -13989,7 +14018,7 @@ h[g.name.to_sym] = 1024
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-2602MCh/figure2602Q9R.png]]
+       [[file:/tmp/babel-4137lLN/figure4137Z_R.png]]
 
 
      - Generation limit 1, population size 100
@@ -14010,6 +14039,8 @@ h[g.name.to_sym] = 1024
 
        #+RESULTS:
 
+       Ok this one is the best configuration we have found but I made
+       a mistake because it use a total of 200 points.
        #+begin_src R :results output graphics :file (org-babel-temp-file "figure" ".png") :exports both :width 600 :height 400 :session
          res5 <- read.csv("/tmp/test.csv", strip.white=T, header=T)
          
@@ -14028,7 +14059,7 @@ h[g.name.to_sym] = 1024
        #+end_src
 
        #+RESULTS:
-       [[file:/tmp/babel-2493LNu/figure2493oiY.png]]
+       [[file:/tmp/babel-4137lLN/figure4137Noq.png]]
 
 
 ****** DONE How many run do we need?
@@ -14825,6 +14856,10 @@ h[g.name.to_sym] = 1024
          - Weigthed least squares
          - etc
 ******* TODO The rq function
+        _WARNING_: For the moment we are stuck with rq because of the
+        problem with our data, the summary function cannot compute
+        p-values, std err, etc....
+
         #+begin_src sh :results output :exports both
           ruby ../scripts/format_data.rb ../data/2016_04_08/pilipili2/18_08_24/test_space_2016_04_02_end_cleaned.yaml
         #+end_src
@@ -15865,7 +15900,7 @@ h[g.name.to_sym] = 1024
          #+end_example
 
 ******** TODO How to compute confidence intervals?
-         Do we really need them?
+         Do we really need them? Of course we do!
 ****** TODO Modelization  
        Can we really make a good estimation of extremal values with a
        model?
@@ -21513,6 +21548,10 @@ h[g.name.to_sym] = 1024
         _Warning: in this part we use rq because I have some trouble_
         _using lm with the weights optiions multiple time._
 ******** Let's try with all the factors
+         Here we try to use a complete model, based of the model that
+          suit the best the full search space, in order to see if we
+          can make good prediction in "one shot".
+
           Only 54% of speedup
           #+begin_src R :results output :session :exports both
             library(quantreg) 
@@ -21965,6 +22004,7 @@ h[g.name.to_sym] = 1024
 
 
 ********* Auto
+          Automatization of the process.
 ********** Iterated version 
           #+begin_src R :results output :session :exports both
             df <- read.csv("/tmp/test.csv",strip.white=T,header=T)
@@ -22376,6 +22416,7 @@ h[g.name.to_sym] = 1024
 * Mai
 ** 2016-05-02
 *** Device partitionning                                               :Ruby:
+    Allow to choose a particular device.
     #+begin_src sh :results output :exports both
       gem update --user-install opencl_ruby_ffi
     #+end_src
@@ -22389,6 +22430,9 @@ h[g.name.to_sym] = 1024
     
 ** 2016-05-04
 *** TODO Compare rq et wq on simple example for CI 
+    Trying to see if the std err, t-values and p-values using the
+    iterated way are correct.
+
      #+begin_src R :results output :session :exports both
        f <- function(x) { x * (0.05 - 1 * (x < 0)) }
        g <- function(x) { f(x)/x^2 }
@@ -22495,6 +22539,9 @@ h[g.name.to_sym] = 1024
     data.
 ** 2016-05-06
 *** Brute for on BEPO
+**** Data
+     - [[file:../data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Data17_01_58.yaml][Results]]
+     - [[file:~/Dev/M2/M2_Internship/data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Data17_01_58_parameters.yaml][Search space]]
 **** TODO Warm up effect
      #+begin_src sh :results output :exports both
        ruby ../scripts/format_data_detailed_v2.rb ../data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Data17_01_58.yaml
