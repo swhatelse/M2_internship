@@ -1,7 +1,7 @@
 #+TITLE:  LabBook
 #+AUTHOR: Steven QUINITO MASNADA
 #+BABEL: :tangle yes
-#+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r) R(t) deprecated(d)
+#+TAGS: Arnaud(a) Brice(b) Script(s) Analysis (c) Ruby(r) R(t) deprecated(d) Modifications(m)
 
 * TODO [10/15]
   - [X] Run brute force with load_overlap = [true,false]
@@ -22540,6 +22540,7 @@ h[g.name.to_sym] = 1024
 ** 2016-05-06
 *** Brute for on BEPO
 **** Data
+     - [[file:~/Dev/M2/M2_Internship/data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Info17_01_58.org][Environment]]
      - [[file:../data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Data17_01_58.yaml][Results]]
      - [[file:~/Dev/M2/M2_Internship/data/2016_04_25/bepo-HP-Z800-Workstation/17_01_58/Data17_01_58_parameters.yaml][Search space]]
 **** TODO Warm up effect
@@ -23078,7 +23079,7 @@ h[g.name.to_sym] = 1024
 #+end_example
 
 ** 2016-05-12
-*** TODO Check many points we lose with constraints.
+*** TODO Check how many points we lose with constraints.
 *** TODO Optim and constraints
 ** 2016-05-20
 *** TODO Converage comparison LHS vs Uniform vs DOpt
@@ -33469,3 +33470,57 @@ h[g.name.to_sym] = 1024
     +trop de fleches+
     +p16 title!+
     +formule latex+
+** 2016-06-28
+*** Modifying constraints mechanism                           :Modifications:
+    Currently complex constraints such as the kernel size is a
+    function and is not saved in the parameters yaml file but
+    hardcoded in the experiment code. Thus an experiment is not
+    linked to these complex constraints and we cannot keep track of
+    these constraints used for this experiment. 
+    The following modification would allow us to keep the functions as
+    a string along with the parameters.
+    #+BEGIN_SRC ruby :results output
+        class Checker
+          attr_accessor :code
+          attr_accessor :calls
+          
+          def initialize(*parameters)
+            parameters[0].each { |key, value|
+              if key == :code then
+                @code = value
+                eval code
+              elsif key == :calls then
+                @calls = value
+                eval code
+              end
+            }
+            
+          end
+          
+          def test
+            @calls.each{ |call|
+              eval call
+            }
+          end
+        end
+        
+        code = <<EOF       
+                      def foo (s)
+                        puts s
+                      end
+
+                      def bar (s)
+                        puts s.reverse!
+                      end
+      EOF
+        
+        c = Checker.new(:code => code, :calls => ['foo "teuop"', 'bar "teuop"'])
+        c.test
+    #+END_SRC
+
+    #+RESULTS:
+    : teuop
+    : pouet
+
+    
+    
