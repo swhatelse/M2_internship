@@ -737,7 +737,7 @@ than previously proposed one.
   earthquake modeling, or aerodynamics, there is an ever increasing
   need for computing power. For this purpose, High Performance Computing (HPC) is
   the most effective solution. It has brought the science to another
-  level and now it is a tool that has became essential for scientists like
+  level and now it is a tool that has became essential for scientists, like
   for example to simulate nuclear explosion or to analyze peta-octets of
   data. The expectations of scientists in term of performances are
   higher and higher as they need to run heavier and more complex
@@ -892,7 +892,7 @@ than previously proposed one.
   performances. Hence, the developer has to define which are the parts that
   can be performed in parallel and how they are parallelized. The code
   has to be written in a way such that the work is *distributed among all*
-  *the cores* available and keep them busy when I/Os occur to have the
+  *the cores* available and keep them busy even when I/Os occur to have the
   less possible cores idle. It is important to use the correct amount of
   *threads*. Too many threads often leads to more overhead due to the
   management of the threads. Too little and all the cores are not
@@ -900,7 +900,7 @@ than previously proposed one.
   each other, the better, which means there should be as little
   synchronization as possible.  
 
-  *Pipelining* is another kind of parallelism in which the treatment of
+  *Pipelining* is another kind of parallelism in which the processing of
   instructions is split into a sequence of steps (fetch, decode,
   execute, etc...) and goes through a pipeline. Multiple instructions
   can be in the pipeline at the same time but only at different step
@@ -933,7 +933,7 @@ than previously proposed one.
   *GPUs* because for computation that can be well parallelized which
   is the case generally the case with scientific computation, they
   are faster than CPUs. However GPUs do not work exactlty the same as
-  CPUs and need to be programmed in a quite different manner, the
+  CPUs and need to be programmed in a quite different manner and the
   cache and number of cores are different.
 
    #+BEGIN_LaTeX
@@ -950,12 +950,12 @@ than previously proposed one.
    #+END_LaTeX
 
   As we saw, optimizing code for HPC applications can be very
-  chalenging but porting applications accross platforms is even
-  harder and highly time consuming as the optimization are low level
+  chalenging and porting applications accross platforms is also
+  complex and highly time consuming as the optimization are low level
   and HPC platforms can be very different and complex. Optimization that gives
   good performances on one platform may not work so well on another
-  (see Figure\ref{fig:correlation}). As developers cannot spend months to port the
-  application on another machine it is necessary to use tools that
+  (see Figure\ref{fig:correlation}). As developers do not want to spend months to port the
+  application on another machine, it is necessary to use tools that
   facilitate the porting and the optimization of scientific
   applications.  
 
@@ -1038,8 +1038,8 @@ than previously proposed one.
     languages (C, Fortran, Cuda, OpenCL), compile it and benchmark
     the resulting executable.  
 ** Problem analysis
-  In a word, optimizing HPC applications is tricky and porting is even
-  more difficult but tools exist to assist the developer in this
+  In a word, optimizing and porting HPC applications is tricky but
+  tools exist to assist the developer in this 
   complicated task. However a major problem remains, generally the
   developer know what should be vectorized or what should be
   parallelized but he does not know what is the best size of the 
@@ -1065,7 +1065,7 @@ than previously proposed one.
   evaluate the objective function at a point /x/. It is necessary to
   generate the code variant, compile it and run it. Sometimes the
   problem can have constraints because some points are unfeasible,
-  this means they cause the compilation to fail or the program to
+  because they cause the compilation to fail or the program to
   crash. In addition parameters can be discrete or continuous. 
  
 * State of the art
@@ -1101,8 +1101,8 @@ than previously proposed one.
    Power 7. However it fails with to dissimilar platforms like with
    ARM in their case.  
 
-   As efficiency of a search strategy is dependent on the structure of
-   the search, machine learning can be used to learn what search
+   As the efficiency of a search strategy is dependent on the structure of
+   the search space, machine learning can be used to learn which search
    methods to use according to the characteristics of the search
    space. That is the approach taken by the auto-tuning framework
    Opentuner\cite{Ansel:2014:OEF:2628071.2628092}.  
@@ -1195,16 +1195,16 @@ than previously proposed one.
    \caption{\label{fig:function_charac}\textbf{Function characteristics}: 
     Figure\ref{fig:convex_function} shows the example of a convex 
     function. On this kind of functions, techniques such as gradient 
-    search converges very quickly to the global optimal.
+    search converge very quickly to the global optimal.
     Figure\ref{fig:non_convex_function} shows an example of 
     non-convexe function. This kind of function has many local optimum in which
     local search techniques can be stuck. Thus, global search and randomized techniques 
     are necessary to escape from them.
     Figure\ref{fig:non_smooth_function} shows the example of a function
     where at the derivative cannot be computed everywhere. Hence, derivative-based 
-    free methods are require.
+    free methods are required.
     Figure\ref{fig:auto_tuning_function} shows what the objective function 
-    in auto-tuning looks like. It combines non-convexity, non-smoothness, and noise}
+    in auto-tuning looks like. It combines non-convexity, non-smoothness, discontinuities and noise}
    \end{figure}
    #+END_LaTeX
 
@@ -1219,16 +1219,16 @@ than previously proposed one.
    (see Figure\ref{fig:non_convex_function}), hence with many local optimum and a
    local search algorithm would be stuck in a local optimum. The problem is that
    local optimum can be far from the global optimum. That is why, to
-   escape from this, global search and randomization are more suited
+   escape from these local optimum, global search and randomization are more suited
    such as simulated annealing algorithms, or genetic algorithms (kind of
    multiple local search). The derivative may also be unavailable,
    for this reason, derivative based searches are
    inefficient (see Figure\ref{fig:non_smooth_function}), the
    alternative is to use derivative-free based searches such as Nelder
    Mead Simplex. In auto-tuning the objective function is empirical and combines
-   non-convexity, non-smoothness and noise(see
+   non-convexity, non-smoothness, discontinuities and noise(see
    Figure\ref{fig:auto_tuning_function}). Hence, it can be necessary 
-   to build a surrogate. This is usefull to remove the noise and as a
+   to build a surrogate. This is useful to remove the noise and as a
    result it facilitates the search. 
 
    The previous search methods are used in
@@ -1238,7 +1238,7 @@ than previously proposed one.
 
    The efficiency of the previous approach is highly dependent on how
    much the hypothesis about the search space are wrong and sometimes
-   it is difficult know how it looks. For this reason some have worked
+   it is difficult to know how it looks. For this reason, some have worked
    on generic heuristics that combine all or part of the previous aspects
    such as pattern search\cite{Hooke:1961:DSS:321062.321069} which is
    a derivative-free based search that combines global search that
@@ -1248,7 +1248,7 @@ than previously proposed one.
    require less knowledge about the search space. This approach has
    been used in OPAL\cite{orban2011templating}, a meta-programming
    framework. It uses the mesh-adaptive
-   direct-search\cite{Audet04meshadaptive}, it is an extention of the
+   direct-search\cite{Audet04meshadaptive}, which is an extention of the
    pattern search. It can explore in an infinte set of directions
    unlike pattern search and use derivative information when available
    to speedup the search.
@@ -1269,10 +1269,10 @@ than previously proposed one.
 
    In general, auto-tuners exclude the user from the optimization
    process. It means that it is difficult for him to know if the
-   result can be further improved, and has no clue about the quality
+   result can be further improved, and he has no clue about the quality
    of the solution. Our goal is to give more feedback and control,
    through a semi-automatic and interactive approach, to
-   the user to guide him in the tuning the his application. Our
+   the user to guide him in the tuning of his application. Our
    approach is global and allows the user to evaluate the relevance of
    his hypothesis. With the provided feedback he is able to prune the
    search space to allow very low cost optimization.
@@ -1355,8 +1355,8 @@ than previously proposed one.
    full factorial design which consider the entire space. The simplest
    way of doing full factorial design is to chose points in the space 
    uniformly (see Figure\ref{fig:DoE_examples}). The drawback is that
-   the points are not well distributed, there are part of space where
-   there are lots of points and some other where there just few. The
+   the points are not well distributed, there are part of the space where
+   there are lots of points and some other where there are just few. The
    Latin Hyper-cube Sampling design provides a better coverage of the
    space by dividing the space into pieces of equal sizes and taking
    the same number of points at random in these areas. This method is
@@ -1375,7 +1375,7 @@ than previously proposed one.
    \includegraphics[width=\linewidth]{./img/DoE_examples_Dopt.pdf}
    \end{minipage}
    \caption{\label{fig:DoE_examples} \textbf{Sampling techniques}: These figures shows the space coverage 
-    of random sampling, LHS and D-Optimal sampling. The random sampling the 
+    of random sampling, LHS and D-Optimal sampling. The random sampling is the 
     simplest sampling methods but it does not provide an efficient covering 
     because there are some areas with more points and some areas with holes. LHS 
     provides a better space covering as it tries to maximize the distances between  
@@ -1409,7 +1409,7 @@ than previously proposed one.
 
 * Methodology
 ** Reproducible research
-  Such experimental process mandate rigorous methodology.
+  Such experimental process mandates rigorous methodology.
   In order for this work to be usefull for someone else, a laboratory
   book is available publicly on
   github\footnote{https://github.com/swhatelse/M2\_internship}. It 
@@ -1429,14 +1429,15 @@ than previously proposed one.
 ** Case study
    # Maybe cite Brice paper for this part
    In order to try our approach, we took a very simple example
-   which is a kernel that computes the Laplacian of an image. 
+   which is a kernel that computes the Laplacian of an image and for
+   which we want to minimize the time to compute a pixel. 
    Figure\ref{fig:boast_code} shows the BOAST code to generate a
    Laplacian kernel. Figure\ref{fig:kernel_code} shows one such
    generated kernel. This BOAST code was already implemented by the
-   BOAST developers but as we will see finding the right parameters
-   was quite a challenge. We want to minimize the time to compute a
-   pixel. There are multiple optimization that can be done to enhance
-   the performance of this kernel. The parameters and their values we
+   BOAST developers but as we will see finding the right parameter values
+   was quite a challenge. There are multiple optimization that can be done to enhance
+   the performance of this kernel each one of them are expressed by a
+   parameter and its possible values. The parameters and their values we
    used to tune this applications are the following: 
 
      | Parameters         | Values                            |
@@ -1468,7 +1469,7 @@ than previously proposed one.
    2. /Load_overlap/ is related to the vectorization. As vectors
       are manipulated, when loading, some data overlap. Thus it is
       possible to synthetize the load from other data and consequently
-      reduce the number of loads. As it is a factors with only 2
+      reduce the number of loads. As it is a factor with only 2
       levels (true or false) the model for its impact is necessarily
       linear. 
 
@@ -1530,7 +1531,7 @@ than previously proposed one.
      #+END_LaTeX  
 
    7. /Local_work_size_y/ (/lws_y/) determines how the threads are
-      organized in a block and represent the number of threads in the
+      organized in a block and represents the number of threads in the
       y-axis. For this parameter it is difficult to envision what kind
       of impact it can have so we started with a simple linear model.
 
@@ -1544,7 +1545,7 @@ than previously proposed one.
    sense. We also have constraint the size of the kernel because it is
    limited to the available resources on the device. Exceeding the
    resources cause the kernel to crash. That is why use constraints to
-   reject all the combinations that would produce a kernel too big or that is not
+   reject all the combinations that would produce a too big kernel or that is not
    correct. Finally it remains 23120 points in the search space. For
    comparison purpose we performed an exhaustive search which took
    about 154 hours. 
@@ -1586,7 +1587,7 @@ than previously proposed one.
    [[file:img/warm_up.pdf]]
    
    Current hardware has became more and more complex and provides
-   features such that power saving, frequency scaling, etc... Thus it
+   features such as power saving, frequency scaling, etc... Thus it
    is possible to have measurements that are different from an
    experiment to another even if the set of inputs is exactly the
    same. For instance, frequency scaling mechanism could chose to scale
@@ -1594,16 +1595,16 @@ than previously proposed one.
    computer case has increased which would have an impact on the
    compute time. To have trusted measurements we are concerned  about those
    kind of problems because the metric in our case, which is the time to
-   compute a pixel, is sensitive to this. Thus we have to protected
+   compute a pixel, is sensitive to this. Thus we have to be protected
    against variability between the same measurements and especially
    the warm-up effect. This phenomena can occurs on devices providing
    energy saving features. This kind of devices generally have a
    performance mode and an idle mode. As long as the device does not
    have a lot of work it stays in idle mode but at a some threshold it
-   switches to the performances mode. Thus the device does not provides
+   switches to the performance mode. Thus the device does not provides
    all its capabilities immediately, hence the warm-up effect.
 
-   The measurement process is made as follows:
+   The measurement process is made as follow:
    1. Generation of the next a version of the code
    2. Compilation
    3. Bench-marking on several image sizes multiple times.
@@ -1612,7 +1613,7 @@ than previously proposed one.
    during the code generation and compilation phases. For this reason
    we suspected that warm-up effect can occurs at this moment and also
    after an image is loaded. We tried to see if on the GPU Nvidia K40
-   there this effect is present. We also tried to quantify it along
+   this effect is present. We also tried to quantify it along
    with the variability we could have between the different runs of
    the same version of the code in order to protect against
    it. Figure\ref{fig:warmup}, illustrates what we expected, there is
@@ -1623,8 +1624,8 @@ than previously proposed one.
    better the performances. It also could have been the case when
    going from one image size to another, the GPU could have switched
    to idle mode while the loading of the image, but is not the case. The
-   GPU does not have the time to switch to idle mode. So to  to
-   protected against the warm-up effect we just need to make at least four
+   GPU does not have the time to switch to idle mode. So to be
+   protected against the warm-up effect we only need to make at least four
    runs on the first size of image and we keep the run that gives
    minimal time to compute one pixel. However we also did the same
    for all the size of images.
@@ -1656,14 +1657,14 @@ than previously proposed one.
    to prune the search space correctly and to choose the most suited
    search techniques. Thus we investigated the design of a
    semi-automated approach where the user tunes his application in an
-   interactive way. All along the tuning process this method provides
-   valuable information to user to guide him and exploit his
+   interactive way. All along the tuning process, this method provides
+   valuable information to the user to guide him and exploit his
    knowledge. Of course, this assumes that the application developer
    understands well his kernel and knows the reason each code
    optimization he used.  
 
    As the objective the function is empirical and is costly to evaluate, our
-   approach consists in sampling the space with only few points to
+   approach consists in sampling the search space with only few points to
    build a model in order to approximate it at low cost. We focused
    on linear regression because usually, it is enough to model
    accurately computer phenomenon. However a correct modeling goes
@@ -1673,28 +1674,31 @@ than previously proposed one.
    points.
 
    The Figure\ref{fig:process} shows the workflow of our approach: 
-   1. The user interrogate the search space for example to find what
-      are the parameters that have the most impact and their
-      interactions, check his hypothesis about the model, etc...
-   2. The search space is sampled by taking into account the objective
+   1. The search space is sampled by taking into account the objective
       of the user. For instance if the user wants to have a first
       overview of the high-order parameters or if he wants to refine
       his model or if he needs to obtain more information about a precise
       part of the search space.
-   3. Using linear regression a model is built based on the hypothesis
-      provided by the user. It also determines what are the parameters
+   2. Using linear regression, a model is built based on the
+      hypothesis about the kernel performances
+      provided by the user. This step allows the developer to test
+      multiple hypothesis, by trying different models and keeping the
+      most suited. This allows to determine what are the parameters
       that have the most impact. Parameters that have less impact are
       removed from the model and will be re-injected later when higher
-      order parameters are fixed.
-   4. The best value for the studied parameters are predicted from the
-      model.
-   5. The result of the regression and estimated best value for the
-      parameters are returned to the user. At this step, either he is
-      satisfied by the result of the regression and he can prune the
-      search space by fixing the parameters to the estimated values.
-      Or he can ask to test another model, ask more points in a
-      particular area to refine the model, etc...
-   6. This process iterates until all parameters are fixed.
+      order parameters are fixed. It also allows to estimate what kind
+      of impact they have by finding their coefficients. If the user
+      is not satisfied about the result of the linear regression he
+      can ask additional points.
+   3. Once the user has found a satisfying model, this one is
+      instantiated in order to predict the best values only for the
+      relevant parameters.
+   4. The search space is pruned by the fixing the relevant parameters
+      to the estimated values.
+   5. The remaining parameters are re-injected in the tuning process
+      which iterates until all the wanted parameters are fixed.
+   6. At the end the user has either the best estimated solution or at
+      least the most interesting region of the search space.
 
    In short the tuning is done through an iterative and instrumented
    process where the user refines his model according to the extracted
@@ -1704,7 +1708,7 @@ than previously proposed one.
    #+BEGIN_LaTeX
    \begin{figure}[tbh]
    \centering
-   \includegraphics[width=.8\linewidth]{./img/process.pdf}
+   \includegraphics[width=.8\linewidth]{img/process2.pdf}
    \caption{\label{fig:process}Workflow}
    \end{figure}
    #+END_LaTeX
@@ -1798,7 +1802,7 @@ than previously proposed one.
 
 *** 
     To evaluate our solution, we compared it against the following
-    search methods that have already been used in auto-tuning
+    search methods that are generally used in auto-tuning
     literature using an exploration budget of 120 points (0.5% of the
     search space) that must not be exceeded:
     - *RS*: is the uniform random search that takes points randomly in the
@@ -1806,7 +1810,7 @@ than previously proposed one.
     - *LHS*: it is a not a method used to search, it is a sampling
       technique which takes points randomly but which also maximizes the
       distance between them to cover the full search
-      space. However we want to see how a search based on it would
+      space. However we wanted to see how a search method based on it, would
       perform. 
     - *GS* (Greedy Search): we implemented a greedy search which
       is a derivative-free local search. From a random starting point,
@@ -1814,7 +1818,7 @@ than previously proposed one.
       one and moves to the direction that leads to the best
       improvement. This kind of algorithm is efficient on convex
       objective function but can easily be trapped in local
-      minimum. In such case, the algorithm may not have used its whole
+      optimum. In such case, the algorithm may not have used its whole
       experimental budget. This is why to illustrate the geometry of
       the search space through the performance of this algorithm, we
       consider a variant of this algorithm, *GSR* (Greedy Search with
@@ -1824,11 +1828,11 @@ than previously proposed one.
       reached. The best solution found so far is then returned. 
     - *GA*: BOAST embeds an implementation of a genetic algorithm. We
       used a population size of 20 and mutation rate of 0.1. Among the
-      different configuration tested, it was the one that gives the
+      different configurations tested, it was the one that gave the
       best results but it may be possible to obtain better results by
       tuning further the genetic algorithm parameters.  
     
-    Although the linear regression is the classical tool to use in
+    Although the linear regression of the mean is the classical tool to use in
     combination with design of experiments, while performing our
     study, we realized some of the underlying hypothesis (in
     particular the uniformity of variance\footnote{homoscedasticity})
@@ -1850,7 +1854,7 @@ than previously proposed one.
 
     - *RQ*: this approach is similar to the previous one but relies on
       quantile regression instead and tries to model how the 5%
-      smaller values depend on the various input parameters. 
+      smallest values depend on the various input parameters. 
 
     We measured each methods 1000 times. The average time needed to
     perform a single exploration (120 points) is approximately 43
@@ -1915,7 +1919,7 @@ than previously proposed one.
     the space. The first observation that can be made is that the
     uniform random search RS is quite efficient. Half of the time
     we get a slowdown that is less than 7.9% and we do not get a
-    maximum slowdown of 38.8% RS a likely explanation of the efficient
+    maximum slowdown that is higher than 38.8%. A likely explanation of the efficiency
     of the random search will be given later. Surprisingly, the LHS
     approach did not improve at all over RS since the expected
     slowdown increases from 10.2% to 17.5% (see
@@ -1981,7 +1985,7 @@ than previously proposed one.
       each method) allows to better compare the different
       heuristics. The red dashed line depicts the estimation of the
       mean with the corresponding 95\% confidence interval in gray. The
-      green dotted line depicts the sample median. The arrows show the maximum values, expect for GSR which is out of the range.}
+      green dotted line depicts the sample median. The arrows show the maximum values, expect for GS which is out of the range.}
    \end{figure}
    #+END_LaTeX
 
@@ -2196,7 +2200,7 @@ than previously proposed one.
   there are few bad ones with the worst at a slowdown of x382. Thus
   the probability of finding a good performing combination is high,
   this is the reason why randomized algorithms such as the RS, GA and
-  LHS good obtains results. Among the 23120 combinations there are 170 which
+  LHS obtains results good. Among the 23120 combinations there are 170 which
   have a slowdown lower than 10%. In order to get less than this slowdown
   with a probability of 0.9 with the random search we would need to
   pick at least 312 points at random. And if we hope to get the same
@@ -2262,8 +2266,8 @@ than previously proposed one.
    #+END_LaTeX   
 
    We can also notice in the Figure\ref{fig:heteroscedasticity} that the variability is not
-   the same everywhere, hence our random variables are
-   heteroscedastics. This  because the noise does not 
+   the same everywhere, hence our data are
+   heteroscedastics. This because the noise does not 
    follow the same law for the different value of the same
    parameters. This noise is due to complex interactions between
    parameters.  
