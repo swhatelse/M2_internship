@@ -1636,7 +1636,7 @@ than previously proposed one.
    \includegraphics[height=.5\textheight]{./img/warm_up.pdf}
    \caption{\label{fig:warmup}\textbf{Warm-up effect}: 
      This figure presents the time to compute a pixel on 4 different runs
-     for 5 different image size and for different vector length. We can see
+     for 5 different image sizes and for different vector lengths. We can see
      that in the first image size we have some variability and the time to
      compute a pixel dicrease when the run index increase while for the other 
      image size the performances are stable. The first image
@@ -2181,7 +2181,7 @@ than previously proposed one.
    \includegraphics[width=\linewidth]{./img/search_combination_rep_slowdown_zoom.pdf}
    \subcaption{Zoomed search space}
    \end{minipage}
-   \caption{\label{fig:combination_distribution}These figures presents the slowdown of the combination 
+   \caption{\label{fig:combination_distribution}These figures present the slowdown of the combination 
     of the entire search space. The Figure (a) is a global view and the Figure (b) focuses
     on combination between a slowdown of 0 and 20. The red dotted line represents the mean, 
     the green one the median, the blue one on the left the 1st. quartile and the blue one
@@ -2267,7 +2267,7 @@ than previously proposed one.
 
    We can also notice in the Figure\ref{fig:heteroscedasticity} that the variability is not
    the same everywhere, hence our data are
-   heteroscedastics. This because the noise does not 
+   heteroscedastics. This is because the noise does not 
    follow the same law for the different value of the same
    parameters. This noise is due to complex interactions between
    parameters.  
@@ -2396,7 +2396,7 @@ than previously proposed one.
    determination which makes it more difficult to evaluate the
    accuracy of the model. In addition, we want to predict the minimum
    value of the objective function not the mean. With non-uniform
-   noise the evaluation of the minimum value does not follow the
+   noise, the evolution of the minimum value does not follow the
    evolution of the mean (see Figure\ref{fig:lm_x_comp}).
 
    #+BEGIN_LaTeX
@@ -2423,8 +2423,8 @@ than previously proposed one.
    \subcaption{\label{fig:rq_x_comp}}
    \end{minipage}
    \caption{\label{fig:qr-example}\textbf{Linear regression vs quantile regression}: 
-    These figures shows the impact of different factors on the time to compute a pixel and 
-    the least square regression line in red and a quantile regression line the 5th percentile in blue .
+    These figures show the impact of different factors on the time to compute a pixel and 
+    the least square regression line in red and a quantile regression line of the 5th percentile in blue .
     On Figure\ref{fig:lm_v_len.pdf} the variance is not the same everywhere but the minimum 
     still follows the same tendency as the mean. On Figure\ref{fig:lm_x_comp}The variance is not 
     uniform as in the previous case and the minimum does not follow the same tendency as the mean. 
@@ -2442,8 +2442,8 @@ than previously proposed one.
    the minimum. The resulting model and approximation can still be
    correct and we can easily know what is the best size of vector. But
    we would still need to make assumptions that about the error and we
-   do not know anything it. In the Figure\ref{fig:lm_x_comp}, the
-   evolution of the mean and the evolution of the minimum is not
+   do not know anything about it. In the Figure\ref{fig:lm_x_comp}, the
+   evolution of the mean and the evolution of the minimum are not
    correlated and the best value is not predicted correctly.     
 
    We conclude that in the case of heteroscedasticity and non-uniform
@@ -2849,7 +2849,7 @@ than previously proposed one.
    cases, there is a strong correlation for the low values (see
    Figure\ref{fig:lucky_prediction}).  
 
-  #+CAPTION: This table presents the fit an incorrect model but which gives the values
+  #+CAPTION: This table presents the fit of an incorrect model but which make a correct prediction of low values for the time to compute a pixel
   #+NAME:   tab:lucky-fit
     |               |      Coef | Std. err. | p-values |
     |---------------+-----------+-----------+----------|
@@ -3499,7 +3499,7 @@ than previously proposed one.
 * Technical difficulties
   The approach we proposed allowed us to obtain very good results
   in a constrained experimental budget. Implementing such approach
-  raised however several technical difficulties which we haven't
+  raised however several technical difficulties which we have not
   explained yet. The first one comes from characteristics of our
   search space which is not a simple compact and convex $k$-cell but
   is instead discrete and constrained. The other difficulty comes
@@ -3651,7 +3651,7 @@ than previously proposed one.
     There is also another kind of constraints more complex that reject
     combinations that would generate a too large kernel. In OpenCL and
     Cuda, kernel are limited by physical resources of the device, a
-    kernel too big simply does not compile. 
+    too big kernel simply does not compile. 
 
     We could deal with our constrained search space by skipping some
     constraints and using rounding (see
@@ -3690,14 +3690,14 @@ than previously proposed one.
    \includegraphics[width=\linewidth]{./img/search_space_3D_barrier.pdf}
    \subcaption{\label{fig:search_space_3d_barrier}}
    \end{minipage}
-   \caption{\textbf{Search space constraints}: These figures represents the example of some of the 
+   \caption{\textbf{Search space constraints}: These figures represent the example of some of the 
     constraints on the paramters \emph{elements number} and \emph{y component number} and the envisioned approach
    to cope with it.
    Figure\ref{fig:search_space_3d} shows the predicted objective function.
-   Figure\ref{fig:search_space_3d} shows the same function but only with the feasible points. 
-   Figure\ref{fig:search_space_3d} shows that we can ignore some constraints and just round 
+   Figure\ref{fig:search_space_3d_constrained_ugly} shows the same function but only with the feasible points. 
+   Figure\ref{fig:search_space_3d_constrained} shows that we can ignore some constraints and just round 
    the values. 
-   Figure\ref{fig:search_space_3d} illustrate the barrier approach we could use to deal with 
+   Figure\ref{fig:search_space_3d_barrier} illustrate the barrier approach we could use to deal with 
    some other constraints to guide the search into feasible regions.
    }
    \end{figure}
@@ -3763,7 +3763,7 @@ than previously proposed one.
      
 **** Screening design 
     Screening designs are generally a good initial sampling strategy
-    as as it allows to detect which parameters have the biggest
+    as it allows to detect which parameters have the biggest
     impact. We initially intended to use it in a preliminary phase
     to detect significant factors. For this screening designs often
     focus on points that are the farthest away from each
@@ -3805,9 +3805,9 @@ than previously proposed one.
    \includegraphics[width=\linewidth]{./img/rs_cover_constraints.pdf}
    \subcaption{\label{fig:rs_cover_constraints}Random sampling}
    \end{minipage}
-   \caption{\textbf{Space coverage}: These figures shows the space coverage of 
-    thee LHS and random sampling with our search space. With our constrained search space, LHS 
-    loses it property of maximum distance between points and not have a better 
+   \caption{\textbf{Space coverage}: These figures show the space coverage of 
+    the LHS and random sampling with our search space. With our constrained search space, LHS 
+    loses it property of maximum distance between points and do not have a better 
     coverage capacity than random sampling.}
    \end{figure}
    #+END_LaTeX    
@@ -3817,7 +3817,7 @@ than previously proposed one.
    estimate of coefficients nor the standard error and the p-values,
    which is crucial to assess the quality of a model. We could not
    understand the reason for these numerical instabilities nor how to
-   circumvent them. Thus we had to implement another methods to
+   circumvent them. Thus we had to implement another method to
    perform quantile regression. There several ways to do it, but
    building on the presentation of Charpentier\cite{LectureQR}, we used a
    method that performs weighted least square regression iteratively
@@ -3875,7 +3875,7 @@ than previously proposed one.
      correct decisions. 
   3. We also demonstrated the limitations of the
      simple linear regression for this kind of problems because there is
-     have no certainty about the error law and the estimation of the mean
+     no certainty about the error law and the estimation of the mean
      is not the same thing as estimating the minimum. We demonstrated
      that for this, quantile regression is more suited and improves the
      worst case of the simple linear regression. However we need
@@ -3904,9 +3904,10 @@ than previously proposed one.
   regression. It is important to be able to compute confidence
   interval, standard error, coefficients of determination to be able
   to assess the quality of a model. We know that the quantile
-  regression is better than the classical least square regression but
-  if we cannot assess if the model is accurate our not we are
-  stuck. Thus is it crucial to improve this point. 
+  regression is more suited than the classical least square regression when
+  the noise is non-uniform, but if we cannot assess if a model is
+  accurate not, we are stuck. Thus it is crucial to improve this
+  point.  
 
   In addition, digging more into sampling strategy to know how to
   combine efficiently different sampling techniques could be
@@ -3935,7 +3936,7 @@ than previously proposed one.
 
 
 * Acknowledgments
-I would like to thanks my supervisors  for allowing me to make my
+I would like to thank my supervisors for allowing me to make my
 internship in their teams and for this subject I really
 enjoyed. I thank them for their availability and their help and thanks
 to them I learned a lot.
