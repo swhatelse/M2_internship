@@ -1690,7 +1690,7 @@ than previously proposed one.
       of impact they have by finding their coefficients. If the user
       is not satisfied about the result of the linear regression he
       can ask additional points.
-   3. Once the user has found a satisfying model, this one is
+   3. Once the user has found a satisfying model, this latter is
       instantiated in order to predict the best values only for the
       relevant parameters.
    4. The search space is pruned by the fixing the relevant parameters
@@ -1709,7 +1709,8 @@ than previously proposed one.
    \begin{figure}[tbh]
    \centering
    \includegraphics[width=.8\linewidth]{img/process2.pdf}
-   \caption{\label{fig:process}Workflow}
+   \caption{\label{fig:process}Semi-automatic approach workflow. This Figure shows 
+            how linear regression techniques are combined with design of experiments techniques.}
    \end{figure}
    #+END_LaTeX
 * Results
